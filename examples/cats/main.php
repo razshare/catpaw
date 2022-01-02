@@ -17,7 +17,7 @@ namespace {
 			path    : "/cats",
 			callback:
 			#[Produces("application/json")]
-			function() use (&$cats) {
+			function() use ($cats) {
 				return $cats;
 			}
 		);
