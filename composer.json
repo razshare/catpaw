@@ -37,7 +37,7 @@
   ],
   "require": {
     "php": "^8.0",
-    "razshare/asciitable": "^1.1.0",
+    "razshare/asciitable": "^1.1",
     "amphp/amp": "^2.6",
     "amphp/http-server": "^2.1",
     "amphp/log": "^1.1",
