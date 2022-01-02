@@ -1,0 +1,11 @@
+/SESSION/
+/vendor/
+/composer.lock
+/.sessions/
+/.credentials/
+/.login/
+/.history/
+/.vscode/
+/.release
+/.cache
+/.idea
