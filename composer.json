@@ -2,7 +2,15 @@
   "name": "catpaw/core",
   "description": "A Php Http & WebSocket server",
   "type": "library",
-  "license": "GPL-2.0-only",
+  "license": "MIT",
+  "keywords": [
+    "php",
+    "cli",
+    "server",
+    "http",
+    "websocket",
+    "catpaw"
+  ],
   "scripts": {
     "load": "@composer dump-autoload -o",
     "script": "@php scripts/start.php",
