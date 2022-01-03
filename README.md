@@ -52,8 +52,7 @@ after that's done, your server will be up and running on port ```8080```.
 Every application must declare a `main` function in the global scope, that will be your entry point.
 <br/>
 
-Within your `main` function, you can benefic from dependency injections, for example you could start a web server using
-the `MainConfiguration`.
+This `main` function can request dependency injections.
 
 ```php
 <?php
