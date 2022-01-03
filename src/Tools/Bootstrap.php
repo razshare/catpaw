@@ -186,12 +186,12 @@ class Bootstrap {
 			else
 				$type = self::OTHER;
 
-			if(!strpos($filename, '../')) {
+			if(!strpos($filename, '../') && (yield exists($filename))) {
 				if(self::MARKDOWN === $type) {
 					/** @var string $filename */
 					$filename = yield self::markdown($config, $filename);
 				}
-				$length = yield exists($filename)?yield getSize($filename):0;
+				$length = yield getSize($filename);
 				try {
 					return $service->response(
 						rangeQuery: $range[0]??"",
