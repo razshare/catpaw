@@ -9,6 +9,7 @@ namespace {
 	use CatPaw\Attributes\StartWebServer;
 	use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 	use CatPaw\Http\HttpContext;
+	use CatPaw\Http\RouteHandlerContext;
 	use CatPaw\Tools\Helpers\Route;
 
 	#[Attribute]
@@ -34,9 +35,9 @@ namespace {
 	class CustomRouteAttribute implements AttributeInterface {
 		use CoreAttributeDefinition;
 
-		public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, bool $isFilter): Promise {
-			return new LazyPromise(function() use ($reflection) {
-
+		public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, RouteHandlerContext $route): Promise {
+			return new LazyPromise(function() use ($reflection,$route) {
+				echo "Detecting a custom attribute on $route->method $route->path!\n";
 			});
 		}
 	}

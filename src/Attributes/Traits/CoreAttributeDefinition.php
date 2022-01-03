@@ -7,6 +7,7 @@ use Amp\Promise;
 use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Http\HttpContext;
+use CatPaw\Http\RouteHandlerContext;
 use CatPaw\Tools\Helpers\Factory;
 use Closure;
 use Generator;
@@ -184,7 +185,7 @@ trait CoreAttributeDefinition {
 	/**
 	 * @inheritDoc
 	 */
-	public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, bool $isFilter): Promise {
+	public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, RouteHandlerContext $route): Promise {
 		return new LazyPromise(fn() => true);
 	}
 }

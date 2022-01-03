@@ -4,6 +4,7 @@ namespace CatPaw\Attributes\Interfaces;
 
 use Amp\Promise;
 use CatPaw\Http\HttpContext;
+use CatPaw\Http\RouteHandlerContext;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;
@@ -37,10 +38,10 @@ interface AttributeInterface {
 	 * Route handlers are closure functions assigned using "Route::get", "Route::post", "Route::update", etc.<br/>
 	 * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/1.RouteHandlers.md
 	 * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/9.Filters.md
-	 * @param ReflectionFunction $reflection
-	 * @param Closure            $value
-	 * @param bool               $isFilter
+	 * @param ReflectionFunction  $reflection
+	 * @param Closure             $value
+	 * @param RouteHandlerContext $route
 	 * @return Promise
 	 */
-	public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, bool $isFilter): Promise;
+	public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, RouteHandlerContext $route): Promise;
 }

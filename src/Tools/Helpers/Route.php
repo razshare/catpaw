@@ -7,6 +7,7 @@ use Amp\Promise;
 use CatPaw\Attributes\Http\PathParam;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Metadata\Meta;
+use CatPaw\Http\RouteHandlerContext;
 use CatPaw\Tools\Strings;
 use Closure;
 use Generator;
@@ -166,15 +167,26 @@ class Route {
 				self::$patterns[$method][$path][] = self::findPathPatterns($path, $reflection->getParameters());
 				self::$routes[$method][$path][] = $callback;
 				//TODO refactor this attributes section
-				$parseAttributes = new LazyPromise(function() use ($method, $path, $reflection, $callback, $isFilter) {
-					/** @var Logger $logger */
-					$logger = yield Factory::create(LoggerInterface::class);
+				$parseAttributes = new LazyPromise(function() use ($method, $path, $isFilter, $reflection, $callback) {
+					$context = new class(
+						method  : $method,
+						path    : $path,
+						isFilter: $isFilter,
+					) extends RouteHandlerContext {
+						public function __construct(
+							public string $method,
+							public string $path,
+							public bool   $isFilter,
+						) {
+						}
+					};
+
 					foreach($reflection->getAttributes() as $attribute) {
 						$aname = $attribute->getName();
 						/** @var AttributeInterface $ainstance */
 						$ainstance = yield $aname::findByFunction($reflection);
 						if($ainstance)
-							yield $ainstance->onRouteHandler($reflection, $callback, $isFilter);
+							yield $ainstance->onRouteHandler($reflection, $callback, $context);
 
 					}
 				});
