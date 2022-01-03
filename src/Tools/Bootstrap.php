@@ -191,7 +191,7 @@ class Bootstrap {
 					/** @var string $filename */
 					$filename = yield self::markdown($config, $filename);
 				}
-				$length = yield getSize($filename);
+				$length = yield exists($filename)?yield getSize($filename):0;
 				try {
 					return $service->response(
 						rangeQuery: $range[0]??"",
