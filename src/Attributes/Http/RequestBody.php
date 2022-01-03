@@ -36,13 +36,13 @@ use ReflectionParameter;
 class RequestBody implements AttributeInterface {
 	use CoreAttributeDefinition;
 
-	public function onParameter(ReflectionParameter $parameter, mixed &$value, false|HttpContext $http): Promise {
+	public function onParameter(ReflectionParameter $reflection, mixed &$value, false|HttpContext $http): Promise {
 		return new LazyPromise(function() use (
-			$parameter,
+			$reflection,
 			&$value,
 			$http
 		) {
-			$className = $parameter->getType()->getName()??'';
+			$className = $reflection->getType()->getName()??'';
 			$value = match ($className) {
 				"array"                             => $this->toArray(
 					body       : yield $http->request->getBody()->buffer(),

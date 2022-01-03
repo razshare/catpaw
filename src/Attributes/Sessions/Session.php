@@ -84,9 +84,9 @@ class Session implements AttributeInterface {
 	}
 
 
-	public function onParameter(ReflectionParameter $parameter, mixed &$value, false|HttpContext $http): Promise {
+	public function onParameter(ReflectionParameter $reflection, mixed &$value, false|HttpContext $http): Promise {
 		return new LazyPromise(function() use (
-			$parameter,
+			$reflection,
 			&$value,
 			$http
 		) {

@@ -112,7 +112,11 @@ class Factory {
 		}
 	}
 
-	public static function dependencies(ReflectionFunction|ReflectionMethod $reflection, array &$parameters, false|HttpContext $http = false): Promise {
+	public static function dependencies(
+		ReflectionFunction|ReflectionMethod $reflection,
+		array &$parameters,
+		false|HttpContext $http = false
+	): Promise {
 		return new LazyPromise(function() use ($reflection, &$parameters, $http) {
 			if($http) {
 				$method = $http->request->getMethod();

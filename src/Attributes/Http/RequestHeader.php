@@ -16,9 +16,9 @@ class RequestHeader implements AttributeInterface {
 
 	public function __construct(private string $key) { }
 
-	public function onParameter(ReflectionParameter $parameter, mixed &$value, false|HttpContext $http): Promise {
+	public function onParameter(ReflectionParameter $reflection, mixed &$value, false|HttpContext $http): Promise {
 		return new LazyPromise(function() use (
-			$parameter,
+			$reflection,
 			&$value,
 			$http
 		) {

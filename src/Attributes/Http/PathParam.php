@@ -33,16 +33,16 @@ class PathParam implements AttributeInterface {
 
 	private static array $cache = [];
 
-	public function onParameter(ReflectionParameter $parameter, mixed &$value, false|HttpContext $http): Promise {
+	public function onParameter(ReflectionParameter $reflection, mixed &$value, false|HttpContext $http): Promise {
 		return new LazyPromise(function() use (
-			$parameter,
+			$reflection,
 			&$value,
 			$http
 		) {
-			$name = $parameter->getName();
+			$name = $reflection->getName();
 			if(!isset(self::$cache["$http->eventID:$name"])) {
 				/** @var ReflectionType $type */
-				$type = $parameter->getType();
+				$type = $reflection->getType();
 				if($type instanceof ReflectionUnionType) {
 					$type = $type->getTypes()[0];
 				}

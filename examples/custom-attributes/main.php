@@ -12,16 +12,16 @@ namespace {
 	use CatPaw\Tools\Helpers\Route;
 
 	#[Attribute]
-	class CustomHttpAttribute implements AttributeInterface {
+	class CustomHttpParameterAttribute implements AttributeInterface {
 		use CoreAttributeDefinition;
 
 		public function __construct(private string $value) {
 			echo "hello world\n";
 		}
 
-		public function onParameter(ReflectionParameter $parameter, mixed &$value, false|HttpContext $http): Promise {
+		public function onParameter(ReflectionParameter $reflection, mixed &$value, false|HttpContext $http): Promise {
 			return new LazyPromise(function() use (
-				$parameter,
+				$reflection,
 				&$value,
 				$http
 			) {
@@ -30,12 +30,28 @@ namespace {
 		}
 	}
 
+	#[Attribute]
+	class CustomRouteAttribute implements AttributeInterface {
+		use CoreAttributeDefinition;
+
+		public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, bool $isFilter): Promise {
+			return new LazyPromise(function() use ($reflection) {
+
+			});
+		}
+	}
+
 	#[StartWebServer]
 	function main() {
-		Route::get("/", #[Produces("text/html")] function(
-			#[CustomHttpAttribute("hello")] string $hello = 'world',
-		) {
-			return "$hello";
-		});
+		Route::get(
+			path    : "/",
+			callback: #[Produces("text/html")]
+			#[CustomRouteAttribute]
+			function(
+				#[CustomHttpParameterAttribute("hello")] string $name = 'world',
+			) {
+				return $name;
+			}
+		);
 	}
 }

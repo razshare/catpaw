@@ -2,15 +2,22 @@
 
 namespace CatPaw\Tools\Helpers;
 
+use Amp\LazyPromise;
+use Amp\Promise;
 use CatPaw\Attributes\Http\PathParam;
+use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Metadata\Meta;
 use CatPaw\Tools\Strings;
 use Closure;
 use Generator;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Razshare\AsciiTable\AsciiTable;
+use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
+use stdClass;
 use function implode;
 
 class Route {
@@ -150,11 +157,28 @@ class Route {
 			$callbacks = [$callbacks];
 		}
 
+
 		try {
-			foreach($callbacks as $callback) {
+			$len = count($callbacks);
+			foreach($callbacks as $i => $callback) {
+				$isFilter = $len > 1 && $i < $len - 1;
 				$reflection = new ReflectionFunction($callback);
 				self::$patterns[$method][$path][] = self::findPathPatterns($path, $reflection->getParameters());
 				self::$routes[$method][$path][] = $callback;
+				//TODO refactor this attributes section
+				$parseAttributes = new LazyPromise(function() use ($method, $path, $reflection, $callback, $isFilter) {
+					/** @var Logger $logger */
+					$logger = yield Factory::create(LoggerInterface::class);
+					foreach($reflection->getAttributes() as $attribute) {
+						$aname = $attribute->getName();
+						/** @var AttributeInterface $ainstance */
+						$ainstance = yield $aname::findByFunction($reflection);
+						if($ainstance)
+							yield $ainstance->onRouteHandler($reflection, $callback, $isFilter);
+
+					}
+				});
+				$parseAttributes->onResolve(fn() => true);
 			}
 		} catch(ReflectionException $e) {
 			die(Strings::red($e));

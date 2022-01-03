@@ -8,10 +8,12 @@ use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Http\HttpContext;
 use CatPaw\Tools\Helpers\Factory;
+use Closure;
 use Generator;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
+use ReflectionObject;
 use ReflectionParameter;
 use ReflectionProperty;
 
@@ -48,8 +50,8 @@ trait CoreAttributeDefinition {
 			$object = $klass->newInstance(...$args);
 			if($entry) {
 				$parameters = [];
-				yield Factory::dependencies($entry,$parameters);
-				$result = $entry->invoke($object,...$parameters);
+				yield Factory::dependencies($entry, $parameters);
+				$result = $entry->invoke($object, ...$parameters);
 				if($result instanceof Generator)
 					yield from $result;
 				else if($result instanceof Promise)
@@ -76,8 +78,8 @@ trait CoreAttributeDefinition {
 			$object = $klass->newInstance(...$args);
 			if($entry) {
 				$parameters = [];
-				yield Factory::dependencies($entry,$parameters);
-				$result = $entry->invoke($object,...$parameters);
+				yield Factory::dependencies($entry, $parameters);
+				$result = $entry->invoke($object, ...$parameters);
 				if($result instanceof Generator)
 					yield from $result;
 				else if($result instanceof Promise)
@@ -104,8 +106,8 @@ trait CoreAttributeDefinition {
 			$object = $klass->newInstance(...$args);
 			if($entry) {
 				$parameters = [];
-				yield Factory::dependencies($entry,$parameters);
-				$result = $entry->invoke($object,...$parameters);
+				yield Factory::dependencies($entry, $parameters);
+				$result = $entry->invoke($object, ...$parameters);
 				if($result instanceof Generator)
 					yield from $result;
 				else if($result instanceof Promise)
@@ -132,8 +134,8 @@ trait CoreAttributeDefinition {
 			$object = $klass->newInstance(...$args);
 			if($entry) {
 				$parameters = [];
-				yield Factory::dependencies($entry,$parameters);
-				$result = $entry->invoke($object,...$parameters);
+				yield Factory::dependencies($entry, $parameters);
+				$result = $entry->invoke($object, ...$parameters);
 				if($result instanceof Generator)
 					yield from $result;
 				else if($result instanceof Promise)
@@ -160,8 +162,8 @@ trait CoreAttributeDefinition {
 			$object = $klass->newInstance(...$args);
 			if($entry) {
 				$parameters = [];
-				yield Factory::dependencies($entry,$parameters);
-				$result = $entry->invoke($object,...$parameters);
+				yield Factory::dependencies($entry, $parameters);
+				$result = $entry->invoke($object, ...$parameters);
 				if($result instanceof Generator)
 					yield from $result;
 				else if($result instanceof Promise)
@@ -175,7 +177,14 @@ trait CoreAttributeDefinition {
 	/**
 	 * @inheritDoc
 	 */
-	public function onParameter(ReflectionParameter $parameter, mixed &$value, false|HttpContext $http): Promise {
+	public function onParameter(ReflectionParameter $reflection, mixed &$value, false|HttpContext $http): Promise {
+		return new LazyPromise(fn() => true);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, bool $isFilter): Promise {
 		return new LazyPromise(fn() => true);
 	}
 }

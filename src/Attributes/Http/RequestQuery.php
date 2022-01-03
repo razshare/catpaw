@@ -30,13 +30,13 @@ class RequestQuery implements AttributeInterface {
 		return $this->name;
 	}
 
-	public function onParameter(ReflectionParameter $parameter, mixed &$value, false|HttpContext $http): Promise {
+	public function onParameter(ReflectionParameter $reflection, mixed &$value, false|HttpContext $http): Promise {
 		return new LazyPromise(function() use (
-			$parameter,
+			$reflection,
 			&$value,
 			$http,
 		) {
-			$classname = $parameter->getType()->getName()??'';
+			$classname = $reflection->getType()->getName()??'';
 			$result = match ($classname) {
 				"string" => $this->toString($http),
 				"int"    => $this->toInteger($http),
