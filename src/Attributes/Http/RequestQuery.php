@@ -36,8 +36,14 @@ class RequestQuery implements AttributeInterface {
 			&$value,
 			$http,
 		) {
-			$classname = $reflection->getType()->getName()??'';
-			$result = match ($classname) {
+			$type = $reflection->getType();
+			$typeName = 'string';
+			if($type instanceof \ReflectionUnionType) {
+				$typeName = $type->getTypes()[0]->getName();
+			} else if ($type instanceof  \ReflectionType){
+				$typeName = $type->getName();
+			}
+			$result = match ($typeName) {
 				"string" => $this->toString($http),
 				"int"    => $this->toInteger($http),
 				"float"  => $this->toFloat($http),

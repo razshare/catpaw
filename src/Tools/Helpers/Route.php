@@ -17,6 +17,8 @@ use Razshare\AsciiTable\AsciiTable;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
+use ReflectionUnionType;
+use ReflectionType;
 use ReflectionMethod;
 use stdClass;
 use function implode;
@@ -55,9 +57,17 @@ class Route {
 			$pathParam = yield PathParam::findByParameter($param);
 			if($pathParam) {
 				$optional = $param->isOptional();
-				$type = $param->getType()->getName();
+				$typeName = 'string';
+
+				$type = $param->getType();
+				if($type instanceof ReflectionUnionType){
+					$typeName = $type->getTypes()[0]->getName();
+				}else if($type instanceof ReflectionType){
+					$typeName = $type->getName();
+				}
+
 				if('' === $pathParam->getRegex())
-					switch($type) {
+					switch($typeName) {
 						case 'int':
 							$pathParam->setRegex('/^[-+]?[0-9]+$/');
 							break;

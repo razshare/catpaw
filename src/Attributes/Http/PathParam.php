@@ -46,7 +46,7 @@ class PathParam implements AttributeInterface {
 				if($type instanceof ReflectionUnionType) {
 					$type = $type->getTypes()[0];
 				}
-				self::$cache[$http->eventID] = $type->getName();
+				self::$cache[$http->eventID] = $type?->getName()??'string';
 			}
 
 			$cname = self::$cache[$http->eventID];
