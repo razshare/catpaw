@@ -13,6 +13,9 @@ use Exception;
 use JetBrains\PhpStorm\Pure;
 use ReflectionException;
 use ReflectionParameter;
+use ReflectionType;
+use ReflectionTypeUnion;
+
 
 #[Attribute]
 class RequestQuery implements AttributeInterface {
@@ -41,9 +44,9 @@ class RequestQuery implements AttributeInterface {
 
 			if(!$type){
 				die(Strings::red("Handler \"$http->eventID\" must specify at least 1 type for query \"$this->name\".\n"));
-			} else if($type instanceof \ReflectionUnionType) {
+			} else if($type instanceof ReflectionUnionType) {
 				$typeName = $type->getTypes()[0]->getName();
-			} else if ($type instanceof \ReflectionType){
+			} else if ($type instanceof ReflectionType){
 				$typeName = $type->getName();
 			}
 
@@ -55,6 +58,8 @@ class RequestQuery implements AttributeInterface {
 			};
 			if($result)
 				$value = $result;
+			else if(!$reflection->isOptional() && $reflection->allowsNull())
+				$value = null;
 		});
 	}
 
