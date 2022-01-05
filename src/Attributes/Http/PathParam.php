@@ -8,6 +8,7 @@ use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Http\HttpContext;
+use CatPaw\Tools\Strings;
 use ReflectionParameter;
 use ReflectionType;
 use ReflectionUnionType;
@@ -39,14 +40,23 @@ class PathParam implements AttributeInterface {
 			&$value,
 			$http
 		) {
+
+
+
 			$name = $reflection->getName();
 			if(!isset(self::$cache["$http->eventID:$name"])) {
 				/** @var ReflectionType $type */
 				$type = $reflection->getType();
-				if($type instanceof ReflectionUnionType) {
-					$type = $type->getTypes()[0];
+				if(!type){
+					$name = $reflection->getName();
+					die(Strings::red("Handler \"$http->eventID\" must specify at least 1 type path parameter \"$name\".\n"));
+				} else if($type instanceof \ReflectionUnionType) {
+					$typeName = $type->getTypes()[0]->getName();
+				} else if ($type instanceof \ReflectionType){
+					$typeName = $type->getName();
 				}
-				self::$cache[$http->eventID] = $type?->getName()??'string';
+
+				self::$cache[$http->eventID] = $typeName;
 			}
 
 			$cname = self::$cache[$http->eventID];

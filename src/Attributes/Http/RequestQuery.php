@@ -8,6 +8,7 @@ use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Http\HttpContext;
+use CatPaw\Tools\Strings;
 use Exception;
 use JetBrains\PhpStorm\Pure;
 use ReflectionException;
@@ -37,12 +38,15 @@ class RequestQuery implements AttributeInterface {
 			$http,
 		) {
 			$type = $reflection->getType();
-			$typeName = 'string';
-			if($type instanceof \ReflectionUnionType) {
+
+			if(!$type){
+				die(Strings::red("Handler \"$http->eventID\" must specify at least 1 type for query \"$this->name\".\n"));
+			} else if($type instanceof \ReflectionUnionType) {
 				$typeName = $type->getTypes()[0]->getName();
-			} else if ($type instanceof  \ReflectionType){
+			} else if ($type instanceof \ReflectionType){
 				$typeName = $type->getName();
 			}
+
 			$result = match ($typeName) {
 				"string" => $this->toString($http),
 				"int"    => $this->toInteger($http),
