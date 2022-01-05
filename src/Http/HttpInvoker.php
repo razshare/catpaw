@@ -158,7 +158,7 @@ class HttpInvoker {
 			}
 		}
 
-		$queryChunks = explode('&', substr($httpRequest->getUri()->getQuery(), 1));
+		$queryChunks = explode('&', preg_replace('/^\?/','',$httpRequest->getUri()->getQuery(), 1));
 		$query = [];
 
 		foreach($queryChunks as $chunk) {
