@@ -11,10 +11,9 @@ use CatPaw\Http\HttpContext;
 use CatPaw\Tools\Strings;
 use Exception;
 use JetBrains\PhpStorm\Pure;
-use ReflectionException;
 use ReflectionParameter;
 use ReflectionType;
-use ReflectionTypeUnion;
+use ReflectionUnionType;
 
 
 #[Attribute]
@@ -42,12 +41,12 @@ class RequestQuery implements AttributeInterface {
 		) {
 			$type = $reflection->getType();
 
-			if(!$type){
-				die(Strings::red("Handler \"$http->eventID\" must specify at least 1 type for query \"$this->name\".\n"));
-			} else if($type instanceof ReflectionUnionType) {
+			if($type instanceof ReflectionUnionType) {
 				$typeName = $type->getTypes()[0]->getName();
-			} else if ($type instanceof ReflectionType){
+			} else if($type instanceof ReflectionType) {
 				$typeName = $type->getName();
+			}else{
+				die(Strings::red("Handler \"$http->eventID\" must specify at least 1 type for query \"$this->name\".\n"));
 			}
 
 			$result = match ($typeName) {
@@ -79,7 +78,7 @@ class RequestQuery implements AttributeInterface {
 	 * @return false|int
 	 * @throws Exception
 	 */
-	public function toInteger(HttpContext $http): false|int {
+	private function toInteger(HttpContext $http): false|int {
 		if(isset($http->query[$this->name])) {
 			$value = urldecode($http->query[$this->name]);
 			if(is_numeric($value))
@@ -95,7 +94,7 @@ class RequestQuery implements AttributeInterface {
 	 * @param HttpContext $http
 	 * @return bool
 	 */
-	#[Pure] public function toBool(HttpContext $http): bool {
+	#[Pure] private function toBool(HttpContext $http): bool {
 		if(isset($http->query[$this->name]))
 			return filter_var(urldecode($http->query[$this->name]), FILTER_VALIDATE_BOOLEAN);
 		return false;
@@ -106,7 +105,7 @@ class RequestQuery implements AttributeInterface {
 	 * @return false|float
 	 * @throws Exception
 	 */
-	public function toFloat(HttpContext $http): false|float {
+	private function toFloat(HttpContext $http): false|float {
 		if(isset($http->query[$this->name])) {
 			$value = urldecode($http->query[$this->name]);
 			if(is_numeric($value))

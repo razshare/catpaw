@@ -158,7 +158,7 @@ class HttpInvoker {
 			}
 		}
 
-		$queryChunks = explode('&', preg_replace('/^\?/','',$httpRequest->getUri()->getQuery(), 1));
+		$queryChunks = explode('&', preg_replace('/^\?/', '', $httpRequest->getUri()->getQuery(), 1));
 		$query = [];
 
 		foreach($queryChunks as $chunk) {
@@ -179,8 +179,7 @@ class HttpInvoker {
 			request          : $httpRequest,
 			response         : new Response(Status::OK, [], ''),
 		) extends HttpContext {
-			public
-			function __construct(
+			public function __construct(
 				public SessionOperationsInterface $sessionOperations,
 				public string                     $eventID,
 				public array                      $params,
