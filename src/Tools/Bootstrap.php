@@ -95,11 +95,7 @@ class Bootstrap {
 	private static function args(MainConfiguration $config, ReflectionFunction $main): Promise {
 		return new LazyPromise(function() use ($config, $main) {
 			$args = [];
-			$i = 0;
-			foreach($main->getParameters() as $parameter) {
-				$args[$i] = yield Factory::create($parameter->getType()->getname(), false);
-				$i++;
-			}
+			yield Factory::dependencies($main,$args,false);
 			return $args;
 		});
 	}
