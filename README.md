@@ -61,6 +61,9 @@ or in production using
 compsoer run start
 ```
 
+### Interested in web server examples?
+You can follow along with the examples provided by the `catpaw/web` package itself at https://github.com/tncrazvan/catpaw-web/tree/master/examples.
+
 ## Note
 
 This project is aimed at linux distributions and has not been tested properly on Windows or Mac machines.
