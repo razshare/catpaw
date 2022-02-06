@@ -1,19 +1,22 @@
 # Table of Contents
 
-| Topic                      | Last update   | Link
-|----------------------------|---------------|---------------------------------------
-| Intro                      | 1.0         | [Github](./docs/0.Intro.md)
-| 🌐 Web Route Handlers      | 1.0         | [Github](./docs/1.WebRouteHandlers.md)
-| 🌐 Web Path Parameters     | 1.0         | [Github](./docs/2.WebPathParameters.md)
-| 🌐 Web Path Not Found      | 1.0         | [Github](./docs/3.WebPathNotFound.md)
-| 🌐 Web Session             | 1.0         | [Github](./docs/4.WebSession.md)
-| ⚡ Entry                    | 1.0         | [Github](./docs/5.Entry.md)
-| ⚡ Modules                  | 1.0         | [Github](./docs/6.Modules.md)
-| 🌐 Web Byte Range Requests | 1.0         | [Github](./docs/7.WebByteRangeRequests.md)
-| ⚡ Custom Attributes        | 1.0         | [Github](./docs/8.CustomAttributes.md)
-| 🌐 Web Filters             | 1.0         | [Github](./docs/9.WebFilters.md)
-| 🌐 Web Sockets             | 1.0         | [Github](./docs/10.WebSockets.md)
-| 💡 RaspberryPI             | 1.0         | [Github](./docs/11.RaspberryPI.md)
+| Topic                      | Last update | Implemented | Documentation
+|----------------------------|------------ |-------------|---------------------------------------
+| Intro                      | 1.0         | ✅           | [Github](./docs/0.Intro.md)
+| 🌐 Web Route Handlers      | 1.0          | ✅            | [Github](./docs/1.WebRouteHandlers.md)
+| 🌐 Web Path Parameters     | 1.0          | ✅            | [Github](./docs/2.WebPathParameters.md)
+| 🌐 Web Path Not Found      | 1.0          | ✅            | [Github](./docs/3.WebPathNotFound.md)
+| 🌐 Web Session             | 1.0          | ✅            | [Github](./docs/4.WebSession.md)
+| ⚡ Entry                    | 1.0         | ✅            | [Github](./docs/5.Entry.md)
+| ⚡ Modules                  | 1.0         | ✅            | [Github](./docs/6.Modules.md)
+| 🌐 Web Byte Range Requests | 1.0          | ✅            | [Github](./docs/7.WebByteRangeRequests.md)
+| ⚡ Custom Attributes        | 1.0         | ✅            | [Github](./docs/8.CustomAttributes.md)
+| 🌐 Web Filters             | 1.0          | ✅            | [Github](./docs/9.WebFilters.md)
+| 🌐 Web Sockets             | 1.0          | ✅            | [Github](./docs/10.WebSockets.md)
+| 💡 RaspberryPI             | 1.0          | ✅            | [Github](./docs/11.RaspberryPI.md)
+| ⚡ Services & Singletons    | 1.0         | ✅            | _TODO_
+| 🌐 OpenAPI                 | 1.0          | ✅            | _TODO_
+| ⚡ MySQL Repositories      | 1.0          | ✅            | _TODO_
 
 ---
 
@@ -42,13 +45,17 @@ namespace {
     }
 }
 ```
+
 <br/>
 
 After you've created your new project, you can run it in development mode using
+
 ```bash
 compsoer run dev
 ```
+
 or in production using
+
 ```bash
 compsoer run start
 ```
