@@ -2,7 +2,7 @@
 
 | Topic                      | Implemented | Repository                                                            | Read                                       |
 |----------------------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
-| Intro                      |             | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/0.Intro.md)                |
+| Intro                      |             |                                                                       | [Github](./docs/0.Intro.md)                |
 | 🌐 Web Route Handlers      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
 | 🌐 Web Path Parameters     | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
 | 🌐 Web Path Not Found      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
