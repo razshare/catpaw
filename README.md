@@ -17,7 +17,7 @@
 
 ---
 
-## Get started
+# Get started
 
 In order to get started you will need [php 8.0](https://www.php.net/downloads.php) or a more recent version.
 
@@ -31,43 +31,28 @@ Or you could also clone the template from https://github.com/tncrazvan/catpaw-st
 
 ---
 
-After you've created your new project, you can run it in development mode using
+Every application must declare a ```main``` function in the global scope, that will be your entry point:
 
+```php
+<?php
+// src/main.php
+namespace {
+    function main(){
+        echo "hello world\n";
+    }
+}
+```
+<br/>
+
+After you've created your new project, you can run it in development mode using
 ```bash
 compsoer run dev
 ```
-
 or in production using
-
 ```bash
 compsoer run start
 ```
 
-after that's done, your server will be up and running on port ```8080```.
+## Note
 
-
----
-
-## Basics
-
-Every application must declare a `main` function in the global scope, that will be your entry point.
-<br/>
-
-This `main` function can request dependency injections.
-
-```php
-<?php
-
-namespace {
-    use CatPaw\CatPaw;
-    use CatPaw\Tools\Helpers\Route;
-    use CatPaw\Attributes\StartWebServer;
-    
-    #[StartWebServer]
-    function main() {
-        Route::get("/cats", function() {
-            return "there are no cats here";
-        });
-    }
-}
-```
+This project is aimed at linux distributions and has not been tested properly on Windows or Mac machines.
