@@ -1,4 +1,4 @@
-# Table of Contents
+# Documentation - Table of Contents
 
 | Topic                      | Last update | Implemented | Repository                                                            | Documentation                              |
 |----------------------------|-------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
