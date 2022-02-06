@@ -15,9 +15,11 @@
     "load": "@composer dump-autoload -o",
     "script": "@php scripts/start.php",
     "start:example:hello-world": "@script examples/hello-world/main.php",
-    "dev:example:hello-world": "@start dev 100 && @dev",
+    "dev:example:hello-world": "@start:example:hello-world dev 100 && @dev:example:hello-world",
     "start:example:modules": "@script examples/modules/main.php",
-    "dev:example:modules": "@start dev 100 && @dev"
+    "dev:example:modules": "@start:example:modules dev 100 && @dev:example:modules",
+    "start:example:application-scoped-entry": "@script examples/application-scoped-entry/main.php",
+    "dev:example:application-scoped-entry": "@start:example:application-scoped-entry dev 100 && @dev:example:application-scoped-entry"
   },
   "authors": [
     {
@@ -45,6 +47,13 @@
     "psr-4": {
       "CatPaw\\": [
         "src/"
+      ]
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Examples\\ApplicationScopedEntry\\": [
+        "examples/application-scoped-entry/lib/"
       ]
     }
   }
