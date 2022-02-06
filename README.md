@@ -1,6 +1,6 @@
 # Table of Contents
 
-| Topic                      | Last update | Implemented | Repository                                                            | Documentation                              |
+| Topic                      | Last update | Implemented | Repository                                                            | Read                                       |
 |----------------------------|-------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
 | Intro                      | 1.0         |             |                                                                       | [Github](./docs/0.Intro.md)                |
 | 🌐 Web Route Handlers      | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
