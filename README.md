@@ -1,19 +1,19 @@
 # Table of Contents
 
-| Topic                         | Last update   | Link
-|-------------------------------|---------------|---------------------------------------
-| Intro                         | 1.0         | [Github](./docs/0.Intro.md)
-| Route Handlers                | 1.0         | [Github](./docs/1.RouteHandlers.md)
-| Parameters                    | 1.0         | [Github](./docs/2.Parameters.md)
-| Not Found                     | 1.0         | [Github](./docs/3.NotFound.md)
-| Session                       | 1.0         | [Github](./docs/4.Session.md)
-| Entry                         | 1.0         | [Github](./docs/5.Entry.md)
-| Modules                       | 1.0         | [Github](./docs/6.Modules.md)
-| Byte Range Requests           | 1.0         | [Github](./docs/7.ByteRange.md)
-| Custom Attributes             | 1.0         | [Github](./docs/8.CustomAttributes.md)
-| Filters                       | 1.0         | [Github](./docs/9.Filters.md)
-| WebSockets                    | 1.0         | [Github](./docs/10.WebSockets.md)
-| RaspberryPI                   | 1.0         | [Github](./docs/11.RaspberryPI.md)
+| Topic                      | Last update   | Link
+|----------------------------|---------------|---------------------------------------
+| Intro                      | 1.0         | [Github](./docs/0.Intro.md)
+| 🌐 Web Route Handlers      | 1.0         | [Github](./docs/1.WebRouteHandlers.md)
+| 🌐 Web Path Parameters     | 1.0         | [Github](./docs/2.WebPathParameters.md)
+| 🌐 Web Path Not Found      | 1.0         | [Github](./docs/3.WebPathNotFound.md)
+| 🌐 Web Session             | 1.0         | [Github](./docs/4.WebSession.md)
+| ⚡ Entry                    | 1.0         | [Github](./docs/5.Entry.md)
+| ⚡ Modules                  | 1.0         | [Github](./docs/6.Modules.md)
+| 🌐 Web Byte Range Requests | 1.0         | [Github](./docs/7.WebByteRangeRequests.md)
+| ⚡ Custom Attributes        | 1.0         | [Github](./docs/8.CustomAttributes.md)
+| 🌐 Web Filters             | 1.0         | [Github](./docs/9.WebFilters.md)
+| 🌐 Web Sockets             | 1.0         | [Github](./docs/10.WebSockets.md)
+| 💡 RaspberryPI             | 1.0         | [Github](./docs/11.RaspberryPI.md)
 
 ---
 
