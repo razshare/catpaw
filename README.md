@@ -1,23 +1,23 @@
 # Table of Contents
 
-| Topic                      | Last update | Implemented | Documentation
-|----------------------------|-------------|-----------|---------------------------------------
-| Intro                      | 1.0         | ✅         | [Github](./docs/0.Intro.md)
-| 🌐 Web Route Handlers      | 1.0         | ✅         | [Github](./docs/1.WebRouteHandlers.md)
-| 🌐 Web Path Parameters     | 1.0         | ✅         | [Github](./docs/2.WebPathParameters.md)
-| 🌐 Web Path Not Found      | 1.0         | ✅         | [Github](./docs/3.WebPathNotFound.md)
-| 🌐 Web Session             | 1.0         | ✅         | [Github](./docs/4.WebSession.md)
-| ⚡ Entry                    | 1.0         | ✅         | [Github](./docs/5.Entry.md)
-| ⚡ Modules                  | 1.0         | ✅         | [Github](./docs/6.Modules.md)
-| 🌐 Web Byte Range Requests | 1.0         | ✅         | [Github](./docs/7.WebByteRangeRequests.md)
-| ⚡ Custom Attributes        | 1.0         | ✅         | [Github](./docs/8.CustomAttributes.md)
-| 🌐 Web Filters             | 1.0         | ✅         | [Github](./docs/9.WebFilters.md)
-| 🌐 Web Sockets             | 1.0         | ✅         | [Github](./docs/10.WebSockets.md)
-| 💡 RaspberryPI             | 1.0         | ✅         | [Github](./docs/11.RaspberryPI.md)
-| ⚡ Services & Singletons    | 1.0         | ✅         | _TODO_
-| 🌐 OpenAPI                 | 1.0         | ✅         | _TODO_
-| ⚡ MySQL Repositories       | 1.0         | ✅         | _TODO_
-| ⚡ Redis Repositories       | ~           | ❌         | _TODO_
+| Topic                      | Last update | Implemented | Repository                                                            | Documentation                              |
+|----------------------------|-------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
+| Intro                      | 1.0         | ✅           |                                                                       | [Github](./docs/0.Intro.md)                |
+| 🌐 Web Route Handlers      | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
+| 🌐 Web Path Parameters     | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
+| 🌐 Web Path Not Found      | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
+| 🌐 Web Session             | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/4.WebSession.md)           |
+| ⚡ Entry                    | 1.0         | ✅           |                                                                       | [Github](./docs/5.Entry.md)                |
+| ⚡ Modules                  | 1.0         | ✅           |                                                                       | [Github](./docs/6.Modules.md)              |
+| 🌐 Web Byte Range Requests | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/7.WebByteRangeRequests.md) |
+| ⚡ Custom Attributes        | 1.0         | ✅           |                                                                       | [Github](./docs/8.CustomAttributes.md)     |
+| 🌐 Web Filters             | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/9.WebFilters.md)           |
+| 🌐 Web Sockets             | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/10.WebSockets.md)          |
+| 💡 RaspberryPI             | 1.0         | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi) | [Github](./docs/11.RaspberryPI.md)         |
+| ⚡ Services & Singletons    | 1.0         | ✅           |                                                                       | _TODO_                                     |
+| 🌐 OpenAPI                 | 1.0         | ✅           | [catpaw-openapi](https://github.com/tncrazvan/catpaw-openapi)         | _TODO_                                     |
+| 🗄 MySQL Repositories      | 1.0         | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
+| 🗄 Redis Repositories      | ~           | ❌           |                                                                       | _TODO_                                     |
 
 ---
 
@@ -62,7 +62,9 @@ compsoer run start
 ```
 
 ### Interested in web server examples?
-You can follow along with the examples provided by the `catpaw/web` package itself at https://github.com/tncrazvan/catpaw-web/tree/master/examples.
+
+You can follow along with the examples provided by the `catpaw/web` package itself
+at https://github.com/tncrazvan/catpaw-web/tree/master/examples.
 
 ## Note
 
