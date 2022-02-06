@@ -8,6 +8,8 @@ use Amp\Log\StreamHandler;
 use Amp\Loop;
 use Amp\Promise;
 use CatPaw\Attribute\AttributeLoader;
+use CatPaw\Attribute\Entry;
+use CatPaw\Attribute\Interface\AttributeInterface;
 use CatPaw\Utility\Dir;
 use CatPaw\Utility\Factory;
 use CatPaw\Utility\Strings;
@@ -15,6 +17,7 @@ use Closure;
 use Generator;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
+use ReflectionClass;
 use ReflectionFunction;
 use function Amp\ByteStream\getStdout;
 
@@ -80,6 +83,15 @@ class Bootstrap {
 		});
 	}
 
+	private static function entry(string $classname):array|false{
+		$i = new ReflectionClass($classname);
+				foreach($i->getMethods() as $method)
+					if(($attributes = $method->getAttributes(Entry::class)))
+						if(count($attributes) > 0)
+							return [$i, $method];
+				return [$i, false];
+	}
+
 	/**
 	 * @param MainConfiguration $config
 	 * @param string            $filename
@@ -97,6 +109,24 @@ class Bootstrap {
 			if(!function_exists('main'))
 				die(Strings::red("Please define a global main function.\n"));
 			$main = new ReflectionFunction('main');
+
+			foreach($main->getAttributes() as $attribute){
+				$args = $attribute->getArguments();
+				$classname = $attribute->getName();
+				/** @var ReflectionFunction $entry */
+				[$klass, $entry] = self::entry($classname);
+				$object = $klass->newInstance(...$args);
+				if($entry) {
+					$parameters = [];
+					yield Factory::dependencies($entry, $parameters);
+					$result = $entry->invoke($object, ...$parameters);
+					if($result instanceof Generator)
+						yield from $result;
+					else if($result instanceof Promise)
+						yield $result;
+				}
+			}
+
 			$args = yield self::args($config, $main);
 			$result = $main->invoke(...$args);
 			if($result instanceof Generator)
