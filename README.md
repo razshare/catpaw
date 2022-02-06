@@ -1,23 +1,23 @@
 # Table of Contents
 
-| Topic                      | Last update | Implemented | Repository                                                            | Read                                       |
-|----------------------------|-------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
-| Intro                      | 1.1         |             | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/0.Intro.md)                |
-| 🌐 Web Route Handlers      | 1.1         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
-| 🌐 Web Path Parameters     | 1.1         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
-| 🌐 Web Path Not Found      | 1.1         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
-| 🌐 Web Session             | 1.1         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/4.WebSession.md)           |
-| ⚡ Entry                    | 1.1         | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/5.Entry.md)                |
-| ⚡ Modules                  | 1.1         | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/6.Modules.md)              |
-| 🌐 Web Byte Range Requests | 1.1         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/7.WebByteRangeRequests.md) |
-| ⚡ Custom Attributes        | 1.1         | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/8.CustomAttributes.md)     |
-| 🌐 Web Filters             | 1.1         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/9.WebFilters.md)           |
-| 🌐 Web Sockets             | 1.1         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/10.WebSockets.md)          |
-| 💡 RaspberryPI             | 1.1         | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi) | [Github](./docs/11.RaspberryPI.md)         |
-| ⚡ Services & Singletons    | 1.1         | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | _TODO_                                     |
-| 🌐 OpenAPI                 | 1.1         | ✅           | [catpaw-openapi](https://github.com/tncrazvan/catpaw-openapi)         | _TODO_                                     |
-| 🗄 MySQL Repositories      | 1.1         | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
-| 🗄 Redis Repositories      | ~           | ❌           |                                                                       | _TODO_                                     |
+| Topic                      | Implemented | Repository                                                            | Read                                       |
+|----------------------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
+| Intro                      |             | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/0.Intro.md)                |
+| 🌐 Web Route Handlers      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
+| 🌐 Web Path Parameters     | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
+| 🌐 Web Path Not Found      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
+| 🌐 Web Session             | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/4.WebSession.md)           |
+| ⚡ Entry                    | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/5.Entry.md)                |
+| ⚡ Modules                  | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/6.Modules.md)              |
+| 🌐 Web Byte Range Requests | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/7.WebByteRangeRequests.md) |
+| ⚡ Custom Attributes        | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/8.CustomAttributes.md)     |
+| 🌐 Web Filters             | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/9.WebFilters.md)           |
+| 🌐 Web Sockets             | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/10.WebSockets.md)          |
+| 💡 RaspberryPI             | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi) | [Github](./docs/11.RaspberryPI.md)         |
+| ⚡ Services & Singletons    | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | _TODO_                                     |
+| 🌐 OpenAPI                 | ✅           | [catpaw-openapi](https://github.com/tncrazvan/catpaw-openapi)         | _TODO_                                     |
+| 🗄 MySQL Repositories      | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
+| 🗄 Redis Repositories      | ❌           |                                                                       | _TODO_                                     |
 
 ---
 
