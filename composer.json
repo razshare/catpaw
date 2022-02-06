@@ -14,8 +14,10 @@
   "scripts": {
     "load": "@composer dump-autoload -o",
     "script": "@php scripts/start.php",
-    "start": "@script example/main.php",
-    "dev": "@start dev 100 && @dev"
+    "start:example:hello-world": "@script examples/hello-world/main.php",
+    "dev:example:hello-world": "@start dev 100 && @dev",
+    "start:example:modules": "@script examples/modules/main.php",
+    "dev:example:modules": "@start dev 100 && @dev"
   },
   "authors": [
     {

@@ -20,6 +20,10 @@ abstract class Strings {
 		return "\033[31m $contents";
 	}
 
+	public static function yellow(string $contents):string{
+		return "\033[33m $contents";
+	}
+
 	/**
 	 * Request an input from the terminal without feeding back to the display whatever it's been typed.
 	 * @param string $prompt message to display along with the input request.
