@@ -2,7 +2,7 @@
 
 | Topic                      | Last update | Implemented | Repository                                                            | Documentation                              |
 |----------------------------|-------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
-| Intro                      | 1.0         | ✅           |                                                                       | [Github](./docs/0.Intro.md)                |
+| Intro                      | 1.0         |             |                                                                       | [Github](./docs/0.Intro.md)                |
 | 🌐 Web Route Handlers      | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
 | 🌐 Web Path Parameters     | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
 | 🌐 Web Path Not Found      | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
