@@ -2,19 +2,19 @@
 
 | Topic                      | Last update | Implemented | Repository                                                            | Read                                       |
 |----------------------------|-------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
-| Intro                      | 1.0         |             |                                                                       | [Github](./docs/0.Intro.md)                |
+| Intro                      | 1.0         |             | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/0.Intro.md)                |
 | 🌐 Web Route Handlers      | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
 | 🌐 Web Path Parameters     | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
 | 🌐 Web Path Not Found      | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
 | 🌐 Web Session             | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/4.WebSession.md)           |
-| ⚡ Entry                    | 1.0         | ✅           |                                                                       | [Github](./docs/5.Entry.md)                |
-| ⚡ Modules                  | 1.0         | ✅           |                                                                       | [Github](./docs/6.Modules.md)              |
+| ⚡ Entry                    | 1.0         | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/5.Entry.md)                |
+| ⚡ Modules                  | 1.0         | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/6.Modules.md)              |
 | 🌐 Web Byte Range Requests | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/7.WebByteRangeRequests.md) |
-| ⚡ Custom Attributes        | 1.0         | ✅           |                                                                       | [Github](./docs/8.CustomAttributes.md)     |
+| ⚡ Custom Attributes        | 1.0         | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/8.CustomAttributes.md)     |
 | 🌐 Web Filters             | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/9.WebFilters.md)           |
 | 🌐 Web Sockets             | 1.0         | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/10.WebSockets.md)          |
 | 💡 RaspberryPI             | 1.0         | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi) | [Github](./docs/11.RaspberryPI.md)         |
-| ⚡ Services & Singletons    | 1.0         | ✅           |                                                                       | _TODO_                                     |
+| ⚡ Services & Singletons    | 1.0         | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | _TODO_                                     |
 | 🌐 OpenAPI                 | 1.0         | ✅           | [catpaw-openapi](https://github.com/tncrazvan/catpaw-openapi)         | _TODO_                                     |
 | 🗄 MySQL Repositories      | 1.0         | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
 | 🗄 Redis Repositories      | ~           | ❌           |                                                                       | _TODO_                                     |
