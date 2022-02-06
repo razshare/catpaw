@@ -14,28 +14,8 @@
   "scripts": {
     "load": "@composer dump-autoload -o",
     "script": "@php scripts/start.php",
-    "start:example:hello-world": "@script examples/hello-world/main.php",
-    "dev:example:hello-world": "@script examples/hello-world/main.php dev 100 && @composer run dev",
-    "start:example:cats": "@script examples/cats/main.php",
-    "dev:example:cats": "@script examples/cats/main.php dev 100 && @composer run dev",
-    "start:example:params": "@script examples/params/main.php",
-    "dev:example:params": "@script examples/params/main.php dev 100 && @composer run dev",
-    "start:example:not-found": "@script examples/not-found/main.php",
-    "dev:example:not-found": "@script examples/not-found/main.php dev 100 && @composer run dev",
-    "start:example:session": "@script examples/session/main.php",
-    "dev:example:session": "@script examples/session/main.php dev 100 && @composer run dev",
-    "start:example:application-scope-entry": "@script examples/application-scoped-entry/main.php",
-    "dev:example:application-scope-entry": "@script examples/application-scoped-entry/main.php dev 100 && @composer run dev",
-    "start:example:modules": "@script examples/modules/main.php",
-    "dev:example:modules": "@script examples/modules/main.php dev 100 && @composer run dev",
-    "start:example:web-socket": "@script examples/web-socket/main.php",
-    "dev:example:web-socket": "@script examples/web-socket/main.php dev 100 && @composer run dev",
-    "start:example:byte-range": "@script examples/byte-range/main.php",
-    "dev:example:byte-range": "@script examples/byte-range/main.php dev 100 && @composer run dev",
-    "start:example:custom-attributes": "@script examples/custom-attributes/main.php",
-    "dev:example:custom-attributes": "@script examples/custom-attributes/main.php dev 100 && @composer run dev",
-    "start:example:filters": "@script examples/filters/main.php",
-    "dev:example:filters": "@script examples/filters/main.php dev 100 && @composer run dev"
+    "start:example": "@script examples/example.php",
+    "dev:example": "@script examples/example.php dev 100 && @composer run dev"
   },
   "authors": [
     {
@@ -49,12 +29,12 @@
     "amphp/amp": "^2.6",
     "amphp/http-server": "^2.1",
     "amphp/log": "^1.1",
-    "ext-readline": "*",
-    "ext-mbstring": "*",
     "amphp/websocket-server": "^2.0",
     "erusev/parsedown": "^1.7",
-    "ext-pcntl": "*",
-    "amphp/file": "^2.0"
+    "amphp/file": "^2.0",
+    "amphp/process": "^1.1",
+    "ext-openssl": "*",
+    "ext-zlib": "*"
   },
   "config": {
     "preferred-install": "dist"
@@ -65,18 +45,5 @@
         "src/"
       ]
     }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Examples\\ApplicationScopedEntry\\": [
-        "examples/application-scoped-entry/lib/"
-      ],
-      "Examples\\Modules\\": [
-        "examples/modules/lib/"
-      ]
-    }
-  },
-  "require-dev": {
-    "amphp/process": "^1.1"
   }
 }
