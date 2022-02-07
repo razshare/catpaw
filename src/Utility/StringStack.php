@@ -12,13 +12,14 @@ class StringStack {
 		return new self($contents);
 	}
 
-	/**
-	 * Find token within a string and resolve them into a list containing items in the form of <i>[<b>$preceeding</b>, <b>$token</b>]</i>,
-	 * where <b>$token</b> is the matching token and <b>$preceeding</b> is the value that preceeds the current token.
-	 * @param string ...$tokens
-	 * @return SplDoublyLinkedList
-	 */
-	public function expect(string ...$tokens): SplDoublyLinkedList {
+
+    /**
+     * Find token within a string and resolve them into a list containing items in the form of <i>[<b>$preceeding</b>, <b>$token</b>]</i>,
+     * where <b>$token</b> is the matching token and <b>$preceeding</b> is the value that preceeds the current token.
+     * @param string ...$tokens
+     * @return SplDoublyLinkedList
+     */
+    public function expect(string ...$tokens): SplDoublyLinkedList {
         $name = $this->contents;
         $len = strlen($name);
         $tknslen = count($tokens);
@@ -35,14 +36,20 @@ class StringStack {
                     $preceding = '' === $preceding ? false : $preceding??false;
 
                     $compatible = true;
-                    for($x = 0; $x < $tknslen; $x++) {
-                        if($x === $j) continue;
-                        $xtoken = $tokens[$x];
-                        if(str_ends_with($stack.$name[$i+1],$xtoken)){
-                            $compatible = false;
-                            break;
+                    $xstack = '';
+                    for($x = 0; $x < $len; $x++) {
+                        $xstack .= $name[$x];
+                        for($y = 0; $y < $tknslen; $y++) {
+                            if($y === $j || strlen($tokens[$y]) < $tlen) continue;
+                            $ytoken = $tokens[$y];
+                            if(str_ends_with($xstack, $ytoken)) {
+                                $compatible = false;
+                                break;
+                            }
                         }
+                        if(!$compatible) break;
                     }
+
                     if($compatible) {
                         $list->push([$preceding, $token]);
                         $stack = '';
