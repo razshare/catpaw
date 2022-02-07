@@ -25,6 +25,7 @@ class StringStack {
 		$list = new SplDoublyLinkedList();
 		foreach($tokens as $token) {
 		    $tlen = strlen($token);
+            	    $stack = '';
 		    for($i = 0; $i < $len; $i++) {
 			$stack .= $name[$i];
 			if(str_ends_with($stack, $token)) {
