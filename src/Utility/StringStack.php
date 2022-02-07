@@ -23,17 +23,17 @@ class StringStack {
 		$len = strlen($name);
 		$stack = '';
 		$list = new SplDoublyLinkedList();
-		for($i = 0; $i < $len; $i++) {
+		foreach($tokens as $token) {
+		    $tlen = strlen($token);
+		    for($i = 0; $i < $len; $i++) {
 			$stack .= $name[$i];
-			foreach($tokens as $token) {
-				$tlen = strlen($token);
-				if(str_ends_with($stack, $token)) {
-					$precedding = substr($stack, 0, -$tlen);
-					$list->push(['' === $precedding ? false:$precedding??false, $token]);
-					$stack = '';
-					break;
-				}
+			if(str_ends_with($stack, $token)) {
+			    $precedding = substr($stack, 0, -$tlen);
+			    $list->push(['' === $precedding ? false:$precedding??false, $token]);
+			    $stack = '';
+			    break;
 			}
+		    }
 		}
 
 		if('' !== $stack) {
