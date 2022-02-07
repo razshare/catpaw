@@ -19,28 +19,43 @@ class StringStack {
 	 * @return SplDoublyLinkedList
 	 */
 	public function expect(string ...$tokens): SplDoublyLinkedList {
-		$name = $this->contents;
-		$len = strlen($name);
-		$stack = '';
-		$list = new SplDoublyLinkedList();
-		foreach($tokens as $token) {
-		    $tlen = strlen($token);
-            	    $stack = '';
-		    for($i = 0; $i < $len; $i++) {
-			$stack .= $name[$i];
-			if(str_ends_with($stack, $token)) {
-			    $precedding = substr($stack, 0, -$tlen);
-			    $list->push(['' === $precedding ? false:$precedding??false, $token]);
-			    $stack = '';
-			    break;
-			}
-		    }
-		}
+        $name = $this->contents;
+        $len = strlen($name);
+        $tknslen = count($tokens);
+        $stack = '';
+        $list = new SplDoublyLinkedList();
 
-		if('' !== $stack) {
-			$list->push([$stack, false]);
-		}
+        for($i = 0; $i < $len; $i++) {
+            $stack .= $name[$i];
+            for($j = 0; $j < $tknslen; $j++) {
+                $token = $tokens[$j];
+                $tlen = strlen($token);
+                if(str_ends_with($stack, $token)) {
+                    $preceding = substr($stack, 0, -$tlen);
+                    $preceding = '' === $preceding ? false : $preceding??false;
 
-		return $list;
-	}
+                    $compatible = true;
+                    for($x = 0; $x < $tknslen; $x++) {
+                        if($x === $j) continue;
+                        $xtoken = $tokens[$x];
+                        if(str_ends_with($stack.$name[$i+1],$xtoken)){
+                            $compatible = false;
+                            break;
+                        }
+                    }
+                    if($compatible) {
+                        $list->push([$preceding, $token]);
+                        $stack = '';
+                        break;
+                    }
+                }
+            }
+        }
+
+        if('' !== $stack) {
+            $list->push([$stack, false]);
+        }
+
+        return $list;
+    }
 }
