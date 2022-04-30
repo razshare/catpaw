@@ -5,6 +5,6 @@ namespace {
 	use function Examples\Modules\test;
 
 	function main(): void {
-		echo test()."\n";
+		echo test().PHP_EOL;
 	}
 }
