@@ -8,7 +8,6 @@ use CatPaw\Utility\BooleanAction;
 use CatPaw\Utility\ClassFinder;
 use CatPaw\Utility\Factory;
 use Exception;
-use JetBrains\PhpStorm\Pure;
 
 #[Singleton]
 class AttributeLoader {
@@ -16,7 +15,7 @@ class AttributeLoader {
 	private ClassFinder $finder;
 	private string      $location = '';
 
-	#[Pure] public function __construct() {
+	public function __construct() {
 		$this->finder = new ClassFinder();
 	}
 

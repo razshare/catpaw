@@ -2,7 +2,6 @@
 
 namespace CatPaw\Attribute;
 
-use JetBrains\PhpStorm\Pure;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -11,7 +10,7 @@ use ReflectionProperty;
 
 class AttributeResolver{
 
-    #[Pure] public static function getClassAttributeArguments(ReflectionClass $reflectionClass, string $attributeName):?array{
+    public static function getClassAttributeArguments(ReflectionClass $reflectionClass, string $attributeName):?array{
         $attributes = $reflectionClass->getAttributes();
         foreach($attributes as $attribute){
             $local_attribute_name = $attribute->getName();

@@ -2,13 +2,12 @@
 
 namespace CatPaw\Utility;
 
-use JetBrains\PhpStorm\Pure;
 use SplDoublyLinkedList;
 
 class StringStack {
 	private function __construct(private string $contents = '') { }
 
-	#[Pure] public static function of(string $contents): StringStack {
+	public static function of(string $contents): StringStack {
 		return new self($contents);
 	}
 

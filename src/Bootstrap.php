@@ -9,7 +9,6 @@ use Amp\Loop;
 use Amp\Promise;
 use CatPaw\Attribute\AttributeLoader;
 use CatPaw\Attribute\Entry;
-use CatPaw\Attribute\Interface\AttributeInterface;
 use CatPaw\Utility\Dir;
 use CatPaw\Utility\Factory;
 use CatPaw\Utility\Strings;
@@ -18,6 +17,7 @@ use Generator;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionFunction;
 use function Amp\ByteStream\getStdout;
 
@@ -83,20 +83,23 @@ class Bootstrap {
 		});
 	}
 
-	private static function entry(string $classname):array|false{
+	/**
+	 * @throws ReflectionException
+	 */
+	private static function entry(string $classname): array|false {
 		$i = new ReflectionClass($classname);
-				foreach($i->getMethods() as $method)
-					if(($attributes = $method->getAttributes(Entry::class)))
-						if(count($attributes) > 0)
-							return [$i, $method];
-				return [$i, false];
+		foreach($i->getMethods() as $method)
+			if(($attributes = $method->getAttributes(Entry::class)))
+				if(count($attributes) > 0)
+					return [$i, $method];
+		return [$i, false];
 	}
 
 	/**
 	 * @param MainConfiguration $config
 	 * @param string            $filename
-	 *
 	 * @return Generator
+	 * @throws ReflectionException
 	 */
 	private static function init(MainConfiguration $config, string $filename): Generator {
 		if(is_file($filename)) {
@@ -110,7 +113,7 @@ class Bootstrap {
 				die(Strings::red("Please define a global main function.\n"));
 			$main = new ReflectionFunction('main');
 
-			foreach($main->getAttributes() as $attribute){
+			foreach($main->getAttributes() as $attribute) {
 				$args = $attribute->getArguments();
 				$classname = $attribute->getName();
 				/** @var ReflectionFunction $entry */

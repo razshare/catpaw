@@ -7,13 +7,10 @@ use Amp\Http\Server\Response;
 use Amp\LazyPromise;
 use Amp\Promise;
 use Attribute;
-use CatPaw\Attribute\ApplicationScoped;
 use CatPaw\Attribute\AttributeResolver;
-use CatPaw\Attribute\Entry;
 use CatPaw\Attribute\Service;
 use CatPaw\Attribute\Singleton;
 use Closure;
-use Generator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
@@ -202,7 +199,6 @@ class Factory {
 
 			$service = yield Service::findByClass($reflection);
 			$singleton = yield Singleton::findByClass($reflection);
-			$scoped = yield ApplicationScoped::findByClass($reflection);
 
 			$constructor = $reflection->getConstructor()??false;
 			$parameters = [];
@@ -211,46 +207,11 @@ class Factory {
 			}
 			$instance = new $classname(...$parameters);
 
-			if($singleton || $service || $scoped) {
+			if($singleton || $service) {
 				self::$singletons[$classname] = $instance;
 			}
 
-			if($scoped)
-				yield from self::entry($reflection->getMethods(), $instance);
-
-
 			return $instance??false;
 		});
-	}
-
-	/**
-	 * @throws ReflectionException
-	 */
-	private static function entry(array $methods, mixed $instance): Generator {
-		/** @var ReflectionMethod $method */
-		foreach($methods as $method) {
-			$entry = yield Entry::findByMethod($method);
-			if($entry) {
-				if($method instanceof ReflectionMethod) {
-					$args = [];
-					$i = 0;
-					foreach($method->getParameters() as $parameter) {
-						$args[$i] = yield Factory::create($parameter->getType()->getName());
-						$i++;
-					}
-					if($method->isStatic()) {
-						$result = $method->invoke(null, ...$args);
-					} else {
-						$result = $method->invoke($instance, ...$args);
-					}
-					if($result instanceof Generator)
-						yield from $result;
-					else if($result instanceof Promise)
-						yield $result;
-
-					break;
-				}
-			}
-		}
 	}
 }

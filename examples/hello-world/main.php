@@ -2,6 +2,6 @@
 
 namespace {
     function main(){
-        echo "test\n";
+        echo "hello world\n";
     }
 }
