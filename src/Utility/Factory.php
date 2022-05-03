@@ -8,9 +8,11 @@ use Amp\LazyPromise;
 use Amp\Promise;
 use Attribute;
 use CatPaw\Attribute\AttributeResolver;
+use CatPaw\Attribute\Entry;
 use CatPaw\Attribute\Service;
 use CatPaw\Attribute\Singleton;
 use Closure;
+use Generator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
@@ -47,6 +49,38 @@ class Factory {
 	private const PARAMETERS_ATTRIBUTES_LEN          = 4;
 	private const PARAMETERS_ATTRIBUTES_CLOSURES     = 5;
 	private const PARAMETERS_ATTRIBUTES_HAVE_STORAGE = 6;
+
+	/**
+	 * @throws ReflectionException
+	 */
+	private static function entry(array $methods, mixed $instance) {
+		/** @var ReflectionMethod $method */
+		foreach($methods as $method) {
+			$entry = yield Entry::findByMethod($method);
+			if($entry) {
+				if($method instanceof ReflectionMethod) {
+					$args = [];
+					$i = 0;
+					foreach($method->getParameters() as $parameter) {
+						$args[$i] = yield Factory::create($parameter->getType()->getName());
+						$i++;
+					}
+					if($method->isStatic()) {
+						$result = $method->invoke(null, ...$args);
+					} else {
+						$result = $method->invoke($instance, ...$args);
+					}
+					if($result instanceof Generator)
+						yield from $result;
+					else if($result instanceof Promise)
+						yield $result;
+
+					break;
+				}
+			}
+		}
+	}
+
 
 	/**
 	 * @throws ReflectionException
@@ -210,6 +244,8 @@ class Factory {
 			if($singleton || $service) {
 				self::$singletons[$classname] = $instance;
 			}
+
+			yield from self::entry($reflection->getMethods(), $instance);
 
 			return $instance??false;
 		});
