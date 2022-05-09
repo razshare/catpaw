@@ -18,6 +18,7 @@
 | 🌐 OpenAPI                 | ✅           | [catpaw-openapi](https://github.com/tncrazvan/catpaw-openapi)         | _TODO_                                     |
 | 🗄 MySQL Repositories      | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
 | 🗄 Redis Repositories      | ❌           |                                                                       | _TODO_                                     |
+| ⚡ Stores                 | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)               | _TODO_                                     |
 
 ---
 
