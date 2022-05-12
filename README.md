@@ -2,6 +2,7 @@
 
 | Topic                      | Implemented | Repository                                                            | Read                                       |
 |----------------------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
+| Examples                   |             |                                                                       | [Github](https://github.com/tncrazvan/catpaw-examples/tree/main/src)                |
 | Intro                      |             |                                                                       | [Github](./docs/0.Intro.md)                |
 | 🌐 Web Route Handlers      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
 | 🌐 Web Path Parameters     | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
