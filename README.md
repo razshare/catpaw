@@ -62,10 +62,9 @@ or in production using
 compsoer run start
 ```
 
-### Interested in web server examples?
+### Looking for some examples?
 
-You can follow along with the examples provided by the `catpaw/web` package itself
-at https://github.com/tncrazvan/catpaw-web/tree/master/examples.
+You can follow along with the examples provided by the `catpaw/examples` repository at https://github.com/tncrazvan/catpaw-examples/tree/main/src.
 
 ## Note
 
