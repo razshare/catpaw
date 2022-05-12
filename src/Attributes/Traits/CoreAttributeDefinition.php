@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Attributes\Trait;
+namespace CatPaw\Attributes\Traits;
 
 use Amp\LazyPromise;
 use Amp\Promise;

@@ -3,7 +3,7 @@ namespace CatPaw\Attributes;
 
 use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
-use CatPaw\Attributes\Trait\CoreAttributeDefinition;
+use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 
 #[Attribute]
 class Entry implements AttributeInterface{
