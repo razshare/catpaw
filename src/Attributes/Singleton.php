@@ -2,7 +2,7 @@
 namespace CatPaw\Attributes;
 
 use Attribute;
-use CatPaw\Attributes\Interface\AttributeInterface;
+use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Trait\CoreAttributeDefinition;
 
 /**

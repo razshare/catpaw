@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Attributes\Interface;
+namespace CatPaw\Attributes\Interfaces;
 
 use Amp\Promise;
 use Closure;
