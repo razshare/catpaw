@@ -1,16 +1,16 @@
 <?php
 
-namespace CatPaw\Utility;
+namespace CatPaw\Utilities;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use Amp\LazyPromise;
 use Amp\Promise;
 use Attribute;
-use CatPaw\Attribute\AttributeResolver;
-use CatPaw\Attribute\Entry;
-use CatPaw\Attribute\Service;
-use CatPaw\Attribute\Singleton;
+use CatPaw\Attributes\AttributeResolver;
+use CatPaw\Attributes\Entry;
+use CatPaw\Attributes\Service;
+use CatPaw\Attributes\Singleton;
 use Closure;
 use Generator;
 use ReflectionClass;

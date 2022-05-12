@@ -1,12 +1,12 @@
 <?php
 
-namespace CatPaw\Attribute;
+namespace CatPaw\Attributes;
 
 use Amp\LazyPromise;
 use Amp\Promise;
-use CatPaw\Utility\BooleanAction;
-use CatPaw\Utility\ClassFinder;
-use CatPaw\Utility\Factory;
+use CatPaw\Utilities\BooleanAction;
+use CatPaw\Utilities\ClassFinder;
+use CatPaw\Utilities\Factory;
 use Exception;
 
 #[Singleton]
