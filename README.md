@@ -1,3 +1,7 @@
+# What is this?
+
+Catpaw is an opinionated group of libraries centered around `catpaw/core`, which is a dependency injection library built for [amphp](https://amphp.org/).
+
 # Table of Contents
 
 | Topic                      | Implemented | Repository                                                            | Read                                       |
