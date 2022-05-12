@@ -17,7 +17,9 @@
     "start:example:hello-world": "@script examples/hello-world/main.php",
     "dev:example:hello-world": "@start:example:hello-world dev 100 && @dev:example:hello-world",
     "start:example:modules": "@script examples/modules/main.php",
-    "dev:example:modules": "@start:example:modules dev 100 && @dev:example:modules"
+    "dev:example:modules": "@start:example:modules dev 100 && @dev:example:modules",
+    "start:example:svelte": "@script examples/modules/main.php",
+    "dev:example:svelte": "@start:example:modules dev 100 && @dev:example:modules"
   },
   "authors": [
     {
@@ -27,7 +29,6 @@
   ],
   "require": {
     "php": "^8.0",
-    "razshare/asciitable": "^1.1",
     "amphp/amp": "^2.6",
     "amphp/http-server": "^2.1",
     "amphp/log": "^1.1",

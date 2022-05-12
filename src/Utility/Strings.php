@@ -3,7 +3,6 @@
 namespace CatPaw\Utility;
 
 use Closure;
-use Razshare\AsciiTable\AsciiTable;
 use function get_class;
 use function is_array;
 use function is_object;
