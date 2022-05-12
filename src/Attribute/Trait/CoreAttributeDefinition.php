@@ -1,12 +1,12 @@
 <?php
 
-namespace CatPaw\Attribute\Traits;
+namespace CatPaw\Attribute\Trait;
 
 use Amp\LazyPromise;
 use Amp\Promise;
 use CatPaw\Attribute\AttributeResolver;
 use CatPaw\Attribute\Entry;
-use CatPaw\Utilities\Factory;
+use CatPaw\Utility\Factory;
 use Closure;
 use Generator;
 use ReflectionClass;
@@ -15,20 +15,18 @@ use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 
-trait CoreAttributeDefinition
-{
+trait CoreAttributeDefinition {
 
 	private static array $entry_cache = [];
 
 	/**
 	 * @return array|false
 	 */
-	private static function entry(): array|false
-	{
+	private static function entry(): array|false {
 		$i = new ReflectionClass(static::class);
-		foreach ($i->getMethods() as $method)
-			if (($attributes = $method->getAttributes(Entry::class)))
-				if (count($attributes) > 0)
+		foreach($i->getMethods() as $method)
+			if(($attributes = $method->getAttributes(Entry::class)))
+				if(count($attributes) > 0)
 					return [$i, $method];
 		return [$i, false];
 	}
@@ -37,10 +35,9 @@ trait CoreAttributeDefinition
 	 * @param ReflectionFunction $reflectionFunction
 	 * @return Promise
 	 */
-	public static function findByFunction(ReflectionFunction $reflectionFunction): Promise
-	{
-		return new LazyPromise(function () use ($reflectionFunction) {
-			if (!AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class))
+	public static function findByFunction(ReflectionFunction $reflectionFunction): Promise {
+		return new LazyPromise(function() use ($reflectionFunction) {
+			if(!AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class))
 				return false;
 
 			$args = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
@@ -49,17 +46,17 @@ trait CoreAttributeDefinition
 			/** @var ReflectionMethod $entry */
 			[$klass, $entry] = static::entry();
 			$object = $klass->newInstance(...$args);
-			if ($entry) {
+			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
 				$result = $entry->invoke($object, ...$parameters);
-				if ($result instanceof Generator)
+				if($result instanceof Generator)
 					yield from $result;
-				else if ($result instanceof Promise)
+				else if($result instanceof Promise)
 					yield $result;
 			}
 
-			return $object ?? false;
+			return $object??false;
 		});
 	}
 
@@ -67,10 +64,9 @@ trait CoreAttributeDefinition
 	 * @param ReflectionMethod $reflectionMethod
 	 * @return Promise
 	 */
-	public static function findByMethod(ReflectionMethod $reflectionMethod): Promise
-	{
-		return new LazyPromise(function () use ($reflectionMethod) {
-			if (!AttributeResolver::issetMethodAttribute($reflectionMethod, static::class))
+	public static function findByMethod(ReflectionMethod $reflectionMethod): Promise {
+		return new LazyPromise(function() use ($reflectionMethod) {
+			if(!AttributeResolver::issetMethodAttribute($reflectionMethod, static::class))
 				return false;
 			$args = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
 
@@ -78,17 +74,17 @@ trait CoreAttributeDefinition
 			/** @var ReflectionMethod $entry */
 			[$klass, $entry] = static::entry();
 			$object = $klass->newInstance(...$args);
-			if ($entry) {
+			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
 				$result = $entry->invoke($object, ...$parameters);
-				if ($result instanceof Generator)
+				if($result instanceof Generator)
 					yield from $result;
-				else if ($result instanceof Promise)
+				else if($result instanceof Promise)
 					yield $result;
 			}
 
-			return $object ?? false;
+			return $object??false;
 		});
 	}
 
@@ -96,10 +92,9 @@ trait CoreAttributeDefinition
 	 * @param ReflectionClass $reflectionClass
 	 * @return Promise
 	 */
-	public static function findByClass(ReflectionClass $reflectionClass): Promise
-	{
-		return new LazyPromise(function () use ($reflectionClass) {
-			if (!AttributeResolver::issetClassAttribute($reflectionClass, static::class))
+	public static function findByClass(ReflectionClass $reflectionClass): Promise {
+		return new LazyPromise(function() use ($reflectionClass) {
+			if(!AttributeResolver::issetClassAttribute($reflectionClass, static::class))
 				return false;
 			$args = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
 
@@ -107,17 +102,17 @@ trait CoreAttributeDefinition
 			/** @var ReflectionMethod $entry */
 			[$klass, $entry] = static::entry();
 			$object = $klass->newInstance(...$args);
-			if ($entry) {
+			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
 				$result = $entry->invoke($object, ...$parameters);
-				if ($result instanceof Generator)
+				if($result instanceof Generator)
 					yield from $result;
-				else if ($result instanceof Promise)
+				else if($result instanceof Promise)
 					yield $result;
 			}
 
-			return $object ?? false;
+			return $object??false;
 		});
 	}
 
@@ -125,10 +120,9 @@ trait CoreAttributeDefinition
 	 * @param ReflectionProperty $reflectionProperty
 	 * @return Promise
 	 */
-	public static function findByProperty(ReflectionProperty $reflectionProperty): Promise
-	{
-		return new LazyPromise(function () use ($reflectionProperty) {
-			if (!AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class))
+	public static function findByProperty(ReflectionProperty $reflectionProperty): Promise {
+		return new LazyPromise(function() use ($reflectionProperty) {
+			if(!AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class))
 				return false;
 			$args = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
 
@@ -136,17 +130,17 @@ trait CoreAttributeDefinition
 			/** @var ReflectionMethod $entry */
 			[$klass, $entry] = static::entry();
 			$object = $klass->newInstance(...$args);
-			if ($entry) {
+			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
 				$result = $entry->invoke($object, ...$parameters);
-				if ($result instanceof Generator)
+				if($result instanceof Generator)
 					yield from $result;
-				else if ($result instanceof Promise)
+				else if($result instanceof Promise)
 					yield $result;
 			}
 
-			return $object ?? false;
+			return $object??false;
 		});
 	}
 
@@ -154,10 +148,9 @@ trait CoreAttributeDefinition
 	 * @param ReflectionParameter $reflectionParameter
 	 * @return Promise
 	 */
-	public static function findByParameter(ReflectionParameter $reflectionParameter): Promise
-	{
-		return new LazyPromise(function () use ($reflectionParameter) {
-			if (!AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))
+	public static function findByParameter(ReflectionParameter $reflectionParameter): Promise {
+		return new LazyPromise(function() use ($reflectionParameter) {
+			if(!AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))
 				return false;
 			$args = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
 
@@ -165,27 +158,25 @@ trait CoreAttributeDefinition
 			/** @var ReflectionMethod $entry */
 			[$klass, $entry] = static::entry();
 			$object = $klass->newInstance(...$args);
-			if ($entry) {
+			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
 				$result = $entry->invoke($object, ...$parameters);
-				if ($result instanceof Generator)
+				if($result instanceof Generator)
 					yield from $result;
-				else if ($result instanceof Promise)
+				else if($result instanceof Promise)
 					yield $result;
 			}
 
-			return $object ?? false;
+			return $object??false;
 		});
 	}
 
-	public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $http): Promise
-	{
-		return new LazyPromise(fn () => true);
+	public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $http): Promise {
+		return new LazyPromise(fn() => true);
 	}
 
-	public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $route): Promise
-	{
-		return new LazyPromise(fn () => true);
+	public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $route): Promise {
+		return new LazyPromise(fn() => true);
 	}
 }

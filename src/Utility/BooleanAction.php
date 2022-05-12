@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Utilities;
+namespace CatPaw\Utility;
 
 interface BooleanAction{
     public function run(mixed ...$args):bool;

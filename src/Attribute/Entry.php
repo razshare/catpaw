@@ -2,8 +2,8 @@
 namespace CatPaw\Attribute;
 
 use Attribute;
-use CatPaw\Attribute\Interfaces\AttributeInterface;
-use CatPaw\Attribute\Traits\CoreAttributeDefinition;
+use CatPaw\Attribute\Interface\AttributeInterface;
+use CatPaw\Attribute\Trait\CoreAttributeDefinition;
 
 #[Attribute]
 class Entry implements AttributeInterface{

@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Utilities;
+namespace CatPaw\Utility;
 
 use InvalidArgumentException;
 use function filemtime;

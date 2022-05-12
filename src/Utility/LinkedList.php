@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Utilities;
+namespace CatPaw\Utility;
 
 use Closure;
 use SplDoublyLinkedList;

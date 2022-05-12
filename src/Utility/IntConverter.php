@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Utilities;
+namespace CatPaw\Utility;
 
 abstract class IntConverter{
     public static function int8($i) {
