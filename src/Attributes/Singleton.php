@@ -1,9 +1,9 @@
 <?php
-namespace CatPaw\Attribute;
+namespace CatPaw\Attributes;
 
 use Attribute;
-use CatPaw\Attribute\Interfaces\AttributeInterface;
-use CatPaw\Attribute\Traits\CoreAttributeDefinition;
+use CatPaw\Attributes\Interfaces\AttributeInterface;
+use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 
 /**
  * Attach this attribute to a class.

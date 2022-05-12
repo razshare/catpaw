@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Attribute\Metadata;
+namespace CatPaw\Attributes\Metadata;
 
 class Meta {
 	public static array $FUNCTION = [];

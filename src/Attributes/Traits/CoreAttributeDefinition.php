@@ -1,11 +1,11 @@
 <?php
 
-namespace CatPaw\Attribute\Traits;
+namespace CatPaw\Attributes\Traits;
 
 use Amp\LazyPromise;
 use Amp\Promise;
-use CatPaw\Attribute\AttributeResolver;
-use CatPaw\Attribute\Entry;
+use CatPaw\Attributes\AttributeResolver;
+use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Factory;
 use Closure;
 use Generator;

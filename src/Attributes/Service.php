@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Attribute;
+namespace CatPaw\Attributes;
 
 use Attribute;
 
