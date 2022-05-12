@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utility;
+namespace CatPaw\Utilities;
 
 class AsciiCel{
     private $numberOfLines = 0;

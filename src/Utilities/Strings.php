@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utility;
+namespace CatPaw\Utilities;
 
 use Closure;
 use function get_class;

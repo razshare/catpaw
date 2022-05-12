@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utility;
+namespace CatPaw\Utilities;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;

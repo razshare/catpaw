@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utility;
+namespace CatPaw\Utilities;
 
 abstract class OpenSSL {
 	private static string $countryNameRegex = '/^[A-z]{2}$/';

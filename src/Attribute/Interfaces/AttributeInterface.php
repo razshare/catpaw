@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Attribute\Interface;
+namespace CatPaw\Attribute\Interfaces;
 
 use Amp\Promise;
 use Closure;
@@ -10,7 +10,8 @@ use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 
-interface AttributeInterface {
+interface AttributeInterface
+{
 
 	public static function findByFunction(ReflectionFunction $reflectionMethod): Promise;
 

@@ -2,8 +2,8 @@
 namespace CatPaw\Attribute;
 
 use Attribute;
-use CatPaw\Attribute\Interface\AttributeInterface;
-use CatPaw\Attribute\Trait\CoreAttributeDefinition;
+use CatPaw\Attribute\Interfaces\AttributeInterface;
+use CatPaw\Attribute\Traits\CoreAttributeDefinition;
 
 /**
  * Attach this attribute to a class.

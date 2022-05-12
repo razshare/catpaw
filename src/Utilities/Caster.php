@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utility;
+namespace CatPaw\Utilities;
 
 use function get_object_vars;
 use function is_array;
