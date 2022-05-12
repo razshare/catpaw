@@ -11,9 +11,6 @@
     "websocket",
     "catpaw"
   ],
-  "scripts": {
-    "load": "@composer dump-autoload -o"
-  },
   "authors": [
     {
       "name": "Razvan Tanase",
