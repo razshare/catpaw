@@ -11,16 +11,6 @@
     "websocket",
     "catpaw"
   ],
-  "scripts": {
-    "load": "@composer dump-autoload -o",
-    "script": "@php scripts/start.php",
-    "start:example:hello-world": "@script examples/hello-world/main.php",
-    "dev:example:hello-world": "@start:example:hello-world dev 100 && @dev:example:hello-world",
-    "start:example:modules": "@script examples/modules/main.php",
-    "dev:example:modules": "@start:example:modules dev 100 && @dev:example:modules",
-    "start:example:svelte": "@script examples/modules/main.php",
-    "dev:example:svelte": "@start:example:modules dev 100 && @dev:example:modules"
-  },
   "authors": [
     {
       "name": "Razvan Tanase",
@@ -46,13 +36,6 @@
     "psr-4": {
       "CatPaw\\": [
         "src/"
-      ]
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Examples\\": [
-        "examples/modules/lib/"
       ]
     }
   }
