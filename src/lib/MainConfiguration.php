@@ -18,7 +18,7 @@ abstract class MainConfiguration {
 		"enabled" => "bool",
 		"sleep"   => "int",
 	])]
-	public array $dev = [
+	public array $watch = [
 		"enabled" => false,
 		"sleep"   => 100,
 	];

@@ -52,7 +52,7 @@ class Bootstrap {
 		}
 	}
 
-	private static function dev(string $entryFileName, array $dirs, int $sleep) {
+	private static function watch(string $entryFileName, array $dirs, int $sleep) {
 		$store = [];
 
 		self::checkEntryChange($entryFileName, $store);
@@ -141,10 +141,10 @@ class Bootstrap {
 		}
 	}
 
-	public static function start(string $filename, bool $dev = false, int $devSleep = 100, false|Closure $callback = false) {
+	public static function start(string $filename, bool $watch = false, int $watchSleep = 100, false|Closure $callback = false) {
 
-		$config = new class($dev, $devSleep) extends MainConfiguration {
-			public function __construct(bool $dev, int $devSleep) {
+		$config = new class($watch, $watchSleep) extends MainConfiguration {
+			public function __construct(bool $watch, int $watchSleep) {
 				$handler = new StreamHandler(getStdout());
 				$handler->setFormatter(new ConsoleFormatter());
 				$logger = new Logger('app');
@@ -154,8 +154,8 @@ class Bootstrap {
 				Factory::setObject(Logger::class, $logger);
 				Factory::setObject(LoggerInterface::class, $logger);
 
-				$this->dev["enabled"] = $dev;
-				$this->dev["sleep"] = $devSleep;
+				$this->watch["enabled"] = $watch;
+				$this->watch["sleep"] = $watchSleep;
 			}
 		};
 
@@ -180,11 +180,11 @@ class Bootstrap {
 				$dirs = array_merge($dirs, $loader->getNamespaceDirectories($namespace));
 			}
 
-			if($config->dev["enabled"])
-				self::dev(
+			if($config->watch["enabled"])
+				self::watch(
 					entryFileName: $filename,
 					dirs         : $dirs,
-					sleep        : $config->dev["sleep"]
+					sleep        : $config->watch["sleep"]
 				);
 
 

@@ -8,11 +8,12 @@ require 'vendor/autoload.php';
 global $argv;
 
 $filename = str_replace("\\", '/', $argv[1] ?? '');
-$dev = 'dev' === ($argv[2] ?? '');
-$devSleep = !$dev ? 100 : ($argv[3] ?? 100);
+$watch = 'watch' === ($argv[2] ?? '') || 'dev' === ($argv[2] ?? '');
+
+$watchSleep = !$watch ? 100 : ($argv[3] ?? 100);
 
 Bootstrap::start(
 	filename: $filename,
-	dev: $dev,
-	devSleep: $devSleep
+	watch: $watch,
+	watchSleep: $watchSleep
 );
