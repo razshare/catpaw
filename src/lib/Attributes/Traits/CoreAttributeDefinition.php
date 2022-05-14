@@ -49,7 +49,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				yield \Amp\call($entry->invoke($object, ...$parameters));
+				yield \Amp\call(fn()=>$entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;
@@ -73,7 +73,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				yield \Amp\call($entry->invoke($object, ...$parameters));
+				yield \Amp\call(fn()=>$entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;
@@ -97,7 +97,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				yield \Amp\call($entry->invoke($object, ...$parameters));
+				yield \Amp\call(fn()=>$entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;
@@ -121,7 +121,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				yield \Amp\call($entry->invoke($object, ...$parameters));
+				yield \Amp\call(fn()=>$entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;
@@ -145,7 +145,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				yield \Amp\call($entry->invoke($object, ...$parameters));
+				yield \Amp\call(fn()=>$entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;

@@ -66,9 +66,9 @@ class Factory {
 						$i++;
 					}
 					if($method->isStatic()) {
-						yield \Amp\call($method->invoke(null, ...$args));
+						yield \Amp\call(fn()=>$method->invoke(null, ...$args));
 					} else {
-						yield \Amp\call($method->invoke($instance, ...$args));
+						yield \Amp\call(fn()=>$method->invoke($instance, ...$args));
 					}
 					break;
 				}

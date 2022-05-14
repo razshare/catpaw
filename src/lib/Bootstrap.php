@@ -123,12 +123,12 @@ class Bootstrap {
 				if($entry) {
 					$parameters = [];
 					yield Factory::dependencies($entry, $parameters);
-					yield \Amp\call($entry->invoke($object, ...$parameters));
+					yield \Amp\call(fn()=>$entry->invoke($object, ...$parameters));
 				}
 			}
 
 			$args = yield self::args($config, $main);
-			yield \Amp\call($main->invoke(...$args));
+			yield \Amp\call(fn()=>$main->invoke(...$args));
 		} else {
 			die(Strings::red("Could not find php entry file \"$filename\".\n"));
 		}
@@ -184,7 +184,7 @@ class Bootstrap {
 			yield from self::init($config, $filename);
 
 			if($callback) {
-				yield \Amp\call($callback());
+				yield \Amp\call($callback);
 			}
 		});
 	}
