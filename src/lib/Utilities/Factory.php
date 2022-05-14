@@ -66,15 +66,10 @@ class Factory {
 						$i++;
 					}
 					if($method->isStatic()) {
-						$result = $method->invoke(null, ...$args);
+						yield \Amp\call($method->invoke(null, ...$args));
 					} else {
-						$result = $method->invoke($instance, ...$args);
+						yield \Amp\call($method->invoke($instance, ...$args));
 					}
-					if($result instanceof Generator)
-						yield from $result;
-					else if($result instanceof Promise)
-						yield $result;
-
 					break;
 				}
 			}

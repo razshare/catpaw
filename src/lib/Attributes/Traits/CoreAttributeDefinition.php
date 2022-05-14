@@ -49,11 +49,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				$result = $entry->invoke($object, ...$parameters);
-				if($result instanceof Generator)
-					yield from $result;
-				else if($result instanceof Promise)
-					yield $result;
+				yield \Amp\call($entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;
@@ -77,11 +73,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				$result = $entry->invoke($object, ...$parameters);
-				if($result instanceof Generator)
-					yield from $result;
-				else if($result instanceof Promise)
-					yield $result;
+				yield \Amp\call($entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;
@@ -105,11 +97,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				$result = $entry->invoke($object, ...$parameters);
-				if($result instanceof Generator)
-					yield from $result;
-				else if($result instanceof Promise)
-					yield $result;
+				yield \Amp\call($entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;
@@ -133,11 +121,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				$result = $entry->invoke($object, ...$parameters);
-				if($result instanceof Generator)
-					yield from $result;
-				else if($result instanceof Promise)
-					yield $result;
+				yield \Amp\call($entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;
@@ -161,11 +145,7 @@ trait CoreAttributeDefinition {
 			if($entry) {
 				$parameters = [];
 				yield Factory::dependencies($entry, $parameters);
-				$result = $entry->invoke($object, ...$parameters);
-				if($result instanceof Generator)
-					yield from $result;
-				else if($result instanceof Promise)
-					yield $result;
+				yield \Amp\call($entry->invoke($object, ...$parameters));
 			}
 
 			return $object??false;

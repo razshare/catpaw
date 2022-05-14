@@ -20,6 +20,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use function Amp\ByteStream\getStdout;
+use function Amp\call;
 
 class Bootstrap {
 	private static function checkEntryChange(string $fileName, array &$store) {
@@ -122,20 +123,12 @@ class Bootstrap {
 				if($entry) {
 					$parameters = [];
 					yield Factory::dependencies($entry, $parameters);
-					$result = $entry->invoke($object, ...$parameters);
-					if($result instanceof Generator)
-						yield from $result;
-					else if($result instanceof Promise)
-						yield $result;
+					yield \Amp\call($entry->invoke($object, ...$parameters));
 				}
 			}
 
 			$args = yield self::args($config, $main);
-			$result = $main->invoke(...$args);
-			if($result instanceof Generator)
-				yield from $result;
-			else if($result instanceof Promise)
-				yield $result;
+			yield \Amp\call($main->invoke(...$args));
 		} else {
 			die(Strings::red("Could not find php entry file \"$filename\".\n"));
 		}
@@ -191,12 +184,7 @@ class Bootstrap {
 			yield from self::init($config, $filename);
 
 			if($callback) {
-				$result = $callback();
-				if($result instanceof Promise)
-					yield $result;
-				else if($result instanceof Generator) {
-					yield from $result;
-				}
+				yield \Amp\call($callback());
 			}
 		});
 	}
