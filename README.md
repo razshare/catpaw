@@ -7,7 +7,7 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | Topic                      | Implemented | Repository                                                            | Read                                       |
 |----------------------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
 | Examples                   |             |                                                                       | [Github](https://github.com/tncrazvan/catpaw-examples/tree/main/src)                |
-| Intro                      |             |                                                                       | [Github](./docs/0.Intro.md)                |
+| Get started & debug        |             |                                                                       | [Github](./docs/0.Intro.md)                |
 | 🌐 Web Route Handlers      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
 | 🌐 Web Path Parameters     | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
 | 🌐 Web Path Not Found      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
