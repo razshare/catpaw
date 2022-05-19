@@ -11,6 +11,6 @@ use CatPaw\Attributes\Traits\CoreAttributeDefinition;
  * Catpaw will treat it as a singleton.
  */
 #[Attribute]
-class Singleton implements AttributeInterface{
+class Singleton implements AttributeInterface {
     use CoreAttributeDefinition;
 }

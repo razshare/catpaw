@@ -1,6 +1,6 @@
 <?php
 namespace CatPaw\Utilities;
 
-interface ArrayAction{
+interface ArrayAction {
     public function run(mixed ...$args):array;
 }

@@ -6,6 +6,6 @@ use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 
 #[Attribute]
-class Entry implements AttributeInterface{
+class Entry implements AttributeInterface {
     use CoreAttributeDefinition;
 }

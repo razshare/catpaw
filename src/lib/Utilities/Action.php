@@ -1,6 +1,6 @@
 <?php
 namespace CatPaw\Utilities;
 
-interface Action{
+interface Action {
     public function run(mixed ...$args):void;
 }

@@ -1,0 +1,9 @@
+{
+	"recommendations": [
+		"xdebug.php-debug",
+		"bmewburn.vscode-intelephense-client",
+        "emallin.phpunit",
+        "getpsalm.psalm-vscode-plugin",
+		"junstyle.php-cs-fixer"
+	]
+}

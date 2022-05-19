@@ -10,4 +10,5 @@ use Attribute;
  * (works the same as a Singleton for now).
  */
 #[Attribute]
-class Service extends Singleton{}
+class Service extends Singleton {
+}

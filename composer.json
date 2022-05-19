@@ -17,6 +17,12 @@
       "email": "tangent.jotey@gmail.com"
     }
   ],
+  "scripts": {
+    "fix": [
+      "@php ./vendor/bin/php-cs-fixer fix src",
+      "@php ./vendor/bin/php-cs-fixer fix tests"
+    ]
+  },
   "require": {
     "php": "^8.0",
     "amphp/amp": "^2.6",
@@ -28,6 +34,10 @@
     "amphp/process": "^1.1",
     "ext-openssl": "*",
     "ext-zlib": "*"
+  },
+  "require-dev":{
+    "phpunit/phpunit": "^9.5",
+    "friendsofphp/php-cs-fixer": "^3.8"
   },
   "config": {
     "preferred-install": "dist"
