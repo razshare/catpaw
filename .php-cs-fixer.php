@@ -28,6 +28,8 @@ return $config
         'method_chaining_indentation' => true,
         'native_function_type_declaration_casing' => true,
         'no_spaces_after_function_name' => true,
+        'no_spaces_around_offset' => true,
+        'no_unneeded_curly_braces' => true,
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
         'phpdoc_align' => ['align' => 'vertical'],
         'phpdoc_indent' => true,
@@ -37,7 +39,7 @@ return $config
     ])
     ->setFinder(
         PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
+    ->exclude('vendor')
+    ->in(__DIR__)
     )
 ;
