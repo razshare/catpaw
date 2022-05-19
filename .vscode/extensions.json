@@ -2,7 +2,7 @@
 	"recommendations": [
 		"xdebug.php-debug",
 		"bmewburn.vscode-intelephense-client",
-        "emallin.phpunit",
+        "recca0120.vscode-phpunit",
         "getpsalm.psalm-vscode-plugin",
 		"junstyle.php-cs-fixer"
 	]
