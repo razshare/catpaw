@@ -18,8 +18,8 @@ abstract class MainConfiguration {
         "enabled" => "bool",
         "sleep" => "int",
     ])]
-	public array $watch = [
-	    "enabled" => false,
-	    "sleep" => 100,
-	];
+    public array $watch = [
+        "enabled" => false,
+        "sleep" => 100,
+    ];
 }

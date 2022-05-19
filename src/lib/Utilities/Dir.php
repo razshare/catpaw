@@ -16,8 +16,8 @@ abstract class Dir {
      * @param string     $root startup directory.
      * @param array|null $map  an associative array that will hold your results.
      */
-    public static function getFilenamesRecursive(string $root,?array &$map):void {
-        static::findFilesRecursive($root,$map);
+    public static function getFilenamesRecursive(string $root, ?array &$map):void {
+        static::findFilesRecursive($root, $map);
     }
 
     /**
@@ -25,8 +25,8 @@ abstract class Dir {
      * @param string     $root startup directory.
      * @param array|null $map  an associative array that will hold your results.
      */
-    public static function findFilesRecursive(string $root,?array &$map):void {
-        $root = preg_replace('/\/++/','/',$root);
+    public static function findFilesRecursive(string $root, ?array &$map):void {
+        $root = preg_replace('/\/++/', '/', $root);
         //$fn = end(explode("/",$root));
         if (is_dir($root)) {
             $scan = scandir($root);
@@ -34,7 +34,7 @@ abstract class Dir {
                 if ("." == $file || ".." == $file || ".git" == $file) {
                     continue;
                 }
-                self::getFilenamesRecursive("$root/$file",$map);
+                self::getFilenamesRecursive("$root/$file", $map);
             }
         } else {
             $map[] = [
@@ -53,7 +53,7 @@ abstract class Dir {
      *                                    in the given directory.
      * @return array|string
      */
-    public static function getContentsRecursive(string $root,int &$lastModified) {
+    public static function getContentsRecursive(string $root, int &$lastModified) {
         //$fn = end(explode("/",$root));
         if (is_dir($root)) {
             $scan = scandir($root);
@@ -62,7 +62,7 @@ abstract class Dir {
                 if ("." == $file || ".." == $file || ".git" == $file) {
                     continue;
                 }
-                $result[$file] = self::getContentsRecursive("$root/$file",$lastModified);
+                $result[$file] = self::getContentsRecursive("$root/$file", $lastModified);
             }
             return $result;
         } else {

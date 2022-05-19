@@ -29,10 +29,10 @@ class AsciiTable {
             if ($inputCels[$i] instanceof AsciiCel) {
                 $cels[] = $inputCels[$i];
             } else {
-                $cels[] = new AsciiCel($inputCels[$i],isset($this->styles[$i])?$this->styles[$i]:$this->options);
+                $cels[] = new AsciiCel($inputCels[$i], isset($this->styles[$i])?$this->styles[$i]:$this->options);
             }
         }
-        $row = new AsciiRow($this->options,$this->styles,...$cels);
+        $row = new AsciiRow($this->options, $this->styles, ...$cels);
         $this->rows[] = $row;
 
         $this->toString();
@@ -53,7 +53,7 @@ class AsciiTable {
             }
         }
         if ($countLines) {
-            $tmp = preg_split('/\n/',$result);
+            $tmp = preg_split('/\n/', $result);
             $length = count($tmp);
             $result = "";
 
@@ -68,7 +68,7 @@ class AsciiTable {
                 $rowNumber++;
                 $this->globalRowNumber++;
             }
-            $result = implode("\n",$tmp);
+            $result = implode("\n", $tmp);
         }
         return $result;
     }
@@ -98,7 +98,7 @@ class AsciiTable {
                 if (($cel = $this->rows[$j]->getCel($i))) {
                     $width = $widestCelWidth - $cel->getWidth();
                     if ($width > 0) {
-                        $this->rows[$j]->extendCelBy($i,$width);
+                        $this->rows[$j]->extendCelBy($i, $width);
                     }
                 }
             }

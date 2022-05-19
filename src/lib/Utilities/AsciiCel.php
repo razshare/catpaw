@@ -23,19 +23,19 @@ class AsciiCel {
     public function &getOptions():array {
         return $this->options;
     }
-    public function __construct(string $data,array $options = []) {
-        $data = \preg_replace("/\\t/",\str_repeat(" ",4),$data);
+    public function __construct(string $data, array $options = []) {
+        $data = \preg_replace("/\\t/", \str_repeat(" ", 4), $data);
         $this->originalString = $data;
         foreach ($options as $key => &$value) {
             $this->options[$key] = $value;
         }
         $this->parseOptions();
         $this->data = [];
-        $lines = preg_split('/\n/',$data);
+        $lines = preg_split('/\n/', $data);
         
         for ($i = 0,$end = count($lines) - 1;$i <= $end;$i++) {
             if ($this->options["width"] < strlen($lines[$i])) {
-                $lines[$i] = str_split($lines[$i],$this->options["width"]);
+                $lines[$i] = str_split($lines[$i], $this->options["width"]);
             }
         }
 
@@ -108,46 +108,46 @@ class AsciiCel {
             }
         }
         
-        $this->top = str_repeat("-",$this->width);
-        $this->bottom = str_repeat("-",$this->width);
-        $this->empty = str_repeat(" ",$this->width);
+        $this->top = str_repeat("-", $this->width);
+        $this->bottom = str_repeat("-", $this->width);
+        $this->empty = str_repeat(" ", $this->width);
 
-        $this->insertLineInTmp($this->top,$tmp,"+",true,true);
+        $this->insertLineInTmp($this->top, $tmp, "+", true, true);
         for ($j = 0;$j < $this->options["padding-top"];$j++) {
-            $this->insertLineInTmp($this->empty,$tmp,"|",true,true);
+            $this->insertLineInTmp($this->empty, $tmp, "|", true, true);
         }
         for ($i = 0;$i < $length;$i++) {
             for ($j = 0;$j < $this->options["padding-between-lines-top"];$j++) {
-                $this->insertLineInTmp($this->empty,$tmp,"|",true,true);
+                $this->insertLineInTmp($this->empty, $tmp, "|", true, true);
             }
-            $this->insertLineInTmp($this->data[$i],$tmp);
+            $this->insertLineInTmp($this->data[$i], $tmp);
             for ($j = 0;$j < $this->options["padding-between-lines-bottom"];$j++) {
-                $this->insertLineInTmp($this->empty,$tmp,"|",true,true);
+                $this->insertLineInTmp($this->empty, $tmp, "|", true, true);
             }
         }
         for ($j = 0;$j < $this->options["padding-bottom"];$j++) {
-            $this->insertLineInTmp($this->empty,$tmp,"|",true,true);
+            $this->insertLineInTmp($this->empty, $tmp, "|", true, true);
         }
-        $this->insertLineInTmp($this->bottom,$tmp,"+",true,true);
+        $this->insertLineInTmp($this->bottom, $tmp, "+", true, true);
         return $tmp;
     }
 
     private function insertLineInTmp(string $data, array &$tmp, string $sideString = "|", bool $extendFirstCharacter = false, bool $extendRightCharacter = false):void {
-        if (\preg_match("/\\n/",$data)) {
-            $split = preg_split("/\\n/",$data);
+        if (\preg_match("/\\n/", $data)) {
+            $split = preg_split("/\\n/", $data);
             foreach ($split as &$extraRowData) {
-                $this->insertLineInTmp($extraRowData,$tmp,$sideString,$extendFirstCharacter,$extendRightCharacter);
+                $this->insertLineInTmp($extraRowData, $tmp, $sideString, $extendFirstCharacter, $extendRightCharacter);
             }
             return;
         }
-        $paddingLeft = str_repeat(isset($data[0]) && $extendFirstCharacter?$data[0]:" ",$this->options["padding-left"]);
-        $paddingRight = str_repeat(isset($data[-1]) && $extendRightCharacter?$data[-1]:" ",$this->options["padding-right"]);
+        $paddingLeft = str_repeat(isset($data[0]) && $extendFirstCharacter?$data[0]:" ", $this->options["padding-left"]);
+        $paddingRight = str_repeat(isset($data[-1]) && $extendRightCharacter?$data[-1]:" ", $this->options["padding-right"]);
         $len = strlen($data);
         if ($len > $this->width) {
             $this->width = $len;
         } else {
             if ($len < $this->width) {
-                $data .= str_repeat(" ",$this->width - $len);
+                $data .= str_repeat(" ", $this->width - $len);
             }
         }
         $tmp[] = $sideString.$paddingLeft.$data.$paddingRight.$sideString;

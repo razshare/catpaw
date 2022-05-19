@@ -87,9 +87,9 @@ class AttributeLoader {
         return new LazyPromise(function() use ($namespace) {
             $this->finder->setAppRoot($this->location);
             $classnames = yield $this->finder->getClassesInNamespace(
-				$namespace,
-				fn(string $dirname) => new LazyPromise(fn() => yield $this->loadClassesFromNamespace("$namespace\\$dirname"))
-			);
+                $namespace,
+                fn(string $dirname) => new LazyPromise(fn() => yield $this->loadClassesFromNamespace("$namespace\\$dirname"))
+            );
             foreach ($classnames as $classname) {
                 yield Factory::create($classname);
             }
@@ -127,7 +127,7 @@ class AttributeLoader {
      * @throws Exception
      */
     public function getNamespaceDirectories(string $namespace): array {
-        $namespace = preg_replace('/\\\\+(?=$)/', '', str_replace("\\\\","\\",$namespace));
+        $namespace = preg_replace('/\\\\+(?=$)/', '', str_replace("\\\\", "\\", $namespace));
         return $this->finder->getNamespaceDirectories($namespace) ?? [];
     }
 

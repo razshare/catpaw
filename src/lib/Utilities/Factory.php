@@ -140,10 +140,10 @@ class Factory {
     }
 
     public static function dependencies(
-		ReflectionFunction|ReflectionMethod $reflection,
-		array                               &$parameters,
-		mixed                               $http = false
-	): Promise {
+        ReflectionFunction|ReflectionMethod $reflection,
+        array &$parameters,
+        mixed $http = false
+    ): Promise {
         return new LazyPromise(function() use ($reflection, &$parameters, $http) {
             if ($http) {
                 $method = $http->request->getMethod();
@@ -184,13 +184,13 @@ class Factory {
                 }
 
                 if (
-					"string" !== $cname
-					& "int" !== $cname
-					& "float" !== $cname
-					& "bool" !== $cname
-					& "array" !== $cname
-					& "" !== $cname
-				) {
+                    "string" !== $cname
+                    & "int" !== $cname
+                    & "float" !== $cname
+                    & "bool" !== $cname
+                    & "array" !== $cname
+                    & "" !== $cname
+                ) {
                     $parameters[$i] = yield Factory::create($cname);
                 }
 
@@ -228,10 +228,10 @@ class Factory {
             $reflection = new ReflectionClass($classname);
 
             if (
-				$reflection->isInterface()
-				|| AttributeResolver::issetClassAttribute($reflection, Attribute::class)
-				|| count($reflection->getAttributes()) === 0
-			) {
+                $reflection->isInterface()
+                || AttributeResolver::issetClassAttribute($reflection, Attribute::class)
+                || count($reflection->getAttributes()) === 0
+            ) {
                 return false;
             }
 

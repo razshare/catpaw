@@ -8,7 +8,7 @@ class AsciiRow {
     private $width = 0;
     private $options;
     private $styles = [];
-    public function __construct(array &$options,array &$styles,AsciiCel ...$cels) {
+    public function __construct(array &$options, array &$styles, AsciiCel ...$cels) {
         $this->options = $options;
         $this->styles = $styles;
         $this->cels = $cels;
@@ -47,7 +47,7 @@ class AsciiRow {
         return $this->width;
     }
 
-    public function extendCelBy(int $index,int $width):void {
+    public function extendCelBy(int $index, int $width):void {
         $tmp = $this->cels[$index]->increaseWidth($width);
     }
 
@@ -56,7 +56,7 @@ class AsciiRow {
     }
     public function getCel(int $index):AsciiCel {
         if (!isset($this->cels[$index])) {
-            $this->cels[$index] = new AsciiCel("",$this->options);
+            $this->cels[$index] = new AsciiCel("", $this->options);
         }
         return $this->cels[$index];
     }
@@ -69,10 +69,10 @@ class AsciiRow {
             $numberOfLines = count($this->cels[$j]->getLines());
             if ($numberOfLines < $this->height) {
                 $this->cels[$j] = new AsciiCel(
-                                    $this->cels[$j]->getOriginalString()
-                                    .str_repeat("\n",$this->height - $numberOfLines)
-                                    ,$this->cels[$j]->getOPtions()
-                                );
+                    $this->cels[$j]->getOriginalString()
+                                    .str_repeat("\n", $this->height - $numberOfLines),
+                    $this->cels[$j]->getOPtions()
+                );
             }
         }
 
@@ -85,7 +85,7 @@ class AsciiRow {
                     $wholeLines[$i] = '';
                 }
                 if (isset($lines[$i])) {
-                    $wholeLines[$i] .= '' === $wholeLines[$i]?$lines[$i]:\substr($lines[$i],1);
+                    $wholeLines[$i] .= '' === $wholeLines[$i]?$lines[$i]:\substr($lines[$i], 1);
                 }
             }
         }
@@ -94,6 +94,6 @@ class AsciiRow {
     }
 
     public function toString():string {
-        return implode("\n",$this->getLines());
+        return implode("\n", $this->getLines());
     }
 }

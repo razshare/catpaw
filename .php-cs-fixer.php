@@ -19,6 +19,15 @@ return $config
         'compact_nullable_typehint' => true,
         'concat_space' => ['spacing' => 'none'],
         'control_structure_continuation_position' => ['position' => 'same_line'],
+        'function_declaration' => ['closure_function_spacing' => 'none','trailing_comma_single_line' => true],
+        'function_typehint_space' => true,
+        'heredoc_indentation' => true,
+        'indentation_type' => true,
+        'list_syntax' => true,
+        'method_argument_space' => ['after_heredoc' => false,'keep_multiple_spaces_after_comma' => false,'on_multiline' => 'ensure_fully_multiline'],
+        'method_chaining_indentation' => true,
+        'native_function_type_declaration_casing' => true,
+        'no_spaces_after_function_name' => true,
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
         'phpdoc_align' => ['align' => 'vertical'],
         'phpdoc_indent' => true,
@@ -26,8 +35,9 @@ return $config
         'phpdoc_scalar' => ['types' => []],
         'yoda_style' => ['always_move_variable' => true,'equal' => true,'identical' => true,'less_and_greater' => false],
     ])
-    ->setFinder(PhpCsFixer\Finder::create()
-        ->exclude('vendor')
-        ->in(__DIR__)
+    ->setFinder(
+        PhpCsFixer\Finder::create()
+            ->exclude('vendor')
+            ->in(__DIR__)
     )
 ;

@@ -32,9 +32,11 @@ abstract class Strings {
         if (preg_match('/^win/i', PHP_OS)) {
             $vbscript = sys_get_temp_dir().'prompt_password.vbs';
             file_put_contents(
-				$vbscript, 'wscript.echo(InputBox("'
-				.addslashes($prompt)
-				.'", "", "password here"))');
+                $vbscript,
+                'wscript.echo(InputBox("'
+                .addslashes($prompt)
+                .'", "", "password here"))'
+            );
             $command = "cscript //nologo ".escapeshellarg($vbscript);
             $password = rtrim(shell_exec($command));
             unlink($vbscript);
@@ -45,8 +47,8 @@ abstract class Strings {
                 return null;
             }
             $command = "/usr/bin/env bash -c 'read -s -p \""
-				.addslashes($prompt)
-				."\" mypassword && echo \$mypassword'";
+                .addslashes($prompt)
+                ."\" mypassword && echo \$mypassword'";
             $password = rtrim(shell_exec($command));
             echo "\n";
         }
@@ -74,15 +76,15 @@ abstract class Strings {
                 if (in_array($order[$i], $accepted)) {
                     $type = $order[$i];
                     switch ($order[$i]) {
-						case "deflate":
-							$data = gzdeflate($data);
-							break;
-						case "gzip":
-							$data = gzcompress($data);
-							break;
-						default:
-							return false;
-					}
+                        case "deflate":
+                            $data = gzdeflate($data);
+                            break;
+                        case "gzip":
+                            $data = gzcompress($data);
+                            break;
+                        default:
+                            return false;
+                    }
                     return true;
                 }
             }
@@ -97,15 +99,23 @@ abstract class Strings {
      */
     public static function escapeJs(string $content): string {
         return
-			preg_replace(self::PATTERN_JS_ESCAPE_LEFT_START, "&lt;",
-				preg_replace(self::PATTERN_JS_ESCAPE_LEFT_END, "&lt;/",
-					preg_replace(self::PATTERN_JS_ESCAPE_RIGHT_END, "&gt;",
-						preg_replace(self::PATTERN_JS_ESCAPE_RIGHT_START1, "&gt;",
-							preg_replace(self::PATTERN_JS_ESCAPE_RIGHT_START2, "&gt;", $content)
-						)
-					)
-				)
-			);
+            preg_replace(
+                self::PATTERN_JS_ESCAPE_LEFT_START,
+                "&lt;",
+                preg_replace(
+                    self::PATTERN_JS_ESCAPE_LEFT_END,
+                    "&lt;/",
+                    preg_replace(
+                        self::PATTERN_JS_ESCAPE_RIGHT_END,
+                        "&gt;",
+                        preg_replace(
+                            self::PATTERN_JS_ESCAPE_RIGHT_START1,
+                            "&gt;",
+                            preg_replace(self::PATTERN_JS_ESCAPE_RIGHT_START2, "&gt;", $content)
+                        )
+                    )
+                )
+            );
     }
 
     /**
@@ -144,24 +154,28 @@ abstract class Strings {
      * @return string the uuid.
      */
     public static function uuid(): string {
-        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-			// 32 bits for "time_low"
-			mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            // 32 bits for "time_low"
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
 
-			// 16 bits for "time_mid"
-			mt_rand(0, 0xffff),
+            // 16 bits for "time_mid"
+            mt_rand(0, 0xffff),
 
-			// 16 bits for "time_hi_and_version",
-			// four most significant bits holds version number 4
-			mt_rand(0, 0x0fff) | 0x4000,
+            // 16 bits for "time_hi_and_version",
+            // four most significant bits holds version number 4
+            mt_rand(0, 0x0fff) | 0x4000,
 
-			// 16 bits, 8 bits for "clk_seq_hi_res",
-			// 8 bits for "clk_seq_low",
-			// two most significant bits holds zero and one for variant DCE1.1
-			mt_rand(0, 0x3fff) | 0x8000,
+            // 16 bits, 8 bits for "clk_seq_hi_res",
+            // 8 bits for "clk_seq_low",
+            // two most significant bits holds zero and one for variant DCE1.1
+            mt_rand(0, 0x3fff) | 0x8000,
 
-			// 48 bits for "node"
-			mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-		);
+            // 48 bits for "node"
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
     }
 }

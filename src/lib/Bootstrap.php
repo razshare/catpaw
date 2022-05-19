@@ -181,10 +181,10 @@ class Bootstrap {
 
             if ($config->watch["enabled"]) {
                 self::watch(
-					entryFileName: $filename,
-					dirs         : $dirs,
-					sleep        : $config->watch["sleep"]
-				);
+                    entryFileName: $filename,
+                    dirs         : $dirs,
+                    sleep        : $config->watch["sleep"]
+                );
             }
 
 
