@@ -23,6 +23,13 @@
       "@php ./vendor/bin/php-cs-fixer fix tests"
     ]
   },
+  "autoload": {
+    "psr-4": {
+      "CatPaw\\": [
+        "src/lib/"
+      ]
+    }
+  },
   "require": {
     "php": "^8.0",
     "amphp/amp": "^2.6",
@@ -35,18 +42,16 @@
     "ext-openssl": "*",
     "ext-zlib": "*"
   },
+  "autoload-dev":{
+    "psr-4":{
+      "Tests\\": "tests/"
+    }
+  },
   "require-dev":{
     "phpunit/phpunit": "^9.5",
     "friendsofphp/php-cs-fixer": "^3.8"
   },
   "config": {
     "preferred-install": "dist"
-  },
-  "autoload": {
-    "psr-4": {
-      "CatPaw\\": [
-        "src/lib/"
-      ]
-    }
   }
 }
