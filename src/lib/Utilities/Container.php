@@ -76,7 +76,6 @@ class Container {
         ReflectionFunction|ReflectionMethod $reflection,
         string $key1,
         string $key2,
-        array $defaultParameters
     ): void {
         if (!isset(self::$cache[$key1])) {
             self::$cache[$key1] = [];
@@ -108,7 +107,7 @@ class Container {
                 }
 
                 $cache[self::PARAMETERS_CNAMES][$i] = $cname;
-                $parameters[$i] = isset($defaultParameters[$i]) ? $defaultParameters[$i] : ($refparams[$i]->isOptional() ? $refparams[$i]->getDefaultValue() : false);
+                $parameters[$i] = $refparams[$i]->isOptional() ? $refparams[$i]->getDefaultValue() : false;
                 $cache[self::PARAMETERS_INIT_VALUE][$i] = $parameters[$i];
                 $attributes = $refparams[$i]->getAttributes();
                 $alen = count($attributes);
@@ -135,15 +134,14 @@ class Container {
 
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
-        array $defaultParameters = [],
-        mixed $http = false
+        mixed $http = false,
     ): Promise {
-        return call(function() use ($reflection, &$defaultParameters, $http) {
+        return call(function() use ($reflection, $http) {
             if ($http) {
                 $method = $http->request->getMethod();
                 $path = $http->request->getUri()->getPath();
                 if (!isset(self::$cache[$method][$path])) {
-                    self::cacheInMethodOrFunctionDependencies($reflection, $method, $path, $defaultParameters);
+                    self::cacheInMethodOrFunctionDependencies($reflection, $method, $path);
                 }
                 $cache = &self::$cache[$method][$path];
             } else {
@@ -154,7 +152,7 @@ class Container {
                     $functionName = $class->getName().':'.$functionName;
                 }
                 if (!isset(self::$cache[$fileName][$functionName])) {
-                    self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName, $defaultParameters);
+                    self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName);
                 }
                 $cache = &self::$cache[$fileName][$functionName];
             }
@@ -231,8 +229,8 @@ class Container {
      * @param  string          $className full name of the class.
      * @return Promise<object>
      */
-    public static function create(string $className, ...$defaultArguments): Promise {
-        return call(function() use ($className, $defaultArguments) {
+    public static function create(string $className): Promise {
+        return call(function() use ($className) {
             if (self::$singletons[$className] ?? false) {
                 return self::$singletons[$className];
             }
@@ -251,8 +249,9 @@ class Container {
             $singleton = yield Singleton::findByClass($reflection);
 
             $constructor = $reflection->getConstructor() ?? false;
+            $arguments = [];
             if ($constructor) {
-                $arguments = yield self::dependencies($constructor, $defaultArguments);
+                $arguments = yield self::dependencies($constructor);
             }
             
             $instance = new $className(...$arguments);
