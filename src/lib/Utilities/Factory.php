@@ -129,7 +129,7 @@ class Factory {
                 }
 
                 $cache[self::PARAMETERS_CNAMES][$i] = $cname;
-                $parameters[$i] = $refparams[$i]->isOptional() ? $refparams[$i]->getDefaultValue() : $defaultParameters[$i] ?? false;
+                $parameters[$i] = $defaultParameters[$i] ?? $refparams[$i]->isOptional() ? $refparams[$i]->getDefaultValue() : false;
                 $cache[self::PARAMETERS_INIT_VALUE][$i] = $parameters[$i];
                 $attributes = $refparams[$i]->getAttributes();
                 $alen = count($attributes);
