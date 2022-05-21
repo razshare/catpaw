@@ -223,7 +223,7 @@ class Container {
             }
 
             $arguments = yield Container::dependencies($reflection, $defaultArguments);
-            yield call($function(...$arguments));
+            yield call($function, ...$arguments);
         });
     }
 
