@@ -42,19 +42,18 @@ trait CoreAttributeDefinition {
                 return false;
             }
 
-            $args = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
+            $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
 
             /** @var ReflectionClass $i */
             /** @var ReflectionMethod $entry */
             [$klass, $entry] = static::entry();
-            $object = $klass->newInstance(...$args);
+            $object = $klass->newInstance(...$attributeArguments);
             if ($entry) {
-                $parameters = [];
-                yield Container::dependencies($entry, $parameters);
-                yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
+                $arguments = yield Container::dependencies($entry);
+                yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
             }
 
-            return $object ?? false;
+            return $instance ?? false;
         });
     }
 
@@ -67,19 +66,18 @@ trait CoreAttributeDefinition {
             if (!AttributeResolver::issetMethodAttribute($reflectionMethod, static::class)) {
                 return false;
             }
-            $args = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
+            $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
 
             /** @var ReflectionClass $i */
             /** @var ReflectionMethod $entry */
             [$klass, $entry] = static::entry();
-            $object = $klass->newInstance(...$args);
+            $instance = $klass->newInstance(...$attributeArguments);
             if ($entry) {
-                $parameters = [];
-                yield Container::dependencies($entry, $parameters);
-                yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
+                $arguments = yield Container::dependencies($entry);
+                yield \Amp\call(fn() => $entry->invoke($instance, ...$arguments));
             }
 
-            return $object ?? false;
+            return $instance ?? false;
         });
     }
 
@@ -92,19 +90,18 @@ trait CoreAttributeDefinition {
             if (!AttributeResolver::issetClassAttribute($reflectionClass, static::class)) {
                 return false;
             }
-            $args = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
+            $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
 
             /** @var ReflectionClass $i */
             /** @var ReflectionMethod $entry */
             [$klass, $entry] = static::entry();
-            $object = $klass->newInstance(...$args);
+            $object = $klass->newInstance(...$attributeArguments);
             if ($entry) {
-                $parameters = [];
-                yield Container::dependencies($entry, $parameters);
-                yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
+                $arguments = yield Container::dependencies($entry);
+                yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
             }
 
-            return $object ?? false;
+            return $instance ?? false;
         });
     }
 
@@ -117,19 +114,18 @@ trait CoreAttributeDefinition {
             if (!AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class)) {
                 return false;
             }
-            $args = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
+            $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
 
             /** @var ReflectionClass $i */
             /** @var ReflectionMethod $entry */
             [$klass, $entry] = static::entry();
-            $object = $klass->newInstance(...$args);
+            $object = $klass->newInstance(...$attributeArguments);
             if ($entry) {
-                $parameters = [];
-                yield Container::dependencies($entry, $parameters);
-                yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
+                $arguments = yield Container::dependencies($entry);
+                yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
             }
 
-            return $object ?? false;
+            return $instance ?? false;
         });
     }
 
@@ -142,19 +138,18 @@ trait CoreAttributeDefinition {
             if (!AttributeResolver::issetParameterAttribute($reflectionParameter, static::class)) {
                 return false;
             }
-            $args = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
+            $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
 
             /** @var ReflectionClass $i */
             /** @var ReflectionMethod $entry */
             [$klass, $entry] = static::entry();
-            $object = $klass->newInstance(...$args);
+            $object = $klass->newInstance(...$attributeArguments);
             if ($entry) {
-                $parameters = [];
-                yield Container::dependencies($entry, $parameters);
-                yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
+                $arguments = yield Container::dependencies($entry);
+                yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
             }
 
-            return $object ?? false;
+            return $instance ?? false;
         });
     }
 

@@ -72,20 +72,6 @@ class Bootstrap {
 
 
     /**
-     * @param MainConfiguration  $config
-     * @param ReflectionFunction $main
-     *
-     * @return Promise
-     */
-    private static function args(MainConfiguration $config, ReflectionFunction $main): Promise {
-        return call(function() use ($config, $main) {
-            $args = [];
-            yield Container::dependencies($main, $args, false);
-            return $args;
-        });
-    }
-
-    /**
      * @throws ReflectionException
      */
     private static function entry(string $className): array|false {
@@ -120,20 +106,17 @@ class Bootstrap {
             $main = new ReflectionFunction('main');
 
             foreach ($main->getAttributes() as $attribute) {
-                $args = $attribute->getArguments();
+                $attributeArguments = $attribute->getArguments();
                 $className = $attribute->getName();
                 /** @var ReflectionFunction $entry */
                 [$klass, $entry] = self::entry($className);
-                $object = $klass->newInstance(...$args);
+                $object = $klass->newInstance(...$attributeArguments);
                 if ($entry) {
-                    $parameters = [];
-                    yield Container::dependencies($entry, $parameters);
-                    yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
+                    $arguments = yield Container::dependencies($entry);
+                    yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
                 }
             }
-
-            $args = yield self::args($config, $main);
-            yield \Amp\call(fn() => $main->invoke(...$args));
+            yield Container::run($main);
         } else {
             die(Strings::red("Could not find php entry file \"$filename\".\n"));
         }
