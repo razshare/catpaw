@@ -45,27 +45,24 @@ class Container {
     /**
      * @throws ReflectionException
      */
-    private static function entry(array $methods, mixed $instance) {
-        /** @var ReflectionMethod $method */
-        foreach ($methods as $method) {
-            $entry = yield Entry::findByMethod($method);
-            if ($entry) {
-                if ($method instanceof ReflectionMethod) {
-                    $args = [];
-                    $i = 0;
-                    foreach ($method->getParameters() as $parameter) {
-                        $args[$i] = yield Container::create($parameter->getType()->getName());
-                        $i++;
+    public static function entry(mixed $instance, array $methods) {
+        return call(function() use ($methods, $instance) {
+            /** @var ReflectionMethod $method */
+            foreach ($methods as $method) {
+                $entry = yield Entry::findByMethod($method);
+                if ($entry) {
+                    if ($method instanceof ReflectionMethod) {
+                        $args = yield Container::dependencies($method);
+                        if ($method->isStatic()) {
+                            yield \Amp\call(fn() => $method->invoke(null, ...$args));
+                        } else {
+                            yield \Amp\call(fn() => $method->invoke($instance, ...$args));
+                        }
+                        break;
                     }
-                    if ($method->isStatic()) {
-                        yield \Amp\call(fn() => $method->invoke(null, ...$args));
-                    } else {
-                        yield \Amp\call(fn() => $method->invoke($instance, ...$args));
-                    }
-                    break;
                 }
             }
-        }
+        });
     }
 
 
@@ -264,7 +261,7 @@ class Container {
                 self::$singletons[$className] = $instance;
             }
 
-            yield from self::entry($reflection->getMethods(), $instance);
+            yield self::entry($instance, $reflection->getMethods());
 
             return $instance ?? false;
         });

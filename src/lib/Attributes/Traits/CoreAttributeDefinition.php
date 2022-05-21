@@ -43,16 +43,9 @@ trait CoreAttributeDefinition {
             }
 
             $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
-
-            /** @var ReflectionClass $i */
-            /** @var ReflectionMethod $entry */
-            [$klass, $entry] = static::entry();
-            $object = $klass->newInstance(...$attributeArguments);
-            if ($entry) {
-                $arguments = yield Container::dependencies($entry);
-                yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
-            }
-
+            $klass = new ReflectionClass(static::class);
+            $instance = $klass->newInstance(...$attributeArguments);
+            yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
     }
@@ -67,16 +60,9 @@ trait CoreAttributeDefinition {
                 return false;
             }
             $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
-
-            /** @var ReflectionClass $i */
-            /** @var ReflectionMethod $entry */
-            [$klass, $entry] = static::entry();
+            $klass = new ReflectionClass(static::class);
             $instance = $klass->newInstance(...$attributeArguments);
-            if ($entry) {
-                $arguments = yield Container::dependencies($entry);
-                yield \Amp\call(fn() => $entry->invoke($instance, ...$arguments));
-            }
-
+            yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
     }
@@ -91,16 +77,9 @@ trait CoreAttributeDefinition {
                 return false;
             }
             $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
-
-            /** @var ReflectionClass $i */
-            /** @var ReflectionMethod $entry */
-            [$klass, $entry] = static::entry();
-            $object = $klass->newInstance(...$attributeArguments);
-            if ($entry) {
-                $arguments = yield Container::dependencies($entry);
-                yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
-            }
-
+            $klass = new ReflectionClass(static::class);
+            $instance = $klass->newInstance(...$attributeArguments);
+            yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
     }
@@ -115,16 +94,9 @@ trait CoreAttributeDefinition {
                 return false;
             }
             $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
-
-            /** @var ReflectionClass $i */
-            /** @var ReflectionMethod $entry */
-            [$klass, $entry] = static::entry();
-            $object = $klass->newInstance(...$attributeArguments);
-            if ($entry) {
-                $arguments = yield Container::dependencies($entry);
-                yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
-            }
-
+            $klass = new ReflectionClass(static::class);
+            $instance = $klass->newInstance(...$attributeArguments);
+            yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
     }
@@ -139,16 +111,9 @@ trait CoreAttributeDefinition {
                 return false;
             }
             $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
-
-            /** @var ReflectionClass $i */
-            /** @var ReflectionMethod $entry */
-            [$klass, $entry] = static::entry();
-            $object = $klass->newInstance(...$attributeArguments);
-            if ($entry) {
-                $arguments = yield Container::dependencies($entry);
-                yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
-            }
-
+            $klass = new ReflectionClass(static::class);
+            $instance = $klass->newInstance(...$attributeArguments);
+            yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
     }
