@@ -32,10 +32,21 @@ class Factory {
         self::$singletons[$className] = $object;
     }
 
+    /**
+     * @deprecated use Factory::create instead
+     * @param  string       $className
+     * @param  null|Closure $args
+     * @return void
+     */
     public static function setConstructorInjector(string $className, ?Closure $args = null): void {
         self::$args[$className] = $args;
     }
 
+    /**
+     * @deprecated along with `Factory::setConstructorInjector`.
+     * @param  string  $className
+     * @return Closure
+     */
     public static function getConstructorInjector(string $className): Closure {
         if (!isset(self::$args[$className])) {
             return fn() => [];
