@@ -156,7 +156,7 @@ class Factory {
 
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
-        array $defaultParameters,
+        array $defaultParameters = [],
         mixed $http = false
     ): Promise {
         return call(function() use ($reflection, &$defaultParameters, $http) {
