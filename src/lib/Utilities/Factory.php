@@ -225,6 +225,8 @@ class Factory {
                     }
                 }
             }
+            
+            return $parameters;
         });
     }
 
