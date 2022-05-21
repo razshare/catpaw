@@ -2,7 +2,7 @@
 
 namespace CatPaw\Utilities;
 
-use Amp\LazyPromise;
+use function Amp\call;
 use Amp\Promise;
 use Closure;
 use Exception;
@@ -16,7 +16,7 @@ class ClassFinder {
     }
 
     public function getClassesInNamespace(string $namespace, Closure $onSubDir = null): Promise {
-        return new LazyPromise(function() use ($namespace, $onSubDir) {
+        return call(function() use ($namespace, $onSubDir) {
             $namespace = preg_replace('/\\\\+(?=$)/', '', str_replace("\\\\", "\\", $namespace));
             $dirs = $this->getNamespaceDirectories($namespace);
             $results = [];

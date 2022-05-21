@@ -2,13 +2,12 @@
 
 namespace CatPaw\Attributes\Traits;
 
-use Amp\LazyPromise;
+use function Amp\call;
 use Amp\Promise;
 use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Factory;
 use Closure;
-use Generator;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -38,7 +37,7 @@ trait CoreAttributeDefinition {
      * @return Promise
      */
     public static function findByFunction(ReflectionFunction $reflectionFunction): Promise {
-        return new LazyPromise(function() use ($reflectionFunction) {
+        return call(function() use ($reflectionFunction) {
             if (!AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class)) {
                 return false;
             }
@@ -64,7 +63,7 @@ trait CoreAttributeDefinition {
      * @return Promise
      */
     public static function findByMethod(ReflectionMethod $reflectionMethod): Promise {
-        return new LazyPromise(function() use ($reflectionMethod) {
+        return call(function() use ($reflectionMethod) {
             if (!AttributeResolver::issetMethodAttribute($reflectionMethod, static::class)) {
                 return false;
             }
@@ -89,7 +88,7 @@ trait CoreAttributeDefinition {
      * @return Promise
      */
     public static function findByClass(ReflectionClass $reflectionClass): Promise {
-        return new LazyPromise(function() use ($reflectionClass) {
+        return call(function() use ($reflectionClass) {
             if (!AttributeResolver::issetClassAttribute($reflectionClass, static::class)) {
                 return false;
             }
@@ -114,7 +113,7 @@ trait CoreAttributeDefinition {
      * @return Promise
      */
     public static function findByProperty(ReflectionProperty $reflectionProperty): Promise {
-        return new LazyPromise(function() use ($reflectionProperty) {
+        return call(function() use ($reflectionProperty) {
             if (!AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class)) {
                 return false;
             }
@@ -139,7 +138,7 @@ trait CoreAttributeDefinition {
      * @return Promise
      */
     public static function findByParameter(ReflectionParameter $reflectionParameter): Promise {
-        return new LazyPromise(function() use ($reflectionParameter) {
+        return call(function() use ($reflectionParameter) {
             if (!AttributeResolver::issetParameterAttribute($reflectionParameter, static::class)) {
                 return false;
             }
@@ -160,10 +159,10 @@ trait CoreAttributeDefinition {
     }
 
     public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $http): Promise {
-        return new LazyPromise(fn() => true);
+        return call(fn() => true);
     }
 
     public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $route): Promise {
-        return new LazyPromise(fn() => true);
+        return call(fn() => true);
     }
 }

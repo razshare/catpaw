@@ -4,7 +4,6 @@ namespace CatPaw;
 
 use function Amp\ByteStream\getStdout;
 use function Amp\call;
-use Amp\LazyPromise;
 use Amp\Log\ConsoleFormatter;
 use Amp\Log\StreamHandler;
 use Amp\Loop;
@@ -79,7 +78,7 @@ class Bootstrap {
      * @return Promise
      */
     private static function args(MainConfiguration $config, ReflectionFunction $main): Promise {
-        return new LazyPromise(function() use ($config, $main) {
+        return call(function() use ($config, $main) {
             $args = [];
             yield Factory::dependencies($main, $args, false);
             return $args;
@@ -89,8 +88,8 @@ class Bootstrap {
     /**
      * @throws ReflectionException
      */
-    private static function entry(string $classname): array|false {
-        $i = new ReflectionClass($classname);
+    private static function entry(string $className): array|false {
+        $i = new ReflectionClass($className);
         foreach ($i->getMethods() as $method) {
             if (($attributes = $method->getAttributes(Entry::class))) {
                 if (count($attributes) > 0) {
@@ -122,9 +121,9 @@ class Bootstrap {
 
             foreach ($main->getAttributes() as $attribute) {
                 $args = $attribute->getArguments();
-                $classname = $attribute->getName();
+                $className = $attribute->getName();
                 /** @var ReflectionFunction $entry */
-                [$klass, $entry] = self::entry($classname);
+                [$klass, $entry] = self::entry($className);
                 $object = $klass->newInstance(...$args);
                 if ($entry) {
                     $parameters = [];

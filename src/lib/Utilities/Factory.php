@@ -2,9 +2,9 @@
 
 namespace CatPaw\Utilities;
 
+use function Amp\call;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
-use Amp\LazyPromise;
 use Amp\Promise;
 use Attribute;
 use CatPaw\Attributes\AttributeResolver;
@@ -12,35 +12,35 @@ use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 use Closure;
-use Generator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionUnionType;
+
 use SplFixedArray;
 
 class Factory {
     private static array $singletons = [];
     private static array $args = [];
 
-    public static function isset(string $classname): bool {
-        return isset(self::$singletons[$classname]);
+    public static function isset(string $className): bool {
+        return isset(self::$singletons[$className]);
     }
 
-    public static function setObject(string $classname, mixed $object): void {
-        self::$singletons[$classname] = $object;
+    public static function setObject(string $className, mixed $object): void {
+        self::$singletons[$className] = $object;
     }
 
-    public static function setConstructorInjector(string $classname, ?Closure $args = null): void {
-        self::$args[$classname] = $args;
+    public static function setConstructorInjector(string $className, ?Closure $args = null): void {
+        self::$args[$className] = $args;
     }
 
-    public static function getConstructorInjector(string $classname): Closure {
-        if (!isset(self::$args[$classname])) {
+    public static function getConstructorInjector(string $className): Closure {
+        if (!isset(self::$args[$className])) {
             return fn() => [];
         }
-        return self::$args[$classname];
+        return self::$args[$className];
     }
 
     private static array $cache = [];
@@ -82,7 +82,12 @@ class Factory {
     /**
      * @throws ReflectionException
      */
-    private static function cacheInMethodOrFunctionDependencies(ReflectionFunction|ReflectionMethod $reflection, string $key1, string $key2): void {
+    private static function cacheInMethodOrFunctionDependencies(
+        ReflectionFunction|ReflectionMethod $reflection,
+        string $key1,
+        string $key2,
+        array $defaultParameters
+    ): void {
         if (!isset(self::$cache[$key1])) {
             self::$cache[$key1] = [];
         }
@@ -113,8 +118,7 @@ class Factory {
                 }
 
                 $cache[self::PARAMETERS_CNAMES][$i] = $cname;
-
-                $parameters[$i] = $refparams[$i]->isOptional() ? $refparams[$i]->getDefaultValue() : false;
+                $parameters[$i] = $refparams[$i]->isOptional() ? $refparams[$i]->getDefaultValue() : $defaultParameters[$i] ?? false;
                 $cache[self::PARAMETERS_INIT_VALUE][$i] = $parameters[$i];
                 $attributes = $refparams[$i]->getAttributes();
                 $alen = count($attributes);
@@ -141,15 +145,15 @@ class Factory {
 
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
-        array &$parameters,
+        array $defaultParameters,
         mixed $http = false
     ): Promise {
-        return new LazyPromise(function() use ($reflection, &$parameters, $http) {
+        return call(function() use ($reflection, &$defaultParameters, $http) {
             if ($http) {
                 $method = $http->request->getMethod();
                 $path = $http->request->getUri()->getPath();
                 if (!isset(self::$cache[$method][$path])) {
-                    self::cacheInMethodOrFunctionDependencies($reflection, $method, $path);
+                    self::cacheInMethodOrFunctionDependencies($reflection, $method, $path, $defaultParameters);
                 }
                 $cache = &self::$cache[$method][$path];
             } else {
@@ -160,7 +164,7 @@ class Factory {
                     $functionName = $class->getName().':'.$functionName;
                 }
                 if (!isset(self::$cache[$fileName][$functionName])) {
-                    self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName);
+                    self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName, $defaultParameters);
                 }
                 $cache = &self::$cache[$fileName][$functionName];
             }
@@ -216,16 +220,16 @@ class Factory {
     /**
      * Make a new instance of the given class.<br />
      * This method will take care of dependency injections.
-     * @param  string          $classname full name of the class
+     * @param  string          $className full name of the class
      * @return Promise<object>
      */
-    public static function create(string $classname): Promise {
-        return new LazyPromise(function() use ($classname) {
-            if (self::$singletons[$classname] ?? false) {
-                return self::$singletons[$classname];
+    public static function create(string $className, ...$defaultArguments): Promise {
+        return call(function() use ($className, $defaultArguments) {
+            if (self::$singletons[$className] ?? false) {
+                return self::$singletons[$className];
             }
 
-            $reflection = new ReflectionClass($classname);
+            $reflection = new ReflectionClass($className);
 
             if (
                 $reflection->isInterface()
@@ -239,14 +243,14 @@ class Factory {
             $singleton = yield Singleton::findByClass($reflection);
 
             $constructor = $reflection->getConstructor() ?? false;
-            $parameters = [];
             if ($constructor) {
-                yield self::dependencies($constructor, $parameters);
+                $arguments = yield self::dependencies($constructor, $defaultArguments);
             }
-            $instance = new $classname(...$parameters);
+            
+            $instance = new $className(...$arguments);
 
             if ($singleton || $service) {
-                self::$singletons[$classname] = $instance;
+                self::$singletons[$className] = $instance;
             }
 
             yield from self::entry($reflection->getMethods(), $instance);

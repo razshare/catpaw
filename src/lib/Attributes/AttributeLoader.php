@@ -2,11 +2,13 @@
 
 namespace CatPaw\Attributes;
 
+use function Amp\call;
 use Amp\LazyPromise;
 use Amp\Promise;
 use CatPaw\Utilities\BooleanAction;
 use CatPaw\Utilities\ClassFinder;
 use CatPaw\Utilities\Factory;
+
 use Exception;
 
 #[Singleton]
@@ -65,12 +67,12 @@ class AttributeLoader {
      * @return Promise<AttributeLoader> this AttributeLoader
      */
     public function loadSomeClassesFromNamespace(string $namespace, BooleanAction $checkClassname): Promise {
-        return new LazyPromise(function() use ($namespace, $checkClassname) {
+        return call(function() use ($namespace, $checkClassname) {
             $this->finder->setAppRoot($this->location);
             $classnames = $this->finder->getClassesInNamespace($namespace);
-            foreach ($classnames as $classname) {
-                if ($checkClassname->run($classname)) {
-                    yield Factory::create($classname);
+            foreach ($classnames as $className) {
+                if ($checkClassname->run($className)) {
+                    yield Factory::create($className);
                 }
             }
 
@@ -84,14 +86,14 @@ class AttributeLoader {
      * @return Promise<AttributeLoader> this AttributeLoader
      */
     public function loadClassesFromNamespace(string $namespace = ''): Promise {
-        return new LazyPromise(function() use ($namespace) {
+        return call(function() use ($namespace) {
             $this->finder->setAppRoot($this->location);
             $classnames = yield $this->finder->getClassesInNamespace(
                 $namespace,
-                fn(string $dirname) => new LazyPromise(fn() => yield $this->loadClassesFromNamespace("$namespace\\$dirname"))
+                fn(string $dirname) => call(fn() => yield $this->loadClassesFromNamespace("$namespace\\$dirname"))
             );
-            foreach ($classnames as $classname) {
-                yield Factory::create($classname);
+            foreach ($classnames as $className) {
+                yield Factory::create($className);
             }
 
 
