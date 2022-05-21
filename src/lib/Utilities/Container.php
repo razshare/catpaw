@@ -12,6 +12,7 @@ use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 use Closure;
+use Reflection;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
@@ -20,7 +21,7 @@ use ReflectionUnionType;
 
 use SplFixedArray;
 
-class Factory {
+class Container {
     private static array $singletons = [];
     private static array $args = [];
 
@@ -30,28 +31,6 @@ class Factory {
 
     public static function setObject(string $className, mixed $object): void {
         self::$singletons[$className] = $object;
-    }
-
-    /**
-     * @deprecated use Factory::create instead
-     * @param  string       $className
-     * @param  null|Closure $args
-     * @return void
-     */
-    public static function setConstructorInjector(string $className, ?Closure $args = null): void {
-        self::$args[$className] = $args;
-    }
-
-    /**
-     * @deprecated along with `Factory::setConstructorInjector`.
-     * @param  string  $className
-     * @return Closure
-     */
-    public static function getConstructorInjector(string $className): Closure {
-        if (!isset(self::$args[$className])) {
-            return fn() => [];
-        }
-        return self::$args[$className];
     }
 
     private static array $cache = [];
@@ -75,7 +54,7 @@ class Factory {
                     $args = [];
                     $i = 0;
                     foreach ($method->getParameters() as $parameter) {
-                        $args[$i] = yield Factory::create($parameter->getType()->getName());
+                        $args[$i] = yield Container::create($parameter->getType()->getName());
                         $i++;
                     }
                     if ($method->isStatic()) {
@@ -206,7 +185,7 @@ class Factory {
                     & "array" !== $cname
                     & "" !== $cname
                 ) {
-                    $parameters[$i] = yield Factory::create($cname);
+                    $parameters[$i] = yield Container::create($cname);
                 }
 
                 $alen = $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i];
@@ -231,9 +210,25 @@ class Factory {
     }
 
     /**
+     * Inject dependencies into a function and invoke it.
+     * @param  Closure|ReflectionFunction $function
+     * @param  array                      $defaultArguments
+     * @return Promise<void>
+     */
+    public static function run(Closure|ReflectionFunction $function, array $defaultArguments = []):Promise {
+        return call(function() use ($function, $defaultArguments) {
+            if ($function instanceof Closure) {
+                $function = new ReflectionFunction($function);
+            }
+            $arguments = yield Container::dependencies($function, $defaultArguments);
+            yield call($function(...$arguments));
+        });
+    }
+
+    /**
      * Make a new instance of the given class.<br />
      * This method will take care of dependency injections.
-     * @param  string          $className full name of the class
+     * @param  string          $className full name of the class.
      * @return Promise<object>
      */
     public static function create(string $className, ...$defaultArguments): Promise {

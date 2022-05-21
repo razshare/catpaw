@@ -10,8 +10,8 @@ use Amp\Loop;
 use Amp\Promise;
 use CatPaw\Attributes\AttributeLoader;
 use CatPaw\Attributes\Entry;
+use CatPaw\Utilities\Container;
 use CatPaw\Utilities\Dir;
-use CatPaw\Utilities\Factory;
 use CatPaw\Utilities\Strings;
 use Closure;
 use Generator;
@@ -80,7 +80,7 @@ class Bootstrap {
     private static function args(MainConfiguration $config, ReflectionFunction $main): Promise {
         return call(function() use ($config, $main) {
             $args = [];
-            yield Factory::dependencies($main, $args, false);
+            yield Container::dependencies($main, $args, false);
             return $args;
         });
     }
@@ -127,7 +127,7 @@ class Bootstrap {
                 $object = $klass->newInstance(...$args);
                 if ($entry) {
                     $parameters = [];
-                    yield Factory::dependencies($entry, $parameters);
+                    yield Container::dependencies($entry, $parameters);
                     yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
                 }
             }
@@ -148,15 +148,15 @@ class Bootstrap {
                 $logger->pushHandler($handler);
 
                 $this->logger = $logger;
-                Factory::setObject(Logger::class, $logger);
-                Factory::setObject(LoggerInterface::class, $logger);
+                Container::setObject(Logger::class, $logger);
+                Container::setObject(LoggerInterface::class, $logger);
 
                 $this->watch["enabled"] = $watch;
                 $this->watch["sleep"] = $watchSleep;
             }
         };
 
-        Factory::setObject(MainConfiguration::class, $config);
+        Container::setObject(MainConfiguration::class, $config);
 
         set_time_limit(0);
         ob_implicit_flush();

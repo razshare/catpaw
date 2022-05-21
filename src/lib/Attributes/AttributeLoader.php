@@ -7,7 +7,7 @@ use Amp\LazyPromise;
 use Amp\Promise;
 use CatPaw\Utilities\BooleanAction;
 use CatPaw\Utilities\ClassFinder;
-use CatPaw\Utilities\Factory;
+use CatPaw\Utilities\Container;
 
 use Exception;
 
@@ -72,7 +72,7 @@ class AttributeLoader {
             $classnames = $this->finder->getClassesInNamespace($namespace);
             foreach ($classnames as $className) {
                 if ($checkClassname->run($className)) {
-                    yield Factory::create($className);
+                    yield Container::create($className);
                 }
             }
 
@@ -93,7 +93,7 @@ class AttributeLoader {
                 fn(string $dirname) => call(fn() => yield $this->loadClassesFromNamespace("$namespace\\$dirname"))
             );
             foreach ($classnames as $className) {
-                yield Factory::create($className);
+                yield Container::create($className);
             }
 
 

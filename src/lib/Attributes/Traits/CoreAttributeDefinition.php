@@ -6,7 +6,7 @@ use function Amp\call;
 use Amp\Promise;
 use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
-use CatPaw\Utilities\Factory;
+use CatPaw\Utilities\Container;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;
@@ -50,7 +50,7 @@ trait CoreAttributeDefinition {
             $object = $klass->newInstance(...$args);
             if ($entry) {
                 $parameters = [];
-                yield Factory::dependencies($entry, $parameters);
+                yield Container::dependencies($entry, $parameters);
                 yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
             }
 
@@ -75,7 +75,7 @@ trait CoreAttributeDefinition {
             $object = $klass->newInstance(...$args);
             if ($entry) {
                 $parameters = [];
-                yield Factory::dependencies($entry, $parameters);
+                yield Container::dependencies($entry, $parameters);
                 yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
             }
 
@@ -100,7 +100,7 @@ trait CoreAttributeDefinition {
             $object = $klass->newInstance(...$args);
             if ($entry) {
                 $parameters = [];
-                yield Factory::dependencies($entry, $parameters);
+                yield Container::dependencies($entry, $parameters);
                 yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
             }
 
@@ -125,7 +125,7 @@ trait CoreAttributeDefinition {
             $object = $klass->newInstance(...$args);
             if ($entry) {
                 $parameters = [];
-                yield Factory::dependencies($entry, $parameters);
+                yield Container::dependencies($entry, $parameters);
                 yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
             }
 
@@ -150,7 +150,7 @@ trait CoreAttributeDefinition {
             $object = $klass->newInstance(...$args);
             if ($entry) {
                 $parameters = [];
-                yield Factory::dependencies($entry, $parameters);
+                yield Container::dependencies($entry, $parameters);
                 yield \Amp\call(fn() => $entry->invoke($object, ...$parameters));
             }
 
