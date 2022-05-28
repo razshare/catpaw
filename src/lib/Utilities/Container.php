@@ -22,8 +22,8 @@ use ReflectionUnionType;
 use SplFixedArray;
 
 class Container {
+    private static array $cache = [];
     private static array $singletons = [];
-    private static array $args = [];
 
     public static function isset(string $className): bool {
         return isset(self::$singletons[$className]);
@@ -33,7 +33,6 @@ class Container {
         self::$singletons[$className] = $object;
     }
 
-    private static array $cache = [];
     private const PARAMETERS_INIT_VALUE = 0;
     private const REFLECTION_PARAMETERS = 1;
     private const PARAMETERS_LEN = 2;
@@ -41,6 +40,11 @@ class Container {
     private const PARAMETERS_ATTRIBUTES_LEN = 4;
     private const PARAMETERS_ATTRIBUTES_CLOSURES = 5;
     private const PARAMETERS_ATTRIBUTES_HAVE_STORAGE = 6;
+
+    public static function clearAll():void {
+        self::$cache = [];
+        self::$singletons = [];
+    }
 
     /**
      * @throws ReflectionException
