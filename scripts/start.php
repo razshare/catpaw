@@ -13,7 +13,7 @@ $watch = 'watch' === ($argv[2] ?? '') || 'dev' === ($argv[2] ?? '');
 $watchSleep = !$watch ? 100 : ($argv[3] ?? 100);
 
 Bootstrap::start(
-	filename: $filename,
-	watch: $watch,
-	watchSleep: $watchSleep
+    fileaName: $filename,
+    watch: $watch,
+    watchSleep: $watchSleep
 );

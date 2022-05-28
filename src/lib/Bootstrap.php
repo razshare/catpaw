@@ -87,12 +87,11 @@ class Bootstrap {
     }
 
     /**
-     * @param  MainConfiguration   $config
      * @param  string              $filename
      * @throws ReflectionException
      * @return Generator
      */
-    private static function init(MainConfiguration $config, string $filename): Generator {
+    private static function init(string $filename): Generator {
         if (is_file($filename)) {
             $filename = realpath($filename);
             $owd = getcwd();
@@ -122,34 +121,28 @@ class Bootstrap {
         }
     }
 
-    public static function start(string $filename, bool $watch = false, int $watchSleep = 100, false|Closure $callback = false) {
-        $config = new class($watch, $watchSleep) extends MainConfiguration {
-            public function __construct(bool $watch, int $watchSleep) {
-                $handler = new StreamHandler(getStdout());
-                $handler->setFormatter(new ConsoleFormatter());
-                $logger = new Logger('app');
-                $logger->pushHandler($handler);
-
-                $this->logger = $logger;
-                Container::setObject(Logger::class, $logger);
-                Container::setObject(LoggerInterface::class, $logger);
-
-                $this->watch["enabled"] = $watch;
-                $this->watch["sleep"] = $watchSleep;
-            }
-        };
-
-        Container::setObject(MainConfiguration::class, $config);
-
+    public static function start(
+        string $fileaName,
+        string $loggerName = 'Logger',
+        bool $watch = false,
+        int $watchSleep = 100,
+        false|Closure $callback = false
+    ) {
         set_time_limit(0);
         ob_implicit_flush();
         ini_set('memory_limit', '-1');
 
-        if (!$filename) {
+        $handler = new StreamHandler(getStdout());
+        $handler->setFormatter(new ConsoleFormatter());
+        $logger = new Logger($loggerName);
+        $logger->pushHandler($handler);
+        Container::setObject(LoggerInterface::class, $logger);
+
+        if (!$fileaName) {
             die(Strings::red("Please point to a php entry file.\n"));
         }
 
-        Loop::run(function() use ($filename, $callback, $config) {
+        Loop::run(function() use ($fileaName, $callback, $watch, $watchSleep) {
             $loader = new AttributeLoader();
             $loader->setLocation(getcwd());
 
@@ -161,16 +154,16 @@ class Bootstrap {
                 $dirs = array_merge($dirs, $loader->getNamespaceDirectories($namespace));
             }
 
-            if ($config->watch["enabled"]) {
+            if ($watch) {
                 self::watch(
-                    entryFileName: $filename,
+                    entryFileName: $fileaName,
                     dirs         : $dirs,
-                    sleep        : $config->watch["sleep"]
+                    sleep        : $watchSleep
                 );
             }
 
 
-            yield from self::init($config, $filename);
+            yield from self::init($fileaName);
 
             if ($callback) {
                 yield \Amp\call($callback);
