@@ -131,16 +131,21 @@ class Container {
 
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
-        mixed $http = false,
+        false|array $options,
     ): Promise {
-        return call(function() use ($reflection, $http) {
-            if ($http) {
-                $method = $http->request->getMethod();
-                $path = $http->request->getUri()->getPath();
-                if (!isset(self::$cache[$method][$path])) {
-                    self::cacheInMethodOrFunctionDependencies($reflection, $method, $path);
+        return call(function() use ($reflection, $options) {
+            $context = false;
+            if ($options) {
+                [
+                    "id" => [$key1, $key2],
+                    "force" => $force,
+                    "context" => $context,
+                ] = $options;
+
+                if (!isset(self::$cache[$key1][$key2])) {
+                    self::cacheInMethodOrFunctionDependencies($reflection, $key1, $key2);
                 }
-                $cache = &self::$cache[$method][$path];
+                $cache = &self::$cache[$key1][$key2];
             } else {
                 $fileName = $reflection->getFileName();
                 $functionName = $reflection->getName();
@@ -162,13 +167,8 @@ class Container {
                 $parameters[$i] = $cache[self::PARAMETERS_INIT_VALUE][$i];
                 $cname = $cache[self::PARAMETERS_CNAMES][$i];
 
-                if (Request::class === $cname) {
-                    $parameters[$i] = $http->request;
-                    continue;
-                }
-
-                if (Response::class === $cname) {
-                    $parameters[$i] = $http->response;
+                if ($options && isset($force[$cname])) {
+                    $parameters[$i] = $force[$cname];
                     continue;
                 }
 
@@ -192,14 +192,14 @@ class Container {
                     if (!$attributeInstance) {
                         continue;
                     }
-                    yield $attributeInstance->onParameter($refparams[$i], $parameters[$i], $http);
+                    yield $attributeInstance->onParameter($refparams[$i], $parameters[$i], $context);
                     $attributeHasStorage = $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i][$j];
                     if ($attributeHasStorage) {
                         $parameters[$i] = &$parameters[$i]->storage();
                     }
                 }
             }
-            
+
             return $parameters;
         });
     }
@@ -210,7 +210,7 @@ class Container {
      * @param  array                      $defaultArguments
      * @return Promise<void>
      */
-    public static function run(Closure|ReflectionFunction $function):Promise {
+    public static function run(Closure|ReflectionFunction $function): Promise {
         return call(function() use ($function) {
             if ($function instanceof Closure) {
                 $reflection = new ReflectionFunction($function);
@@ -254,7 +254,7 @@ class Container {
             if ($constructor) {
                 $arguments = yield self::dependencies($constructor);
             }
-            
+
             $instance = new $className(...$arguments);
 
             if ($singleton || $service) {
