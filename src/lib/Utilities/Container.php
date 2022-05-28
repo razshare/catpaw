@@ -210,8 +210,8 @@ class Container {
      * @param  array                      $defaultArguments
      * @return Promise<void>
      */
-    public static function run(Closure|ReflectionFunction $function, array $defaultArguments = []):Promise {
-        return call(function() use ($function, $defaultArguments) {
+    public static function run(Closure|ReflectionFunction $function):Promise {
+        return call(function() use ($function) {
             if ($function instanceof Closure) {
                 $reflection = new ReflectionFunction($function);
             } else {
@@ -219,7 +219,7 @@ class Container {
                 $function = $reflection->getClosure();
             }
 
-            $arguments = yield Container::dependencies($reflection, $defaultArguments);
+            $arguments = yield Container::dependencies($reflection);
             yield call($function, ...$arguments);
         });
     }
