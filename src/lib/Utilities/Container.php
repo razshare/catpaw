@@ -131,7 +131,7 @@ class Container {
 
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
-        false|array $options,
+        false|array $options = false,
     ): Promise {
         return call(function() use ($reflection, $options) {
             $context = false;
