@@ -12,8 +12,8 @@ class AttributeResolver {
     public static function getClassAttributeArguments(ReflectionClass $reflectionClass, string $attributeName):?array {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
-            $local_attribute_name = $attribute->getName();
-            if ($local_attribute_name === $attributeName || is_subclass_of($className,$attributeName)) {
+            $className = $attribute->getName();
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return $attribute->getArguments();
             }
         }
@@ -23,8 +23,8 @@ class AttributeResolver {
     public static function issetClassAttribute(ReflectionClass $reflectionClass, string $attributeName):bool {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
-            $local_attribute_name = $attribute->getName();
-            if ($local_attribute_name === $attributeName || is_subclass_of($className,$attributeName)) {
+            $className = $attribute->getName();
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return true;
             }
         }
