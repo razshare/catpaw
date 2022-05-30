@@ -13,7 +13,7 @@ class AttributeResolver {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
             $local_attribute_name = $attribute->getName();
-            if ($local_attribute_name === $attributeName) {
+            if ($local_attribute_name === $attributeName || is_subclass_of($className,$attributeName)) {
                 return $attribute->getArguments();
             }
         }
@@ -24,7 +24,7 @@ class AttributeResolver {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
             $local_attribute_name = $attribute->getName();
-            if ($local_attribute_name === $attributeName) {
+            if ($local_attribute_name === $attributeName || is_subclass_of($className,$attributeName)) {
                 return true;
             }
         }
@@ -35,7 +35,7 @@ class AttributeResolver {
         $attributes = $reflection_function->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName) {
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return $attribute->getArguments();
             }
         }
@@ -46,7 +46,7 @@ class AttributeResolver {
         $attributes = $reflectionFunction->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName) {
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return true;
             }
         }
@@ -57,7 +57,7 @@ class AttributeResolver {
         $attributes = $reflectionMethod->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName) {
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return $attribute->getArguments();
             }
         }
@@ -68,7 +68,7 @@ class AttributeResolver {
         $attributes = $reflectionMethod->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName) {
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return true;
             }
         }
@@ -79,7 +79,7 @@ class AttributeResolver {
         $attributes = $reflectionProperty->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName) {
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return $attribute->getArguments();
             }
         }
@@ -90,7 +90,7 @@ class AttributeResolver {
         $attributes = $reflectionProperty->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName) {
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return true;
             }
         }
@@ -101,7 +101,7 @@ class AttributeResolver {
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName) {
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return $attribute->getArguments();
             }
         }
@@ -112,7 +112,7 @@ class AttributeResolver {
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName) {
+            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
                 return true;
             }
         }
