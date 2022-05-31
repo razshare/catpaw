@@ -152,7 +152,7 @@ class Bootstrap {
             // }
 
             /** @var array<string> $dirs */
-            $dirs = yield Container::load(getcwd());
+            $dirs = yield Container::load(getcwd()."/composer.json");
 
             if ($watch) {
                 self::watch(
