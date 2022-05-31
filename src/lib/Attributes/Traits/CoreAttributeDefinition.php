@@ -33,17 +33,17 @@ trait CoreAttributeDefinition {
     }
 
     /**
-     * @param  ReflectionFunction $reflectionFunction
-     * @return Promise
+     * @param  ReflectionFunction  $reflectionFunction
+     * @return Promise<self|false>
      */
     public static function findByFunction(ReflectionFunction $reflectionFunction): Promise {
         return call(function() use ($reflectionFunction) {
-            if (!AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class)) {
+            if (!($trueClassName = AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class))) {
                 return false;
             }
 
             $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
-            $klass = new ReflectionClass(static::class);
+            $klass = new ReflectionClass($trueClassName);
             $instance = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
@@ -51,16 +51,16 @@ trait CoreAttributeDefinition {
     }
 
     /**
-     * @param  ReflectionMethod $reflectionMethod
-     * @return Promise
+     * @param  ReflectionMethod    $reflectionMethod
+     * @return Promise<self|false>
      */
     public static function findByMethod(ReflectionMethod $reflectionMethod): Promise {
         return call(function() use ($reflectionMethod) {
-            if (!AttributeResolver::issetMethodAttribute($reflectionMethod, static::class)) {
+            if (!($trueClassName = AttributeResolver::issetMethodAttribute($reflectionMethod, static::class))) {
                 return false;
             }
             $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
-            $klass = new ReflectionClass(static::class);
+            $klass = new ReflectionClass($trueClassName);
             $instance = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
@@ -68,16 +68,16 @@ trait CoreAttributeDefinition {
     }
 
     /**
-     * @param  ReflectionClass $reflectionClass
-     * @return Promise
+     * @param  ReflectionClass     $reflectionClass
+     * @return Promise<self|false>
      */
     public static function findByClass(ReflectionClass $reflectionClass): Promise {
         return call(function() use ($reflectionClass) {
-            if (!AttributeResolver::issetClassAttribute($reflectionClass, static::class)) {
+            if (!($trueClassName = AttributeResolver::issetClassAttribute($reflectionClass, static::class))) {
                 return false;
             }
             $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
-            $klass = new ReflectionClass(static::class);
+            $klass = new ReflectionClass($trueClassName);
             $instance = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
@@ -85,16 +85,16 @@ trait CoreAttributeDefinition {
     }
 
     /**
-     * @param  ReflectionProperty $reflectionProperty
-     * @return Promise
+     * @param  ReflectionProperty  $reflectionProperty
+     * @return Promise<self|false>
      */
     public static function findByProperty(ReflectionProperty $reflectionProperty): Promise {
         return call(function() use ($reflectionProperty) {
-            if (!AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class)) {
+            if (!($trueClassName = AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class))) {
                 return false;
             }
             $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
-            $klass = new ReflectionClass(static::class);
+            $klass = new ReflectionClass($trueClassName);
             $instance = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
@@ -103,26 +103,30 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionParameter $reflectionParameter
-     * @return Promise
+     * @return Promise<self|false>
      */
     public static function findByParameter(ReflectionParameter $reflectionParameter): Promise {
         return call(function() use ($reflectionParameter) {
-            if (!AttributeResolver::issetParameterAttribute($reflectionParameter, static::class)) {
+            if (!($trueClassName = AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))) {
                 return false;
             }
             $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
-            $klass = new ReflectionClass(static::class);
+            $klass = new ReflectionClass($trueClassName);
             $instance = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
     }
 
-    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $http): Promise {
+    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context): Promise {
         return call(fn() => true);
     }
 
-    public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $route): Promise {
+    public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $context): Promise {
+        return call(fn() => true);
+    }
+
+    public function onClassInstantiation(ReflectionClass $reflection, mixed &$value, mixed $context): Promise {
         return call(fn() => true);
     }
 }

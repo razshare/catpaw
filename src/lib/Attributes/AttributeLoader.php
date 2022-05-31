@@ -126,7 +126,10 @@ class AttributeLoader {
     }
 
     /**
+     * List of examined directories.
+     * @param  string        $namespace
      * @throws Exception
+     * @return array<string>
      */
     public function getNamespaceDirectories(string $namespace): array {
         $namespace = preg_replace('/\\\\+(?=$)/', '', str_replace("\\\\", "\\", $namespace));

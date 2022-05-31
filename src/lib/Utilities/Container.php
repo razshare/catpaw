@@ -7,11 +7,14 @@ use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use Amp\Promise;
 use Attribute;
+use CatPaw\Attributes\AttributeLoader;
 use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 use Closure;
+use Exception;
+use Generator;
 use Reflection;
 use ReflectionClass;
 use ReflectionException;
@@ -209,6 +212,28 @@ class Container {
     }
 
     /**
+     * Loads services, singletons and modules from a composer.json file.
+     * @param  string                 $composerJSON
+     * @throws Exception
+     * @return Promise<array<string>> list of directories examined.
+     */
+    public static function load(string $composerJSON):Promise {
+        return call(function() use ($composerJSON) {
+            $loader = new AttributeLoader();
+            $loader->setLocation(dirname($composerJSON));
+
+            $dirs = [];
+            $namespaces = $loader->getDefinedNamespaces();
+            foreach ($namespaces as $namespace => $locations) {
+                // $loader->loadModulesFromNamespace($namespace);
+                yield $loader->loadClassesFromNamespace($namespace);
+                $dirs = array_merge($dirs, $loader->getNamespaceDirectories($namespace));
+            }
+            return $dirs;
+        });
+    }
+
+    /**
      * Inject dependencies into a function and invoke it.
      * @param  Closure|ReflectionFunction $function
      * @param  array                      $defaultArguments
@@ -250,7 +275,9 @@ class Container {
                 return false;
             }
 
+            /** @var Service $service */
             $service = yield Service::findByClass($reflection);
+            /** @var Singleton $singleton */
             $singleton = yield Singleton::findByClass($reflection);
 
             $constructor = $reflection->getConstructor() ?? false;
@@ -261,13 +288,20 @@ class Container {
 
             $instance = new $className(...$arguments);
 
-            if ($singleton || $service) {
-                self::$singletons[$className] = $instance;
+            if (!$instance) {
+                return false;
             }
 
+            if ($singleton || $service) {
+                self::$singletons[$className] = $instance;
+                if ($service) {
+                    yield $service->onClassInstantiation($reflection, $instance, false);
+                }
+            }
+            
             yield self::entry($instance, $reflection->getMethods());
 
-            return $instance ?? false;
+            return $instance;
         });
     }
 }

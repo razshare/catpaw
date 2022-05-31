@@ -23,10 +23,10 @@ interface AttributeInterface {
      * Triggers whenever the attribute it assigned to a parameter.
      * @param  ReflectionParameter $reflection the reflection of the parameter.
      * @param  mixed               $value      the current value of the parameter.
-     * @param  mixed               $http       the HttpContext if available, false otherwise.
+     * @param  mixed               $context    the context if available, false otherwise.
      * @return Promise<void>
      */
-    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $http): Promise;
+    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context): Promise;
 
 
     /**
@@ -35,9 +35,19 @@ interface AttributeInterface {
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/1.RouteHandlers.md
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/9.Filters.md
      * @param  ReflectionFunction $reflection
-     * @param  Closure            $value
-     * @param  mixed              $route
+     * @param  Closure            $value      the function to which this attribute is attatched to.
+     * @param  mixed              $context    the context if available, false otherwise.
      * @return Promise
      */
-    public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $route): Promise;
+    public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $context): Promise;
+
+
+    /**
+     * Triggers whenever a class is instantiated through dependency injection.
+     * @param  ReflectionClass $reflection
+     * @param  mixed           $value      the instance of the given class.
+     * @param  mixed           $context    the context if available, false otherwise.
+     * @return Promise
+     */
+    public function onClassInstantiation(ReflectionClass $reflection, mixed &$value, mixed $context): Promise;
 }

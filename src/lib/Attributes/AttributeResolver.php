@@ -13,19 +13,19 @@ class AttributeResolver {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
         }
         return null;
     }
 
-    public static function issetClassAttribute(ReflectionClass $reflectionClass, string $attributeName):bool {
+    public static function issetClassAttribute(ReflectionClass $reflectionClass, string $attributeName):false|string {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
-                return true;
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
+                return $className;
             }
         }
         return false;
@@ -35,19 +35,19 @@ class AttributeResolver {
         $attributes = $reflection_function->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
         }
         return null;
     }
 
-    public static function issetFunctionAttribute(ReflectionFunction $reflectionFunction, string $attributeName):bool {
+    public static function issetFunctionAttribute(ReflectionFunction $reflectionFunction, string $attributeName):false|string {
         $attributes = $reflectionFunction->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
-                return true;
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
+                return $className;
             }
         }
         return false;
@@ -57,19 +57,19 @@ class AttributeResolver {
         $attributes = $reflectionMethod->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
         }
         return null;
     }
 
-    public static function issetMethodAttribute(ReflectionMethod $reflectionMethod, string $attributeName):bool {
+    public static function issetMethodAttribute(ReflectionMethod $reflectionMethod, string $attributeName):false|string {
         $attributes = $reflectionMethod->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
-                return true;
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
+                return $className;
             }
         }
         return false;
@@ -79,19 +79,19 @@ class AttributeResolver {
         $attributes = $reflectionProperty->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
         }
         return null;
     }
 
-    public static function issetPropertyAttribute(ReflectionProperty $reflectionProperty, string $attributeName):bool {
+    public static function issetPropertyAttribute(ReflectionProperty $reflectionProperty, string $attributeName):false|string {
         $attributes = $reflectionProperty->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
-                return true;
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
+                return $className;
             }
         }
         return false;
@@ -101,19 +101,19 @@ class AttributeResolver {
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
         }
         return null;
     }
 
-    public static function issetParameterAttribute(ReflectionParameter $reflectionParameter, string $attributeName):bool {
+    public static function issetParameterAttribute(ReflectionParameter $reflectionParameter, string $attributeName):false|string {
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            if ($className === $attributeName || is_subclass_of($className,$attributeName)) {
-                return true;
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
+                return $className;
             }
         }
         return false;

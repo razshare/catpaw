@@ -31,6 +31,8 @@ class ClassFinder {
                         return $namespace."\\".str_replace('.php', '', $file);
                     }, $files);
 
+                    $classes = array_filter($classes, fn($possibleClass) => !str_ends_with($possibleClass, '.module') && !str_ends_with($possibleClass, '.m'));
+
                     $results[] = array_filter($classes, function(string $possibleClass) {
                         return class_exists($possibleClass);
                     });
@@ -80,8 +82,12 @@ class ClassFinder {
         return array_merge_recursive($autoload, $autoloadDev);
     }
 
+    
     /**
+     * List of examined directories.
+     * @param  string      $namespace
      * @throws Exception
+     * @return array|false
      */
     public function getNamespaceDirectories(string $namespace): array|false {
         $result = [];
