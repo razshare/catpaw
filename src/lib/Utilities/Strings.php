@@ -8,11 +8,11 @@ use function is_array;
 use function is_object;
 
 abstract class Strings {
-    const PATTERN_JS_ESCAPE_LEFT_START = "<\\s*(?=script)";
-    const PATTERN_JS_ESCAPE_LEFT_END = "<\\s*\\/\\s*(?=script)";
+    const PATTERN_JS_ESCAPE_LEFT_START   = "<\\s*(?=script)";
+    const PATTERN_JS_ESCAPE_LEFT_END     = "<\\s*\\/\\s*(?=script)";
     const PATTERN_JS_ESCAPE_RIGHT_START1 = "?<=(\\&lt\\;script)\\s*>";
     const PATTERN_JS_ESCAPE_RIGHT_START2 = "?<=(\\&lt\\;script).*\\s*>";
-    const PATTERN_JS_ESCAPE_RIGHT_END = "?<=(&lt;\\/script)>";
+    const PATTERN_JS_ESCAPE_RIGHT_END    = "?<=(&lt;\\/script)>";
 
 
     public static function red(string $contents):string {
@@ -37,7 +37,7 @@ abstract class Strings {
                 .addslashes($prompt)
                 .'", "", "password here"))'
             );
-            $command = "cscript //nologo ".escapeshellarg($vbscript);
+            $command  = "cscript //nologo ".escapeshellarg($vbscript);
             $password = rtrim(shell_exec($command));
             unlink($vbscript);
         } else {

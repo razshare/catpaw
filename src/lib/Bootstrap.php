@@ -2,13 +2,7 @@
 
 namespace CatPaw;
 
-use function Amp\ByteStream\getStdout;
-use function Amp\call;
-use Amp\Log\ConsoleFormatter;
-use Amp\Log\StreamHandler;
 use Amp\Loop;
-use Amp\Promise;
-use CatPaw\Attributes\AttributeLoader;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\Dir;
@@ -16,7 +10,6 @@ use CatPaw\Utilities\LoggerFactory;
 use CatPaw\Utilities\Strings;
 use Closure;
 use Generator;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
@@ -24,14 +17,14 @@ use ReflectionFunction;
 
 class Bootstrap {
     private static function checkEntryChange(string $fileName, array &$store) {
-        $size = filesize($fileName);
+        $size       = filesize($fileName);
         $lastChange = filemtime($fileName);
         if (isset($store[$fileName]) && $store[$fileName]['lastChange'] < $lastChange) {
             Loop::stop();
         } else {
             $store[$fileName] = [
-                'name' => $fileName,
-                'size' => $size,
+                'name'       => $fileName,
+                'size'       => $size,
                 'lastChange' => $lastChange,
             ];
         }
@@ -95,7 +88,7 @@ class Bootstrap {
     private static function init(string $filename): Generator {
         if (is_file($filename)) {
             $filename = realpath($filename);
-            $owd = getcwd();
+            $owd      = getcwd();
             chdir(dirname($filename));
             require_once $filename;
             chdir($owd);
@@ -107,10 +100,10 @@ class Bootstrap {
 
             foreach ($main->getAttributes() as $attribute) {
                 $attributeArguments = $attribute->getArguments();
-                $className = $attribute->getName();
+                $className          = $attribute->getName();
                 /** @var ReflectionFunction $entry */
                 [$klass, $entry] = self::entry($className);
-                $object = $klass->newInstance(...$attributeArguments);
+                $object          = $klass->newInstance(...$attributeArguments);
                 if ($entry) {
                     $arguments = yield Container::dependencies($entry);
                     yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
@@ -140,25 +133,14 @@ class Bootstrap {
         }
 
         Loop::run(function() use ($fileaName, $callback, $watch, $watchSleep) {
-            // $loader = new AttributeLoader();
-            // $loader->setLocation(getcwd());
-
-            // $dirs = [];
-            // $namespaces = $loader->getDefinedNamespaces();
-            // foreach($namespaces as $namespace => $locations) {
-            // 	$loader->loadModulesFromNamespace($namespace);
-            // 	yield $loader->loadClassesFromNamespace($namespace);
-            // 	$dirs = array_merge($dirs, $loader->getNamespaceDirectories($namespace));
-            // }
-
             /** @var array<string> $dirs */
             $dirs = yield Container::load(getcwd()."/composer.json");
 
             if ($watch) {
                 self::watch(
                     entryFileName: $fileaName,
-                    dirs         : $dirs,
-                    sleep        : $watchSleep
+                    dirs: $dirs,
+                    sleep: $watchSleep
                 );
             }
 

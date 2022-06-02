@@ -38,8 +38,8 @@ abstract class Dir {
             }
         } else {
             $map[] = [
-                "name" => $root,
-                "size" => filesize($root),
+                "name"       => $root,
+                "size"       => filesize($root),
                 "lastChange" => filemtime($root)
             ];
         }
@@ -56,7 +56,7 @@ abstract class Dir {
     public static function getContentsRecursive(string $root, int &$lastModified) {
         //$fn = end(explode("/",$root));
         if (is_dir($root)) {
-            $scan = scandir($root);
+            $scan   = scandir($root);
             $result = [];
             foreach ($scan as $a => $file) {
                 if ("." == $file || ".." == $file || ".git" == $file) {

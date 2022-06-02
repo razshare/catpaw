@@ -43,8 +43,8 @@ trait CoreAttributeDefinition {
             }
 
             $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
-            $klass = new ReflectionClass($trueClassName);
-            $instance = $klass->newInstance(...$attributeArguments);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
@@ -60,8 +60,8 @@ trait CoreAttributeDefinition {
                 return false;
             }
             $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
-            $klass = new ReflectionClass($trueClassName);
-            $instance = $klass->newInstance(...$attributeArguments);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
@@ -77,8 +77,8 @@ trait CoreAttributeDefinition {
                 return false;
             }
             $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
-            $klass = new ReflectionClass($trueClassName);
-            $instance = $klass->newInstance(...$attributeArguments);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
@@ -94,8 +94,8 @@ trait CoreAttributeDefinition {
                 return false;
             }
             $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
-            $klass = new ReflectionClass($trueClassName);
-            $instance = $klass->newInstance(...$attributeArguments);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });
@@ -111,8 +111,8 @@ trait CoreAttributeDefinition {
                 return false;
             }
             $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
-            $klass = new ReflectionClass($trueClassName);
-            $instance = $klass->newInstance(...$attributeArguments);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
             yield Container::entry($instance, $klass->getMethods());
             return $instance ?? false;
         });

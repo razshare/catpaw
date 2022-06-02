@@ -18,12 +18,12 @@ class ClassFinder {
     public function getClassesInNamespace(string $namespace, Closure $onSubDir = null): Promise {
         return call(function() use ($namespace, $onSubDir) {
             $namespace = preg_replace('/\\\\+(?=$)/', '', str_replace("\\\\", "\\", $namespace));
-            $dirs = $this->getNamespaceDirectories($namespace);
-            $results = [];
-            $subdirs = [];    //an array of promisses that resolve subdirectories
+            $dirs      = $this->getNamespaceDirectories($namespace);
+            $results   = [];
+            $subdirs   = [];    //an array of promisses that resolve subdirectories
             if ($dirs) {
                 foreach ($dirs as $dir) {
-                    $files = scandir($dir);
+                    $files   = scandir($dir);
                     $classes = array_map(function($file) use (&$namespace, &$onSubDir, &$dir, &$subdirs) {
                         if (null !== $onSubDir && '.' !== $file && '..' !== $file && is_dir($dir.'/'.$file)) {
                             $subdirs[] = $onSubDir($file);
@@ -48,13 +48,13 @@ class ClassFinder {
      */
     public function getModulesInNamespace(string $namespace, Closure $onSubDir = null): array {
         $namespace = preg_replace('/\\\\+(?=$)/', '', str_replace("\\\\", "\\", $namespace));
-        $dirs = $this->getNamespaceDirectories($namespace);
+        $dirs      = $this->getNamespaceDirectories($namespace);
         if (!$dirs) {
             $dirs = [];
         }
         $results = [];
         foreach ($dirs as $dir) {
-            $files = scandir($dir);
+            $files   = scandir($dir);
             $modules = array_map(function($file) use (&$namespace, &$onSubDir, &$dir) {
                 if (null !== $onSubDir && '.' !== $file && '..' !== $file && is_dir($dir.'/'.$file)) {
                     $onSubDir($file);
@@ -75,9 +75,9 @@ class ClassFinder {
 
     public function getDefinedNamespaces(): array {
         $composerJsonPath = $this->appRoot.'composer.json';
-        $composerConfig = json_decode(file_get_contents($composerJsonPath), true);
+        $composerConfig   = json_decode(file_get_contents($composerJsonPath), true);
 
-        $autoload = !isset($composerConfig['autoload']['psr-4']) ? [] : $composerConfig['autoload']['psr-4'];
+        $autoload    = !isset($composerConfig['autoload']['psr-4']) ? [] : $composerConfig['autoload']['psr-4'];
         $autoloadDev = !isset($composerConfig['autoload-dev']['psr-4']) ? [] : $composerConfig['autoload-dev']['psr-4'];
         return array_merge_recursive($autoload, $autoloadDev);
     }
@@ -90,13 +90,13 @@ class ClassFinder {
      * @return array|false
      */
     public function getNamespaceDirectories(string $namespace): array|false {
-        $result = [];
+        $result             = [];
         $composerNamespaces = $this->getDefinedNamespaces();
         if (!is_iterable($composerNamespaces)) {
             $composerNamespaces = [$composerNamespaces];
         }
 
-        $namespaceFragments = explode("\\", $namespace);
+        $namespaceFragments          = explode("\\", $namespace);
         $undefinedNamespaceFragments = [];
 
         while ($namespaceFragments) {

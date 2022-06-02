@@ -19,10 +19,10 @@ class StringStack {
      * @return SplDoublyLinkedList
      */
     public function expect(string ...$tokens): SplDoublyLinkedList {
-        $name = $this->contents;
-        $len = strlen($name);
+        $name  = $this->contents;
+        $len   = strlen($name);
         $stack = '';
-        $list = new SplDoublyLinkedList();
+        $list  = new SplDoublyLinkedList();
         for ($i = 0; $i < $len; $i++) {
             $stack .= $name[$i];
             foreach ($tokens as $token) {

@@ -10,8 +10,8 @@ class AsciiRow {
     private $styles = [];
     public function __construct(array &$options, array &$styles, AsciiCel ...$cels) {
         $this->options = $options;
-        $this->styles = $styles;
-        $this->cels = $cels;
+        $this->styles  = $styles;
+        $this->cels    = $cels;
         $this->resolveHeight();
         $this->resolveWidth();
     }
@@ -32,7 +32,7 @@ class AsciiRow {
     }
 
     private function resolveWidth():void {
-        $this->width = 0;
+        $this->width  = 0;
         $numberOfCels = count($this->cels);
         for ($j = 0;$j < $numberOfCels;$j++) {
             $this->width += $this->cels[$j]->getWidth();
@@ -62,8 +62,8 @@ class AsciiRow {
     }
 
     private function getLines():array {
-        $lines = [];
-        $wholeLines = [];
+        $lines        = [];
+        $wholeLines   = [];
         $numberOfCels = count($this->cels);
         for ($j = 0;$j < $numberOfCels;$j++) {
             $numberOfLines = count($this->cels[$j]->getLines());
@@ -78,7 +78,7 @@ class AsciiRow {
 
 
         for ($j = 0;$j < $numberOfCels;$j++) {
-            $cel = $this->cels[$j];
+            $cel   = $this->cels[$j];
             $lines = $cel->getLines();
             for ($i = 0;$i < $this->height;$i++) {
                 if (!isset($wholeLines[$i])) {

@@ -8,7 +8,7 @@ class AsciiTable {
     private $masterRow;
     private $globalRowNumber = 1;
     private $options;
-    private $width = null;
+    private $width  = null;
     private $styles = [];
     public function __construct(array $options = []) {
         $this->options = $options;
@@ -32,7 +32,7 @@ class AsciiTable {
                 $cels[] = new AsciiCel($inputCels[$i], isset($this->styles[$i])?$this->styles[$i]:$this->options);
             }
         }
-        $row = new AsciiRow($this->options, $this->styles, ...$cels);
+        $row          = new AsciiRow($this->options, $this->styles, ...$cels);
         $this->rows[] = $row;
 
         $this->toString();
@@ -42,7 +42,7 @@ class AsciiTable {
     public function toString(bool $countLines = false, bool $globalCountLines = false):string {
         $this->findRowWithMostCels();
         $this->fixWidths();
-        $result = "";
+        $result       = "";
         $numberOfRows = count($this->rows);
         for ($i = 0;$i < $numberOfRows;$i++) {
             if ($i > 0) {
@@ -53,7 +53,7 @@ class AsciiTable {
             }
         }
         if ($countLines) {
-            $tmp = preg_split('/\n/', $result);
+            $tmp    = preg_split('/\n/', $result);
             $length = count($tmp);
             $result = "";
 
@@ -75,25 +75,25 @@ class AsciiTable {
 
     private function findRowWithMostCels():void {
         $length = count($this->rows);
-        $num = 0;
+        $num    = 0;
         for ($i = 0;$i < $length;$i++) {
             $num = $this->rows[$i]->getNumberOfCels();
             if ($num > $this->numberOfCols) {
                 $this->numberOfCols = $num;
-                $this->masterRow = $this->rows[$i];
+                $this->masterRow    = $this->rows[$i];
             }
         }
     }
 
     private function fixWidths():void {
         $numberOfCols = $this->numberOfCols;
-        $widestCel = null;
-        $cel = null;
-        $width = null;
+        $widestCel    = null;
+        $cel          = null;
+        $width        = null;
         for ($i = 0;$i < $numberOfCols;$i++) {
-            $widestCel = $this->getWidestCelByIndex($i);
+            $widestCel      = $this->getWidestCelByIndex($i);
             $widestCelWidth = $widestCel->getWidth();
-            $numberOfRows = count($this->rows);
+            $numberOfRows   = count($this->rows);
             for ($j = 0;$j < $numberOfRows;$j++) {
                 if (($cel = $this->rows[$j]->getCel($i))) {
                     $width = $widestCelWidth - $cel->getWidth();
@@ -107,7 +107,7 @@ class AsciiTable {
 
     private function getWidestCelByIndex(int $index):AsciiCel {
         $length = count($this->rows);
-        $cel = null;
+        $cel    = null;
         for ($i = 0;$i < $length;$i++) {
             if (null === $cel || $cel->getWidth() < $this->rows[$i]->getCel($index)->getWidth()) {
                 $cel = $this->rows[$i]->getCel($index);

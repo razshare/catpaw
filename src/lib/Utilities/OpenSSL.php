@@ -4,7 +4,7 @@ namespace CatPaw\Utilities;
 
 abstract class OpenSSL {
     private static string $countryNameRegex = '/^[A-z]{2}$/';
-    private static string $emailRegex = "/(?<=^)[A-z0-9!#$%&'*+-\\/=?^_`{|}~]*\\.?[A-z0-9!#$%&'*+-\\/=?^_`{|}~]*\\@[A-z0-9][A-z0-9]*[A-z0-9](\\.[A-z]+)?(?=$)/";
+    private static string $emailRegex       = "/(?<=^)[A-z0-9!#$%&'*+-\\/=?^_`{|}~]*\\.?[A-z0-9!#$%&'*+-\\/=?^_`{|}~]*\\@[A-z0-9][A-z0-9]*[A-z0-9](\\.[A-z]+)?(?=$)/";
 
     public static function readLineSilent(string $prompt): ?string {
         return Strings::readLineSilent($prompt);
@@ -63,7 +63,7 @@ abstract class OpenSSL {
 
         //Create private key
         $privkey = openssl_pkey_new([
-            "digest_alg" => "sha512",
+            "digest_alg"       => "sha512",
             "private_key_bits" => 4096,
             "private_key_type" => OPENSSL_KEYTYPE_RSA,
         ]);

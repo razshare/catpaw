@@ -45,7 +45,7 @@ class AttributeLoader {
     public function loadSomeModulesFromNamespace(string $namespace, BooleanAction $checkModule): AttributeLoader {
         $this->finder->setAppRoot($this->location);
         $modules = $this->finder->getModulesInNamespace($namespace);
-        $owd = getcwd();
+        $owd     = getcwd();
         foreach ($modules as $module) {
             if ($checkModule->run($module)) {
                 $f = function($module) use ($owd) {
