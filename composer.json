@@ -32,7 +32,7 @@
     }
   },
   "require": {
-    "php": "^8.0",
+    "php": "^8.1",
     "amphp/amp": "^2.6",
     "amphp/http-server": "^2.1",
     "amphp/log": "^1.1",
