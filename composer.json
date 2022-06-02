@@ -18,12 +18,12 @@
     }
   ],
   "scripts": {
-    "load": "@composer dump-autoload -o",
+    "load": "composer dump-autoload -o",
     "fix": [
-      "@php ./vendor/bin/php-cs-fixer fix src",
-      "@php ./vendor/bin/php-cs-fixer fix tests"
+      "php ./vendor/bin/php-cs-fixer fix src",
+      "php ./vendor/bin/php-cs-fixer fix tests"
     ],
-    "test": "@php vendor/bin/phpunit tests"
+    "test": "php vendor/bin/phpunit tests"
   },
   "autoload": {
     "psr-4": {
