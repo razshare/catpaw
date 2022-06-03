@@ -3,8 +3,6 @@
 namespace CatPaw\Utilities;
 
 use function Amp\call;
-use Amp\Http\Server\Request;
-use Amp\Http\Server\Response;
 use Amp\Promise;
 use Attribute;
 use CatPaw\Attributes\AttributeLoader;
@@ -14,8 +12,6 @@ use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 use Closure;
 use Exception;
-use Generator;
-use Reflection;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
@@ -58,15 +54,13 @@ class Container {
             foreach ($methods as $method) {
                 $entry = yield Entry::findByMethod($method);
                 if ($entry) {
-                    if ($method instanceof ReflectionMethod) {
-                        $args = yield Container::dependencies($method);
-                        if ($method->isStatic()) {
-                            yield \Amp\call(fn() => $method->invoke(null, ...$args));
-                        } else {
-                            yield \Amp\call(fn() => $method->invoke($instance, ...$args));
-                        }
-                        break;
+                    $args = yield Container::dependencies($method);
+                    if ($method->isStatic()) {
+                        yield \Amp\call(fn() => $method->invoke(null, ...$args));
+                    } else {
+                        yield \Amp\call(fn() => $method->invoke($instance, ...$args));
                     }
+                    break;
                 }
             }
         });
@@ -259,7 +253,9 @@ class Container {
      * @param  string          $className full name of the class.
      * @return Promise<object>
      */
-    public static function create(string $className): Promise {
+    public static function create(
+        string $className
+    ): Promise {
         return call(function() use ($className) {
             if (self::$singletons[$className] ?? false) {
                 return self::$singletons[$className];
@@ -300,7 +296,7 @@ class Container {
             }
             
             yield self::entry($instance, $reflection->getMethods());
-
+            
             return $instance;
         });
     }
