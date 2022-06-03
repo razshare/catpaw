@@ -14,7 +14,6 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | 🌐 Web Path Not Found      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
 | 🌐 Web Session             | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/4.WebSession.md)           |
 | ⚡ Entry                    | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/5.Entry.md)                |
-| ⚡ Modules                  | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/6.Modules.md)              |
 | 🌐 Web Byte Range Requests | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/7.WebByteRangeRequests.md) |
 | ⚡ Custom Attributes        | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/8.CustomAttributes.md)     |
 | 🌐 Web Filters             | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/9.WebFilters.md)           |
