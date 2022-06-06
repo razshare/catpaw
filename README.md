@@ -111,7 +111,7 @@ The first configuration will passively listen for xdebug, while the second one w
 
 ### XDebug 3.x configuration for VSCode
 
-In you `php.ini` file add:
+In your `php.ini` file add:
 ```ini
 [xdebug]
 xdebug.client_host=127.0.0.1
