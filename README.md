@@ -71,7 +71,7 @@ compsoer run start
 You can follow along with the examples provided by the `catpaw/examples` repository at https://github.com/tncrazvan/catpaw-examples/tree/main/src.
 
 
-# Debugging with VSCode
+## Debugging with VSCode
 
 In order to debug with vscode you will need to configure both vscode and xdebug (3.x).
 
@@ -118,7 +118,7 @@ xdebug.client_host=127.0.0.1
 xdebug.client_port=9003
 ```
 
-# Debugging with PHPStorm
+## Debugging with PHPStorm
 
 If you're using PHPStorm you will need to start listening for PHP Xdebug connections.
 
@@ -137,7 +137,7 @@ xdebug.client_port=9003
 xdebug.start_with_request=yes
 ```
 
-# Start
+## Start
 
 You should now be able to run your project with 
 ```bash
@@ -150,3 +150,50 @@ or
 for a faster startup.
 
 You can debug in both modes with both vscode and phpstorm listening for xdebug connections.
+
+
+# Get started with Svelte
+
+You can create a new project using the svelte starter template.
+
+```bash
+composer create-project catpaw/starter-svelte
+```
+
+Or you could also clone the template from https://github.com/tncrazvan/catpaw-starter-
+
+
+During development you need to run both the Vite and the CatPaw servers.<br/>
+The Vite server will act as a proxy for your `/api/*` and `*:state` requests, redirecting them to the CatPaw server.<br/>
+
+First off start your CatPaw server using
+```bash
+composer start
+```
+or
+```bash
+./start
+```
+
+then start your vite dev server
+
+```bash
+npm run dev
+```
+
+all your communication with CatPaw will happen through the Vite proxy, so you'll be working on [http://127.0.0.1:3000](http://127.0.0.1:3000/) and your apis will should be exposed under `/api/*`.
+
+### Build for production
+
+You can build your project for production using
+```
+npm run build
+```
+then you can start your server in production by running
+```bash
+./start
+```
+
+### Note
+
+Don't use the Vite server in production, build your project and run the CatPaw server.
