@@ -74,7 +74,7 @@ You can create a new project using the svelte starter template.
 composer create-project catpaw/starter-svelte
 ```
 
-Or you could also clone the template from https://github.com/tncrazvan/catpaw-starter-
+Or you could also clone the template from https://github.com/tncrazvan/catpaw-starter-svelte
 
 
 During development you need to run both the Vite and the CatPaw servers.<br/>
