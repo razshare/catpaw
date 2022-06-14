@@ -137,15 +137,16 @@ xdebug.client_port=9003
 xdebug.start_with_request=yes
 ```
 
-# Run & Watch
+# Start
 
-You should now be able to run your project in production mode with 
+You should now be able to run your project with 
+```bash
+composer start
+```
+or
 ```bash
 ./start
 ```
-or in watch mode with
-```bash
-./watch
-```
+for a faster startup.
 
-and debug in both modes with both vscode and phpstorm listening for xdebug connections.
+You can debug in both modes with both vscode and phpstorm listening for xdebug connections.
