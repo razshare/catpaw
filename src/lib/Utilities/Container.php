@@ -46,9 +46,13 @@ class Container {
     }
 
     /**
+     * Run the entry method of an instance.
+     * @param  object                  $instance
+     * @param  array<ReflectionMethod> $methods  methods of the instance
      * @throws ReflectionException
+     * @return Promise
      */
-    public static function entry(mixed $instance, array $methods) {
+    public static function entry(object $instance, array $methods):Promise {
         return call(function() use ($methods, $instance) {
             /** @var ReflectionMethod $method */
             foreach ($methods as $method) {
@@ -74,6 +78,7 @@ class Container {
         ReflectionFunction|ReflectionMethod $reflection,
         string $key1,
         string $key2,
+        ...$defaultArguments
     ): void {
         if (!isset(self::$cache[$key1])) {
             self::$cache[$key1] = [];
@@ -104,8 +109,14 @@ class Container {
                     $cname = $type ? $type->getName() : '';
                 }
 
+                $default = ($defaultArguments[$i] ?? false)?$defaultArguments[$i]:false;
+                if (!$default && $refparams[$i]->isOptional()) {
+                    $default = $refparams[$i]->getDefaultValue() ?? false;
+                }
+
+
                 $cache[self::PARAMETERS_CNAMES][$i]                  = $cname;
-                $parameters[$i]                                      = $refparams[$i]->isOptional() ? $refparams[$i]->getDefaultValue() : false;
+                $parameters[$i]                                      = $default;
                 $cache[self::PARAMETERS_INIT_VALUE][$i]              = $parameters[$i];
                 $attributes                                          = $refparams[$i]->getAttributes();
                 $alen                                                = count($attributes);
@@ -130,11 +141,18 @@ class Container {
         }
     }
 
+    /**
+     * 
+     * @param  ReflectionFunction|ReflectionMethod $reflection
+     * @param  bool|array                          $options
+     * @return Promise<array<mixed>>
+     */
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
         false|array $options = false,
+        ...$defaultArguments
     ): Promise {
-        return call(function() use ($reflection, $options) {
+        return call(function() use ($reflection, $options, $defaultArguments) {
             $context = false;
             if ($options) {
                 [
@@ -144,7 +162,7 @@ class Container {
                 ] = $options;
 
                 if (!isset(self::$cache[$key1][$key2])) {
-                    self::cacheInMethodOrFunctionDependencies($reflection, $key1, $key2);
+                    self::cacheInMethodOrFunctionDependencies($reflection, $key1, $key2, ...$defaultArguments);
                 }
                 $cache = &self::$cache[$key1][$key2];
             } else {
@@ -155,7 +173,7 @@ class Container {
                     $functionName = $class->getName().':'.$functionName;
                 }
                 if (!isset(self::$cache[$fileName][$functionName])) {
-                    self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName);
+                    self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName, ...$defaultArguments);
                 }
                 $cache = &self::$cache[$fileName][$functionName];
             }
@@ -251,12 +269,14 @@ class Container {
      * Make a new instance of the given class.<br />
      * This method will take care of dependency injections.
      * @param  string          $className full name of the class.
+     * @param  mixed           $args
      * @return Promise<object>
      */
     public static function create(
-        string $className
+        string $className,
+        ...$defaultArguments
     ): Promise {
-        return call(function() use ($className) {
+        return call(function() use ($className, $defaultArguments) {
             if (self::$singletons[$className] ?? false) {
                 return self::$singletons[$className];
             }
@@ -279,7 +299,7 @@ class Container {
             $constructor = $reflection->getConstructor() ?? false;
             $arguments   = [];
             if ($constructor) {
-                $arguments = yield self::dependencies($constructor);
+                $arguments = yield self::dependencies($constructor, false, ...$defaultArguments);
             }
 
             $instance = new $className(...$arguments);
