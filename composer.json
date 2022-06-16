@@ -23,7 +23,8 @@
       "php ./vendor/bin/php-cs-fixer fix src",
       "php ./vendor/bin/php-cs-fixer fix tests"
     ],
-    "start": "php -dxdebug.start_with_request=yes -dxdebug.mode=debug ./bin/start -f'src/main.php' -s'src/lib/' -v"
+    "test": "php -dxdebug.start_with_request=yes -dxdebug.mode=debug vendor/bin/phpunit tests",
+    "start": "php -dxdebug.start_with_request=yes -dxdebug.mode=debug ./bin/start -f'src/php/main.php' -s'src/php/lib/' -v"
   },
   "autoload": {
     "psr-4": {
