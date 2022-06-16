@@ -127,7 +127,7 @@ class Bootstrap {
     public static function start(
         string $file,
         string $name,
-        string $singletons,
+        ?string $singletons = null,
         bool $verbose = false,
         false|Closure $callback = false
     ) {
@@ -142,7 +142,10 @@ class Bootstrap {
         }
 
         Loop::run(function() use ($file, $callback, $singletons, $verbose) {
-            yield Container::load(\preg_split('/,|;/', $singletons));
+            if ($singletons) {
+                yield Container::load(\preg_split('/,|;/', $singletons));
+            }
+                
             if ($verbose) {
                 echo Container::describe();
             }
