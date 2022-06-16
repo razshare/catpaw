@@ -5,24 +5,43 @@ namespace CatPaw\Utilities;
 use function Amp\call;
 use Amp\Promise;
 use Attribute;
-use CatPaw\Attributes\AttributeLoader;
 use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 use Closure;
 use Exception;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RecursiveRegexIterator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionUnionType;
-
+use RegexIterator;
 use SplFixedArray;
 
 class Container {
     private static array $cache      = [];
     private static array $singletons = [];
+
+    public static function getSingletons():array {
+        return self::$singletons;
+    }
+
+    /**
+     * Returns an ASCI table describing all existing routes.
+     * @return string
+     */
+    public static function describe(): string {
+        $table = new AsciiTable();
+        $table->add("Singleton");
+        foreach (self::$singletons as $classname) {
+            $table->add(\get_class($classname));
+        }
+        return $table->toString().PHP_EOL;
+    }
 
     public static function isset(string $className): bool {
         return isset(self::$singletons[$className]);
@@ -224,23 +243,37 @@ class Container {
     }
 
     /**
-     * Loads services, singletons and modules from a composer.json file.
-     * @param  string                 $composerJSON
+     * Loads singletons from predefined locations.
+     * @param  array<string>          $locations
      * @throws Exception
      * @return Promise<array<string>> list of directories examined.
      */
-    public static function load(string $composerJSON):Promise {
-        return call(function() use ($composerJSON) {
-            $loader = new AttributeLoader();
-            $loader->setLocation(dirname($composerJSON));
+    public static function load(array $locations):Promise {
+        return call(function() use ($locations) {
+            $dirs = [];
+            foreach ($locations as $location) {
+                $directory = new RecursiveDirectoryIterator(realpath($location));
+                $iterator  = new RecursiveIteratorIterator($directory);
+                $regex     = new RegexIterator($iterator, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);
 
-            $dirs       = [];
-            $namespaces = $loader->getDefinedNamespaces();
-            foreach ($namespaces as $namespace => $locations) {
-                // $loader->loadModulesFromNamespace($namespace);
-                yield $loader->loadClassesFromNamespace($namespace);
-                $dirs = array_merge($dirs, $loader->getNamespaceDirectories($namespace));
+                for ($regex->rewind(); $regex->valid() ; $regex->next()) {
+                    /** @var array<string> $files */
+                    $files = $regex->current();
+                    foreach ($files as $filename) {
+                        require_once($filename);
+                        $dirs[] = $filename;
+                    }
+                }
             }
+
+
+            foreach (get_declared_classes() as $classname) {
+                if (!is_subclass_of($classname, Singleton::class)) {
+                    continue;
+                }
+                yield Container::create($classname);
+            }
+            
             return $dirs;
         });
     }

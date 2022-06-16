@@ -1,0 +1,47 @@
+#!/usr/bin/php
+<?php
+use CatPaw\Bootstrap;
+chdir(getcwd());
+require 'vendor/autoload.php';
+
+[
+    "f"          => $fileShort,
+    "file"       => $fileLong,
+    "n"          => $nameShort,
+    "name"       => $nameLong,
+    "s"          => $singletonsShort,
+    "singletons" => $singletonsLong,
+    "v"          => $verboseShort,
+    "verbose"    => $verboseLong,
+] = [
+    "f"          => null,
+    "file"       => null,
+    "n"          => null,
+    "name"       => null,
+    "s"          => null,
+    "singletons" => null,
+    "v"          => null,
+    "verbose"    => null,
+    ...getopt("n::s::v::f:", [
+        "file:",
+        "name::",
+        "verbose::",
+        "singletons::",
+    ])
+];
+
+$file       = realpath($fileLong       ?? $fileShort);
+$name       = $nameShort               ?? $nameLong               ?? "App";
+$singletons = realpath($singletonsLong ?? $singletonsShort);
+$verbose    = $verboseLong             ?? $verboseShort;
+
+if (!$verbose && null !== $verbose) {
+    $verbose = true;
+}
+ 
+$file = Bootstrap::start(
+    file: $file,
+    name: $name,
+    singletons: $singletons,
+    verbose: $verbose
+);

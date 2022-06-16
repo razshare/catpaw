@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
+use Throwable;
 
 class Bootstrap {
     private static function checkEntryChange(string $fileName, array &$store) {
@@ -115,38 +116,37 @@ class Bootstrap {
         }
     }
 
+    /**
+     * Bootstrap an application from a file.
+     * @param  string       $name     application name (this will be used by the default logger)
+     * @param  string       $file     php file to run
+     * @param  string       $verbose  if true, will log all singletons loaded at startup
+     * @param  bool|Closure $callback
+     * @throws Throwable
+     */
     public static function start(
-        string $fileaName,
-        string $loggerName = 'Logger',
-        bool $watch = false,
-        int $watchSleep = 100,
+        string $file,
+        string $name,
+        string $singletons,
+        bool $verbose = false,
         false|Closure $callback = false
     ) {
         set_time_limit(0);
         ob_implicit_flush();
         ini_set('memory_limit', '-1');
 
-        Container::setObject(LoggerInterface::class, LoggerFactory::create($loggerName));
+        Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
 
-        if (!$fileaName) {
+        if (!$file) {
             die(Strings::red("Please point to a php entry file.\n"));
         }
 
-        Loop::run(function() use ($fileaName, $callback, $watch, $watchSleep) {
-            /** @var array<string> $dirs */
-            $dirs = yield Container::load(getcwd()."/composer.json");
-
-            if ($watch) {
-                self::watch(
-                    entryFileName: $fileaName,
-                    dirs: $dirs,
-                    sleep: $watchSleep
-                );
+        Loop::run(function() use ($file, $callback, $singletons, $verbose) {
+            yield Container::load(\preg_split('/,|;/', $singletons));
+            if ($verbose) {
+                echo Container::describe();
             }
-
-
-            yield from self::init($fileaName);
-
+            yield from self::init($file);
             if ($callback) {
                 yield \Amp\call($callback);
             }
