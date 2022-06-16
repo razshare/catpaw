@@ -268,7 +268,7 @@ class Container {
 
 
             foreach (get_declared_classes() as $classname) {
-                if (!is_subclass_of($classname, Singleton::class)) {
+                if (!yield Singleton::findByClass(new ReflectionClass($classname))) {
                     continue;
                 }
                 yield Container::create($classname);
