@@ -2,11 +2,14 @@
 
 namespace CatPaw;
 
+use Amp\ByteStream\ResourceInputStream;
+use Amp\ByteStream\ResourceOutputStream;
+
 use function Amp\call;
 use function Amp\delay;
-
 use Amp\File\File;
 use Amp\Loop;
+use Amp\Process\Process;
 use Amp\Promise;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Container;
@@ -106,11 +109,11 @@ class Bootstrap {
 
     /**
      * Bootstrap an application from a file.
-     * @param  string    $file       php file to run (absolute path)
-     * @param  string    $name       application name (this will be used by the default logger)
-     * @param  string    $singletons directories containing singletons
-     * @param  string    $verbose    if true, will log all singletons loaded at startup
+     * @param  string    $name    application name (this will be used by the default logger)
+     * @param  string    $file    php file to run (absolute path)
+     * @param  string    $verbose if true, will log all singletons loaded at startup
      * @param  string    $watch
+     * @param  mixed     $onkill
      * @throws Throwable
      */
     public static function start(
@@ -161,6 +164,81 @@ class Bootstrap {
         });
     }
     
+    public static function spawn(
+        string $start,
+        string $file,
+        string $name,
+        string $singletons,
+        bool $verbose = false,
+        bool $watch = false,
+    ) {
+        Loop::run(function() use (
+            $start,
+            $file,
+            $name,
+            $singletons,
+            $verbose,
+            $watch,
+        ) {
+            global $argv;
+            $out = new ResourceOutputStream(STDOUT);
+            $err = new ResourceOutputStream(STDERR);
+            $in  = new ResourceInputStream(STDIN);
+
+            $options = [ "-f\"$file\"" ];
+
+            if ($singletons) {
+                $options[] = "-s\"$singletons\"";
+            }
+            if ($verbose) {
+                $options[] = '-v';
+            }
+            if ($watch) {
+                $options[] = '-w';
+            }
+
+            $params = join(' ', $options);
+            while (true) {
+                echo "Spawning $start $params".PHP_EOL;
+                $process = new Process("$start $params");
+
+                yield $process->start();
+
+                $pout = $process->getStdout();
+                $perr = $process->getStderr();
+                $pin  = $process->getStdin();
+
+                call(function() use ($pout, $out) {
+                    while ($chunk = yield $pout->read()) {
+                        $out->write($chunk);
+                    }
+                });
+
+                call(function() use ($perr, $err) {
+                    while ($chunk = yield $perr->read()) {
+                        $err->write($chunk);
+                    }
+                });
+
+                call(function() use ($pin, $in) {
+                    while ($chunk = yield $in->read()) {
+                        $pin->write($chunk);
+                    }
+                });
+                try {
+                    $code = yield $process->join();
+                    yield delay(1000);
+                } catch (Throwable $e) {
+                    echo join("\n", [
+                        $e->getMessage(),
+                        $e->getTraceAsString()
+                    ]).PHP_EOL;
+                    yield delay(1000 * 5);
+                }
+            }
+        });
+    }
+
     private static function watch(
         string $entry,
         array $directories,
@@ -169,14 +247,23 @@ class Bootstrap {
         return call(function() use ($entry, $directories, $verbose) {
             $changes   = [];
             $firstPass = true;
+            /** @var LoggerInterface $logger */
+            $logger = yield Container::create(LoggerInterface::class);
+
             while (true) {
+                $countLastPass = count($changes) + 1;   // +1 because of the entry file
+
                 $filenames = [ $entry ];
                 foreach ($directories as $directory) {
                     $filenames = [...$filenames, ...(yield listFilesRecursive($directory))];
                 }
-                
-                /** @var LoggerInterface $logger */
-                $logger = yield Container::create(LoggerInterface::class);
+
+                $countThisPass = count($filenames);
+                if (!$firstPass && $countLastPass !== $countThisPass) {
+                    $logger->info("Killing application...");
+                    yield self::kill();
+                }
+
                 foreach ($filenames as $filename) {
                     if (!str_ends_with($filename, '.php')) {
                         continue;
@@ -185,10 +272,6 @@ class Bootstrap {
                     $changed = filemtime($filename);
                     if (!isset($changes[$filename])) {
                         $changes[$filename] = $changed;
-                        if (!$firstPass) {
-                            $logger->info("Killing application...");
-                            yield self::kill();
-                        }
                         if ($verbose) {
                             $logger->info("Watching $filename");
                         }
