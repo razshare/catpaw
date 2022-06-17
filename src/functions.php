@@ -11,9 +11,9 @@ function listFilesRecursive(string $path):Promise {
     return call(function() use ($path) {
         $items = yield listFiles($path);
         $files = [];
-        foreach($items => $item){
-            if(yield isDirectory($item)){
-                foreach(yield listFilesRecursive($item) as $subItem){
+        foreach ($items as $item) {
+            if (yield isDirectory($item)) {
+                foreach (yield listFilesRecursive($item) as $subItem) {
                     $files[] = $subItem;
                 }
                 continue;
