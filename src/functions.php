@@ -12,14 +12,15 @@ function listFilesRecursive(string $path):Promise {
         $items = yield listFiles($path);
         $files = [];
         foreach ($items as $item) {
-            if (yield isDirectory($item)) {
-                foreach (yield listFilesRecursive($item) as $subItem) {
+            $isDir = yield isDirectory("$path/$item");
+            if ($isDir) {
+                foreach (yield listFilesRecursive("$path/$item") as $subItem) {
                     $files[] = $subItem;
                 }
                 continue;
             }
 
-            $files[] = $item;
+            $files[] = "$path/$item";
         }
         return $files;
     });

@@ -107,7 +107,7 @@ class Bootstrap {
     /**
      * Bootstrap an application from a file.
      * @param  string    $name    application name (this will be used by the default logger)
-     * @param  string    $file    php file to run
+     * @param  string    $file    php file to run (absolute path)
      * @param  string    $verbose if true, will log all singletons loaded at startup
      * @param  string    $watch
      * @param  mixed     $onkill
@@ -132,10 +132,10 @@ class Bootstrap {
 
         Loop::run(function() use ($file, $onkill, $singletons, $verbose, $watch) {
             /** @var array<string> $filenames */
-            $filenames   = yield Container::load(\preg_split('/,|;/', $singletons));
-            $filenames[] = $file;
+            $directories = \preg_split('/,|;/', $singletons);
+            yield Container::load($directories);
             if ($watch) {
-                self::watch($filenames, $verbose);
+                self::watch($file, $directories, $verbose);
             }
 
             if ($verbose) {
@@ -151,34 +151,56 @@ class Bootstrap {
     public static function onKill($callback) {
         self::$onKillActions[] = $callback;
     }
+
+    private static function kill():Promise {
+        return call(function() {
+            foreach (self::$onKillActions as $callback) {
+                yield call($callback);
+            }
+            die();
+        });
+    }
     
     private static function watch(
-        array $filenames,
+        string $entry,
+        array $directories,
         bool $verbose = false,
     ):Promise {
-        $changes = [];
-        return call(function() use ($filenames, &$changes, $verbose) {
+        return call(function() use ($entry, $directories, $verbose) {
+            $changes   = [];
+            $firstPass = true;
             while (true) {
+                $filenames = [ $entry ];
+                foreach ($directories as $directory) {
+                    $filenames = [...$filenames, ...(yield listFilesRecursive($directory))];
+                }
+                
                 /** @var LoggerInterface $logger */
                 $logger = yield Container::create(LoggerInterface::class);
                 foreach ($filenames as $filename) {
+                    if (!str_ends_with($filename, '.php')) {
+                        continue;
+                    }
+                    
                     $changed = filemtime($filename);
                     if (!isset($changes[$filename])) {
                         $changes[$filename] = $changed;
+                        if (!$firstPass) {
+                            $logger->info("Killing application...");
+                            yield self::kill();
+                        }
                         if ($verbose) {
                             $logger->info("Watching $filename");
                         }
                         continue;
                     }
+                    
                     if ($changes[$filename] !== $changed) {
-                        foreach (self::$onKillActions as $callback) {
-                            yield call($callback);
-                        }
-                            
                         $logger->info("Killing application...");
-                        die();
+                        yield self::kill();
                     }
                 }
+                $firstPass = false;
                 yield delay(1000);
             }
         });
