@@ -2,17 +2,22 @@
 
 namespace CatPaw;
 
+use function Amp\call;
+use function Amp\delay;
+
+use Amp\File\File;
 use Amp\Loop;
+use Amp\Promise;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\Dir;
 use CatPaw\Utilities\LoggerFactory;
 use CatPaw\Utilities\Strings;
-use Closure;
 use Generator;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
+
 use ReflectionFunction;
 
 use Throwable;
@@ -101,11 +106,11 @@ class Bootstrap {
 
     /**
      * Bootstrap an application from a file.
-     * @param  string       $name     application name (this will be used by the default logger)
-     * @param  string       $file     php file to run
-     * @param  string       $verbose  if true, will log all singletons loaded at startup
-     * @param  string       $watch
-     * @param  bool|Closure $callback
+     * @param  string    $name    application name (this will be used by the default logger)
+     * @param  string    $file    php file to run
+     * @param  string    $verbose if true, will log all singletons loaded at startup
+     * @param  string    $watch
+     * @param  mixed     $onkill
      * @throws Throwable
      */
     public static function start(
@@ -114,7 +119,6 @@ class Bootstrap {
         string $singletons,
         bool $verbose = false,
         bool $watch = false,
-        false|Closure $callback = false
     ) {
         set_time_limit(0);
         ob_implicit_flush();
@@ -126,45 +130,59 @@ class Bootstrap {
             die(Strings::red("Please point to a php entry file.\n"));
         }
 
-        Loop::run(function() use ($file, $callback, $singletons, $verbose, $watch) {
+        Loop::run(function() use ($file, $onkill, $singletons, $verbose, $watch) {
             /** @var array<string> $filenames */
             $filenames   = yield Container::load(\preg_split('/,|;/', $singletons));
             $filenames[] = $file;
             if ($watch) {
-                self::watch($filenames);
+                self::watch($filenames, $verbose);
             }
 
             if ($verbose) {
                 echo Container::describe();
             }
             yield from self::init($file);
-            if ($callback) {
-                yield \Amp\call($callback);
-            }
         });
     }
 
     
+    private static array $onKillActions = [];
+
+    public static function onKill($callback) {
+        self::$onKillActions[] = $callback;
+    }
+    
     private static function watch(
         array $filenames,
-        bool $verbose = false
-    ):void {
+        bool $verbose = false,
+    ):Promise {
         $changes = [];
-        Loop::repeat(1000, function() use ($filenames, &$changes, $verbose) {
-            /** @var LoggerInterface $logger */
-            $logger = yield Container::create(LoggerInterface::class);
-            foreach ($filenames as $filename) {
-                $changed = yield \Amp\File\getModificationTime($filename);
-                if (!isset($changes[$filename])) {
-                    $changes[$filename] = $changed;
-                    if ($verbose) {
-                        $logger->info("Watching $filename");
+        return call(function() use ($filenames, &$changes, $verbose) {
+            while (true) {
+                /** @var LoggerInterface $logger */
+                $logger = yield Container::create(LoggerInterface::class);
+                foreach ($filenames as $filename) {
+                    $changed = filemtime($filename);
+                    if (str_ends_with($filename, "main.php")) {
+                        $logger->info("changed: $changed");
                     }
-                    continue;
+                    if (!isset($changes[$filename])) {
+                        $changes[$filename] = $changed;
+                        if ($verbose) {
+                            $logger->info("Watching $filename");
+                        }
+                        continue;
+                    }
+                    if ($changes[$filename] !== $changed) {
+                        foreach (self::$onKillActions as $callback) {
+                            yield call($callback);
+                        }
+                            
+                        $logger->info("Killing application...");
+                        die();
+                    }
                 }
-                if ($changes[$filename] !== $changed) {
-                    die('Klling server...'.PHP_EOL);
-                }
+                yield delay(1000);
             }
         });
     }
