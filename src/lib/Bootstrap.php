@@ -2,9 +2,7 @@
 
 namespace CatPaw;
 
-use function Amp\call;
 use Amp\Loop;
-use Amp\Promise;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\Dir;
@@ -148,20 +146,23 @@ class Bootstrap {
 
     
     private static function watch(
-        array $filenames
-    ):Promise {
-        return call(function() use ($filenames) {
-            $changes = [];
+        array $filenames,
+        bool $verbose = false
+    ):void {
+        $changes = [];
+        Loop::repeat(1000, function() use ($filenames, &$changes, $verbose) {
             /** @var LoggerInterface $logger */
             $logger = yield Container::create(LoggerInterface::class);
             foreach ($filenames as $filename) {
                 $changed = yield \Amp\File\getModificationTime($filename);
                 if (!isset($changes[$filename])) {
                     $changes[$filename] = $changed;
-                    $logger->info("Watching $filename");
+                    if ($verbose) {
+                        $logger->info("Watching $filename");
+                    }
                     continue;
                 }
-                if ($changed[$filename] !== $changed) {
+                if ($changes[$filename] !== $changed) {
                     die('Klling server...'.PHP_EOL);
                 }
             }
