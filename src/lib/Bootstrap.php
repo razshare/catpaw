@@ -163,9 +163,6 @@ class Bootstrap {
                 $logger = yield Container::create(LoggerInterface::class);
                 foreach ($filenames as $filename) {
                     $changed = filemtime($filename);
-                    if (str_ends_with($filename, "main.php")) {
-                        $logger->info("changed: $changed");
-                    }
                     if (!isset($changes[$filename])) {
                         $changes[$filename] = $changed;
                         if ($verbose) {
