@@ -1,10 +1,11 @@
 #!/usr/bin/php
 <?php
 use CatPaw\Bootstrap;
-chdir(getcwd());
 require 'vendor/autoload.php';
 
 [
+    "w"          => $watchShort,
+    "watch"      => $watchLong,
     "f"          => $fileShort,
     "file"       => $fileLong,
     "n"          => $nameShort,
@@ -14,6 +15,8 @@ require 'vendor/autoload.php';
     "v"          => $verboseShort,
     "verbose"    => $verboseLong,
 ] = [
+    "w"          => null,
+    "watch"       => null,
     "f"          => null,
     "file"       => null,
     "n"          => null,
@@ -22,11 +25,12 @@ require 'vendor/autoload.php';
     "singletons" => null,
     "v"          => null,
     "verbose"    => null,
-    ...getopt("n::s::v::f:", [
+    ...getopt("n::s::v::w::f:", [
         "file:",
         "name::",
         "verbose::",
         "singletons::",
+        "watch::",
     ])
 ];
 
@@ -34,17 +38,34 @@ $file       = realpath($fileLong       ?? $fileShort);
 $name       = $nameShort               ?? $nameLong               ?? "App";
 $singletons = $singletonsLong ?? $singletonsShort;
 $verbose    = $verboseLong             ?? $verboseShort;
+$watch      = $watchLong               ?? $watchShort;
 
 if($singletons)
     $singletons = realpath($singletons);
 
 if (!$verbose && null !== $verbose) {
     $verbose = true;
+} else {
+    $verbose = false;
 }
- 
-$file = Bootstrap::start(
-    file: $file,
-    name: $name,
-    singletons: $singletons,
-    verbose: $verbose
-);
+
+if (!$watch && null !== $watch) {
+    $watch = true;
+} else {
+    $watch = false;
+}
+
+try{
+    Bootstrap::start(
+        file: $file,
+        name: $name,
+        singletons: $singletons,
+        verbose: $verbose,
+        watch: $watch,
+    );
+}catch(Throwable $e){
+    die(join(PHP_EOL,[
+        $e->getMessage(),
+        $e->getTraceAsString(),
+    ])).PHP_EOL;
+}

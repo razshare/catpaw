@@ -2,7 +2,9 @@
 
 namespace CatPaw;
 
+use function Amp\call;
 use Amp\Loop;
+use Amp\Promise;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\Dir;
@@ -14,6 +16,7 @@ use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
+
 use Throwable;
 
 class Bootstrap {
@@ -45,24 +48,6 @@ class Bootstrap {
             }
             $store[$name] = $file;
         }
-    }
-
-    private static function watch(string $entryFileName, array $dirs, int $sleep) {
-        $store = [];
-
-        self::checkEntryChange($entryFileName, $store);
-
-        foreach ($dirs as $dir) {
-            self::checkFileChange($dir, $store);
-        }
-
-
-        Loop::repeat($sleep, function() use ($dirs, $store, $entryFileName) {
-            self::checkEntryChange($entryFileName, $store);
-            foreach ($dirs as $dir) {
-                self::checkFileChange($dir, $store);
-            }
-        });
     }
 
 
@@ -121,14 +106,16 @@ class Bootstrap {
      * @param  string       $name     application name (this will be used by the default logger)
      * @param  string       $file     php file to run
      * @param  string       $verbose  if true, will log all singletons loaded at startup
+     * @param  string       $watch
      * @param  bool|Closure $callback
      * @throws Throwable
      */
     public static function start(
         string $file,
         string $name,
-        ?string $singletons = null,
+        string $singletons,
         bool $verbose = false,
+        bool $watch = false,
         false|Closure $callback = false
     ) {
         set_time_limit(0);
@@ -141,17 +128,42 @@ class Bootstrap {
             die(Strings::red("Please point to a php entry file.\n"));
         }
 
-        Loop::run(function() use ($file, $callback, $singletons, $verbose) {
-            if ($singletons) {
-                yield Container::load(\preg_split('/,|;/', $singletons));
+        Loop::run(function() use ($file, $callback, $singletons, $verbose, $watch) {
+            /** @var array<string> $filenames */
+            $filenames   = yield Container::load(\preg_split('/,|;/', $singletons));
+            $filenames[] = $file;
+            if ($watch) {
+                self::watch($filenames);
             }
-                
+
             if ($verbose) {
                 echo Container::describe();
             }
             yield from self::init($file);
             if ($callback) {
                 yield \Amp\call($callback);
+            }
+        });
+    }
+
+    
+    private static function watch(
+        array $filenames
+    ):Promise {
+        return call(function() use ($filenames) {
+            $changes = [];
+            /** @var LoggerInterface $logger */
+            $logger = yield Container::create(LoggerInterface::class);
+            foreach ($filenames as $filename) {
+                $changed = yield \Amp\File\getModificationTime($filename);
+                if (!isset($changes[$filename])) {
+                    $changes[$filename] = $changed;
+                    $logger->info("Watching $filename");
+                    continue;
+                }
+                if ($changed[$filename] !== $changed) {
+                    die('Klling server...'.PHP_EOL);
+                }
             }
         });
     }
