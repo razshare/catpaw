@@ -106,11 +106,11 @@ class Bootstrap {
 
     /**
      * Bootstrap an application from a file.
-     * @param  string    $name    application name (this will be used by the default logger)
-     * @param  string    $file    php file to run (absolute path)
-     * @param  string    $verbose if true, will log all singletons loaded at startup
+     * @param  string    $file       php file to run (absolute path)
+     * @param  string    $name       application name (this will be used by the default logger)
+     * @param  string    $singletons directories containing singletons
+     * @param  string    $verbose    if true, will log all singletons loaded at startup
      * @param  string    $watch
-     * @param  mixed     $onkill
      * @throws Throwable
      */
     public static function start(
@@ -130,7 +130,7 @@ class Bootstrap {
             die(Strings::red("Please point to a php entry file.\n"));
         }
 
-        Loop::run(function() use ($file, $onkill, $singletons, $verbose, $watch) {
+        Loop::run(function() use ($file, $singletons, $verbose, $watch) {
             /** @var array<string> $filenames */
             $directories = \preg_split('/,|;/', $singletons);
             yield Container::load($directories);
