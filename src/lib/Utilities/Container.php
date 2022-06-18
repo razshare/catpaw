@@ -252,6 +252,9 @@ class Container {
         return call(function() use ($locations) {
             $dirs = [];
             foreach ($locations as $location) {
+                if ('' === \trim($location)) {
+                    continue;
+                }
                 $directory = new RecursiveDirectoryIterator(realpath($location));
                 $iterator  = new RecursiveIteratorIterator($directory);
                 $regex     = new RegexIterator($iterator, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);
