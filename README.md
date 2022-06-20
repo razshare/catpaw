@@ -26,7 +26,7 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 ---
 
-# Before starting
+# Premise
 
 This project is aimed at linux distributions, some features may or not may work on Windows or MacOS.<br/>
 Feel free to contribute fixing issues for specific platforms.
