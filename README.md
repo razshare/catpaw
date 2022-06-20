@@ -26,6 +26,11 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 ---
 
+# Before starting
+
+This project is aimed at linux distributions, some features may or not may work on Windows or MacOS.<br/>
+Feel free to contribute fixing issues for specific platforms.
+
 # Get started
 
 In order to get started you will need [php 8.1](https://www.php.net/downloads.php) or a more recent version.
