@@ -92,7 +92,7 @@ composer start
 ```
 or
 ```bash
-./start
+composer watch
 ```
 
 then start your vite dev server
