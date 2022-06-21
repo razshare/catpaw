@@ -7,6 +7,7 @@ use Amp\ByteStream\ResourceOutputStream;
 
 use function Amp\call;
 use function Amp\delay;
+
 use Amp\File\File;
 use Amp\Loop;
 use Amp\Process\Process;
@@ -180,7 +181,6 @@ class Bootstrap {
             $verbose,
             $watch,
         ) {
-            global $argv;
             $out = new ResourceOutputStream(STDOUT);
             $err = new ResourceOutputStream(STDERR);
             $in  = new ResourceInputStream(STDIN);
@@ -251,6 +251,7 @@ class Bootstrap {
             $logger = yield Container::create(LoggerInterface::class);
 
             while (true) {
+                clearstatcache();
                 $countLastPass = count($changes) + 1;   // +1 because of the entry file
 
                 $filenames = [ $entry ];
@@ -269,7 +270,7 @@ class Bootstrap {
                         continue;
                     }
                     
-                    $changed = filemtime($filename);
+                    $changed = \filemtime($filename);
                     if (!isset($changes[$filename])) {
                         $changes[$filename] = $changed;
                         if ($verbose) {
