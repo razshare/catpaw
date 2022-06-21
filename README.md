@@ -59,13 +59,13 @@ namespace {
 
 <br/>
 
-After you've created your new project, you can run it in development mode using
+After you've created your new project, you can run it using
 
 ```bash
-compsoer run dev
+compsoer run watch
 ```
 
-or in production using
+or
 
 ```bash
 compsoer run start
