@@ -140,8 +140,6 @@ xdebug.client_port=9003
 
 ### VSCode configuration
 
-If you're us
-
 Make new a `./.vscode/launch.json` file in your project and add the following configuration if you don't have it already:
 ```json
 {
