@@ -171,3 +171,8 @@ Make new a `./.vscode/launch.json` file in your project and add the following co
 ```
 
 The first configuration will passively listen for xdebug, while the second one will launch the currently opened script.
+
+### Note 
+
+When launching the "currently opened file" profile, make sure that file includes in some manner a global `main` function.<br/>
+Regardless, the cli should warn you if such function is nor present in the global scope.
