@@ -7,19 +7,22 @@ use Amp\ByteStream\ResourceOutputStream;
 
 use function Amp\call;
 use function Amp\delay;
+use function Amp\File\createDefaultDriver;
 
 use Amp\File\File;
+use Amp\File\Filesystem;
+
 use Amp\Loop;
 use Amp\Process\Process;
 use Amp\Promise;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Container;
-use CatPaw\Utilities\Dir;
 use CatPaw\Utilities\LoggerFactory;
 use CatPaw\Utilities\Strings;
 use Generator;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
+
 use ReflectionException;
 
 use ReflectionFunction;
@@ -27,37 +30,6 @@ use ReflectionFunction;
 use Throwable;
 
 class Bootstrap {
-    private static function checkEntryChange(string $fileName, array &$store) {
-        $size       = filesize($fileName);
-        $lastChange = filemtime($fileName);
-        if (isset($store[$fileName]) && $store[$fileName]['lastChange'] < $lastChange) {
-            Loop::stop();
-        } else {
-            $store[$fileName] = [
-                'name'       => $fileName,
-                'size'       => $size,
-                'lastChange' => $lastChange,
-            ];
-        }
-    }
-
-    private static function checkFileChange(string $dirname, array &$store) {
-        $files = [];
-        Dir::findFilesRecursive($dirname, $files);
-
-        foreach ($files as $file) {
-            $name = $file['name'];
-            if (isset($store[$name])) {
-                if ($store[$name]['lastChange'] < $file['lastChange']) {
-                    Loop::stop();
-                    return;
-                }
-            }
-            $store[$name] = $file;
-        }
-    }
-
-
     /**
      * @throws ReflectionException
      */
@@ -245,6 +217,7 @@ class Bootstrap {
         bool $verbose = false,
     ):Promise {
         return call(function() use ($entry, $directories, $verbose) {
+            $fs        = new Filesystem(createDefaultDriver());
             $changes   = [];
             $firstPass = true;
             /** @var LoggerInterface $logger */
@@ -270,16 +243,17 @@ class Bootstrap {
                         continue;
                     }
                     
-                    $changed = \filemtime($filename);
+                    
+                    $mtime = yield $fs->getModificationTime($filename);
                     if (!isset($changes[$filename])) {
-                        $changes[$filename] = $changed;
+                        $changes[$filename] = $mtime;
                         if ($verbose) {
                             $logger->info("Watching $filename");
                         }
                         continue;
                     }
                     
-                    if ($changes[$filename] !== $changed) {
+                    if ($changes[$filename] !== $mtime) {
                         $logger->info("Killing application...");
                         yield self::kill();
                     }
