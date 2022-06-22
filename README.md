@@ -73,7 +73,7 @@ compsoer run start
 
 # Get started with Svelte
 
-In order to get started you will need php 8.1 or a more recent version.
+In order to get started you will need [php 8.1](https://www.php.net/downloads.php) or a more recent version.
 
 You can create a new project using the svelte starter template.
 
