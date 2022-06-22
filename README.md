@@ -94,7 +94,13 @@ or
 composer watch
 ```
 
-then start your vite dev server
+then install your npm dependencies
+
+```bash
+npm i
+```
+
+and start your vite dev server
 
 ```bash
 npm run dev
