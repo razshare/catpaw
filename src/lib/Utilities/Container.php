@@ -250,7 +250,7 @@ class Container {
      */
     public static function load(array $locations):Promise {
         return call(function() use ($locations) {
-            $dirs = [];
+            $scanned = [];
             foreach ($locations as $location) {
                 if ('' === \trim($location)) {
                     continue;
@@ -264,7 +264,7 @@ class Container {
                     $files = $regex->current();
                     foreach ($files as $filename) {
                         require_once($filename);
-                        $dirs[] = $filename;
+                        $scanned[] = $filename;
                     }
                 }
             }
@@ -277,7 +277,7 @@ class Container {
                 yield Container::create($classname);
             }
             
-            return $dirs;
+            return $scanned;
         });
     }
 
