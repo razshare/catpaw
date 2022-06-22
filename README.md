@@ -76,7 +76,7 @@ compsoer run start
 You can create a new project using the svelte starter template.
 
 ```bash
-composer create-project catpaw/starter-svelte
+composer create-project catpaw/svelte-starter
 ```
 
 Or you could also clone the template from https://github.com/tncrazvan/catpaw-starter-svelte
