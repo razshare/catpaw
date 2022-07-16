@@ -123,14 +123,28 @@ class Container {
             for ($i = 0; $i < $len; $i++) {
                 $type = $refparams[$i]->getType();
                 if ($type instanceof ReflectionUnionType) {
-                    $cname = $type->getTypes()[0]->getName();
+                    $types = $type->getTypes();
+                    $cname = $types[0]->getName();
+                    foreach ($types as $i => $t) {
+                        if ('null' !== $t && 'false' !== $t) {
+                            $cname = $t->getName();
+                            break;
+                        }
+                    }
                 } else {
                     $cname = $type ? $type->getName() : '';
                 }
 
-                $default = ($defaultArguments[$i] ?? false)?$defaultArguments[$i]:false;
+                if ('bool' === $cname) {
+                    $negative = false;
+                } else {
+                    $negative = null;
+                }
+
+
+                $default = ($defaultArguments[$i] ?? $negative)?$defaultArguments[$i]:$negative;
                 if (!$default && $refparams[$i]->isOptional()) {
-                    $default = $refparams[$i]->getDefaultValue() ?? false;
+                    $default = $refparams[$i]->getDefaultValue() ?? $negative;
                 }
 
 
