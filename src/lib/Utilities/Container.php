@@ -11,6 +11,7 @@ use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 use Closure;
 use Exception;
+use Psr\Log\LoggerInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RecursiveRegexIterator;
@@ -270,6 +271,10 @@ class Container {
             Container::clearAll();
         }
 
+        if (!isset(self::$singletons[LoggerInterface::class])) {
+            Container::setObject(LoggerInterface::class, LoggerFactory::create());
+        }
+        
         return call(function() use ($locations) {
             $scanned = [];
             foreach ($locations as $location) {
