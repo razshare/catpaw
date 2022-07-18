@@ -23,7 +23,7 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | 🗄 MySQL Repositories      | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
 | ⚡ Stores                 | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)               | [Github](./docs/12.Stores.md)            |
 | 🌐 Svelte SPA                 | ✅           | [catpaw-svelte-starter](https://github.com/tncrazvan/catpaw-svelte-starter)               | [Github](./docs/15.SPA.md)            |
-| 🌐 Queue                 | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)               | TODO            |
+| ⚡ Queue                 | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)               | TODO            |
 
 ---
 
