@@ -259,10 +259,17 @@ class Container {
     /**
      * Loads singletons from predefined locations.
      * @param  array<string>          $locations
+     * @param  bool                   $append    if true, the found singletons will be appended to 
+     *                                           the singleton, otherwise the singletons will 
+     *                                           be cleared before scanning.
      * @throws Exception
      * @return Promise<array<string>> list of directories examined.
      */
-    public static function load(array $locations):Promise {
+    public static function load(array $locations, bool $append = false):Promise {
+        if (!$append) {
+            Container::clearAll();
+        }
+
         return call(function() use ($locations) {
             $scanned = [];
             foreach ($locations as $location) {
