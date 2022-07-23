@@ -18,6 +18,7 @@ use RecursiveRegexIterator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
+use ReflectionIntersectionType;
 use ReflectionMethod;
 use ReflectionUnionType;
 use RegexIterator;
@@ -123,7 +124,7 @@ class Container {
 
             for ($i = 0; $i < $len; $i++) {
                 $type = $refparams[$i]->getType();
-                if ($type instanceof ReflectionUnionType) {
+                if ($type instanceof ReflectionUnionType || $type instanceof ReflectionIntersectionType) {
                     $types = $type->getTypes();
                     $cname = $types[0]->getName();
                     foreach ($types as $i => $t) {
