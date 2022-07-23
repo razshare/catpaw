@@ -18,9 +18,7 @@ use RecursiveRegexIterator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
-use ReflectionIntersectionType;
 use ReflectionMethod;
-use ReflectionUnionType;
 use RegexIterator;
 use SplFixedArray;
 
@@ -123,19 +121,9 @@ class Container {
             $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE] = new SplFixedArray($len);
 
             for ($i = 0; $i < $len; $i++) {
-                $type = $refparams[$i]->getType();
-                if ($type instanceof ReflectionUnionType || $type instanceof ReflectionIntersectionType) {
-                    $types = $type->getTypes();
-                    $cname = $types[0]->getName();
-                    foreach ($types as $i => $t) {
-                        if ('null' !== $t && 'false' !== $t) {
-                            $cname = $t->getName();
-                            break;
-                        }
-                    }
-                } else {
-                    $cname = $type ? $type->getName() : '';
-                }
+                $type  = $refparams[$i]->getType();
+                $type  = ReflectionTypeManager::unwrap($refparams[$i]);
+                $cname = $type ? $type->getName() : '';
 
                 if ('bool' === $cname) {
                     $negative = false;
