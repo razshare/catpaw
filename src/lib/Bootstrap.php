@@ -129,7 +129,7 @@ class Bootstrap {
         self::$onKillActions[] = $callback;
     }
 
-    private static function kill():Promise {
+    public static function kill():Promise {
         return call(function() {
             foreach (self::$onKillActions as $callback) {
                 yield call($callback);
