@@ -111,7 +111,6 @@ class Bootstrap {
             /** @var array<string> $filenames */
             $directories = !$library?[]:\preg_split('/,|;/', $library);
             $resources   = !$resources?[]:\preg_split('/,|;/', $resources);
-            yield Container::load($directories);
             if ($dieOnChange) {
                 self::dieOnChange(
                     entry: $entry,
@@ -120,11 +119,22 @@ class Bootstrap {
                     info: $info,
                 );
             }
-
-            if ($info) {
-                echo Container::describe();
+            try {
+                yield Container::load($directories);
+                
+                if ($info) {
+                    echo Container::describe();
+                }
+                yield from self::init($entry);
+            } catch (Throwable $e) {
+                if ($dieOnChange) {
+                    echo $e.\PHP_EOL;
+                    while (true) {
+                        yield delay(1000);
+                    }
+                }
+                throw $e;
             }
-            yield from self::init($entry);
         });
     }
 
@@ -267,6 +277,7 @@ class Bootstrap {
 
                 foreach ($filenames as $filename) {
                     if (!yield exists($filename)) {
+                        $changes[$filename] = 0;
                         continue;
                     }
                     $mtime = yield $fs->getModificationTime($filename);
@@ -283,6 +294,7 @@ class Bootstrap {
 
                 foreach ($resources as $filename) {
                     if (!yield exists($filename)) {
+                        $changes[$filename] = 0;
                         continue;
                     }
                     $mtime = yield $fs->getModificationTime($filename);
