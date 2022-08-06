@@ -8,6 +8,7 @@ use Amp\ByteStream\ResourceOutputStream;
 use function Amp\call;
 use function Amp\delay;
 use function Amp\File\createDefaultDriver;
+use function Amp\File\exists;
 
 use Amp\File\File;
 use Amp\File\Filesystem;
@@ -51,9 +52,8 @@ class Bootstrap {
      * @return Generator
      */
     private static function init(string $filename): Generator {
-        if (is_file($filename)) {
-            $filename = realpath($filename);
-            $owd      = getcwd();
+        if (yield exists($filename)) {
+            $owd = getcwd();
             chdir(dirname($filename));
             require_once $filename;
             chdir($owd);
@@ -82,43 +82,49 @@ class Bootstrap {
 
     /**
      * Bootstrap an application from a file.
-     * @param  string    $name    application name (this will be used by the default logger)
-     * @param  string    $file    php file to run (absolute path)
-     * @param  string    $verbose if true, will log all singletons loaded at startup
+     * @param  string    $name   application name (this will be used by the default logger)
+     * @param  string    $file   php file to run (absolute path)
+     * @param  string    $info   if true, will log all singletons loaded at startup
      * @param  string    $watch
      * @param  mixed     $onkill
      * @throws Throwable
      */
     public static function start(
-        string $file,
+        string $entry,
         string $name,
-        string $singletons,
-        bool $verbose = false,
-        bool $watch = false,
+        string $library,
+        string $resources,
+        bool $info = false,
+        bool $dieOnChange = false,
     ) {
         set_time_limit(0);
         ob_implicit_flush();
         ini_set('memory_limit', '-1');
-        $_ENV['CATPAW_WATCHING'] = $watch;
 
         Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
 
-        if (!$file) {
+        if (!$entry) {
             die(Strings::red("Please point to a php entry file.\n"));
         }
 
-        Loop::run(function() use ($file, $singletons, $verbose, $watch) {
+        Loop::run(function() use ($entry, $library, $info, $dieOnChange, $resources) {
             /** @var array<string> $filenames */
-            $directories = \preg_split('/,|;/', $singletons);
+            $directories = !$library?[]:\preg_split('/,|;/', $library);
+            $resources   = !$resources?[]:\preg_split('/,|;/', $resources);
             yield Container::load($directories);
-            if ($watch) {
-                self::watch($file, $directories, $verbose);
+            if ($dieOnChange) {
+                self::dieOnChange(
+                    entry: $entry,
+                    directories: $directories,
+                    resources: $resources,
+                    info: $info,
+                );
             }
 
-            if ($verbose) {
+            if ($info) {
                 echo Container::describe();
             }
-            yield from self::init($file);
+            yield from self::init($entry);
         });
     }
 
@@ -138,36 +144,55 @@ class Bootstrap {
         });
     }
     
+    /**
+     * @param  string    $start
+     * @param  string    $entry
+     * @param  string    $name
+     * @param  string    $library
+     * @param  string    $resources
+     * @param  bool      $info
+     * @param  bool      $watch
+     * @throws Throwable
+     * @return void
+     */
     public static function spawn(
         string $start,
-        string $file,
+        string $entry,
         string $name,
-        string $singletons,
-        bool $verbose = false,
+        string $library,
+        string $resources,
+        bool $info = false,
         bool $watch = false,
     ) {
         Loop::run(function() use (
             $start,
-            $file,
+            $entry,
             $name,
-            $singletons,
-            $verbose,
+            $library,
+            $info,
             $watch,
+            $resources,
         ) {
             $out = new ResourceOutputStream(STDOUT);
             $err = new ResourceOutputStream(STDERR);
             $in  = new ResourceInputStream(STDIN);
 
-            $options = [ "-f\"$file\"" ];
+            $options = [ "-e\"$entry\"" ];
 
-            if ($singletons) {
-                $options[] = "-s\"$singletons\"";
+            if ($name) {
+                $options[] = "-n\"$name\"";
             }
-            if ($verbose) {
-                $options[] = '-v';
+            if ($library) {
+                $options[] = "-l\"$library\"";
+            }
+            if ($resources) {
+                $options[] = "-r\"$resources\"";
             }
             if ($watch) {
-                $options[] = '-w';
+                $options[] = '-d';
+            }
+            if ($info) {
+                $options[] = '-i';
             }
 
             $params = join(' ', $options);
@@ -212,12 +237,13 @@ class Bootstrap {
         });
     }
 
-    private static function watch(
+    private static function dieOnChange(
         string $entry,
         array $directories,
-        bool $verbose = false,
+        array $resources,
+        bool $info = false,
     ):Promise {
-        return call(function() use ($entry, $directories, $verbose) {
+        return call(function() use ($entry, $directories, $resources, $info) {
             $fs        = new Filesystem(createDefaultDriver());
             $changes   = [];
             $firstPass = true;
@@ -226,11 +252,11 @@ class Bootstrap {
 
             while (true) {
                 clearstatcache();
-                $countLastPass = count($changes) + 1;   // +1 because of the entry file
+                $countLastPass = count($changes);
 
                 $filenames = [ $entry ];
                 foreach ($directories as $directory) {
-                    $filenames = [...$filenames, ...(yield listFilesRecursive($directory))];
+                    $filenames = [...$filenames, ...(yield listFilesRecursive(\realpath($directory)))];
                 }
 
                 $countThisPass = count($filenames);
@@ -240,17 +266,12 @@ class Bootstrap {
                 }
 
                 foreach ($filenames as $filename) {
-                    if (!str_ends_with($filename, '.php')) {
+                    if (!yield exists($filename)) {
                         continue;
                     }
-                    
-                    
                     $mtime = yield $fs->getModificationTime($filename);
                     if (!isset($changes[$filename])) {
                         $changes[$filename] = $mtime;
-                        if ($verbose) {
-                            $logger->info("Watching $filename");
-                        }
                         continue;
                     }
                     
@@ -259,6 +280,25 @@ class Bootstrap {
                         yield self::kill();
                     }
                 }
+
+                foreach ($resources as $filename) {
+                    if (!yield exists($filename)) {
+                        continue;
+                    }
+                    $mtime = yield $fs->getModificationTime($filename);
+                    if (!isset($changes[$filename])) {
+                        $changes[$filename] = $mtime;
+                        if ($info) {
+                            $logger->info("Watching $filename");
+                        }
+                        continue;
+                    }
+                    if ($changes[$filename] !== $mtime) {
+                        $logger->info("Killing application...");
+                        yield self::kill();
+                    }
+                }
+
                 $firstPass = false;
                 yield delay(1000);
             }

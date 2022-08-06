@@ -8,11 +8,14 @@ use function Amp\File\listFiles;
 use Amp\Promise;
 
 function listFilesRecursive(string $path):Promise {
+    if (!\str_ends_with($path, '/')) {
+        $path .= '/';
+    }
     return call(function() use ($path) {
         $items = yield listFiles($path);
         $files = [];
         foreach ($items as $item) {
-            $filename = "$path/$item";
+            $filename = "$path$item";
             $isDir    = yield isDirectory($filename);
             if ($isDir) {
                 foreach (yield listFilesRecursive($filename) as $subItem) {

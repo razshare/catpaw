@@ -1,0 +1,60 @@
+#!/usr/bin/env php
+<?php
+use CatPaw\Bootstrap;
+
+require 'vendor/autoload.php';
+
+[
+    "e" => $entry,
+    "n" => $name,
+    "l" => $library,
+    "r" => $resources,
+    "d" => $dieOnChange,
+    "w" => $watch,
+    "i" => $info,
+] = [
+    "e" => null,
+    "n" => null,
+    "l" => null,
+    "r" => null,
+    "d" => null,
+    "w" => null,
+    "i" => null,
+    ...getopt('e:n::l::r::d::w::i::')
+];
+
+$entry       = realpath($entry ?? '');
+$name        = $name           ?? 'App';
+$library     = $library        ?? '';
+$resources   = $resources      ?? '';
+$dieOnChange = false === $dieOnChange;
+$watch       = false === $watch;
+$info        = false === $info;
+
+try {
+    if ($watch) {
+        Bootstrap::spawn(
+            start: __FILE__,
+            entry: $entry,
+            name: $name,
+            library: $library,
+            info: $info,
+            watch: true,
+            resources: $resources,
+        );
+    } else {
+        Bootstrap::start(
+            entry: $entry,
+            name: $name,
+            library: $library,
+            info: $info,
+            dieOnChange: $dieOnChange,
+            resources: $resources,
+        );
+    }
+} catch (Throwable $e) {
+    die(join(PHP_EOL, [
+        $e->getMessage(),
+        $e->getTraceAsString(),
+    ])).PHP_EOL;
+}

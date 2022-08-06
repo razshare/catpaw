@@ -25,6 +25,22 @@
                 "XDEBUG_MODE": "debug,develop",
                 "XDEBUG_CONFIG": "client_port=${port}"
             }
+        },
+        {
+            "name": "Export (paw)",
+            "type": "php",
+            "request": "launch",
+            "program": "${workspaceFolder}/export.php",
+            "cwd": "${workspaceFolder}",
+            "port": 0,
+            "runtimeArgs": [
+                "-dxdebug.start_with_request=yes",
+                "-dxdebug.mode=debug=yes",
+            ],
+            "env": {
+                "XDEBUG_MODE": "debug,develop",
+                "XDEBUG_CONFIG": "client_port=${port}"
+            }
         }
     ]
 }
