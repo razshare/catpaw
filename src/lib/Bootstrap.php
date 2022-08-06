@@ -99,6 +99,7 @@ class Bootstrap {
         set_time_limit(0);
         ob_implicit_flush();
         ini_set('memory_limit', '-1');
+        $_ENV['CATPAW_WATCHING'] = $watch;
 
         Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
 
