@@ -259,7 +259,7 @@ class Bootstrap {
                     $filenames = [...$filenames, ...(yield listFilesRecursive(\realpath($directory)))];
                 }
 
-                $countThisPass = count($filenames);
+                $countThisPass = count([...$filenames, ...$resources]);
                 if (!$firstPass && $countLastPass !== $countThisPass) {
                     $logger->info("Killing application...");
                     yield self::kill();
