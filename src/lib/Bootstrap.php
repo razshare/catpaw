@@ -288,9 +288,6 @@ class Bootstrap {
                     $mtime = yield $fs->getModificationTime($filename);
                     if (!isset($changes[$filename])) {
                         $changes[$filename] = $mtime;
-                        if ($info) {
-                            $logger->info("Watching $filename");
-                        }
                         continue;
                     }
                     if ($changes[$filename] !== $mtime) {
