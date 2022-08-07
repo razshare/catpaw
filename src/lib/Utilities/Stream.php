@@ -4,7 +4,7 @@ namespace CatPaw\Utilities;
 
 use Amp\ByteStream\ResourceInputStream;
 use Amp\ByteStream\ResourceOutputStream;
-
+use Amp\Promise;
 
 class Stream {
     private ?ResourceOutputStream $writer = null;
@@ -12,25 +12,25 @@ class Stream {
     private function __construct(private mixed $stream) {
     }
 
-    public static function of(mixed $resource) {
+    public static function of(mixed $resource):self {
         return new self($resource);
     }
 
-    public function write(string $chunk) {
+    public function write(string $chunk):Promise {
         if (!$this->writer) {
             $this->writer = new ResourceOutputStream($this->stream);
         }
         return $this->writer->write($chunk);
     }
 
-    public function read() {
+    public function read():Promise {
         if (!$this->reader) {
             $this->reader = new ResourceInputStream($this->stream);
         }
-        return yield $this->reader->read();
+        return $this->reader->read();
     }
 
-    public function close() {
+    public function close():void {
         if ($this->writer) {
             $this->writer->close();
         }
