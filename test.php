@@ -3,13 +3,11 @@
 namespace {
 
     use Amp\File\File;
-    use function Amp\File\openFile;
 
-    use CatPaw\Utilities\Stream;
+    use function Amp\File\openFile;
+    
 
     function main() {
-        // $file = Stream::of(fopen("output.txt", "w+"));
-        
         /** @var File */
         $file = yield openFile("output.txt", "w+");
 

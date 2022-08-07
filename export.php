@@ -68,5 +68,4 @@ export("starter", ['bin','.vscode','.github','start']);
 export("store", ['bin','.vscode','.github','start']);
 export("web", ['bin','.vscode','.github','start']);
 export("cui", ['bin','.vscode','.github','start']);
-
-export("svelte-starter", ['bin','.github','start']);
+export("svelte-starter", ['bin', '.vscode','.github','start']);

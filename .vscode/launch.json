@@ -8,26 +8,6 @@
             "port": 9003
         },
         {
-            "name": "Launch (paw)",
-            "type": "php",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/start",
-            "cwd": "${workspaceFolder}",
-            "args": [
-                "-e${relativeFile}",
-                "-l${relativeFileDirname}",
-                "-i"
-            ],
-            "runtimeArgs": [
-                "-dxdebug.start_with_request=yes",
-                "-dxdebug.mode=debug=yes",
-            ],
-            "env": {
-                "XDEBUG_MODE": "debug,develop",
-                "XDEBUG_CONFIG": "client_port=${port}"
-            }
-        },
-        {
             "name": "Main (paw)",
             "type": "php",
             "request": "launch",
@@ -40,10 +20,10 @@
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
-                "-dxdebug.mode=debug=yes",
+                "-dxdebug.mode=debug",
             ],
             "env": {
-                "XDEBUG_MODE": "debug,develop",
+                "XDEBUG_MODE": "debug",
                 "XDEBUG_CONFIG": "client_port=${port}"
             }
         }

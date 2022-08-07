@@ -23,8 +23,14 @@ class Stream {
         return $this->writer->write($chunk);
     }
 
+    public function read() {
+        if (!$this->reader) {
+            $this->reader = new ResourceInputStream($this->stream);
+        }
+        return yield $this->reader->read();
+    }
+
     public function close() {
-        $promises = [];
         if ($this->writer) {
             $this->writer->close();
         }

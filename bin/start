@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 use CatPaw\Bootstrap;
 
 require 'vendor/autoload.php';
@@ -30,7 +31,6 @@ $resources   = $resources      ?? '';
 $dieOnChange = false === $dieOnChange;
 $watch       = false === $watch;
 $info        = false === $info;
-
 try {
     if ($watch) {
         Bootstrap::spawn(

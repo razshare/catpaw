@@ -83,13 +83,13 @@ class AsciiCel {
                     $this->options["padding-right"]  = $value;
                     $this->options["padding-top"]    = $value;
                     $this->options["padding-bottom"] = $value;
-                break;
+                    break;
                 case "padding-between-lines":
                     $this->options["padding-between-lines-left"]   = $value;
                     $this->options["padding-between-lines-right"]  = $value;
                     $this->options["padding-between-lines-top"]    = $value;
                     $this->options["padding-between-lines-bottom"] = $value;
-                break;
+                    break;
             }
         }
     }

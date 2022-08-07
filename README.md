@@ -170,7 +170,7 @@ Make new a `./.vscode/launch.json` file in your project and add the following co
       "port": 0,
       "runtimeArgs": ["-dxdebug.start_with_request=yes", "-dxdebug.mode=debug"],
       "env": {
-        "XDEBUG_MODE": "debug,develop",
+        "XDEBUG_MODE": "debug",
         "XDEBUG_CONFIG": "client_port=${port}"
       }
     }

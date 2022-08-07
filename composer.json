@@ -18,14 +18,14 @@
     }
   ],
   "scripts": {
-    "export": "XDEBUG_MODE='off' php -dxdebug.start_with_request=no -dxdebug.mode=off -dzend.assertions=-1 export.php",
-    "load": "composer dump-autoload -o",
+    "export": "XDEBUG_MODE='off' php export.php",
+    "load": "XDEBUG_MODE='off' composer dump-autoload -o",
     "fix": [
-      "php ./vendor/bin/php-cs-fixer fix src",
-      "php ./vendor/bin/php-cs-fixer fix tests"
+      "XDEBUG_MODE='off' php ./vendor/bin/php-cs-fixer fix src",
+      "XDEBUG_MODE='off' php ./vendor/bin/php-cs-fixer fix tests"
     ],
-    "action:test": "php vendor/bin/phpunit tests",
-    "test": "php -dxdebug.start_with_request=yes -dxdebug.mode=debug vendor/bin/phpunit tests"
+    "action:test": "XDEBUG_MODE='off' php vendor/bin/phpunit tests",
+    "test": "XDEBUG_MODE='debug' php vendor/bin/phpunit tests"
   },
   "autoload": {
     "psr-4": {
