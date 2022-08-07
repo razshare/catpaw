@@ -3,14 +3,20 @@ chdir(dirname(__FILE__));
 
 function copyAll(string $srcDir, string $destDir) {
     $resourceDir = opendir($srcDir);
-    @mkdir(dirname($destDir));
+    if (!is_dir(dirname($destDir))) {
+        @mkdir(dirname($destDir));
+    }
 
-    while (false !== ($File = readdir($resourceDir))) {
-        if ('.' != $File && '..' != $File) {
-            if (is_dir($srcDir."/".$File)) {
-                copyAll($srcDir."/".$File, $destDir."/".$File);
+    if (is_dir($srcDir) && !is_dir($destDir)) {
+        @mkdir($destDir);
+    }
+
+    while (false !== ($file = readdir($resourceDir))) {
+        if ('.' != $file && '..' != $file) {
+            if (is_dir($srcDir."/".$file)) {
+                copyAll($srcDir."/".$file, $destDir."/".$file);
             } else {
-                copy($srcDir."/".$File, $destDir."/".$File);
+                copy($srcDir."/".$file, $destDir."/".$file);
             }
         }
     }
@@ -34,21 +40,23 @@ function deleteAll(string $dir) {
     }
 }
 
-function export(string $project) {
-    deleteAll(realpath("../catpaw-$project/bin"));
-    mkdir("../catpaw-$project/bin");
-    copyAll(realpath("./bin"), realpath("../catpaw-$project/bin"));
+function export(string $project, array $directories) {
+    foreach ($directories as $directory) {
+        deleteAll(realpath("../catpaw-$project/$directory"));
+        mkdir("../catpaw-$project/$directory");
+        copyAll(realpath("./$directory"), realpath("../catpaw-$project/$directory"));
+    }
 }
 
-export("cli");
-export("environment");
-export("examples");
-export("mysql");
-export("mysql-dbms");
-export("openapi");
-export("optional");
-export("queue");
-export("raspberrypi");
-export("starter");
-export("store");
-export("svelte-starter");
+export("cli", ['bin','.vscode','.github']);
+export("environment", ['bin','.vscode','.github']);
+export("examples", ['bin','.vscode','.github']);
+export("mysql", ['bin','.vscode','.github']);
+export("mysql-dbms", ['bin','.vscode','.github']);
+export("openapi", ['bin','.vscode','.github']);
+export("optional", ['bin','.vscode','.github']);
+export("queue", ['bin','.vscode','.github']);
+export("raspberrypi", ['bin','.vscode','.github']);
+export("starter", ['bin','.vscode','.github']);
+export("store", ['bin','.vscode','.github']);
+export("svelte-starter", ['bin','.github']);

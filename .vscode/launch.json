@@ -14,9 +14,26 @@
             "program": "${workspaceFolder}/bin/start",
             "cwd": "${workspaceFolder}",
             "args": [
-                "${file}"
+                "-e${file}"
             ],
-            "port": 0,
+            "runtimeArgs": [
+                "-dxdebug.start_with_request=yes",
+                "-dxdebug.mode=debug=yes",
+            ],
+            "env": {
+                "XDEBUG_MODE": "debug,develop",
+                "XDEBUG_CONFIG": "client_port=${port}"
+            }
+        },
+        {
+            "name": "Main (paw)",
+            "type": "php",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/start",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-e${workspaceFolder}/src/main.php"
+            ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
                 "-dxdebug.mode=debug=yes",
@@ -30,9 +47,11 @@
             "name": "Export (paw)",
             "type": "php",
             "request": "launch",
-            "program": "${workspaceFolder}/export.php",
+            "program": "${workspaceFolder}/bin/start",
             "cwd": "${workspaceFolder}",
-            "port": 0,
+            "args": [
+                "-eexport.php"
+            ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
                 "-dxdebug.mode=debug=yes",
