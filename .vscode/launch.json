@@ -32,7 +32,7 @@
             "program": "${workspaceFolder}/bin/start",
             "cwd": "${workspaceFolder}",
             "args": [
-                "-e${workspaceFolder}/src/main.php"
+                "-esrc/main.php"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
