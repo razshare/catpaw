@@ -40,24 +40,32 @@ function deleteAll(string $dir) {
     }
 }
 
-function export(string $project, array $directories) {
-    foreach ($directories as $directory) {
-        deleteAll(realpath("../catpaw-$project/$directory"));
-        mkdir("../catpaw-$project/$directory");
-        copyAll(realpath("./$directory"), realpath("../catpaw-$project/$directory"));
+function export(string $project, array $items) {
+    foreach ($items as $item) {
+        if (is_file(realpath("./$item"))) {
+            if (!is_file("../catpaw-$project/$item")) {
+                touch("../catpaw-$project/$item");
+            }
+            copy(realpath("./$item"), realpath("../catpaw-$project/$item"));
+            continue;
+        }
+        deleteAll(realpath("../catpaw-$project/$item"));
+        mkdir("../catpaw-$project/$item");
+        copyAll(realpath("./$item"), realpath("../catpaw-$project/$item"));
     }
 }
 
-export("cli", ['bin','.vscode','.github']);
-export("environment", ['bin','.vscode','.github']);
-export("examples", ['bin','.vscode','.github']);
-export("mysql", ['bin','.vscode','.github']);
-export("mysql-dbms", ['bin','.vscode','.github']);
-export("openapi", ['bin','.vscode','.github']);
-export("optional", ['bin','.vscode','.github']);
-export("queue", ['bin','.vscode','.github']);
-export("raspberrypi", ['bin','.vscode','.github']);
-export("starter", ['bin','.vscode','.github']);
-export("store", ['bin','.vscode','.github']);
-export("web", ['bin','.vscode','.github']);
-export("svelte-starter", ['bin','.github']);
+export("cli", ['bin','.vscode','.github','start']);
+export("environment", ['bin','.vscode','.github','start']);
+export("examples", ['bin','.vscode','.github','start']);
+export("mysql", ['bin','.vscode','.github','start']);
+export("mysql-dbms", ['bin','.vscode','.github','start']);
+export("openapi", ['bin','.vscode','.github','start']);
+export("optional", ['bin','.vscode','.github','start']);
+export("queue", ['bin','.vscode','.github','start']);
+export("raspberrypi", ['bin','.vscode','.github','start']);
+export("starter", ['bin','.vscode','.github','start']);
+export("store", ['bin','.vscode','.github','start']);
+export("web", ['bin','.vscode','.github','start']);
+
+export("svelte-starter", ['bin','.github','start']);
