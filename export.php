@@ -59,4 +59,5 @@ export("queue", ['bin','.vscode','.github']);
 export("raspberrypi", ['bin','.vscode','.github']);
 export("starter", ['bin','.vscode','.github']);
 export("store", ['bin','.vscode','.github']);
+export("web", ['bin','.vscode','.github']);
 export("svelte-starter", ['bin','.github']);

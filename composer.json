@@ -18,7 +18,7 @@
     }
   ],
   "scripts": {
-    "export": "php export.php",
+    "export": "XDEBUG_MODE='debug,develop' XDEBUG_CONFIG='client_port=9003' php -dxdebug.start_with_request=yes -dxdebug.mode=debug export.php",
     "load": "composer dump-autoload -o",
     "fix": [
       "php ./vendor/bin/php-cs-fixer fix src",

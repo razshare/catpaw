@@ -14,7 +14,9 @@
             "program": "${workspaceFolder}/bin/start",
             "cwd": "${workspaceFolder}",
             "args": [
-                "-e${file}"
+                "-e${relativeFile}",
+                "-l${relativeFileDirname}",
+                "-i"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
@@ -32,25 +34,9 @@
             "program": "${workspaceFolder}/bin/start",
             "cwd": "${workspaceFolder}",
             "args": [
-                "-esrc/main.php"
-            ],
-            "runtimeArgs": [
-                "-dxdebug.start_with_request=yes",
-                "-dxdebug.mode=debug=yes",
-            ],
-            "env": {
-                "XDEBUG_MODE": "debug,develop",
-                "XDEBUG_CONFIG": "client_port=${port}"
-            }
-        },
-        {
-            "name": "Export (paw)",
-            "type": "php",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/start",
-            "cwd": "${workspaceFolder}",
-            "args": [
-                "-eexport.php"
+                "-esrc/main.php",
+                "-lsrc/lib/",
+                "-i"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
