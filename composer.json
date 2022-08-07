@@ -47,7 +47,10 @@
     "amphp/file": "^2.0",
     "amphp/process": "^1.1",
     "ext-openssl": "*",
-    "ext-zlib": "*"
+    "ext-zlib": "*",
+    "react/event-loop": "^1.3.0",
+    "react/promise": "^2.9.0",
+    "react/async": "^4.0.0"
   },
   "autoload-dev":{
     "psr-4":{
