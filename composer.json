@@ -24,8 +24,8 @@
       "XDEBUG_MODE='off' php ./vendor/bin/php-cs-fixer fix src",
       "XDEBUG_MODE='off' php ./vendor/bin/php-cs-fixer fix tests"
     ],
-    "action:test": "XDEBUG_MODE='off' php vendor/bin/phpunit tests",
-    "test": "XDEBUG_MODE='debug' php vendor/bin/phpunit tests"
+    "action:test": "XDEBUG_MODE='off' php vendor/bin/phpunit tests/*",
+    "test": "XDEBUG_MODE='debug' php vendor/bin/phpunit tests/*"
   },
   "autoload": {
     "psr-4": {
