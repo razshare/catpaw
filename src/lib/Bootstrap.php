@@ -19,7 +19,6 @@ use Amp\Promise;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\LoggerFactory;
-use CatPaw\Utilities\Strings;
 use Generator;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
@@ -59,7 +58,7 @@ class Bootstrap {
             chdir($owd);
             /** @var mixed $result */
             if (!function_exists('main')) {
-                die(Strings::red("Please define a global main function.\n"));
+                die("Please define a global main function.\n");
             }
             $main = new ReflectionFunction('main');
 
@@ -76,7 +75,7 @@ class Bootstrap {
             }
             yield Container::run($main);
         } else {
-            die(Strings::red("Could not find php entry file \"$filename\".\n"));
+            die("Could not find php entry file \"$filename\".\n");
         }
     }
 
@@ -104,7 +103,7 @@ class Bootstrap {
         Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
 
         if (!$entry) {
-            die(Strings::red("Please point to a php entry file.\n"));
+            die("Please point to a php entry file.\n");
         }
 
         Loop::run(function() use ($entry, $library, $info, $dieOnChange, $resources) {
