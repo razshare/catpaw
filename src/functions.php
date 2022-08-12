@@ -13,6 +13,13 @@ use CatPaw\Utilities\Stream;
 use InvalidArgumentException;
 
 /**
+ * Get current time in milliseconds.
+ */
+function milliseconds() {
+    return floor(microtime(true) * 1000);
+}
+
+/**
  * List all files (not directories) inside a directory.
  * Dot entries are not included in the resulting array (i.e. "." and "..").
  * @param  string                 $path directory to scan
