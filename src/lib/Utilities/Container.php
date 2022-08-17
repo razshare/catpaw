@@ -21,6 +21,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use RegexIterator;
 use SplFixedArray;
+use Throwable;
 
 class Container {
     private static array $cache      = [];
@@ -266,13 +267,19 @@ class Container {
         
         return call(function() use ($locations) {
             $scanned = [];
+            
             foreach ($locations as $location) {
                 if ('' === \trim($location)) {
                     continue;
                 }
-                $directory = new RecursiveDirectoryIterator(realpath($location));
-                $iterator  = new RecursiveIteratorIterator($directory);
-                $regex     = new RegexIterator($iterator, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);
+                try {
+                    $realLocation = realpath($location);
+                    $directory    = new RecursiveDirectoryIterator($realLocation);
+                } catch (Throwable $e) {
+                    die("Path \"$location\" (resolved into \"$realLocation\") is not a valid directory to load. The application will now die.".\PHP_EOL);
+                }
+                $iterator = new RecursiveIteratorIterator($directory);
+                $regex    = new RegexIterator($iterator, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);
 
                 for ($regex->rewind(); $regex->valid() ; $regex->next()) {
                     /** @var array<string> $files */
