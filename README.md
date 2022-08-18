@@ -63,70 +63,14 @@ namespace {
 After you've created your new project, you can run it using
 
 ```bash
-compsoer run watch
+compsoer watch
 ```
 
 or
 
 ```bash
-compsoer run start
+compsoer start
 ```
-
-# Get started with Svelte
-
-In order to get started you will need [php 8.1](https://www.php.net/downloads.php) or a more recent version.
-
-You can create a new project using the svelte starter template.
-
-```bash
-composer create-project catpaw/svelte-starter
-```
-
-Or you could also clone the template from https://github.com/tncrazvan/catpaw-svelte-starter
-
-
-During development you need to run both the Vite and the CatPaw servers.<br/>
-The Vite server will act as a proxy for your `/api/*` and `*:state` requests, redirecting them to the CatPaw server.<br/>
-
-First off start your CatPaw server using
-```bash
-composer start
-```
-or
-```bash
-composer watch
-```
-
-then install your npm dependencies
-
-```bash
-npm i
-```
-
-and start your vite dev server
-
-```bash
-npm run dev
-```
-
-all your communication with CatPaw will happen through the Vite proxy, so you'll be working on [http://127.0.0.1:3000](http://127.0.0.1:3000/) and your apis will should be exposed under `/api/*`.
-
-### Build for production
-
-You can build your project for production using
-```
-npm run build
-```
-then you can start your server in production by running
-```bash
-./start
-```
-
-### Note
-
-Don't use the Vite server in production, build your project and run the CatPaw server.
-
-
 
 ### Looking for some examples?
 
@@ -179,8 +123,3 @@ Make new a `./.vscode/launch.json` file in your project and add the following co
 ```
 
 The first configuration will passively listen for xdebug, while the second one will launch the currently opened script.
-
-### Note 
-
-When launching the "currently opened file" profile, make sure that file includes in some manner a global `main` function.<br/>
-Regardless, the cli should warn you if such function is not present in the global scope.
