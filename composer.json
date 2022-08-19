@@ -18,7 +18,6 @@
     }
   ],
   "scripts": {
-    "export": "XDEBUG_MODE='off' php export.php",
     "load": "XDEBUG_MODE='off' composer dump-autoload -o",
     "fix": [
       "XDEBUG_MODE='off' php ./vendor/bin/php-cs-fixer fix src",
@@ -45,7 +44,8 @@
     "amphp/file": "^2.0",
     "amphp/process": "^1.1",
     "ext-openssl": "*",
-    "ext-zlib": "*"
+    "ext-zlib": "*",
+    "ext-psr": "^1.2"
   },
   "autoload-dev":{
     "psr-4":{

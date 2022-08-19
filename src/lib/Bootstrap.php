@@ -52,7 +52,7 @@ class Bootstrap {
      */
     private static function init(string $filename): Generator {
         if (yield exists($filename)) {
-            $owd = getcwd();
+            $owd = \getcwd();
             chdir(dirname($filename));
             require_once $filename;
             chdir($owd);
@@ -265,7 +265,7 @@ class Bootstrap {
 
                 $filenames = [ $entry ];
                 foreach ($directories as $directory) {
-                    $filenames = [...$filenames, ...(yield listFilesRecursive(\realpath($directory)))];
+                    $filenames = [...$filenames, ...(yield listFilesRecursively(\realpath($directory)))];
                 }
 
                 $countThisPass = count([...$filenames, ...$resources]);

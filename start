@@ -1,1 +1,1 @@
-XDEBUG_MODE='off' php -dxdebug.start_with_request=no -dxdebug.mode=off -dzend.assertions=-1 ./bin/start -esrc/main.php -lsrc/lib/
+XDEBUG_MODE='off' php -dzend.assertions=-1 ./bin/start -esrc/main.php -lsrc/lib/

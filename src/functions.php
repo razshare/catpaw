@@ -2,20 +2,26 @@
 namespace CatPaw;
 
 use function Amp\call;
+use function Amp\File\createDirectoryRecursively;
 use function Amp\File\deleteDirectory;
 use function Amp\File\deleteFile;
+use function Amp\File\exists;
 use function Amp\File\getStatus;
 use function Amp\File\isDirectory;
 use function Amp\File\isFile;
 use function Amp\File\listFiles;
+use function Amp\File\read;
+use function Amp\File\write;
+
 use Amp\Promise;
 use CatPaw\Utilities\Stream;
 use InvalidArgumentException;
 
 /**
  * Get current time in milliseconds.
+ * @return float
  */
-function milliseconds() {
+function milliseconds():float {
     return floor(microtime(true) * 1000);
 }
 
@@ -25,7 +31,7 @@ function milliseconds() {
  * @param  string                 $path directory to scan
  * @return Promise<array<string>>
  */
-function listFilesRecursive(string $path):Promise {
+function listFilesRecursively(string $path):Promise {
     if (!\str_ends_with($path, '/')) {
         $path .= '/';
     }
@@ -36,7 +42,7 @@ function listFilesRecursive(string $path):Promise {
             $filename = "$path$item";
             $isDir    = yield isDirectory($filename);
             if ($isDir) {
-                foreach (yield listFilesRecursive($filename) as $subItem) {
+                foreach (yield listFilesRecursively($filename) as $subItem) {
                     $files[] = $subItem;
                 }
                 continue;
@@ -91,30 +97,29 @@ function uuid(): string {
     );
 }
 
+/**
+ * Convert a resource into a stream.
+ * @param  mixed    $resource
+ * @param  null|int $chunkSize
+ * @return Stream
+ */
 function stream(
     mixed $resource,
     ?int $chunkSize = null,
-) {
+):Stream {
     return Stream::of($resource, $chunkSize);
 }
 
 /**
- * Delete a file or directory.
- * @param  string                   $path        name of the directory.
- * @param  bool                     $recursively if true will try remove all sub directories aswell.<br />
- *                                               <b>NOTE</b>: will fail if false and subdirectories are present.
+ * Delete a file or directory recursively.
+ * @param  string                   $path name of the directory.present.
  * @throws InvalidArgumentException if the specified directory name is not actually a directory.
  * @return Promise<void>
  */
-function delete(string $path, bool $recursively = true):Promise {
-    return call(function() use ($path, $recursively) {
-        if (yield isFile($path)) {
-            yield deleteFile($path);
-            return;
-        }
-
+function deleteDirectoryRecursively(string $path, array|false $ignore = false):Promise {
+    return call(function() use ($path, $ignore) {
         if (!yield isDirectory($path)) {
-            throw new InvalidArgumentException("\"$path\" is not a valid path.");
+            throw new InvalidArgumentException("\"$path\" is not a valid directory.");
         }
 
         if (!str_ends_with($path, '/')) {
@@ -123,8 +128,19 @@ function delete(string $path, bool $recursively = true):Promise {
         
         $files = yield listFiles($path);
         
-        foreach ($files as $file) {
-            yield delete($file, $recursively);
+        foreach ($files as $filename) {
+            if (false !== $ignore && in_array($filename, $ignore)) {
+                continue;
+            }
+
+            $target = "$path$filename";
+
+            if (yield isFile($target)) {
+                yield deleteFile($target);
+                continue;
+            }
+
+            yield deleteDirectoryRecursively($target);
         }
 
         yield deleteDirectory($path);
@@ -132,23 +148,76 @@ function delete(string $path, bool $recursively = true):Promise {
 }
 
 /**
+ * Copy a file.
+ * @return Promise<void>
+ */
+function copyFile(string $from, string $to):Promise {
+    return call(function() use ($from, $to) {
+        yield write($to, yield read($from));
+        // $source      = stream(fopen($from, 'r'));
+        // $destination = stream(fopen($to, 'w+'));
+        // while ($chunk = yield $source->read()) {
+        //     yield $destination->write($chunk);
+        // }
+        // yield $destination->close();
+        // yield $source->close();
+    });
+}
+
+/**
+ * Copy a file or directory recursively.
+ * @return Promise<void>
+ */
+function copyDirectoryRecursively(string $from, string $to, array|false $ignore = false):Promise {
+    return call(function() use ($from, $to, $ignore) {
+        if (!str_ends_with($from, '/')) {
+            $from .= '/';
+        }
+
+        if (!str_ends_with($to, '/')) {
+            $to .= '/';
+        }
+
+        if (!yield exists($to)) {
+            yield createDirectoryRecursively($to);
+        }
+
+        foreach (yield listFiles($from) as $filename) {
+            if (false !== $ignore && in_array($filename, $ignore)) {
+                continue;
+            }
+
+            $source      = "$from$filename";
+            $destination = "$to$filename";
+
+            if (yield isFile($source)) {
+                yield copyFile($source, $destination);
+                continue;
+            }
+
+            yield copyDirectoryRecursively($source, $destination);
+        }
+    });
+}
+
+/**
  * Get the filenames within a directory recursively.
- * @param  string                              $path startup directory.
- * @param  array|null                          $map  an associative array that will hold your results.
+ * @param  string                              $path   startup directory.
+ * @param  array|false                         $ignore a map of file/directory names to ignore.
  * @return Promise<array<array<string,mixed>>>
  */
-function listFilesInfoRecursive(string $path, array|false $ignore = false):Promise {
+function listFilesInfoRecursively(string $path, array|false $ignore = false):Promise {
     return call(function() use ($path, $ignore) {
         $list = [];
-        $path = preg_replace('/\/++/', '/', $path);
-        //$fn = end(explode("/",$root));
         if (yield isDirectory($path)) {
-            foreach (yield listFiles($path) as $a => $file) {
-                if ('.' == $file || '..' == $file || \in_array($file, $ignore)) {
+            if (!str_ends_with($path, '/')) {
+                $path .= '/';
+            }
+            foreach (yield listFiles($path) as $i => $filename) {
+                if (false !== $ignore && \in_array($filename, $ignore)) {
                     continue;
-                }
-                
-                $list = [ ...$list, ...yield listFilesInfoRecursive("$path/$file")];
+                }              
+                $list = [ ...$list, ...yield listFilesInfoRecursively("$path$filename")];
             }
         } else {
             $list = [
