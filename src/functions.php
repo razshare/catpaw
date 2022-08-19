@@ -236,9 +236,9 @@ function listFilesInfoRecursively(string $path, array|false $ignore = false):Pro
  * Create a process, run it, wait for it to end and get its status code.
  * @return Promise<int> the process status code.
  */
-function execute(string $command, array $params = []):Promise {
-    return call(function() use ($command, $params) {
-        $process = new Process($command, join('', $params));
+function execute(string $command, ?string $cwd = null, array $env = [], array $options = []):Promise {
+    return call(function() use ($command, $cwd) {
+        $process = new Process($command, $cwd);
         yield $process->start();
 
 
