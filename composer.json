@@ -1,6 +1,6 @@
 {
-  "name": "catpaw/core",
-  "description": "A Php Http & WebSocket server",
+  "name": "catpaw/web-starter",
+  "description": "A CatPaw starter template for web development",
   "type": "library",
   "license": "MIT",
   "keywords": [
@@ -40,9 +40,7 @@
   "require": {
     "php": "^8.1",
     "amphp/amp": "^2.6",
-    "amphp/http-server": "^2.1",
     "amphp/log": "^1.1",
-    "amphp/websocket-server": "^2.0",
     "erusev/parsedown": "^1.7",
     "amphp/file": "^2.0",
     "amphp/process": "^1.1",
