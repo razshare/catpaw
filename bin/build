@@ -1,0 +1,99 @@
+#!/usr/bin/env php
+<?php
+use Amp\Promise;
+use CatPaw\Environment\Attributes\Environment;
+use CatPaw\Environment\Attributes\EnvironmentFileName;
+
+use function Amp\File\createDirectory;
+use function Amp\File\deleteFile;
+use function Amp\File\exists;
+use function Amp\File\write;
+use function CatPaw\deleteDirectoryRecursively;
+
+/**
+ * 
+ * @return Generator<int, Promise<bool>|Promise<void>, mixed, void> 
+ * @throws Error 
+ */
+#[EnvironmentFileName("build.yml")]
+function main(
+    #[Environment("name")] string $name,
+    #[Environment("entry")] string $entry,
+    #[Environment("library")] string $library,
+){
+    $name = str_replace(['"',"\n"], ['\\"',''], $name);
+    $entry = realpath(str_replace(['"',"\n"], ['\\"',''], $entry));
+    $library = realpath(str_replace(['"',"\n"], ['\\"',''], $library));
+    
+    // $project = '.';
+    $filename = 'dist/app.phar';
+    $start = 'dist/start';
+    try {
+
+        if(yield exists('dist')){
+            yield deleteDirectoryRecursively('dist');
+        }
+
+        yield createDirectory('dist');
+
+        yield write($start,<<<PHP
+        <?php
+        use Amp\File\Filesystem;
+        use Amp\Loop;
+        use CatPaw\Amp\File\CatPawDriver;
+        use CatPaw\Bootstrap;
+        \$_ENV = [
+            ...\$_ENV,
+            ...getenv(),
+        ];
+        require 'vendor/autoload.php';
+
+        if (isset(\$_ENV["CATPAW_FILE_DRIVER"]) && \$_ENV["CATPAW_FILE_DRIVER"]) {
+            Loop::setState(\Amp\File\Driver::class, new Filesystem(new CatPawDriver));
+        }
+        Bootstrap::start(
+            entry: "$entry",
+            name: "$name",
+            library: "$library",
+            info: false,
+            dieOnChange: false,
+            resources: '',
+        );
+        PHP);
+
+        if (yield exists($filename)) {
+            yield deleteFile($filename);
+        }
+
+        if (yield exists($filename . '.gz')) {
+            yield deleteFile($filename . '.gz');
+        }
+        
+        $phar = new Phar($filename);
+
+        $phar->startBuffering();
+
+        $phar->buildFromDirectory('.');
+
+        $phar->setStub(
+            '#!/usr/bin/env php'
+            .PHP_EOL
+            .$phar->createDefaultStub($start)
+        );
+
+        $phar->setDefaultStub($start);
+
+        $phar->stopBuffering();
+
+        $phar->compressFiles(Phar::GZ);
+
+        # Make the file executable
+        chmod($filename, 0770);
+
+        yield deleteFile($start);
+
+        echo "$filename successfully created" . PHP_EOL;
+    } catch (Exception $e) {
+        die(((string)$e).PHP_EOL);
+    }
+}

@@ -34,9 +34,9 @@ if (isset($_ENV["CATPAW_FILE_DRIVER"]) && $_ENV["CATPAW_FILE_DRIVER"]) {
 }
 
 $entry       = realpath($entry ?? '');
-$name        = $name           ?? 'App';
-$library     = $library        ?? '';
-$resources   = $resources      ?? '';
+$name        = $name      ?? 'App';
+$library     = $library   ?? '';
+$resources   = $resources ?? '';
 $dieOnChange = false === $dieOnChange;
 $watch       = false === $watch;
 $info        = false === $info;
@@ -62,8 +62,5 @@ try {
         );
     }
 } catch (Throwable $e) {
-    die(join(PHP_EOL, [
-        $e->getMessage(),
-        $e->getTraceAsString(),
-    ])).PHP_EOL;
+    die(((string)$e).PHP_EOL);
 }

@@ -1,0 +1,3 @@
+name: App
+entry: src/main.php
+library: src/lib

@@ -1,1 +1,1 @@
-XDEBUG_MODE='off' php -dzend.assertions=-1 ./bin/start -esrc/main.php -lsrc/lib/
+XDEBUG_MODE='off' php -dzend.assertions=-1 dist/app.phar
