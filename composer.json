@@ -24,7 +24,8 @@
       "XDEBUG_MODE='off' php ./vendor/bin/php-cs-fixer fix tests"
     ],
     "action:test": [],
-    "test": []
+    "test": [],
+    "build": "XDEBUG_MODE='off' php -dphar.readonly=0 ./bin/start -ebin/build"
   },
   "autoload": {
     "psr-4": {
