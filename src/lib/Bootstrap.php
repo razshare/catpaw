@@ -217,19 +217,19 @@ class Bootstrap {
 
                 call(function() use ($pout, $out) {
                     while ($chunk = yield $pout->read()) {
-                        $out->write($chunk);
+                        yield $out->write($chunk);
                     }
                 });
 
                 call(function() use ($perr, $err) {
                     while ($chunk = yield $perr->read()) {
-                        $err->write($chunk);
+                        yield $err->write($chunk);
                     }
                 });
 
                 call(function() use ($pin, $in) {
                     while ($chunk = yield $in->read()) {
-                        $pin->write($chunk);
+                        yield $pin->write($chunk);
                     }
                 });
                 try {

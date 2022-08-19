@@ -1,6 +1,7 @@
 <?php
 namespace CatPaw;
 
+use Amp\ByteStream\ResourceOutputStream;
 use function Amp\call;
 use function Amp\File\createDirectoryRecursively;
 use function Amp\File\deleteDirectory;
@@ -10,9 +11,10 @@ use function Amp\File\getStatus;
 use function Amp\File\isDirectory;
 use function Amp\File\isFile;
 use function Amp\File\listFiles;
+
 use function Amp\File\read;
 use function Amp\File\write;
-
+use Amp\Process\Process;
 use Amp\Promise;
 use CatPaw\Utilities\Stream;
 use InvalidArgumentException;
@@ -230,3 +232,34 @@ function listFilesInfoRecursively(string $path, array|false $ignore = false):Pro
     });
 }
 
+/**
+ * Create a process, run it, wait for it to end and get its status code.
+ * @return Promise<int> the process status code.
+ */
+function execute(string $command, array $params = []):Promise {
+    return call(function() use ($command, $params) {
+        $process = new Process($command, join('', $params));
+        yield $process->start();
+
+
+        $out = new ResourceOutputStream(STDOUT);
+        $err = new ResourceOutputStream(STDERR);
+
+        $pout = $process->getStdout();
+        $perr = $process->getStderr();
+
+        call(function() use ($pout, $out) {
+            while ($chunk = yield $pout->read()) {
+                yield $out->write($chunk);
+            }
+        });
+
+        call(function() use ($perr, $err) {
+            while ($chunk = yield $perr->read()) {
+                yield $err->write($chunk);
+            }
+        });
+
+        return yield $process->join();
+    });
+}
