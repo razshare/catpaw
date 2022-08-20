@@ -33,16 +33,18 @@ function milliseconds():float {
  * @param  string                 $path directory to scan
  * @return Promise<array<string>>
  */
-function listFilesRecursively(string $path):Promise {
+function listFilesRecursively(string $path, array|false $ignore = false):Promise {
     if (!\str_ends_with($path, '/')) {
         $path .= '/';
     }
-    return call(function() use ($path) {
-        $items = yield listFiles($path);
-        $files = [];
-        foreach ($items as $item) {
-            $filename = "$path$item";
-            $isDir    = yield isDirectory($filename);
+    return call(function() use ($path, $ignore) {
+        $filenames = yield listFiles($path);
+        $files     = [];
+        foreach ($filenames as $filename) {
+            if (in_array($filename, $ignore)) {
+                $filename = "$path$filename";
+            }
+            $isDir = yield isDirectory($filename);
             if ($isDir) {
                 foreach (yield listFilesRecursively($filename) as $subItem) {
                     $files[] = $subItem;
@@ -115,6 +117,7 @@ function stream(
 /**
  * Delete a file or directory recursively.
  * @param  string                   $path name of the directory.present.
+ * @param  array|false $ignore a map of file/directory names to ignore.
  * @throws InvalidArgumentException if the specified directory name is not actually a directory.
  * @return Promise<void>
  */
@@ -151,6 +154,8 @@ function deleteDirectoryRecursively(string $path, array|false $ignore = false):P
 
 /**
  * Copy a file.
+ * @param string $from 
+ * @param string $to
  * @return Promise<void>
  */
 function copyFile(string $from, string $to):Promise {
@@ -166,10 +171,13 @@ function copyFile(string $from, string $to):Promise {
     });
 }
 
-/**
- * Copy a file or directory recursively.
- * @return Promise<void>
- */
+ /**
+  * Copy a file or directory recursively.
+  * @param string $from 
+  * @param string $to 
+  * @param  array|false $ignore a map of file/directory names to ignore.
+  * @return Promise 
+  */
 function copyDirectoryRecursively(string $from, string $to, array|false $ignore = false):Promise {
     return call(function() use ($from, $to, $ignore) {
         if (!str_ends_with($from, '/')) {
