@@ -92,7 +92,7 @@ or directly use the provided `start` file
 ./start
 ```
 
-### Looking for some examples?
+# Looking for some examples?
 
 You can follow along with the examples provided by the `catpaw/examples` repository at https://github.com/tncrazvan/catpaw-examples/tree/main/src.
 
