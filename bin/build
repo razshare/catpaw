@@ -80,7 +80,7 @@ function main(
 
         $directories = [];
 
-        foreach(yield listFilesRecursively('.', $ignore) as $filename){
+        foreach(yield listFilesRecursively('.', $ignore??[]) as $filename){
             do {
                 $pieces  = explode(DIRECTORY_SEPARATOR,$filename);
                 $count = count($pieces);
