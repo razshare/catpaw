@@ -46,7 +46,7 @@
     "amphp/process": "^1.1",
     "ext-openssl": "*",
     "ext-zlib": "*",
-    "catpaw/environment": "^0.2.1"
+    "catpaw/environment": "^0.2"
   },
   "autoload-dev":{
     "psr-4":{
