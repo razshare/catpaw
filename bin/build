@@ -13,10 +13,14 @@ use function CatPaw\deleteDirectoryRecursively;
 use function CatPaw\listFilesRecursively;
 
 /**
- * 
- * @return Generator<int, Promise<bool>|Promise<void>, mixed, void> 
- * @throws Error 
- */
+  * 
+  * @param string $name 
+  * @param string $entry 
+  * @param string $library 
+  * @param null|array $ignore 
+  * @return Generator<int, Promise<bool>|Promise<void>|Promise<string[]>, mixed, void> 
+  * @throws Error 
+  */
 #[EnvironmentFileName("build.yml")]
 function main(
     #[Environment("name")] string $name,
@@ -79,8 +83,11 @@ function main(
         $phar->buildFromDirectory('.');
 
         $directories = [];
+        $files = [];
 
-        foreach(yield listFilesRecursively('.', $ignore??[]) as $filename){
+        $filenames  = yield listFilesRecursively('.', $ignore??[]);
+
+        foreach($filenames as $filename){
             do {
                 $pieces  = explode(DIRECTORY_SEPARATOR,$filename);
                 $count = count($pieces);
@@ -92,10 +99,17 @@ function main(
 
 
             if(yield isFile($filename)) {
-                $phar->addFile($filename);
+                $files[$filename] = false;
             } else {
                 $directories[$filename] = false;
             }
+        }
+
+        foreach(array_keys($files) as $filename){
+            $phar->addFile($filename);
+        }
+        foreach(array_keys($directories) as $dirname){
+            $phar->buildFromDirectory($dirname);
         }
 
         $phar->setStub(
