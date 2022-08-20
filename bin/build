@@ -32,9 +32,21 @@ function main(
     $entry = realpath(str_replace(['"',"\n"], ['\\"',''], $entry));
     $library = realpath(str_replace(['"',"\n"], ['\\"',''], $library));
     
-    // $project = '.';
-    $app = 'dist/app.phar';
-    $start = 'dist/start';
+    if (!str_starts_with($entry, '.'.DIRECTORY_SEPARATOR)) {
+        die("The entry file path must be relative to the project, received: $entry.");
+    }
+
+    /** @var array<string> */
+    $directories = !$library?[]:\preg_split('/,|;/', $library);
+
+    foreach ($directories as $library) {
+        if (!str_starts_with($library, '.'.DIRECTORY_SEPARATOR)) {
+            die("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+        }
+    }
+
+    $app = './dist/app.phar';
+    $start = './dist/start';
     try {
 
         if(yield exists('dist')){

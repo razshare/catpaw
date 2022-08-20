@@ -108,20 +108,20 @@ class Bootstrap {
         }
 
         Loop::run(function() use ($entry, $library, $info, $dieOnChange, $resources) {
-            /** @var array<string> $filenames */
+            /** @var array<string> */
             $directories = !$library?[]:\preg_split('/,|;/', $library);
+            /** @var array<string> */
             $resources   = !$resources?[]:\preg_split('/,|;/', $resources);
-
 
             foreach ($directories as $library) {
                 if (!str_starts_with($library, '.'.DIRECTORY_SEPARATOR)) {
-                    die("All library directory paths must be relative to the project, received: $library.");
+                    die("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
                 }
             }
 
             foreach ($resources as $resource) {
                 if (!str_starts_with($resource, '.'.DIRECTORY_SEPARATOR)) {
-                    die("All resource directory paths must be relative to the project, received: $resource.");
+                    die("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
                 }
             }
 
