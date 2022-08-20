@@ -1,10 +1,4 @@
 name: App
 entry: ./src/main.php
 library: ./src/lib
-ignore:
-  - .git
-  - .github
-  - .vscode
-  - node_modules
-  - .sessions
-  - .idea
+match: /^\.\/(src|vendor|public|dist|bin)\/.*/

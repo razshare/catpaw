@@ -5,6 +5,7 @@ use CatPaw\Environment\Attributes\Environment;
 use CatPaw\Environment\Attributes\EnvironmentFileName;
 
 use function Amp\File\createDirectory;
+use function Amp\File\createDirectoryRecursively;
 use function Amp\File\deleteFile;
 use function Amp\File\exists;
 use function Amp\File\isFile;
@@ -26,7 +27,7 @@ function main(
     #[Environment("name")] string $name,
     #[Environment("entry")] string $entry,
     #[Environment("library")] string $library,
-    #[Environment("ignore")] ?array $ignore = [],
+    #[Environment("match")] string $match,
 ){
     $name = str_replace(['"',"\n"], ['\\"',''], $name);
     $entry = str_replace(['"',"\n"], ['\\"',''], $entry);
@@ -45,15 +46,17 @@ function main(
         }
     }
 
-    $app = './dist/app.phar';
-    $start = './dist/start';
+    $app = 'dist/app.phar';
+    $start = 'dist/start';
+
+    $dirnameStart = dirname($start);
     try {
 
-        if(yield exists('dist')){
-            yield deleteDirectoryRecursively('dist');
+        if(yield exists($dirnameStart)){
+            yield deleteDirectoryRecursively($dirnameStart);
         }
 
-        yield createDirectory('dist');
+        yield createDirectoryRecursively($dirnameStart);
 
         yield write($start,<<<PHP
         <?php
@@ -93,34 +96,8 @@ function main(
         $phar->startBuffering();
         
         $directories = [];
-        $files = [];
 
-        $filenames  = yield listFilesRecursively('.', $ignore??[]);
-
-        foreach($filenames as $filename){
-            do {
-                $pieces  = explode(DIRECTORY_SEPARATOR,$filename);
-                $count = count($pieces);
-                if($count <= 2){
-                    break;
-                }
-                $filename = join(DIRECTORY_SEPARATOR,array_slice($pieces,0,$count-1));
-            } while(true);
-
-
-            if(yield isFile($filename)) {
-                $files[$filename] = false;
-            } else {
-                $directories[$filename] = false;
-            }
-        }
-
-        foreach(array_keys($files) as $filename){
-            $phar->addFile($filename);
-        }
-        foreach(array_keys($directories) as $dirname){
-            $phar->buildFromDirectory($dirname);
-        }
+        $phar->buildFromDirectory('.',$match);
 
         $phar->setStub(
             '#!/usr/bin/env php'
