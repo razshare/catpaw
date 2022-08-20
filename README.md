@@ -72,6 +72,24 @@ or
 compsoer start
 ```
 
+It is possible, but not required, to build your application into a single `.phar` file using
+
+```bash
+composer build
+```
+The building process can be configured inside the `build.yml` file.
+
+After building your application, you can simple run it using 
+```
+php dist/app.phar
+```
+
+or directly use the provided `start` file 
+
+```
+./start
+```
+
 ### Looking for some examples?
 
 You can follow along with the examples provided by the `catpaw/examples` repository at https://github.com/tncrazvan/catpaw-examples/tree/main/src.
