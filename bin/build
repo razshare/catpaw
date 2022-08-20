@@ -33,7 +33,7 @@ function main(
     $library = realpath(str_replace(['"',"\n"], ['\\"',''], $library));
     
     if (!str_starts_with($entry, '.'.DIRECTORY_SEPARATOR)) {
-        die("The entry file path must be relative to the project, received: $entry.");
+        die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
     }
 
     /** @var array<string> */
