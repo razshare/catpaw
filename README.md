@@ -72,6 +72,8 @@ or
 compsoer start
 ```
 
+# Building
+
 It is possible, but not required, to build your application into a single `.phar` file using
 
 ```bash
@@ -79,7 +81,7 @@ composer build
 ```
 The building process can be configured inside the `build.yml` file.
 
-After building your application, you can simple run it using 
+After building your application, you can simply run it using 
 ```
 php dist/app.phar
 ```
