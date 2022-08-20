@@ -25,7 +25,7 @@
     ],
     "action:test": [],
     "test": [],
-    "build": "XDEBUG_MODE='off' php -dphar.readonly=0 ./bin/start -ebin/build"
+    "build": "XDEBUG_MODE='off' php -dphar.readonly=0 ./bin/start -e./bin/build"
   },
   "autoload": {
     "psr-4": {

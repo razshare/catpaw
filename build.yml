@@ -1,6 +1,6 @@
 name: App
-entry: src/main.php
-library: src/lib
+entry: ./src/main.php
+library: ./src/lib
 ignore:
   - .git
   - .github

@@ -52,6 +52,7 @@ class Bootstrap {
      */
     private static function init(string $filename): Generator {
         if (yield exists($filename)) {
+            $filename = realpath($filename);
             $owd = \getcwd();
             chdir(dirname($filename));
             require_once $filename;
@@ -110,6 +111,20 @@ class Bootstrap {
             /** @var array<string> $filenames */
             $directories = !$library?[]:\preg_split('/,|;/', $library);
             $resources   = !$resources?[]:\preg_split('/,|;/', $resources);
+
+
+            foreach ($directories as $library) {
+                if (!str_starts_with($library, '.'.DIRECTORY_SEPARATOR)) {
+                    die("All library directory paths must be relative to the project, received: $library.");
+                }
+            }
+
+            foreach ($resources as $resource) {
+                if (!str_starts_with($resource, '.'.DIRECTORY_SEPARATOR)) {
+                    die("All resource directory paths must be relative to the project, received: $resource.");
+                }
+            }
+
             if ($dieOnChange) {
                 self::dieOnChange(
                     entry: $entry,

@@ -14,8 +14,8 @@
             "program": "${workspaceFolder}/bin/start",
             "cwd": "${workspaceFolder}",
             "args": [
-                "-esrc/main.php",
-                "-lsrc/lib/"
+                "-e./src/main.php",
+                "-l./src/lib/"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",

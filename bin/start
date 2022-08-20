@@ -33,13 +33,19 @@ if (isset($_ENV["CATPAW_FILE_DRIVER"]) && $_ENV["CATPAW_FILE_DRIVER"]) {
     Loop::setState(\Amp\File\Driver::class, new Filesystem(new CatPawDriver));
 }
 
-$entry       = realpath($entry ?? '');
+$entry       = $entry     ?? '';
 $name        = $name      ?? 'App';
 $library     = $library   ?? '';
 $resources   = $resources ?? '';
 $dieOnChange = false === $dieOnChange;
 $watch       = false === $watch;
 $info        = false === $info;
+
+
+if (!str_starts_with($entry, '.'.DIRECTORY_SEPARATOR)) {
+    die("The entry file path must be relative to the project, received: $entry.");
+}
+
 try {
     if ($watch) {
         Bootstrap::spawn(

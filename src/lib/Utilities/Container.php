@@ -216,12 +216,12 @@ class Container {
                 }
 
                 if (
-                    "string" !== $cname
-                    & "int" !== $cname
+                    "string"  !== $cname
+                    & "int"   !== $cname
                     & "float" !== $cname
-                    & "bool" !== $cname
+                    & "bool"  !== $cname
                     & "array" !== $cname
-                    & "" !== $cname
+                    & ""      !== $cname
                 ) {
                     $parameters[$i] = yield Container::create($cname);
                 }
