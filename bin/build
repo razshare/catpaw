@@ -29,8 +29,8 @@ function main(
     #[Environment("ignore")] ?array $ignore = [],
 ){
     $name = str_replace(['"',"\n"], ['\\"',''], $name);
-    $entry = realpath(str_replace(['"',"\n"], ['\\"',''], $entry));
-    $library = realpath(str_replace(['"',"\n"], ['\\"',''], $library));
+    $entry = str_replace(['"',"\n"], ['\\"',''], $entry);
+    $library = str_replace(['"',"\n"], ['\\"',''], $library);
     
     if (!str_starts_with($entry, '.'.DIRECTORY_SEPARATOR)) {
         die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
