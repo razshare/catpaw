@@ -20,6 +20,7 @@ use CatPaw\Utilities\AsciiTable;
 use CatPaw\Utilities\Stream;
 use Closure;
 use InvalidArgumentException;
+use Phar;
 
 /**
  * Get current time in milliseconds.
@@ -306,4 +307,12 @@ function tableFromArray(array $input, bool $lineCounter = false, Closure $interc
     }
 
     return $table->toString($lineCounter);
+}
+
+/**
+ * Check if the current application is running inside a .phar archive or not.
+ * @return bool
+ */
+function isPhar() {
+    return strlen(Phar::running()) > 0 ? true : false;
 }

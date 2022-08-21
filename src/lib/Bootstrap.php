@@ -52,9 +52,18 @@ class Bootstrap {
      */
     private static function init(string $filename): Generator {
         if (yield exists($filename)) {
-            $filename = realpath($filename);
-            $owd = \getcwd();
+            $isPhar   = isPhar();
+            $filename = ($isPhar?'phar://':'').realpath($filename);
+            $owd      = ($isPhar?'phar://':'').\getcwd();
             chdir(dirname($filename));
+
+            echo join([
+                "cwd" => $owd,
+                PHP_EOL,
+                "real filename" => $filename,
+                PHP_EOL,
+            ]);
+
             require_once $filename;
             chdir($owd);
             /** @var mixed $result */
@@ -111,7 +120,7 @@ class Bootstrap {
             /** @var array<string> */
             $directories = !$library?[]:\preg_split('/,|;/', $library);
             /** @var array<string> */
-            $resources   = !$resources?[]:\preg_split('/,|;/', $resources);
+            $resources = !$resources?[]:\preg_split('/,|;/', $resources);
 
             foreach ($directories as $library) {
                 if (!str_starts_with($library, '.'.DIRECTORY_SEPARATOR)) {
