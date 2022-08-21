@@ -51,21 +51,11 @@ class Bootstrap {
      * @return Generator
      */
     private static function init(string $filename): Generator {
+        if (isPhar()) {
+            $filename = \Phar::running()."/$filename";
+        }
         if (yield exists($filename)) {
-            $isPhar   = isPhar();
-            $filename = ($isPhar?'phar://':'').realpath($filename);
-            $owd      = ($isPhar?'phar://':'').\getcwd();
-            chdir(dirname($filename));
-
-            echo join([
-                "cwd" => $owd,
-                PHP_EOL,
-                "real filename" => $filename,
-                PHP_EOL,
-            ]);
-
             require_once $filename;
-            chdir($owd);
             /** @var mixed $result */
             if (!function_exists('main')) {
                 die("Please define a global main function.\n");

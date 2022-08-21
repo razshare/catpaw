@@ -4,11 +4,14 @@ namespace CatPaw\Utilities;
 
 use function Amp\call;
 use Amp\Promise;
+
 use Attribute;
 use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
+use CatPaw\Bootstrap;
+use function CatPaw\isPhar;
 use Closure;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -267,16 +270,21 @@ class Container {
         
         return call(function() use ($locations) {
             $scanned = [];
-            
+            $isPhar  = isPhar();
             foreach ($locations as $location) {
                 if ('' === \trim($location)) {
                     continue;
                 }
+
+                if ($isPhar) {
+                    $location = \Phar::running()."/$location";
+                }
+
                 try {
-                    $realLocation = realpath($location);
-                    $directory    = new RecursiveDirectoryIterator($realLocation);
+                    $directory = new RecursiveDirectoryIterator($location);
                 } catch (Throwable $e) {
-                    die("Path \"$location\" (resolved into \"$realLocation\") is not a valid directory to load. The application will now die.".\PHP_EOL);
+                    echo("Path \"$location\" is not a valid directory to load.".\PHP_EOL);
+                    yield Bootstrap::kill();
                 }
                 $iterator = new RecursiveIteratorIterator($directory);
                 $regex    = new RegexIterator($iterator, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);

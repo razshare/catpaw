@@ -1,4 +1,4 @@
 name: App
 entry: ./src/main.php
 library: ./src/lib
-match: /^\.\/(src|vendor|public|dist|bin)\/.*/
+match: /^\.\/(src|vendor|resources|dist|bin)\/.*/
