@@ -4,14 +4,11 @@ use Amp\Promise;
 use CatPaw\Environment\Attributes\Environment;
 use CatPaw\Environment\Attributes\EnvironmentFileName;
 
-use function Amp\File\createDirectory;
 use function Amp\File\createDirectoryRecursively;
 use function Amp\File\deleteFile;
 use function Amp\File\exists;
-use function Amp\File\isFile;
 use function Amp\File\write;
 use function CatPaw\deleteDirectoryRecursively;
-use function CatPaw\listFilesRecursively;
 
 /**
   * 
