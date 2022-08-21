@@ -59,7 +59,7 @@ class Bootstrap {
             require_once $filename;
             /** @var mixed $result */
             if (!function_exists('main')) {
-                die("Please define a global main function.\n");
+                yield self::kill("Please define a global main function.\n");
             }
             $main = new ReflectionFunction('main');
 
@@ -77,7 +77,7 @@ class Bootstrap {
             
             yield Container::run($main);
         } else {
-            die("Could not find php entry file \"$filename\".\n");
+            yield self::kill("Could not find php entry file \"$filename\".\n");
         }
     }
 
@@ -105,7 +105,7 @@ class Bootstrap {
         Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
 
         if (!$entry) {
-            die("Please point to a php entry file.\n");
+            yield self::kill("Please point to a php entry file.\n");
         }
 
         Loop::run(function() use ($entry, $library, $info, $dieOnChange, $resources) {
@@ -116,13 +116,13 @@ class Bootstrap {
 
             foreach ($directories as $library) {
                 if (!str_starts_with($library, '.'.DIRECTORY_SEPARATOR)) {
-                    die("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                    yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
                 }
             }
 
             foreach ($resources as $resource) {
                 if (!str_starts_with($resource, '.'.DIRECTORY_SEPARATOR)) {
-                    die("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                    yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
                 }
             }
 
@@ -131,7 +131,7 @@ class Bootstrap {
                     /** @var LoggerInterface */
                     $logger = yield Container::create(LoggerInterface::class);
                     $logger->error("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
-                    die();
+                    yield self::kill();
                 }
                 self::dieOnChange(
                     entry: $entry,
@@ -165,12 +165,12 @@ class Bootstrap {
         self::$onKillActions[] = $callback;
     }
 
-    public static function kill():Promise {
-        return call(function() {
+    public static function kill(string $message = ''):Promise {
+        return call(function() use($message) {
             foreach (self::$onKillActions as $callback) {
                 yield call($callback);
             }
-            die();
+            die($message);
         });
     }
     
@@ -292,14 +292,13 @@ class Bootstrap {
                     if (yield isFile($resource)) {
                         $filenames = [...$filenames,$resource];
                     } else {
-                        $filenames = [...$filenames, ...(yield listFilesRecursively(\realpath($directory)))];
+                        $filenames = [...$filenames,...(yield listFilesRecursively(\realpath($directory)))];
                     }
                 }
 
                 $countThisPass = count([...$filenames, ...$resources]);
                 if (!$firstPass && $countLastPass !== $countThisPass) {
-                    $logger->info("Killing application...");
-                    yield self::kill();
+                    yield self::kill("Killing application...");
                 }
 
                 foreach ($filenames as $filename) {
@@ -314,8 +313,7 @@ class Bootstrap {
                     }
                     
                     if ($changes[$filename] !== $mtime) {
-                        $logger->info("Killing application...");
-                        yield self::kill();
+                        yield self::kill("Killing application...");
                     }
                 }
 
