@@ -9,14 +9,14 @@ use function Amp\call;
 use function Amp\delay;
 use function Amp\File\createDefaultDriver;
 use function Amp\File\exists;
-
 use Amp\File\File;
+
 use Amp\File\Filesystem;
+use function Amp\File\isFile;
 
 use Amp\Loop;
 use Amp\Process\Process;
 use Amp\Promise;
-use CatPaw\Amp\File\CatPawDriver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\LoggerFactory;
@@ -127,11 +127,16 @@ class Bootstrap {
             }
 
             if ($dieOnChange) {
+                if (isPhar()) {
+                    /** @var LoggerInterface */
+                    $logger = yield Container::create(LoggerInterface::class);
+                    $logger->error("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
+                    die();
+                }
                 self::dieOnChange(
                     entry: $entry,
                     directories: $directories,
                     resources: $resources,
-                    info: $info,
                 );
             }
             try {
@@ -266,9 +271,8 @@ class Bootstrap {
         string $entry,
         array $directories,
         array $resources,
-        bool $info = false,
     ):Promise {
-        return call(function() use ($entry, $directories, $resources, $info) {
+        return call(function() use ($entry, $directories, $resources) {
             $fs        = new Filesystem(createDefaultDriver());
             $changes   = [];
             $firstPass = true;
@@ -282,6 +286,14 @@ class Bootstrap {
                 $filenames = [ $entry ];
                 foreach ($directories as $directory) {
                     $filenames = [...$filenames, ...(yield listFilesRecursively(\realpath($directory)))];
+                }
+
+                foreach ($resources as $resource) {
+                    if (yield isFile($resource)) {
+                        $filenames = [...$filenames,$resource];
+                    } else {
+                        $filenames = [...$filenames, ...(yield listFilesRecursively(\realpath($directory)))];
+                    }
                 }
 
                 $countThisPass = count([...$filenames, ...$resources]);
@@ -301,22 +313,6 @@ class Bootstrap {
                         continue;
                     }
                     
-                    if ($changes[$filename] !== $mtime) {
-                        $logger->info("Killing application...");
-                        yield self::kill();
-                    }
-                }
-
-                foreach ($resources as $filename) {
-                    if (!yield exists($filename)) {
-                        $changes[$filename] = 0;
-                        continue;
-                    }
-                    $mtime = yield $fs->getModificationTime($filename);
-                    if (!isset($changes[$filename])) {
-                        $changes[$filename] = $mtime;
-                        continue;
-                    }
                     if ($changes[$filename] !== $mtime) {
                         $logger->info("Killing application...");
                         yield self::kill();
