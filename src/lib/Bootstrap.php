@@ -12,7 +12,6 @@ use function Amp\File\exists;
 use Amp\File\File;
 
 use Amp\File\Filesystem;
-use function Amp\File\isFile;
 
 use Amp\Loop;
 use Amp\Process\Process;
@@ -278,25 +277,20 @@ class Bootstrap {
                 clearstatcache();
                 $countLastPass = count($changes);
 
-                $filenames = [ $entry ];
-                foreach ($directories as $directory) {
-                    $filenames = [...$filenames, ...(yield listFilesRecursively(\realpath($directory)))];
-                }
-
-                foreach ($resources as $resource) {
-                    if (yield isFile($resource)) {
-                        $filenames = [...$filenames,$resource];
-                    } else {
-                        $filenames = [...$filenames,...(yield listFilesRecursively(\realpath($directory)))];
+                $filenames = [ $entry => false ];
+                foreach ([...$directories,...$resources] as $directory) {
+                    foreach (yield listFilesRecursively(\realpath($directory)) as $i => $filename) {
+                        $filenames[$filename] = false;
                     }
                 }
 
-                $countThisPass = count([...$filenames, ...$resources]);
+                
+                $countThisPass = count($filenames);
                 if (!$firstPass && $countLastPass !== $countThisPass) {
                     yield self::kill("Killing application...");
                 }
 
-                foreach ($filenames as $filename) {
+                foreach (array_keys($filenames) as $filename) {
                     if (!yield exists($filename)) {
                         $changes[$filename] = 0;
                         continue;
