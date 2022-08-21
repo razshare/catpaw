@@ -16,7 +16,9 @@ use function Amp\File\read;
 use function Amp\File\write;
 use Amp\Process\Process;
 use Amp\Promise;
+use CatPaw\Utilities\AsciiTable;
 use CatPaw\Utilities\Stream;
+use Closure;
 use InvalidArgumentException;
 
 /**
@@ -272,4 +274,36 @@ function execute(string $command, ?string $cwd = null, array $env = [], array $o
 
         return yield $process->join();
     });
+}
+
+
+/**
+ * Print an array as an ascii table (recursively).
+ * @param  array        $input       the input array.
+ * @param  bool         $lineCounter if true a number will be visible for each line inside the ascii table.
+ * @param  Closure|null $intercept   intercept the main table and each subtable.<br />
+ *                                   This closure will be passed 2 parameters: the AsciiTable and the current depth level.
+ * @param  int          $lvl         the depth level will start counting from this value on.
+ * @return string       the resulting ascii table.
+ */
+function tableFromArray(array $input, bool $lineCounter = false, Closure $intercept = null, int $lvl = 0): string {
+    $table = new AsciiTable();
+    if (null !== $intercept) {
+        $intercept($table, $lvl);
+    }
+    $table->add("Key", "Value");
+    foreach ($input as $key => &$item) {
+        if (is_array($item)) {
+            $table->add($key, tableFromArray($item, $lineCounter, $intercept, $lvl + 1));
+            continue;
+        } else {
+            if (is_object($item)) {
+                $table->add($key, get_class($item));
+                continue;
+            }
+        }
+        $table->add($key, $item);
+    }
+
+    return $table->toString($lineCounter);
 }
