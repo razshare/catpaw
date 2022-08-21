@@ -16,6 +16,7 @@ use Amp\File\Filesystem;
 use Amp\Loop;
 use Amp\Process\Process;
 use Amp\Promise;
+use CatPaw\Amp\File\CatPawDriver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\LoggerFactory;
@@ -73,6 +74,7 @@ class Bootstrap {
                     yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
                 }
             }
+            
             yield Container::run($main);
         } else {
             die("Could not find php entry file \"$filename\".\n");

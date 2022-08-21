@@ -1,8 +1,5 @@
 #!/usr/bin/env php
 <?php
-use Amp\File\Filesystem;
-use Amp\Loop;
-use CatPaw\Amp\File\CatPawDriver;
 use CatPaw\Bootstrap;
 $_ENV = [
     ...$_ENV,
@@ -28,10 +25,6 @@ require 'vendor/autoload.php';
     "i" => null,
     ...getopt('e:n::l::r::d::w::i::')
 ];
-
-if (isset($_ENV["CATPAW_FILE_DRIVER"]) && $_ENV["CATPAW_FILE_DRIVER"]) {
-    Loop::setState(\Amp\File\Driver::class, new Filesystem(new CatPawDriver));
-}
 
 $entry       = $entry     ?? '';
 $name        = $name      ?? 'App';
