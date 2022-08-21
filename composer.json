@@ -1,5 +1,5 @@
 {
-    "name": "catpaw\/web-starter",
+    "name": "catpaw/web-starter",
     "description": "A CatPaw starter template for web development",
     "type": "library",
     "license": "MIT",
@@ -20,42 +20,42 @@
     "scripts": {
         "load": "XDEBUG_MODE='off' composer dump-autoload -o",
         "fix": [
-            "XDEBUG_MODE='off' php .\/vendor\/bin\/php-cs-fixer fix src",
-            "XDEBUG_MODE='off' php .\/vendor\/bin\/php-cs-fixer fix tests"
+            "XDEBUG_MODE='off' php ./vendor/bin/php-cs-fixer fix src",
+            "XDEBUG_MODE='off' php ./vendor/bin/php-cs-fixer fix tests"
         ],
         "action:test": [],
         "test": [],
-        "build": "XDEBUG_MODE='off' php -dphar.readonly=0 .\/bin\/start -e.\/bin\/build"
+        "build": "XDEBUG_MODE='off' php -dphar.readonly=0 ./bin/start -e./bin/build"
     },
     "autoload": {
         "psr-4": {
             "CatPaw\\": [
-                "src\/lib\/"
+                "src/lib/"
             ]
         },
         "files": [
-            "src\/functions.php"
+            "src/functions.php"
         ]
     },
     "require": {
         "php": "^8.1",
-        "amphp\/amp": "^2.6",
-        "amphp\/log": "^1.1",
-        "erusev\/parsedown": "^1.7",
-        "amphp\/file": "^2.0",
-        "amphp\/process": "^1.1",
+        "amphp/amp": "^2.6",
+        "amphp/log": "^1.1",
+        "erusev/parsedown": "^1.7",
+        "amphp/file": "^2.0",
+        "amphp/process": "^1.1",
         "ext-openssl": "*",
         "ext-zlib": "*"
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests\/"
+            "Tests\\": "tests/"
         }
     },
     "require-dev": {
-        "friendsofphp\/php-cs-fixer": "^3.8",
-        "phpunit\/phpunit": "^9",
-        "vimeo\/psalm": "^4.23"
+        "friendsofphp/php-cs-fixer": "^3.8",
+        "phpunit/phpunit": "^9",
+        "vimeo/psalm": "^4.23"
     },
     "config": {
         "preferred-install": "dist"
