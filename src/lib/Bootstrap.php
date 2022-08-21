@@ -51,7 +51,7 @@ class Bootstrap {
      * @throws ReflectionException
      * @return Generator
      */
-    private static function init(string $filename): Generator {
+    public static function init(string $filename): Generator {
         if (isPhar()) {
             $filename = \Phar::running()."/$filename";
         }
@@ -98,17 +98,12 @@ class Bootstrap {
         bool $info = false,
         bool $dieOnChange = false,
     ) {
-        set_time_limit(0);
-        ob_implicit_flush();
-        ini_set('memory_limit', '-1');
+        Loop::run(function() use ($entry, $library, $info, $dieOnChange, $resources, $name) {
+            if (!$entry) {
+                yield self::kill("Please point to a php entry file.\n");
+            }
 
-        Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
-
-        if (!$entry) {
-            yield self::kill("Please point to a php entry file.\n");
-        }
-
-        Loop::run(function() use ($entry, $library, $info, $dieOnChange, $resources) {
+            Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
             /** @var array<string> */
             $directories = !$library?[]:\preg_split('/,|;/', $library);
             /** @var array<string> */
@@ -166,7 +161,7 @@ class Bootstrap {
     }
 
     public static function kill(string $message = ''):Promise {
-        return call(function() use($message) {
+        return call(function() use ($message) {
             foreach (self::$onKillActions as $callback) {
                 yield call($callback);
             }
@@ -267,7 +262,7 @@ class Bootstrap {
         });
     }
 
-    private static function dieOnChange(
+    public static function dieOnChange(
         string $entry,
         array $directories,
         array $resources,
