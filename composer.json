@@ -45,7 +45,8 @@
         "amphp/file": "^2.0",
         "amphp/process": "^1.1",
         "ext-openssl": "*",
-        "ext-zlib": "*"
+        "ext-zlib": "*",
+        "vlucas/phpdotenv": "^5.4"
     },
     "autoload-dev": {
         "psr-4": {
