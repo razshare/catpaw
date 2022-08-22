@@ -34,11 +34,6 @@ $dieOnChange = false === $dieOnChange;
 $watch       = false === $watch;
 $info        = false === $info;
 
-
-if (!str_starts_with($entry, '.'.DIRECTORY_SEPARATOR)) {
-    die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
-}
-
 try {
     if ($watch) {
         Bootstrap::spawn(

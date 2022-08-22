@@ -102,13 +102,22 @@ class Bootstrap {
                 yield self::kill("Please point to a php entry file.\n");
             }
 
+            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
+            if (!str_starts_with($entry, './')) {
+                if (!$isWindows) {
+                    die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+                }
+                if (!str_starts_with($entry, '.\\')) {
+                    die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+                }
+            }
+
             Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
             /** @var array<string> */
             $directories = !$library?[]:\preg_split('/,|;/', $library);
             /** @var array<string> */
             $resources = !$resources?[]:\preg_split('/,|;/', $resources);
-
-            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 
             foreach ($directories as $library) {
                 if (!str_starts_with($library, './')) {
