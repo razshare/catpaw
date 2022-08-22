@@ -31,7 +31,7 @@ jobs:
     - name: Run tests
       run: composer action:test
 
-    # Add a test script to composer.json, for instance: "test": "XDEBUG_MODE='debug' php vendor/bin/phpunit tests"
+    # Add a test script to composer.json, for instance: "test": "php -dxdebug.mode=debug vendor/bin/phpunit tests"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
 
     # - name: Run test suite
