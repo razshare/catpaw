@@ -102,8 +102,6 @@ class Bootstrap {
                 yield self::kill("Please point to a php entry file.\n");
             }
 
-            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-
             Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
             /** @var array<string> */
             $directories = !$library?[]:\preg_split('/,|;/', $library);
@@ -111,22 +109,14 @@ class Bootstrap {
             $resources = !$resources?[]:\preg_split('/,|;/', $resources);
 
             foreach ($directories as $library) {
-                if (!str_starts_with($library, '.'.DIRECTORY_SEPARATOR)) {
-                    if($isWindows && !str_starts_with($library, './')) {
-                        yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
-                    }else {
-                        yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
-                    }
+                if (!str_starts_with($library, './')) {
+                    yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
                 }
             }
 
             foreach ($resources as $resource) {
-                if (!str_starts_with($resource, '.'.DIRECTORY_SEPARATOR)) {
-                    if($isWindows && !str_starts_with($library, './')) {
-                        yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
-                    }else {
-                        yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
-                    }
+                if (!str_starts_with($resource, './')) {
+                    yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
                 }
             }
 
