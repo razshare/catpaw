@@ -84,10 +84,10 @@ class Bootstrap {
      * Bootstrap an application from a file.
      * @param  string    $name   application name (this will be used by the default logger)
      * @param  string    $file   php file to run (absolute path)
-     * @param  string    $info   if true, will log all singletons loaded at startup
      * @param  string    $watch
      * @param  mixed     $onkill
      * @throws Throwable
+     * @return void
      */
     public static function start(
         string $entry,
@@ -96,7 +96,7 @@ class Bootstrap {
         string $resources,
         bool $info = false,
         bool $dieOnChange = false,
-    ) {
+    ):void {
         Loop::run(function() use ($entry, $library, $info, $dieOnChange, $resources, $name) {
             if (!$entry) {
                 yield self::kill("Please point to a php entry file.\n");
@@ -108,15 +108,27 @@ class Bootstrap {
             /** @var array<string> */
             $resources = !$resources?[]:\preg_split('/,|;/', $resources);
 
+            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
             foreach ($directories as $library) {
                 if (!str_starts_with($library, './')) {
-                    yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                    if (!$isWindows) {
+                        yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                    }
+                    if (!str_starts_with($library, '.\\')) {
+                        yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                    }
                 }
             }
 
             foreach ($resources as $resource) {
                 if (!str_starts_with($resource, './')) {
-                    yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                    if (!$isWindows) {
+                        yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                    }
+                    if (!str_starts_with($resource, '.\\')) {
+                        yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                    }
                 }
             }
 
@@ -270,8 +282,6 @@ class Bootstrap {
             $fs        = new Filesystem(createDefaultDriver());
             $changes   = [];
             $firstPass = true;
-            /** @var LoggerInterface $logger */
-            $logger = yield Container::create(LoggerInterface::class);
 
             while (true) {
                 clearstatcache();

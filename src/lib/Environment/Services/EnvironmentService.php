@@ -11,7 +11,6 @@ use function Amp\File\openFile;
 use Amp\Loop;
 use Amp\Promise;
 use CatPaw\Amp\File\CatPawDriver;
-use CatPaw\Attributes\Entry;
 
 use CatPaw\Attributes\Service;
 use CatPaw\Environment\Exceptions\EnvironmentNotFoundException;
@@ -55,7 +54,6 @@ class EnvironmentService {
      * Multiple calls are allowed.
      * @return Promise<void>
      */
-    #[Entry]
     public function load(
         LoggerInterface $logger,
         EnvironmentConfigurationService $environmentConfigurationService

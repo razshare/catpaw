@@ -30,16 +30,28 @@ function main(
     $entry = str_replace(['"',"\n"], ['\\"',''], $entry);
     $library = str_replace(['"',"\n"], ['\\"',''], $library);
     
-    if (!str_starts_with($entry, '.'.DIRECTORY_SEPARATOR)) {
-        die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+    $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
+    if (!str_starts_with($entry, './')) {
+        if(!$isWindows) {
+            die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+        }
+        if (!str_starts_with($entry, '.\\')) {
+            die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+        }
     }
 
     /** @var array<string> */
     $directories = !$library?[]:\preg_split('/,|;/', $library);
 
     foreach ($directories as $library) {
-        if (!str_starts_with($library, '.'.DIRECTORY_SEPARATOR)) {
-            die("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+        if (!str_starts_with($library, './')) {
+            if(!$isWindows) {
+                die("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+            }
+            if (str_starts_with($library, '.\\')) {
+                continue;
+            }
         }
     }
 
