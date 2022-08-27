@@ -14,7 +14,7 @@ use function CatPaw\deleteDirectoryRecursively;
   * 
   * @param string $name 
   * @param string $entry 
-  * @param string $library 
+  * @param string $libraries 
   * @param null|array $ignore 
   * @return Generator<int, Promise<bool>|Promise<void>|Promise<string[]>, mixed, void> 
   * @throws Error 
@@ -23,12 +23,12 @@ use function CatPaw\deleteDirectoryRecursively;
 function main(
     #[Environment("name")] string $name,
     #[Environment("entry")] string $entry,
-    #[Environment("library")] string $library,
+    #[Environment("libraries")] string $libraries,
     #[Environment("match")] string $match,
 ){
     $name = str_replace(['"',"\n"], ['\\"',''], $name);
     $entry = str_replace(['"',"\n"], ['\\"',''], $entry);
-    $library = str_replace(['"',"\n"], ['\\"',''], $library);
+    $libraries = str_replace(['"',"\n"], ['\\"',''], $libraries);
     
     $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 
@@ -40,16 +40,13 @@ function main(
             die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
         }
     }
-
-    /** @var array<string> */
-    $directories = !$library?[]:\preg_split('/,|;/', $library);
-
-    foreach ($directories as $library) {
-        if (!str_starts_with($library, './')) {
+    
+    foreach (!$libraries?[]:\preg_split('/,|;/', $libraries) as $libraries) {
+        if (!str_starts_with($libraries, './')) {
             if(!$isWindows) {
-                die("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                die("All library directory paths must be relative to the project, received: $libraries.".PHP_EOL);
             }
-            if (str_starts_with($library, '.\\')) {
+            if (str_starts_with($libraries, '.\\')) {
                 continue;
             }
         }
@@ -85,7 +82,7 @@ function main(
         Bootstrap::start(
             entry: "$entry",
             name: "$name",
-            library: "$library",
+            libraries: "$libraries",
             info: false,
             dieOnChange: false,
             resources: '',
