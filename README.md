@@ -93,7 +93,7 @@ php dist/app.phar
 
 # Looking for some examples?
 
-You can follow along with the examples provided by the `catpaw/examples` repository at https://github.com/tncrazvan/catpaw-examples/tree/main/src.
+You can follow along with the examples provided by the `catpaw/examples` repository at https://github.com/tncrazvan/catpaw-examples/tree/master/src.
 
 
 # Debugging with VSCode
