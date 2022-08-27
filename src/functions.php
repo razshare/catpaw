@@ -281,7 +281,7 @@ function execute(string $command, ?string $cwd = null, array $env = [], array $o
 
         yield $process->join();
 
-        return join($result);
+        return join($result).PHP_EOL;
     });
 }
 
