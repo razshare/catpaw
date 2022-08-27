@@ -78,7 +78,7 @@ or
 compsoer start
 ```
 
-# Building
+# Build & Run
 
 It is recommended, but not required, to build your application into a single `.phar` file using
 
@@ -98,7 +98,7 @@ or directly use the provided `start` file
 ./start
 ```
 
-# Run without building
+# Run (without building)
 
 ```bash
 composer start
