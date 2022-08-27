@@ -57,10 +57,8 @@ Every application must declare a ```main``` function in the global scope, that w
 ```php
 <?php
 // src/main.php
-namespace {
-    function main(){
-        echo "hello world\n";
-    }
+function main(){
+    echo "hello world\n";
 }
 ```
 
@@ -122,30 +120,34 @@ xdebug.client_port=9003
 Make new a `./.vscode/launch.json` file in your project and add the following configuration if you don't have it already:
 ```json
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Listen (paw)",
-      "type": "php",
-      "request": "launch",
-      "port": 9003,
-      "runtimeArgs": ["-dxdebug.start_with_request=yes", "-dxdebug.mode=debug"]
-    },
-    {
-      "name": "Launch (paw)",
-      "type": "php",
-      "request": "launch",
-      "program": "${workspaceFolder}/vendor/catpaw/core/scripts/start.php",
-      "cwd": "${workspaceFolder}",
-      "args": ["${file}"],
-      "port": 0,
-      "runtimeArgs": ["-dxdebug.start_with_request=yes", "-dxdebug.mode=debug"],
-      "env": {
-        "XDEBUG_MODE": "debug",
-        "XDEBUG_CONFIG": "client_port=${port}"
-      }
-    }
-  ]
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Listen (paw)",
+            "type": "php",
+            "request": "launch",
+            "port": 9003
+        },
+        {
+            "name": "Main (paw)",
+            "type": "php",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/start",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-e./src/main.php",
+                "-l./src/lib/"
+            ],
+            "runtimeArgs": [
+                "-dxdebug.start_with_request=yes",
+                "-dxdebug.mode=debug",
+            ],
+            "env": {
+                "XDEBUG_MODE": "debug",
+                "XDEBUG_CONFIG": "client_port=${port}"
+            }
+        }
+    ]
 }
 ```
 
