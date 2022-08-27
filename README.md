@@ -69,13 +69,13 @@ After you've created your new project, you can run it using
 ```bash
 compsoer watch
 ```
-
+to watch file changes (useful in development)
 or
 
 ```bash
 compsoer start
 ```
-The `compsoer start` composer script can be used in production.
+for production mode.
 
 # Build & Run
 
