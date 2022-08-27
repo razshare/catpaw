@@ -97,6 +97,8 @@ Given the versioning string `major.minor.patch`, all libraries will always have 
 Regardless if a library has actually had any major or minor changes, its version will be bumped to match all the other libraries to indicate that given library is compatible with the latest features.<br/>
 
 The `patch` number may vary from library to library, but the `major` and `minor` numbers should all match.
+
+For example, if you're using `catpaw/core:^0.2` and you want to add `catpaw/web` to your project, you should always pick `catpaw/web:^0.2` to match your core version.
 # Looking for some examples?
 
 You can follow along with the examples provided by the `catpaw/examples` repository at https://github.com/tncrazvan/catpaw-examples/tree/master/src.
