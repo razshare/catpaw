@@ -99,6 +99,9 @@ Regardless if a library has actually had any major or minor changes, its version
 The `patch` number may vary from library to library, but the `major` and `minor` numbers should all match.
 
 For example, if you're using `catpaw/core:^0.2` and you want to add `catpaw/web` to your project, you should always pick `catpaw/web:^0.2` to match your core version.
+
+### Why? 
+I'm a single developer and this gives me more freedom to add features without breaking previous versions and I like to organize my projects this way.
 # Looking for some examples?
 
 You can follow along with the examples provided by the `catpaw/examples` repository at https://github.com/tncrazvan/catpaw-examples/tree/master/src.
