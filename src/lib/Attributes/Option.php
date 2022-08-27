@@ -44,6 +44,7 @@ class Option implements AttributeInterface {
     public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context) {
         /** @var string|int|bool|float $value */
         /** @var false $context */
-        $value = $this->findOptionByName($this->name);
+        $option = $this->findOptionByName($this->name);
+        $value  = $option?$option:$reflection->getDefaultValue();
     }
 }
