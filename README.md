@@ -4,28 +4,34 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 # Table of Contents
 
-| Topic                      | Implemented | Repository                                                            | Read                                       |
-|----------------------------|-------------|-----------------------------------------------------------------------|--------------------------------------------|
-| Examples                   |             |                                                                       | [Github](https://github.com/tncrazvan/catpaw-examples/tree/master/src)                |
-| 🌐 Web Route Handlers      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
-| 🌐 Web Route Controllers   | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/14.WebRouteControllers.md) |
-| 🌐 Web Path Parameters     | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
-| 🌐 Web Path Not Found      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
-| 🌐 Web Session             | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/4.WebSession.md)           |
+| Topic                      | Implemented  | Repository                                                            | Read                                       |
+|----------------------------|--------------|-----------------------------------------------------------------------|--------------------------------------------|
+| 🌐 Web Route Handlers       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
+| 🌐 Web Route Controllers    | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/14.WebRouteControllers.md) |
+| 🌐 Web Path Parameters      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
+| 🌐 Web Path Not Found       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
+| 🌐 Web Session              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/4.WebSession.md)           |
+| 🌐 Open API                 | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | _TODO_                                     |
 | ⚡ Entry                    | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/5.Entry.md)                |
-| 🌐 Web Byte Range Requests | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/7.WebByteRangeRequests.md) |
+| 🌐 Web Byte Range Requests  | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/7.WebByteRangeRequests.md) |
 | ⚡ Custom Attributes        | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/8.CustomAttributes.md)     |
-| 🌐 Web Filters             | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/9.WebFilters.md)           |
-| 🌐 Web Sockets             | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/10.WebSockets.md)          |
+| 🌐 Web Filters              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/9.WebFilters.md)           |
+| 🌐 Web Sockets              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/10.WebSockets.md)          |
 | 💡 RaspberryPI             | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi) | [Github](./docs/11.RaspberryPI.md)         |
 | ⚡ Services                 | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/13.Services.md)            |
-| 🌐 OpenAPI                 | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)         | _TODO_                                     |
-| 🗄 MySQL Repositories      | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
-| ⚡ Stores                 | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)               | [Github](./docs/12.Stores.md)            |
-| 🌐 Svelte SPA                 | ✅           | [catpaw-svelte-starter](https://github.com/tncrazvan/catpaw-svelte-starter)               | [Github](./docs/15.SvelteSPA.md)            |
-| ⚡ Queue                 | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)               | TODO            |
+| 🌐 OpenAPI                  | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | _TODO_                                     |
+| 🗄 MySQL Repositories       | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
+| ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)             | [Github](./docs/12.Stores.md)              |
+| ⚡ Queue                    | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)             | _TODO_                                     |
 
----
+# Starters
+
+| Type    | Implemented | Command                                         | Description                                      | Read                             |
+|---------|-------------|-------------------------------------------------|--------------------------------------------------|----------------------------------|
+| CLI     | ✅          | `composer create-project catpaw/starter`        | A starter template for creating web aplications  | [Github](./README.md)            |
+| Web     | ✅          | `composer create-project catpaw/web-starter`    | A starter template for creating web aplications  | [Github](./docs/15.SvelteSPA.md) |
+| Svelte  | ✅          | `composer create-project catpaw/svelte-starter` | A starter template for creating web aplications  | [Github](./docs/15.SvelteSPA.md) |
+
 
 # Premise
 
