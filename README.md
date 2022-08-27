@@ -93,7 +93,7 @@ php dist/app.phar
 
 # A note on versioning
 
-Given the versioning string `major.minor.patch`, all libraries will always have the same major and minor version.<br/>
+Given the versioning string `major.minor.patch`, all libraries will always have the same `major` and `minor` versions.<br/>
 Regardless if a library has actually had any major or minor changes, its version will be bumped to match all the other libraries to indicate that given library is compatible with the latest features.<br/>
 
 The `patch` number may vary from library to library, but the `major` and `minor` numbers should all match.
