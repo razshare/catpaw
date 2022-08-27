@@ -91,14 +91,9 @@ After building your application, you can simply run it using
 ```
 php dist/app.phar
 ```
+---
 
-or directly use the provided `start` file 
-
-```
-./start
-```
-
-# Run (without building)
+Or run without building
 
 ```bash
 composer start
