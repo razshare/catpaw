@@ -10,7 +10,7 @@ require 'vendor/autoload.php';
 [
     "e" => $entry,
     "n" => $name,
-    "l" => $library,
+    "l" => $libraries,
     "r" => $resources,
     "d" => $dieOnChange,
     "w" => $watch,
@@ -28,7 +28,7 @@ require 'vendor/autoload.php';
 
 $entry       = $entry     ?? '';
 $name        = $name      ?? 'App';
-$library     = $library   ?? '';
+$libraries   = $libraries   ?? '';
 $resources   = $resources ?? '';
 $dieOnChange = false === $dieOnChange;
 $watch       = false === $watch;
@@ -40,7 +40,7 @@ try {
             start: __FILE__,
             entry: $entry,
             name: $name,
-            library: $library,
+            libraries: $libraries,
             info: $info,
             watch: true,
             resources: $resources,
@@ -49,7 +49,7 @@ try {
         Bootstrap::start(
             entry: $entry,
             name: $name,
-            library: $library,
+            libraries: $libraries,
             info: $info,
             dieOnChange: $dieOnChange,
             resources: $resources,

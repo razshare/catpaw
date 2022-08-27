@@ -92,12 +92,12 @@ class Bootstrap {
     public static function start(
         string $entry,
         string $name,
-        string $library,
+        string $libraries,
         string $resources,
         bool $info = false,
         bool $dieOnChange = false,
     ):void {
-        Loop::run(function() use ($entry, $library, $info, $dieOnChange, $resources, $name) {
+        Loop::run(function() use ($entry, $libraries, $info, $dieOnChange, $resources, $name) {
             if (!$entry) {
                 yield self::kill("Please point to a php entry file.\n");
             }
@@ -115,11 +115,18 @@ class Bootstrap {
 
             Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
             /** @var array<string> */
-            $directories = !$library?[]:\preg_split('/,|;/', $library);
+            $libraries = !$libraries?[]:\preg_split('/,|;/', $libraries);
             /** @var array<string> */
             $resources = !$resources?[]:\preg_split('/,|;/', $resources);
 
-            foreach ($directories as $library) {
+
+            $_ENV['ENTRY'] = $entry;
+            $_ENV['LIBRARIES'] = $libraries;
+            $_ENV['RESOURCES'] = $resources;
+            $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
+            $_ENV['SHOW_INFO'] = $info;
+
+            foreach ($libraries as $library) {
                 if (!str_starts_with($library, './')) {
                     if (!$isWindows) {
                         yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
@@ -150,12 +157,12 @@ class Bootstrap {
                 }
                 self::dieOnChange(
                     entry: $entry,
-                    directories: $directories,
+                    libraries: $libraries,
                     resources: $resources,
                 );
             }
             try {
-                yield Container::load($directories);
+                yield Container::load($libraries);
                 
                 if ($info) {
                     echo Container::describe();
@@ -193,7 +200,7 @@ class Bootstrap {
      * @param  string    $start
      * @param  string    $entry
      * @param  string    $name
-     * @param  string    $library
+     * @param  string    libraries
      * @param  string    $resources
      * @param  bool      $info
      * @param  bool      $watch
@@ -204,7 +211,7 @@ class Bootstrap {
         string $start,
         string $entry,
         string $name,
-        string $library,
+        string $libraries,
         string $resources,
         bool $info = false,
         bool $watch = false,
@@ -213,7 +220,7 @@ class Bootstrap {
             $start,
             $entry,
             $name,
-            $library,
+            $libraries,
             $info,
             $watch,
             $resources,
@@ -227,8 +234,8 @@ class Bootstrap {
             if ($name) {
                 $options[] = "-n\"$name\"";
             }
-            if ($library) {
-                $options[] = "-l\"$library\"";
+            if ($libraries) {
+                $options[] = "-l\"$libraries\"";
             }
             if ($resources) {
                 $options[] = "-r\"$resources\"";
@@ -284,10 +291,10 @@ class Bootstrap {
 
     public static function dieOnChange(
         string $entry,
-        array $directories,
+        array $libraries,
         array $resources,
     ):Promise {
-        return call(function() use ($entry, $directories, $resources) {
+        return call(function() use ($entry, $libraries, $resources) {
             $fs        = new Filesystem(createDefaultDriver());
             $changes   = [];
             $firstPass = true;
@@ -297,7 +304,7 @@ class Bootstrap {
                 $countLastPass = count($changes);
 
                 $filenames = [ $entry => false ];
-                foreach ([...$directories,...$resources] as $directory) {
+                foreach ([...$libraries,...$resources] as $directory) {
                     foreach (yield listFilesRecursively(\realpath($directory)) as $i => $filename) {
                         $filenames[$filename] = false;
                     }
