@@ -35,7 +35,7 @@ class Option implements AttributeInterface {
         }
         foreach ($this->options as $i => $value) {
             if (str_starts_with($value, $name)) {
-                return self::$cache[$name] = trim(substr($value, strlen($name)));
+                return self::$cache[$name] = substr($value, strlen($name));
             }
         }
         return self::$cache[$name] = '';
