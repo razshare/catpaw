@@ -247,7 +247,7 @@ function listFilesInfoRecursively(string $path, array|false $ignore = false):Pro
 
 /**
  * Create a process, run it, wait for it to end and get its status code.
- * @return Promise<int> the process status code.
+ * @return Promise<string> the output data of the process.
  */
 function execute(string $command, ?string $cwd = null, array $env = [], array $options = []):Promise {
     return call(function() use ($command, $cwd) {
@@ -255,17 +255,17 @@ function execute(string $command, ?string $cwd = null, array $env = [], array $o
         yield $process->start();
 
 
-        $out = new ResourceOutputStream(STDOUT);
+        // $out = new ResourceOutputStream(STDOUT);
         $err = new ResourceOutputStream(STDERR);
 
         $pout = $process->getStdout();
         $perr = $process->getStderr();
 
-        call(function() use ($pout, $out) {
-            while ($chunk = yield $pout->read()) {
-                yield $out->write($chunk);
-            }
-        });
+        // call(function() use ($pout, $out) {
+        //     while ($chunk = yield $pout->read()) {
+        //         yield $out->write($chunk);
+        //     }
+        // });
 
         call(function() use ($perr, $err) {
             while ($chunk = yield $perr->read()) {
@@ -273,7 +273,15 @@ function execute(string $command, ?string $cwd = null, array $env = [], array $o
             }
         });
 
-        return yield $process->join();
+        $result = [];
+
+        while ($chunk = yield $pout->read()) {
+            $result[] = $chunk;
+        }
+
+        yield $process->join();
+
+        return join($result);
     });
 }
 
