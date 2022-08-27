@@ -80,7 +80,7 @@ compsoer start
 
 # Building
 
-It is possible, but not required, to build your application into a single `.phar` file using
+It is recommended, but not required, to build your application into a single `.phar` file using
 
 ```bash
 composer build
@@ -96,6 +96,12 @@ or directly use the provided `start` file
 
 ```
 ./start
+```
+
+# Run without building
+
+```bash
+composer start
 ```
 
 # Looking for some examples?
