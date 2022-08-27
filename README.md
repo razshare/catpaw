@@ -26,11 +26,11 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 # Starters
 
-| Type    | Implemented | Command                                         | Description                                      | Read                             |
-|---------|-------------|-------------------------------------------------|--------------------------------------------------|----------------------------------|
-| CLI     | ✅          | `composer create-project catpaw/starter`        | A starter template for creating web aplications  | [Github](./README.md)            |
-| Web     | ✅          | `composer create-project catpaw/web-starter`    | A starter template for creating web aplications  | [Github](./docs/15.SvelteSPA.md) |
-| Svelte  | ✅          | `composer create-project catpaw/svelte-starter` | A starter template for creating web aplications  | [Github](./docs/15.SvelteSPA.md) |
+| Type    | Implemented | Command                                         | Description                                          | Read                                   |
+|---------|-------------|-------------------------------------------------|------------------------------------------------------|----------------------------------------|
+| CLI     | ✅          | `composer create-project catpaw/starter`        | A generic starter template for creating aplications  | [Github](./README.md)                  |
+| Web     | ✅          | `composer create-project catpaw/web-starter`    | A starter template for creating web aplications      | [Github](./docs/1.WebRouteHandlers.md) |
+| Svelte  | ✅          | `composer create-project catpaw/svelte-starter` | A starter template for creating web aplications using [Svelte](https://github.com/sveltejs/svelte) | [Github](./docs/15.SvelteSPA.md) |
 
 
 # Premise
