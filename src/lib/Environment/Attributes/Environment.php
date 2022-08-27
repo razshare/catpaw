@@ -1,8 +1,6 @@
 <?php
 namespace CatPaw\Environment\Attributes;
 
-use function Amp\call;
-use Amp\Promise;
 use Attribute;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
@@ -28,13 +26,11 @@ class Environment implements AttributeInterface {
         $this->environmentService = $environmentService;
     }
 
-    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context): Promise {
-        return call(function() use (&$value) {
-            if (!$this->environmentService) {
-                return;
-            }
-            $variables = $this->environmentService->getVariables();
-            $value     = $variables[$this->variableName] ?? $value ?? null;
-        });
+    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context) {
+        if (!$this->environmentService) {
+            return;
+        }
+        $variables = $this->environmentService->getVariables();
+        $value     = $variables[$this->variableName] ?? $value ?? null;
     }
 }

@@ -118,15 +118,15 @@ trait CoreAttributeDefinition {
         });
     }
 
-    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context): Promise {
-        return call(fn() => true);
+    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context) {
+        return;
     }
 
-    public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $context): Promise {
-        return call(fn() => true);
+    public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $context) {
+        return;
     }
 
-    public function onClassInstantiation(ReflectionClass $reflection, mixed &$value, mixed $context): Promise {
-        return call(fn() => true);
+    public function onClassInstantiation(ReflectionClass $reflection, mixed &$value, mixed $context) {
+        return;
     }
 }
