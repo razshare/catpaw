@@ -75,10 +75,11 @@ or
 ```bash
 compsoer start
 ```
+The `compsoer start` composer script can be used in production.
 
 # Build & Run
 
-It is recommended, but not required, to build your application into a single `.phar` file using
+It is possible, but not required, to build your application into a single `.phar` file using
 
 ```bash
 composer build
@@ -88,13 +89,6 @@ The building process can be configured inside the `build.yml` file.
 After building your application, you can simply run it using 
 ```
 php dist/app.phar
-```
----
-
-Or run without building
-
-```bash
-composer start
 ```
 
 # Looking for some examples?
