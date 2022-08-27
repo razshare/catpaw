@@ -66,7 +66,10 @@ class EnvironmentService {
             if (!$fileName = yield $this->findFileName($environmentConfigurationService)) {
                 throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
             }
-            $logger->info("Environment file is $fileName");
+            
+            if ($_ENV['SHOW_INFO']) {
+                $logger->info("Environment file is $fileName");
+            }
 
             /** @var File $file */
             $file = yield openFile($fileName, 'r');
