@@ -1,7 +1,8 @@
 <?php
 namespace CatPaw;
 
-use Amp\ByteStream\ResourceOutputStream;
+use function Amp\ByteStream\buffer;
+
 use function Amp\call;
 use function Amp\File\createDirectoryRecursively;
 use function Amp\File\deleteDirectory;
@@ -250,38 +251,15 @@ function listFilesInfoRecursively(string $path, array|false $ignore = false):Pro
  * @return Promise<string> the output data of the process.
  */
 function execute(string $command, ?string $cwd = null, array $env = [], array $options = []):Promise {
-    return call(function() use ($command, $cwd) {
-        $process = new Process($command, $cwd);
+    return call(function() use ($command, $cwd, $env, $options) {
+        $process = new Process($command, $cwd, $env, $options);
         yield $process->start();
-
-
-        // $out = new ResourceOutputStream(STDOUT);
-        $err = new ResourceOutputStream(STDERR);
-
-        $pout = $process->getStdout();
-        $perr = $process->getStderr();
-
-        // call(function() use ($pout, $out) {
-        //     while ($chunk = yield $pout->read()) {
-        //         yield $out->write($chunk);
-        //     }
-        // });
-
-        call(function() use ($perr, $err) {
-            while ($chunk = yield $perr->read()) {
-                yield $err->write($chunk);
-            }
-        });
-
-        $result = [];
-
-        while ($chunk = yield $pout->read()) {
-            $result[] = $chunk;
-        }
-
+        $pout   = $process->getStdout();
+        $perr   = $process->getStderr();
+        $result = yield buffer($pout);
+        $result .= yield buffer($perr);
         yield $process->join();
-
-        return join($result);
+        return $result;
     });
 }
 
