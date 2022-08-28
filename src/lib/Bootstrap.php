@@ -120,11 +120,11 @@ class Bootstrap {
             $resources = !$resources?[]:\preg_split('/,|;/', $resources);
 
 
-            $_ENV['ENTRY'] = $entry;
-            $_ENV['LIBRARIES'] = $libraries;
-            $_ENV['RESOURCES'] = $resources;
+            $_ENV['ENTRY']         = $entry;
+            $_ENV['LIBRARIES']     = $libraries;
+            $_ENV['RESOURCES']     = $resources;
             $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
-            $_ENV['SHOW_INFO'] = $info;
+            $_ENV['SHOW_INFO']     = $info;
 
             foreach ($libraries as $library) {
                 if (!str_starts_with($library, './')) {
@@ -197,9 +197,9 @@ class Bootstrap {
     }
     
     /**
-     * @param  string    $start
-     * @param  string    $entry
-     * @param  string    $name
+     * @param string $start
+     * @param string $entry
+     * @param string $name
      * @param  string    libraries
      * @param  string    $resources
      * @param  bool      $info
@@ -305,6 +305,9 @@ class Bootstrap {
 
                 $filenames = [ $entry => false ];
                 foreach ([...$libraries,...$resources] as $directory) {
+                    if (!yield exists($directory)) {
+                        continue;
+                    }
                     foreach (yield listFilesRecursively(\realpath($directory)) as $i => $filename) {
                         $filenames[$filename] = false;
                     }
