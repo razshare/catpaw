@@ -253,8 +253,8 @@ class Container {
     }
 
     /**
-     * Loads singletons from predefined locations.
-     * @param  array<string>          $locations
+     * Loads singletons from directories.
+     * @param  array<string>          $locations directories containing your singletons.
      * @param  bool                   $append    if true, the found singletons will be appended, otherwise all the other singletons will 
      *                                           be cleared before scanning.
      * @throws Exception
