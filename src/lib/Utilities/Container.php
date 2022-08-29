@@ -369,7 +369,7 @@ class Container {
      */
     public static function create(
         string $className,
-        mixed ...$defaultArguments
+        ...$defaultArguments
     ): Promise {
         return call(function() use ($className, $defaultArguments) {
             if (self::$singletons[$className] ?? false) {
@@ -386,9 +386,7 @@ class Container {
                 return false;
             }
 
-            /** @var Service $service */
-            $service = yield Service::findByClass($reflection);
-            /** @var Singleton $singleton */
+            $service   = yield Service::findByClass($reflection);
             $singleton = yield Singleton::findByClass($reflection);
 
             $constructor = $reflection->getConstructor() ?? false;
@@ -399,9 +397,14 @@ class Container {
 
             $instance = new $className(...$arguments);
 
-            self::$singletons[$className] = $instance;
- 
-            yield $service->onClassInstantiation($reflection, $instance, false);
+            if ($singleton || $service) {
+                self::$singletons[$className] = $instance;
+                if ($service) {
+                    yield call(function() use ($reflection, &$instance, $service) {
+                        return $service->onClassInstantiation($reflection, $instance, false);
+                    });
+                }
+            }
             
             yield self::entry($instance, $reflection->getMethods());
             
