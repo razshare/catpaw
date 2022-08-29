@@ -100,18 +100,12 @@ function main(
         $phar = new Phar($app);
 
         $phar->startBuffering();
-        
-        $directories = [];
 
         $phar->buildFromDirectory('.',$match);
 
         $phar->setStub(
-            '#!/usr/bin/env php'
-            .PHP_EOL
-            .$phar->createDefaultStub($start)
+            "#!/usr/bin/env php \n".$phar->createDefaultStub($start)
         );
-
-        $phar->setDefaultStub($start);
 
         $phar->stopBuffering();
 
