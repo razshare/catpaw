@@ -12,6 +12,11 @@ class LoggerFactory {
     private function __construct() {
     }
 
+    /**
+     * Create a default logger.
+     * @param  string          $loggerName
+     * @return LoggerInterface
+     */
     public static function create(string $loggerName = 'Logger'): LoggerInterface {
         $handler = new StreamHandler(getStdout());
         $handler->setFormatter(new ConsoleFormatter());

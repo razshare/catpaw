@@ -44,13 +44,35 @@ class Container {
         foreach (self::$singletons as $classname) {
             $table->add(\get_class($classname));
         }
-        return $table->toString().PHP_EOL;
+        return $table->__toString().PHP_EOL;
     }
 
+    /**
+     * Check if an singleton of a class exists in the container.
+     * @param  string $className
+     * @return bool
+     */
     public static function isset(string $className): bool {
         return isset(self::$singletons[$className]);
     }
 
+    /**
+     * Set a singleton inside the container.
+     * @param  string $className
+     * @param  mixed  $object
+     * @return void
+     */
+    public static function set(string $className, mixed $object): void {
+        self::$singletons[$className] = $object;
+    }
+
+    /**
+     * Set a singleton inside the container.
+     * @param  string $className
+     * @param  mixed  $object
+     * @return void
+     * @deprecated use Container::set instead
+     */
     public static function setObject(string $className, mixed $object): void {
         self::$singletons[$className] = $object;
     }
@@ -63,13 +85,17 @@ class Container {
     private const PARAMETERS_ATTRIBUTES_CLOSURES     = 5;
     private const PARAMETERS_ATTRIBUTES_HAVE_STORAGE = 6;
 
+    /**
+     * Delete all singletons and cache inside the container.
+     * @return void
+     */
     public static function clearAll():void {
         self::$cache      = [];
         self::$singletons = [];
     }
 
     /**
-     * Run the entry method of an instance.
+     * Run the entry method of an instance of a class.
      * @param  object                  $instance
      * @param  array<ReflectionMethod> $methods  methods of the instance
      * @throws ReflectionException
@@ -169,10 +195,12 @@ class Container {
     }
 
     /**
-     * 
-     * @param  ReflectionFunction|ReflectionMethod $reflection
-     * @param  bool|array                          $options
-     * @return Promise<array<mixed>>
+     * Find (& create) all the `dependencies` of a function or method.
+     * The word `dependencies` includes `singletons` and certain `attribute` injections.
+     * @param  ReflectionFunction|ReflectionMethod $reflection       the function/method to scan.
+     * @param  false|array                         $options
+     * @param  mixed                               $defaultArguments
+     * @return Promise
      */
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
@@ -253,7 +281,7 @@ class Container {
     }
 
     /**
-     * Loads singletons from directories.
+     * Loads singletons from some locations (only directories are allowed for now).
      * @param  array<string>          $locations directories containing your singletons.
      * @param  bool                   $append    if true, the found singletons will be appended, otherwise all the other singletons will 
      *                                           be cleared before scanning.
@@ -266,7 +294,7 @@ class Container {
         }
 
         if (!isset(self::$singletons[LoggerInterface::class])) {
-            Container::setObject(LoggerInterface::class, LoggerFactory::create());
+            Container::set(LoggerInterface::class, LoggerFactory::create());
         }
         
         return call(function() use ($locations) {
@@ -335,13 +363,13 @@ class Container {
     /**
      * Make a new instance of the given class.<br />
      * This method will take care of dependency injections.
-     * @param  string          $className full name of the class.
-     * @param  mixed           $args
+     * @param  class-string    $className           full name of the class.
+     * @param  mixed           ...$defaultArguments
      * @return Promise<object>
      */
     public static function create(
         string $className,
-        ...$defaultArguments
+        mixed ...$defaultArguments
     ): Promise {
         return call(function() use ($className, $defaultArguments) {
             if (self::$singletons[$className] ?? false) {
@@ -371,18 +399,9 @@ class Container {
 
             $instance = new $className(...$arguments);
 
-            if (!$instance) {
-                return false;
-            }
-
-            if ($singleton || $service) {
-                self::$singletons[$className] = $instance;
-                if ($service) {
-                    yield call(function() use ($reflection, &$instance, $service) {
-                        return $service->onClassInstantiation($reflection, $instance, false);
-                    });
-                }
-            }
+            self::$singletons[$className] = $instance;
+ 
+            yield $service->onClassInstantiation($reflection, $instance, false);
             
             yield self::entry($instance, $reflection->getMethods());
             

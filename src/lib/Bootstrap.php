@@ -26,17 +26,23 @@ use ReflectionClass;
 use ReflectionException;
 
 use ReflectionFunction;
-
+use ReflectionMethod;
 use Throwable;
 
 class Bootstrap {
     /**
+     * 
+     * @param  class-string                                      $className
      * @throws ReflectionException
+     * @return array{0:ReflectionClass,1:ReflectionMethod|false}
      */
     private static function entry(string $className): array|false {
         $i = new ReflectionClass($className);
         foreach ($i->getMethods() as $method) {
             if (($attributes = $method->getAttributes(Entry::class))) {
+                /**
+                 * @psalm-suppress RedundantConditionGivenDocblockType
+                 */
                 if (count($attributes) > 0) {
                     return [$i, $method];
                 }
@@ -46,46 +52,59 @@ class Bootstrap {
     }
 
     /**
+     * Initialize an application from a soruce file (that usually defines a global "main" function).
      * @param  string              $filename
      * @throws ReflectionException
-     * @return Generator
+     * @return Promise<void>
      */
-    public static function init(string $filename): Generator {
-        if (isPhar()) {
-            $filename = \Phar::running()."/$filename";
-        }
-        if (yield exists($filename)) {
-            require_once $filename;
-            /** @var mixed $result */
-            if (!function_exists('main')) {
-                yield self::kill("Please define a global main function.\n");
+    public static function init(string $filename): Promise {
+        return call(function() use ($filename) {
+            if (isPhar()) {
+                $filename = \Phar::running()."/$filename";
             }
-            $main = new ReflectionFunction('main');
-
-            foreach ($main->getAttributes() as $attribute) {
-                $attributeArguments = $attribute->getArguments();
-                $className          = $attribute->getName();
-                /** @var ReflectionFunction $entry */
-                [$klass, $entry] = self::entry($className);
-                $object          = $klass->newInstance(...$attributeArguments);
-                if ($entry) {
-                    $arguments = yield Container::dependencies($entry);
-                    yield \Amp\call(fn() => $entry->invoke($object, ...$arguments));
+            if (yield exists($filename)) {
+                /**
+                 * @psalm-suppress UnresolvableInclude
+                 */
+                require_once $filename;
+                /** @var mixed $result */
+                if (!function_exists('main')) {
+                    yield self::kill("Please define a global main function.\n");
                 }
+                /**
+                 * @psalm-suppress InvalidArgument
+                 */
+                $main = new ReflectionFunction('main');
+    
+                foreach ($main->getAttributes() as $attribute) {
+                    $attributeArguments = $attribute->getArguments();
+                    $className          = $attribute->getName();
+                    /**
+                     * @psalm-suppress ArgumentTypeCoercion
+                     */
+                    [$klass, $entry] = self::entry($className);
+                    $object          = $klass->newInstance(...$attributeArguments);
+                    if ($entry) {
+                        $arguments = yield Container::dependencies($entry);
+                        yield \Amp\call(fn():mixed => $entry->invoke($object, ...$arguments));
+                    }
+                }
+                
+                yield Container::run($main);
+            } else {
+                yield self::kill("Could not find php entry file \"$filename\".\n");
             }
-            
-            yield Container::run($main);
-        } else {
-            yield self::kill("Could not find php entry file \"$filename\".\n");
-        }
+        });
     }
 
     /**
      * Bootstrap an application from a file.
-     * @param  string    $name   application name (this will be used by the default logger)
-     * @param  string    $file   php file to run (absolute path)
-     * @param  string    $watch
-     * @param  mixed     $onkill
+     * @param  string    $entry       the entry file of the application (it usually defines a global "main" function)
+     * @param  string    $name        application name (this will be used by the default logger)
+     * @param  string    $libraries
+     * @param  string    $resources
+     * @param  bool      $info
+     * @param  bool      $dieOnChange
      * @throws Throwable
      * @return void
      */
@@ -113,7 +132,7 @@ class Bootstrap {
                 }
             }
 
-            Container::setObject(LoggerInterface::class, LoggerFactory::create($name));
+            Container::set(LoggerInterface::class, LoggerFactory::create($name));
             /** @var array<string> */
             $libraries = !$libraries?[]:\preg_split('/,|;/', $libraries);
             /** @var array<string> */
@@ -167,7 +186,7 @@ class Bootstrap {
                 if ($info) {
                     echo Container::describe();
                 }
-                yield from self::init($entry);
+                yield self::init($entry);
             } catch (Throwable $e) {
                 if ($dieOnChange) {
                     echo $e.\PHP_EOL;
@@ -180,10 +199,15 @@ class Bootstrap {
         });
     }
 
-    
+    /** @var array<callable():(void|Generator|Promise)> */
     private static array $onKillActions = [];
 
-    public static function onKill($callback) {
+    /**
+     * Execute something when the application get killed through Bootstrap::kill.
+     * @param  callable():(void|Generator|Promise) $callback
+     * @return void
+     */
+    public static function onKill(callable $callback) {
         self::$onKillActions[] = $callback;
     }
 
@@ -289,7 +313,15 @@ class Bootstrap {
         });
     }
 
-    public static function dieOnChange(
+    /**
+     * Start a watcher which will kill the application when any observed file changes.
+     * Useful for development mode.
+     * @param  string        $entry
+     * @param  array         $libraries
+     * @param  array         $resources
+     * @return Promise<void>
+     */
+    private static function dieOnChange(
         string $entry,
         array $libraries,
         array $resources,

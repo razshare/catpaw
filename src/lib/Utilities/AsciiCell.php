@@ -2,16 +2,29 @@
 
 namespace CatPaw\Utilities;
 
-class AsciiCel {
-    private $numberOfLines = 0;
-    private $width         = 0;
-    private $height;
-    private $top;
-    private $bottom;
-    private $spaceer;
-    private $data = [];
-    private $originalString;
-    private $options = [
+/**
+ * @psalm-type Options = array{
+ *  width: int,
+ *  padding-left: int,
+ *  padding-right: int,
+ *  padding-top: int,
+ *  padding-bottom: int,
+ *  padding-between-lines-top: int,
+ *  padding-between-lines-bottom: int
+ * }
+ * @package CatPaw\Utilities
+ */
+class AsciiCell {
+    private int $width             = 0;
+    private int $height            = 0;
+    private int $top               = 0;
+    private int $bottom            = 0;
+    private array $data            = [];
+    private string $empty          = '';
+    private string $originalString = '';
+    
+    /** @var Options */
+    private array $options = [
         "width"                        => 4096,
         "padding-left"                 => 1,
         "padding-right"                => 1,
@@ -20,7 +33,12 @@ class AsciiCel {
         "padding-between-lines-top"    => 0,
         "padding-between-lines-bottom" => 0
     ];
-    public function &getOptions():array {
+
+    /**
+     * Get the options of the cell.
+     * @return Options
+     */
+    public function &getOptions():mixed {
         return $this->options;
     }
     public function __construct(string $data, array $options = []) {
@@ -42,7 +60,7 @@ class AsciiCel {
         $flatten = [];
         //flatten $lines array
         array_walk_recursive($lines, function($a) use (&$flatten) { $flatten[] = $a; });
-        $lines                                                                 = $flatten;
+        $lines = $flatten;
 
         $length = 0;
         for ($i = 0,$end = count($lines) - 1;$i <= $end; $i++) {
@@ -61,12 +79,15 @@ class AsciiCel {
     public function getWidth():int {
         return $this->width;
     }
+
     public function setWidth(int $width):void {
         $this->width = $width;
     }
+
     public function increaseWidth(int $width):void {
         $this->width += $width;
     }
+
     public function decreaseWidth(int $width):void {
         $this->width -= $width;
     }
@@ -140,7 +161,7 @@ class AsciiCel {
             }
             return;
         }
-        $paddingLeft  = str_repeat(isset($data[0])  && $extendFirstCharacter?$data[0]:" ", $this->options["padding-left"]);
+        $paddingLeft  = str_repeat(isset($data[0]) && $extendFirstCharacter?$data[0]:" ", $this->options["padding-left"]);
         $paddingRight = str_repeat(isset($data[-1]) && $extendRightCharacter?$data[-1]:" ", $this->options["padding-right"]);
         $len          = strlen($data);
         if ($len > $this->width) {

@@ -8,6 +8,11 @@ class StringStack {
     private function __construct(private string $contents = '') {
     }
 
+    /**
+     * Create a string stack from a string.
+     * @param  string      $contents
+     * @return StringStack
+     */
     public static function of(string $contents): StringStack {
         return new self($contents);
     }

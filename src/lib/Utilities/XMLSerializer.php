@@ -6,10 +6,8 @@ use function get_object_vars;
 use stdClass;
 
 class XMLSerializer {
-
     /**
-     * Generate xml string from object.<br />
-     * <b>NOTE:</b> functions adopted from http://www.sean-barton.co.uk/2009/03/turning-an-array-or-object-into-xml-using-php/
+     * Generate xml string from object.
      * @return string xml string.
      */
     public static function generateValidXmlFromObj(stdClass $obj, string $node_block = 'nodes', string $node_name = 'node'): string {
@@ -18,11 +16,10 @@ class XMLSerializer {
     }
 
     /**
-     * Generate xml string from array.<br />
-     * <b>NOTE:</b> functions adopted from http://www.sean-barton.co.uk/2009/03/turning-an-array-or-object-into-xml-using-php/
+     * Generate an xml string from array.
      * @return string xml string.
      */
-    public static function generateValidXmlFromArray($array, string $node_block = 'nodes', string $node_name = 'node'): string {
+    public static function generateValidXmlFromArray(mixed $array, string $node_block = 'nodes', string $node_name = 'node'): string {
         $xml = '<?xml version="1.0" encoding="UTF-8" ?>';
 
         $xml .= '<'.$node_block.'>';
@@ -31,8 +28,8 @@ class XMLSerializer {
 
         return $xml;
     }
-
-    private static function generateXmlFromArray($array, string $node_name): string {
+    
+    private static function generateXmlFromArray(mixed $array, string $node_name): string {
         $xml = '';
 
         if (is_array($array) || is_object($array)) {

@@ -3,15 +3,13 @@
 namespace CatPaw\Utilities;
 
 class AsciiRow {
-    private $cels = [];
-    private $height;
-    private $width = 0;
-    private $options;
-    private $styles = [];
-    public function __construct(array &$options, array &$styles, AsciiCel ...$cels) {
+    private array $cells   = [];
+    private int $height    = 0;
+    private int $width     = 0;
+    private array $options = [];
+    public function __construct(array &$options, AsciiCell ...$cells) {
         $this->options = $options;
-        $this->styles  = $styles;
-        $this->cels    = $cels;
+        $this->cells   = $cells;
         $this->resolveHeight();
         $this->resolveWidth();
     }
@@ -19,10 +17,10 @@ class AsciiRow {
     private function resolveHeight():void {
         $result = 0;
         $height = 0;
-        foreach ($this->cels as $key => &$cel) {
+        foreach ($this->cells as $key => &$cel) {
             $cel->resolve();
         }
-        foreach ($this->cels as $key => &$cel) {
+        foreach ($this->cells as $key => &$cel) {
             $height = $cel->getHeight();
             if ($height > $result) {
                 $result = $height;
@@ -33,9 +31,9 @@ class AsciiRow {
 
     private function resolveWidth():void {
         $this->width  = 0;
-        $numberOfCels = count($this->cels);
+        $numberOfCels = count($this->cells);
         for ($j = 0;$j < $numberOfCels;$j++) {
-            $this->width += $this->cels[$j]->getWidth();
+            $this->width += $this->cells[$j]->getWidth();
         }
     }
 
@@ -43,42 +41,66 @@ class AsciiRow {
         return $this->height;
     }
 
+    /**
+     * Get the width of the row.
+     * @return int
+     */
     public function getWidth():int {
         return $this->width;
     }
 
+    /**
+     * Extend the length of a cell  `$index` inside the row by `$width` characters.
+     * @param  int  $index
+     * @param  int  $width
+     * @return void
+     */
     public function extendCelBy(int $index, int $width):void {
-        $tmp = $this->cels[$index]->increaseWidth($width);
+        $tmp = $this->cells[$index]->increaseWidth($width);
     }
 
+    /**
+     * Get the number of cells.
+     * @return int
+     */
     public function getNumberOfCels():int {
-        return count($this->cels);
-    }
-    public function getCel(int $index):AsciiCel {
-        if (!isset($this->cels[$index])) {
-            $this->cels[$index] = new AsciiCel("", $this->options);
-        }
-        return $this->cels[$index];
+        return count($this->cells);
     }
 
+    /**
+     * Get a cell from the row.
+     * @param  int       $index
+     * @return AsciiCell
+     */
+    public function getCell(int $index):AsciiCell {
+        if (!isset($this->cells[$index])) {
+            $this->cells[$index] = new AsciiCell("", $this->options);
+        }
+        return $this->cells[$index];
+    }
+
+    /**
+     * Get the lines from the virtual "row".
+     * @return array
+     */
     private function getLines():array {
         $lines        = [];
         $wholeLines   = [];
-        $numberOfCels = count($this->cels);
+        $numberOfCels = count($this->cells);
         for ($j = 0;$j < $numberOfCels;$j++) {
-            $numberOfLines = count($this->cels[$j]->getLines());
+            $numberOfLines = count($this->cells[$j]->getLines());
             if ($numberOfLines < $this->height) {
-                $this->cels[$j] = new AsciiCel(
-                    $this->cels[$j]->getOriginalString()
+                $this->cells[$j] = new AsciiCell(
+                    $this->cells[$j]->getOriginalString()
                                     .str_repeat("\n", $this->height - $numberOfLines),
-                    $this->cels[$j]->getOPtions()
+                    $this->cells[$j]->getOPtions()
                 );
             }
         }
 
 
         for ($j = 0;$j < $numberOfCels;$j++) {
-            $cel   = $this->cels[$j];
+            $cel   = $this->cells[$j];
             $lines = $cel->getLines();
             for ($i = 0;$i < $this->height;$i++) {
                 if (!isset($wholeLines[$i])) {
@@ -93,7 +115,11 @@ class AsciiRow {
         return $wholeLines;
     }
 
-    public function toString():string {
+    /**
+     * Convert the row to a string.
+     * @return string
+     */
+    public function __toString():string {
         return implode("\n", $this->getLines());
     }
 }

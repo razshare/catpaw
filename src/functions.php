@@ -34,7 +34,8 @@ function milliseconds():float {
 /**
  * List all files (not directories) inside a directory.
  * Dot entries are not included in the resulting array (i.e. "." and "..").
- * @param  string                 $path directory to scan
+ * @param  string                 $path
+ * @param  array|false            $ignore
  * @return Promise<array<string>>
  */
 function listFilesRecursively(string $path, array|false $ignore = false):Promise {
@@ -109,8 +110,8 @@ function uuid(): string {
 
 /**
  * Convert a resource into a stream.
- * @param  mixed    $resource
- * @param  null|int $chunkSize
+ * @param  mixed  $resource
+ * @param  ?int   $chunkSize
  * @return Stream
  */
 function stream(
@@ -266,14 +267,14 @@ function execute(string $command, ?string $cwd = null, array $env = [], array $o
 
 /**
  * Print an array as an ascii table (recursively).
- * @param  array        $input       the input array.
- * @param  bool         $lineCounter if true a number will be visible for each line inside the ascii table.
- * @param  Closure|null $intercept   intercept the main table and each subtable.<br />
+ * @param array $input       the input array.
+ * @param bool  $lineCounter if true a number will be visible for each line inside the ascii table.
+ * @param  ?callable(AsciiTable $table, int $lvl):void $intercept   intercept the main table and each subtable.<br />
  *                                   This closure will be passed 2 parameters: the AsciiTable and the current depth level.
- * @param  int          $lvl         the depth level will start counting from this value on.
- * @return string       the resulting ascii table.
+ * @param  int    $lvl the depth level will start counting from this value on.
+ * @return string the resulting ascii table.
  */
-function tableFromArray(array $input, bool $lineCounter = false, Closure $intercept = null, int $lvl = 0): string {
+function tableFromArray(array $input, bool $lineCounter = false, ?callable $intercept = null, int $lvl = 0): string {
     $table = new AsciiTable();
     if (null !== $intercept) {
         $intercept($table, $lvl);
