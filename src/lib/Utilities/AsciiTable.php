@@ -131,7 +131,7 @@ class AsciiTable {
             $widestCelWidth = $widestCel->getWidth();
             $numberOfRows   = count($this->rows);
             for ($j = 0;$j < $numberOfRows;$j++) {
-                if (($cel = $this->rows[$j]->getCel($i))) {
+                if (($cel = $this->rows[$j]->getCell($i))) {
                     $width = $widestCelWidth - $cel->getWidth();
                     if ($width > 0) {
                         $this->rows[$j]->extendCelBy($i, $width);
@@ -150,8 +150,8 @@ class AsciiTable {
         $length = count($this->rows);
         $cel    = null;
         for ($i = 0;$i < $length;$i++) {
-            if (null === $cel || $cel->getWidth() < $this->rows[$i]->getCel($index)->getWidth()) {
-                $cel = $this->rows[$i]->getCel($index);
+            if (null === $cel || $cel->getWidth() < $this->rows[$i]->getCell($index)->getWidth()) {
+                $cel = $this->rows[$i]->getCell($index);
             }
         }
         return $cel;
