@@ -17,8 +17,8 @@ namespace CatPaw\Utilities;
 class AsciiCell {
     private int $width             = 0;
     private int $height            = 0;
-    private int $top               = 0;
-    private int $bottom            = 0;
+    private int|string $top        = 0;
+    private int|string $bottom     = 0;
     private array $data            = [];
     private string $empty          = '';
     private string $originalString = '';
