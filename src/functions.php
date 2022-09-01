@@ -293,7 +293,8 @@ function tableFromArray(array $input, bool $lineCounter = false, ?callable $inte
         $table->add($key, $item);
     }
 
-    return $table->toString($lineCounter);
+    $table->countLines($lineCounter);
+    return $table->__toString();
 }
 
 /**
