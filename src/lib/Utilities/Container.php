@@ -363,9 +363,9 @@ class Container {
     /**
      * Make a new instance of the given class.<br />
      * This method will take care of dependency injections.
-     * @param  class-string    $className           full name of the class.
-     * @param  mixed           ...$defaultArguments
-     * @return Promise<object>
+     * @param  class-string     $className           full name of the class.
+     * @param  mixed            ...$defaultArguments
+     * @return Promise<?object>
      */
     public static function create(
         string $className,
