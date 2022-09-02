@@ -2,6 +2,9 @@
 namespace CatPaw\Utilities;
 
 abstract class IntConverter {
+    private function __construct() {
+    }
+
     public static function int8($i) {
         return is_int($i) ? pack("c", $i) : unpack("c", $i)[1];
     }

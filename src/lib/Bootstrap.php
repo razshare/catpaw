@@ -30,6 +30,9 @@ use ReflectionMethod;
 use Throwable;
 
 class Bootstrap {
+    private function __contruct() {
+    }
+
     /**
      * 
      * @param  class-string                                      $className

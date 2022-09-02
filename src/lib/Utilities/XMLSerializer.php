@@ -6,6 +6,9 @@ use function get_object_vars;
 use stdClass;
 
 class XMLSerializer {
+    private function __construct() {
+    }
+
     /**
      * Generate xml string from object.
      * @return string xml string.

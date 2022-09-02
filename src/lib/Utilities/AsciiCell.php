@@ -15,11 +15,22 @@ namespace CatPaw\Utilities;
  * @package CatPaw\Utilities
  */
 class AsciiCell {
+    /**
+     * Create a cell from a string.
+     * @param  string    $value
+     * @param  array     $options
+     * @return AsciiCell
+     */
+    public static function fromString(string $value):self {
+        return new self($value);
+    }
+
+
     private int $width             = 0;
     private int $height            = 0;
     private int|string $top        = 0;
     private int|string $bottom     = 0;
-    private array $data            = [];
+    private array $lines           = [];
     private string $empty          = '';
     private string $originalString = '';
     
@@ -41,15 +52,21 @@ class AsciiCell {
     public function &getOptions():mixed {
         return $this->options;
     }
-    public function __construct(string $data, array $options = []) {
+    
+    private function __construct(private string $data) {
+        $this->setOptions([]);
+    }
+
+    public function setOptions(array $options):self {
+        $data                 = $this->data;
         $data                 = \preg_replace("/\\t/", \str_repeat(" ", 4), $data);
         $this->originalString = $data;
         foreach ($options as $key => &$value) {
             $this->options[$key] = $value;
         }
         $this->parseOptions();
-        $this->data = [];
-        $lines      = preg_split('/\n/', $data);
+        $this->lines = [];
+        $lines       = preg_split('/\n/', $data);
         
         for ($i = 0,$end = count($lines) - 1;$i <= $end;$i++) {
             if ($this->options["width"] < strlen($lines[$i])) {
@@ -64,12 +81,14 @@ class AsciiCell {
 
         $length = 0;
         for ($i = 0,$end = count($lines) - 1;$i <= $end; $i++) {
-            $length       = strlen($lines[$i]);
-            $this->data[] = $lines[$i];
+            $length        = strlen($lines[$i]);
+            $this->lines[] = $lines[$i];
             if ($this->width < $length) {
                 $this->width = $length;
             }
         };
+
+        return $this;
     }
 
     public function getHeight():int {
@@ -121,9 +140,9 @@ class AsciiCell {
 
     public function resolve():array {
         $tmp    = [];
-        $length = count($this->data);
+        $length = count($this->lines);
         for ($i = 0;$i < $length;$i++) {
-            $dataLen = strlen($this->data[$i]);
+            $dataLen = strlen($this->lines[$i]);
             if ($this->width < $dataLen) {
                 $this->width = $dataLen;
             }
@@ -141,7 +160,7 @@ class AsciiCell {
             for ($j = 0;$j < $this->options["padding-between-lines-top"];$j++) {
                 $this->insertLineInTmp($this->empty, $tmp, "|", true, true);
             }
-            $this->insertLineInTmp($this->data[$i], $tmp);
+            $this->insertLineInTmp($this->lines[$i], $tmp);
             for ($j = 0;$j < $this->options["padding-between-lines-bottom"];$j++) {
                 $this->insertLineInTmp($this->empty, $tmp, "|", true, true);
             }

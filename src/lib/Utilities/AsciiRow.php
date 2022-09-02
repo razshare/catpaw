@@ -3,15 +3,23 @@
 namespace CatPaw\Utilities;
 
 class AsciiRow {
+    public static function fromCells(AsciiCell ...$cells): self {
+        return new self(...$cells);
+    }
+
     private array $cells   = [];
     private int $height    = 0;
     private int $width     = 0;
     private array $options = [];
-    public function __construct(array &$options, AsciiCell ...$cells) {
-        $this->options = $options;
-        $this->cells   = $cells;
+    private function __construct(AsciiCell ...$cells) {
+        $this->cells = $cells;
         $this->resolveHeight();
         $this->resolveWidth();
+    }
+
+    public function setOptions(array $options):self {
+        $this->options = $options;
+        return $this;
     }
 
     private function resolveHeight():void {
@@ -74,7 +82,7 @@ class AsciiRow {
      */
     public function getCell(int $index):AsciiCell {
         if (!isset($this->cells[$index])) {
-            $this->cells[$index] = new AsciiCell("", $this->options);
+            $this->cells[$index] = AsciiCell::fromString("")->setOptions($this->options);
         }
         return $this->cells[$index];
     }
@@ -90,11 +98,9 @@ class AsciiRow {
         for ($j = 0;$j < $numberOfCels;$j++) {
             $numberOfLines = count($this->cells[$j]->getLines());
             if ($numberOfLines < $this->height) {
-                $this->cells[$j] = new AsciiCell(
-                    $this->cells[$j]->getOriginalString()
-                                    .str_repeat("\n", $this->height - $numberOfLines),
-                    $this->cells[$j]->getOPtions()
-                );
+                $this->cells[$j] = AsciiCell::fromString(
+                    $this->cells[$j]->getOriginalString().str_repeat("\n", $this->height - $numberOfLines),
+                )->setOptions($this->cells[$j]->getOPtions());
             }
         }
 

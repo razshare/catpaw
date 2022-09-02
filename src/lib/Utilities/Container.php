@@ -27,6 +27,9 @@ use SplFixedArray;
 use Throwable;
 
 class Container {
+    private function __construct() {
+    }
+
     private static array $cache      = [];
     private static array $singletons = [];
 
@@ -39,7 +42,7 @@ class Container {
      * @return string
      */
     public static function describe(): string {
-        $table = new AsciiTable();
+        $table = AsciiTable::create();
         $table->add("Singleton");
         foreach (self::$singletons as $classname) {
             $table->add(\get_class($classname));
@@ -354,7 +357,6 @@ class Container {
                 $reflection = $function;
                 $function   = $reflection->getClosure();
             }
-
             $arguments = yield Container::dependencies($reflection);
             yield call($function, ...$arguments);
         });

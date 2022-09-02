@@ -3,14 +3,22 @@
 namespace CatPaw\Utilities;
 
 class AsciiTable {
+    public static function create():self {
+        return new self();
+    }
+
     private array $rows          = [];
     private int $numberOfCols    = 0;
     private int $globalRowNumber = 1;
     private array $options       = [];
     private int $width           = 0;
     private array $styles        = [];
-    public function __construct(array $options = []) {
+    private function __construct() {
+    }
+
+    public function setOptions(array $options):self {
         $this->options = $options;
+        return $this;
     }
 
     public function style(int $index, array $options):AsciiTable {
@@ -33,10 +41,10 @@ class AsciiTable {
             if ($cells[$i] instanceof AsciiCell) {
                 $resultingCells[] = $cells[$i];
             } else {
-                $resultingCells[] = new AsciiCell($cells[$i], isset($this->styles[$i])?$this->styles[$i]:$this->options);
+                $resultingCells[] = AsciiCell::fromString($cells[$i])->setOptions(isset($this->styles[$i])?$this->styles[$i]:$this->options);
             }
         }
-        $row          = new AsciiRow($this->options, ...$resultingCells);
+        $row          = AsciiRow::fromCells(...$resultingCells)->setOptions($this->options);
         $this->rows[] = $row;
 
         $this->__toString();

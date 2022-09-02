@@ -5,6 +5,13 @@ use Closure;
 use SplDoublyLinkedList;
 
 class LinkedList extends SplDoublyLinkedList {
+    private function __construct() {
+    }
+
+    public static function create():self {
+        return new self();
+    }
+
     /**
      * Iterate the linked list.
      * @param int     $mode iteration mode (lookup constants).

@@ -6,6 +6,8 @@ use function get_object_vars;
 use function is_array;
 
 class Caster {
+    private function __construct() {
+    }
     /**
      * Cast an \stdClass object to a specific classname.
      * @param  mixed  $obj       the object to cast.
