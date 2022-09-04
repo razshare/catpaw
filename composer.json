@@ -20,12 +20,12 @@
     "scripts": {
         "load": "XDEBUG_MODE='off' composer dump-autoload -o",
         "fix": [
-            "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix src",
-            "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix tests"
+            "XDEBUG_MODE=debug php ./vendor/bin/php-cs-fixer fix src",
+            "XDEBUG_MODE=debug php ./vendor/bin/php-cs-fixer fix tests"
         ],
         "action:test": [],
         "test": [],
-        "build": "php -dxdebug.mode=off -dphar.readonly=0 ./bin/start -e./bin/build"
+        "build": "XDEBUG_MODE=off php -dphar.readonly=0 ./bin/start -e./bin/build"
     },
     "autoload": {
         "psr-4": {

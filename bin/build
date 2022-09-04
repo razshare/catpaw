@@ -1,7 +1,6 @@
 #!/usr/bin/env php
 <?php
 use Amp\Promise;
-use CatPaw\Environment\Attributes\Environment;
 use CatPaw\Environment\Attributes\EnvironmentFile;
 
 use function Amp\File\createDirectoryRecursively;
@@ -20,12 +19,20 @@ use function CatPaw\deleteDirectoryRecursively;
   * @throws Error 
   */
 #[EnvironmentFile("build.yml")]
-function main(
-    #[Environment("name")] string $name,
-    #[Environment("entry")] string $entry,
-    #[Environment("libraries")] string $libraries,
-    #[Environment("match")] string $match,
-){
+function main(){
+
+    /**
+     * @var string $name
+     * @var string $entry
+     * @var string $libraries
+     * @var string $match
+     */
+
+    $name = $_ENV['name']??'';
+    $entry = $_ENV['entry']??'';
+    $libraries = $_ENV['libraries']??'';
+    $match = $_ENV['match']??'';
+
     $name = str_replace(['"',"\n"], ['\\"',''], $name);
     $entry = str_replace(['"',"\n"], ['\\"',''], $entry);
     $libraries = str_replace(['"',"\n"], ['\\"',''], $libraries);

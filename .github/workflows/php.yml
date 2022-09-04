@@ -30,8 +30,7 @@ jobs:
       run: composer install --prefer-dist --no-progress
     - name: Run tests
       run: composer action:test
-
-    # Add a test script to composer.json, for instance: "test": "php -dxdebug.mode=debug vendor/bin/phpunit tests"
+      
     # Docs: https://getcomposer.org/doc/articles/scripts.md
 
     # - name: Run test suite
