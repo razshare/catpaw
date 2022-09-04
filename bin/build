@@ -2,7 +2,7 @@
 <?php
 use Amp\Promise;
 use CatPaw\Environment\Attributes\Environment;
-use CatPaw\Environment\Attributes\EnvironmentFileName;
+use CatPaw\Environment\Attributes\EnvironmentFile;
 
 use function Amp\File\createDirectoryRecursively;
 use function Amp\File\deleteFile;
@@ -19,7 +19,7 @@ use function CatPaw\deleteDirectoryRecursively;
   * @return Generator<int, Promise<bool>|Promise<void>|Promise<string[]>, mixed, void> 
   * @throws Error 
   */
-#[EnvironmentFileName("build.yml")]
+#[EnvironmentFile("build.yml")]
 function main(
     #[Environment("name")] string $name,
     #[Environment("entry")] string $entry,

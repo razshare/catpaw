@@ -12,7 +12,7 @@ use CatPaw\Utilities\Container;
 use Psr\Log\LoggerInterface;
 
 #[Attribute]
-class EnvironmentFileName implements AttributeInterface {
+class EnvironmentFile implements AttributeInterface {
     use CoreAttributeDefinition;
     
     private array $eitherFileNames;
