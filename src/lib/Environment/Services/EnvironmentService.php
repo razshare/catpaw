@@ -2,14 +2,9 @@
 namespace CatPaw\Environment\Services;
 
 use function Amp\call;
-use function Amp\File\exists;
-
-use Amp\File\File;
-use Amp\File\Filesystem;
-use function Amp\File\openFile;
-
-use Amp\Loop;
-use Amp\Promise;
+use function Amp\File\{exists, openFile};
+use Amp\File\{File, Filesystem};
+use Amp\{Loop, Promise};
 use CatPaw\Amp\File\CatPawDriver;
 
 use CatPaw\Attributes\Service;

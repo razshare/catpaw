@@ -4,11 +4,8 @@ namespace CatPaw\Amp\File;
 
 use Amp\ByteStream\ClosedException;
 use function Amp\call;
-use Amp\Failure;
 use Amp\File\PendingOperationError;
-use Amp\Promise;
-use Amp\Success;
-
+use Amp\{Failure, Promise, Success};
 final class CatPawFile implements \Amp\File\File {
     /** @var resource */
     private $stream;

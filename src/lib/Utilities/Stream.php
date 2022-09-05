@@ -2,10 +2,7 @@
 
 namespace CatPaw\Utilities;
 
-use Amp\ByteStream\ClosedException;
-use Amp\ByteStream\PendingReadError;
-use Amp\ByteStream\ResourceInputStream;
-use Amp\ByteStream\ResourceOutputStream;
+use Amp\ByteStream\{ClosedException, PendingReadError, ResourceInputStream, ResourceOutputStream};
 use function Amp\call;
 
 use Amp\Loop\InvalidWatcherError;

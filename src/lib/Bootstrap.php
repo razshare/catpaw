@@ -2,23 +2,14 @@
 
 namespace CatPaw;
 
-use Amp\ByteStream\ResourceInputStream;
-use Amp\ByteStream\ResourceOutputStream;
-
-use function Amp\call;
-use function Amp\delay;
-use function Amp\File\createDefaultDriver;
-use function Amp\File\exists;
-use Amp\File\File;
-
-use Amp\File\Filesystem;
-
-use Amp\Loop;
+use Amp\ByteStream\{ResourceInputStream, ResourceOutputStream};
+use function Amp\File\{createDefaultDriver, exists};
+use Amp\File\{File, Filesystem};
 use Amp\Process\Process;
-use Amp\Promise;
+use function Amp\{call, delay};
+use Amp\{Loop, Promise};
 use CatPaw\Attributes\Entry;
-use CatPaw\Utilities\Container;
-use CatPaw\Utilities\LoggerFactory;
+use CatPaw\Utilities\{Container, LoggerFactory};
 use Generator;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;

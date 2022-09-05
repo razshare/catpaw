@@ -4,21 +4,10 @@ namespace CatPaw;
 use function Amp\ByteStream\buffer;
 
 use function Amp\call;
-use function Amp\File\createDirectoryRecursively;
-use function Amp\File\deleteDirectory;
-use function Amp\File\deleteFile;
-use function Amp\File\exists;
-use function Amp\File\getStatus;
-use function Amp\File\isDirectory;
-use function Amp\File\isFile;
-use function Amp\File\listFiles;
-
-use function Amp\File\read;
-use function Amp\File\write;
+use function Amp\File\{createDirectoryRecursively, deleteDirectory, deleteFile, exists, getStatus, isDirectory, isFile, listFiles, read, write};
 use Amp\Process\Process;
 use Amp\Promise;
-use CatPaw\Utilities\AsciiTable;
-use CatPaw\Utilities\Stream;
+use CatPaw\Utilities\{AsciiTable, Stream};
 use Closure;
 use InvalidArgumentException;
 use Phar;

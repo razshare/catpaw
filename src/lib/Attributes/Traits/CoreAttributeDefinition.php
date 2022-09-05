@@ -4,8 +4,7 @@ namespace CatPaw\Attributes\Traits;
 
 use function Amp\call;
 use Amp\Promise;
-use CatPaw\Attributes\AttributeResolver;
-use CatPaw\Attributes\Entry;
+use CatPaw\Attributes\{AttributeResolver, Entry};
 use CatPaw\Utilities\Container;
 use Closure;
 use ReflectionClass;

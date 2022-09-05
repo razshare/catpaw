@@ -3,8 +3,7 @@
 namespace CatPaw\Utilities;
 
 use function Amp\ByteStream\getStdout;
-use Amp\Log\ConsoleFormatter;
-use Amp\Log\StreamHandler;
+use Amp\Log\{ConsoleFormatter, StreamHandler};
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 

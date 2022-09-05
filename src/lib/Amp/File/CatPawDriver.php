@@ -3,11 +3,8 @@
 namespace CatPaw\Amp\File;
 
 use function Amp\call;
-use Amp\Failure;
-use Amp\File\Driver;
-use Amp\File\FilesystemException;
-use Amp\Promise;
-use Amp\Success;
+use Amp\File\{Driver, FilesystemException};
+use Amp\{Failure, Promise, Success};
 use Throwable;
 
 final class CatPawDriver implements Driver {

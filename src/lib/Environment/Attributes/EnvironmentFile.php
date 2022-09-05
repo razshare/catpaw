@@ -6,8 +6,7 @@ use Attribute;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
-use CatPaw\Environment\Services\EnvironmentConfigurationService;
-use CatPaw\Environment\Services\EnvironmentService;
+use CatPaw\Environment\Services\{EnvironmentConfigurationService, EnvironmentService};
 use CatPaw\Utilities\Container;
 use Psr\Log\LoggerInterface;
 

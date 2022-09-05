@@ -6,10 +6,7 @@ use function Amp\call;
 use Amp\Promise;
 
 use Attribute;
-use CatPaw\Attributes\AttributeResolver;
-use CatPaw\Attributes\Entry;
-use CatPaw\Attributes\Service;
-use CatPaw\Attributes\Singleton;
+use CatPaw\Attributes\{AttributeResolver, Entry, Service, Singleton};
 use CatPaw\Bootstrap;
 use function CatPaw\isPhar;
 use Closure;

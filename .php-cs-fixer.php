@@ -1,7 +1,7 @@
 <?php
 /*
  * This document has been generated with
- * https://mlocati.github.io/php-cs-fixer-configurator/#version:3.8.0|configurator
+ * https://mlocati.github.io/php-cs-fixer-configurator/#version:3.11.0|configurator
  * you can change this configuration by importing this file.
  */
 $config = new PhpCsFixer\Config();
@@ -18,9 +18,11 @@ return $config
         'clean_namespace'                         => true,
         'compact_nullable_typehint'               => true,
         'concat_space'                            => ['spacing' => 'none'],
+        'constant_case'                           => true,
         'control_structure_continuation_position' => ['position' => 'same_line'],
         'function_declaration'                    => ['closure_function_spacing' => 'none','trailing_comma_single_line' => true],
         'function_typehint_space'                 => true,
+        'group_import'                            => true,
         'heredoc_indentation'                     => true,
         'indentation_type'                        => true,
         'list_syntax'                             => true,
@@ -30,14 +32,13 @@ return $config
         'no_spaces_after_function_name'           => true,
         'no_spaces_around_offset'                 => true,
         'no_unneeded_curly_braces'                => true,
-        'ordered_imports'                         => ['sort_algorithm' => 'alpha'],
+        'no_unused_imports'                       => true,
+        'ordered_imports'                         => true,
         'phpdoc_align'                            => ['align' => 'vertical'],
         'phpdoc_indent'                           => true,
         'phpdoc_order'                            => true,
         'phpdoc_scalar'                           => true,
         'yoda_style'                              => ['always_move_variable' => true,'equal' => true,'identical' => true,'less_and_greater' => false],
-        'ordered_imports'                         => true,
-        'no_unused_imports'                       => true,
     ])
     ->setFinder(
         PhpCsFixer\Finder::create()
