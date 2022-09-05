@@ -28,13 +28,19 @@ class EnvironmentService {
         return call(function() use ($environmentConfigurationService) {
             $isPhar    = isPhar();
             $phar      = Phar::running();
-            $fileNames = $environmentConfigurationService->getFileNames();
-            foreach ($fileNames as $i => $currentFileName) {
-                if (yield exists($currentFileName)) {
-                    return $currentFileName;
-                }
+            $fileNames = $environmentConfigurationService->getFiles();
+            foreach ($fileNames as $i => $currentFile) {
+                $currentFileName = $currentFile->getFileName();
                 if ($isPhar) {
-                    $currentFileName = "$phar/$currentFileName";
+                    $allowsExternal = $currentFile->allowsExternal();
+                    if ($allowsExternal && yield exists($currentFileName)) {
+                        return $currentFileName;
+                    }
+                    $currentPharFileName = "$phar/$currentFileName";
+                    if (yield exists($currentPharFileName)) {
+                        return $currentPharFileName;
+                    }
+                } else {
                     if (yield exists($currentFileName)) {
                         return $currentFileName;
                     }
@@ -56,7 +62,14 @@ class EnvironmentService {
         return call(function() use ($logger, $environmentConfigurationService) {
             $this->variables = [];
 
-            $stringifiedFileNames = join(',', $environmentConfigurationService->getFileNames());
+            $files     = $environmentConfigurationService->getFiles();
+            $fileNames = [];
+
+            foreach ($files as $file) {
+                $fileNames[] = $file->getFileName();
+            }
+            
+            $stringifiedFileNames = join(',', $fileNames);
             
             if (!$fileName = yield $this->findFileName($environmentConfigurationService)) {
                 throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
