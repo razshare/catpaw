@@ -264,7 +264,7 @@ function execute(string $command, ?string $cwd = null, array $env = [], array $o
  * @return string the resulting ascii table.
  */
 function tableFromArray(array $input, bool $lineCounter = false, ?callable $intercept = null, int $lvl = 0): string {
-    $table = new AsciiTable();
+    $table = AsciiTable::create();
     if (null !== $intercept) {
         $intercept($table, $lvl);
     }

@@ -11,7 +11,7 @@ use CatPaw\Utilities\Container;
 use Psr\Log\LoggerInterface;
 
 #[Attribute]
-class EnvironmentFiles implements AttributeInterface {
+class EnvironmentFile implements AttributeInterface {
     use CoreAttributeDefinition;
     
     /** @var array<string|File> */
@@ -20,28 +20,29 @@ class EnvironmentFiles implements AttributeInterface {
     /**
      * Set a list of environment file candidates.
      * 
-     * @param array<string|File> $files The first valid file name will 
-     *                                  be used as the application environment.
+     * The first valid file will be used as the application environment file.
+     * 
+     * @param array<string|File> $files files to try load
      * 
      * Some examples:
      * 
-     * - `#[EnvironmentFiles( #[File('./env.yml')] )]`
-     * - `#[EnvironmentFiles( #[File('./.env')] )]`
-     * - `#[EnvironmentFiles( #[File('./env.yml', true)] )]`
-     * - `#[EnvironmentFiles( #[File('./env.yml')], #[File('./resource/env.yml')] )]` this falls back to `./resources/env.yml`
-     * - `#[EnvironmentFiles( './env.yml' )]`
+     * - `#[EnvironmentFile( #[File('./env.yml')] )]`
+     * - `#[EnvironmentFile( #[File('./.env')] )]`
+     * - `#[EnvironmentFile( #[File('./env.yml', true)] )]`
+     * - `#[EnvironmentFile( #[File('./env.yml')], #[File('./resource/env.yml')] )]` this falls back to `./resources/env.yml`
+     * - `#[EnvironmentFile( './env.yml' )]`
      * 
      * ### Note
      * 
-     * The second `#[EnvironmentFiles( #[File('./env.yml', true)] )]` 
+     * The second `#[EnvironmentFile( #[File('./env.yml', true)] )]` 
      * example will first lookup `./env.yml` outside 
      * the phar archive and then, if the file doesn't exist, will 
      * fallback to the phar archive `./env.yml` file.
      * 
      * ### Note 2
      * 
-     * The last example `#[EnvironmentFiles( './env.yml' )]` is equivalent 
-     * to  the first example `#[EnvironmentFiles( #[File( './env.yml' )] )]`.
+     * The last example `#[EnvironmentFile( './env.yml' )]` is equivalent 
+     * to  the first example `#[EnvironmentFile( #[File( './env.yml' )] )]`.
      * 
      * It's just a shorthand and there's no way to specify the 
      * second `$external` parameter in that case.
