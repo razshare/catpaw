@@ -22,7 +22,6 @@ return $config
         'control_structure_continuation_position' => ['position' => 'same_line'],
         'function_declaration'                    => ['closure_function_spacing' => 'none','trailing_comma_single_line' => true],
         'function_typehint_space'                 => true,
-        'group_import'                            => true,
         'heredoc_indentation'                     => true,
         'indentation_type'                        => true,
         'list_syntax'                             => true,
