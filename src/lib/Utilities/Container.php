@@ -6,6 +6,7 @@ use function Amp\call;
 use Amp\Promise;
 
 use Attribute;
+use BadFunctionCallException;
 use CatPaw\Attributes\{AttributeResolver, Entry, Service, Singleton};
 use CatPaw\Bootstrap;
 use function CatPaw\isPhar;
@@ -340,10 +341,13 @@ class Container {
         });
     }
 
+    
+
     /**
      * Inject dependencies into a function and invoke it.
      * @param  Closure|ReflectionFunction $function
      * @param  array                      $defaultArguments
+     * @throws BadFunctionCallException
      * @return Promise<void>
      */
     public static function run(Closure|ReflectionFunction $function): Promise {
@@ -354,9 +358,50 @@ class Container {
                 $reflection = $function;
                 $function   = $reflection->getClosure();
             }
+
+            if (!$function) {
+                throw new BadFunctionCallException("Could not execute function \"{$reflection->getName()}\" inside container.");
+            }
+
+            foreach ($reflection->getAttributes() as $attribute) {
+                $attributeArguments = $attribute->getArguments();
+                /** @var class-string */
+                $className = $attribute->getName();
+                $klass     = new ReflectionClass($className);
+                /**
+                 * @psalm-suppress ArgumentTypeCoercion
+                 */
+                $entry  = self::findEntryMethod($klass);
+                $object = $klass->newInstance(...$attributeArguments);
+                if ($entry) {
+                    $arguments = yield Container::dependencies($entry);
+                    yield call(fn():mixed => $entry->invoke($object, ...$arguments));
+                }
+            }
+
             $arguments = yield Container::dependencies($reflection);
             yield call($function, ...$arguments);
         });
+    }
+
+    /**
+     * 
+     * @param  ReflectionClass        $klass
+     * @throws ReflectionException
+     * @return ReflectionMethod|false
+     */
+    private static function findEntryMethod(ReflectionClass $klass): ReflectionMethod|false {
+        foreach ($klass->getMethods() as $method) {
+            if (($attributes = $method->getAttributes(Entry::class))) {
+                /**
+                 * @psalm-suppress RedundantConditionGivenDocblockType
+                 */
+                if (count($attributes) > 0) {
+                    return $method;
+                }
+            }
+        }
+        return false;
     }
 
     /**

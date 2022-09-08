@@ -12,37 +12,14 @@ use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\{Container, LoggerFactory};
 use Generator;
 use Psr\Log\LoggerInterface;
-use ReflectionClass;
 
 use ReflectionException;
 
 use ReflectionFunction;
-use ReflectionMethod;
 use Throwable;
 
 class Bootstrap {
     private function __contruct() {
-    }
-
-    /**
-     * 
-     * @param  class-string                                      $className
-     * @throws ReflectionException
-     * @return array{0:ReflectionClass,1:ReflectionMethod|false}
-     */
-    private static function entry(string $className): array|false {
-        $i = new ReflectionClass($className);
-        foreach ($i->getMethods() as $method) {
-            if (($attributes = $method->getAttributes(Entry::class))) {
-                /**
-                 * @psalm-suppress RedundantConditionGivenDocblockType
-                 */
-                if (count($attributes) > 0) {
-                    return [$i, $method];
-                }
-            }
-        }
-        return [$i, false];
     }
 
     /**
@@ -69,20 +46,6 @@ class Bootstrap {
                  * @psalm-suppress InvalidArgument
                  */
                 $main = new ReflectionFunction('main');
-    
-                foreach ($main->getAttributes() as $attribute) {
-                    $attributeArguments = $attribute->getArguments();
-                    $className          = $attribute->getName();
-                    /**
-                     * @psalm-suppress ArgumentTypeCoercion
-                     */
-                    [$klass, $entry] = self::entry($className);
-                    $object          = $klass->newInstance(...$attributeArguments);
-                    if ($entry) {
-                        $arguments = yield Container::dependencies($entry);
-                        yield \Amp\call(fn():mixed => $entry->invoke($object, ...$arguments));
-                    }
-                }
                 
                 yield Container::run($main);
             } else {
