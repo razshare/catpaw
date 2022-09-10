@@ -16,6 +16,9 @@ use Psr\Log\LoggerInterface;
 
 #[Service]
 class EnvironmentService {
+    public function __construct(private EnvironmentConfigurationService $environmentConfigurationService) {
+    }
+
     /** @var array<string,string|null> */
     private array $variables = [];
 
@@ -24,11 +27,11 @@ class EnvironmentService {
      * @throws Error
      * @return Promise<string>
      */
-    private function findFileName(EnvironmentConfigurationService $environmentConfigurationService):Promise {
-        return call(function() use ($environmentConfigurationService) {
+    private function findFileName():Promise {
+        return call(function() {
             $isPhar    = isPhar();
             $phar      = Phar::running();
-            $fileNames = $environmentConfigurationService->getFiles();
+            $fileNames = $this->environmentConfigurationService->getFiles();
             foreach ($fileNames as $i => $currentFile) {
                 $currentFileName = $currentFile->getFileName();
                 if ($isPhar) {
