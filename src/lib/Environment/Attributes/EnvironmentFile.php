@@ -2,13 +2,14 @@
 namespace CatPaw\Environment\Attributes;
 
 use function Amp\call;
+
+use Amp\Promise;
 use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Attributes\{Entry, File};
 use CatPaw\Environment\Services\{EnvironmentConfigurationService, EnvironmentService};
 use CatPaw\Utilities\Container;
-use Psr\Log\LoggerInterface;
 
 #[Attribute]
 class EnvironmentFile implements AttributeInterface {
@@ -66,22 +67,13 @@ class EnvironmentFile implements AttributeInterface {
 
     /**
      * This will set the given file names to the EnvironmentConfigurationService.
+     * @return Promise<void>
      */
-    #[Entry] public function main(
-        EnvironmentConfigurationService $environmentConfigurationService,
-        LoggerInterface $logger,
-    ) {
-        $environmentConfigurationService->setFiles(...$this->files);
-        return call(function() use (
-            $environmentConfigurationService,
-            $logger,
-        ) {
+    #[Entry] public function main():Promise {
+        return call(function() {
             /** @var EnvironmentService */
             $environmentService = yield Container::create(EnvironmentService::class);
-            yield $environmentService->load(
-                logger: $logger,
-                environmentConfigurationService: $environmentConfigurationService,
-            );
+            yield $environmentService->load();
         });
     }
 }

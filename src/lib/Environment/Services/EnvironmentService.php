@@ -1,10 +1,15 @@
 <?php
 namespace CatPaw\Environment\Services;
 
+use \CatPaw\Attributes\File as AttributeFile;
 use function Amp\call;
-use function Amp\File\{exists, openFile};
-use Amp\File\{File, Filesystem};
-use Amp\{Loop, Promise};
+use function Amp\File\exists;
+use Amp\File\File;
+
+use Amp\File\Filesystem;
+use function Amp\File\openFile;
+use Amp\Loop;
+use Amp\Promise;
 use CatPaw\Amp\File\CatPawDriver;
 
 use CatPaw\Attributes\Service;
@@ -16,8 +21,29 @@ use Psr\Log\LoggerInterface;
 
 #[Service]
 class EnvironmentService {
-    public function __construct(private EnvironmentConfigurationService $environmentConfigurationService) {
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {
     }
+
+    /** @var array<AttributeFile> */
+    private array $files = [];
+
+    /**
+     * Set the allowed environment file names.
+     * @param  array<string|AttributeFile> $files
+     * @return void
+     */
+    public function setFiles(string|AttributeFile ...$files):void {
+        $this->files = [];
+        foreach ($files as $file) {
+            if (is_string($file)) {
+                $file = new AttributeFile($file);
+            }
+            $this->files[] = $file;
+        }
+    }
+
 
     /** @var array<string,string|null> */
     private array $variables = [];
@@ -29,10 +55,9 @@ class EnvironmentService {
      */
     private function findFileName():Promise {
         return call(function() {
-            $isPhar    = isPhar();
-            $phar      = Phar::running();
-            $fileNames = $this->environmentConfigurationService->getFiles();
-            foreach ($fileNames as $i => $currentFile) {
+            $isPhar = isPhar();
+            $phar   = Phar::running();
+            foreach ($this->files as $_ => $currentFile) {
                 $currentFileName = $currentFile->getFileName();
                 if ($isPhar) {
                     $allowsExternal = $currentFile->allowsExternal();
@@ -54,32 +79,28 @@ class EnvironmentService {
     }
 
     /**
-     * Parse the environment file  and update all variables in memory.
+     * Parse the first valid environment file and update all variables in memory.
      * Multiple calls are allowed.
      * @return Promise<void>
      */
-    public function load(
-        LoggerInterface $logger,
-        EnvironmentConfigurationService $environmentConfigurationService
-    ):Promise {
-        return call(function() use ($logger, $environmentConfigurationService) {
+    public function load():Promise {
+        return call(function() {
             $this->variables = [];
-
-            $files     = $environmentConfigurationService->getFiles();
+            
             $fileNames = [];
 
-            foreach ($files as $file) {
+            foreach ($this->files as $file) {
                 $fileNames[] = $file->getFileName();
             }
             
             $stringifiedFileNames = join(',', $fileNames);
             
-            if (!$fileName = yield $this->findFileName($environmentConfigurationService)) {
+            if (!$fileName = yield $this->findFileName()) {
                 throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
             }
             
-            if ($_ENV['SHOW_INFO']) {
-                $logger->info("Environment file is $fileName");
+            if ($_ENV['SHOW_INFO'] ?? false) {
+                $this->logger->info("Environment file is $fileName");
             }
 
             /** @var File $file */
@@ -96,7 +117,7 @@ class EnvironmentService {
                     if (\function_exists('yaml_parse')) {
                         $this->variables = \yaml_parse($contents);
                     } else {
-                        $logger->error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
+                        $this->logger->error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
                         $this->variables = [];
                     }
                 } else {
@@ -109,6 +130,9 @@ class EnvironmentService {
                 ... $this->variables,
             ];
 
+            /**
+             * @psalm-suppress InvalidArrayOffset
+             */
             if (isset($_ENV["CATPAW_FILE_DRIVER"]) && $_ENV["CATPAW_FILE_DRIVER"]) {
                 Loop::setState(\Amp\File\Driver::class, new Filesystem(new CatPawDriver));
             }

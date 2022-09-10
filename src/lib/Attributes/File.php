@@ -2,7 +2,6 @@
 namespace CatPaw\Attributes;
 
 use Attribute;
-use CatPaw\Environment\Attributes\EnvironmentFile;
 
 #[Attribute]
 class File {
