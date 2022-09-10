@@ -7,7 +7,7 @@ use Attribute;
 class File {
     /**
      * Create an environment file entry for your application.
-     * @see EnvironmentFile
+     * @see Environment
      * @param string $fileName the file to load
      * @param bool   $external when true the environment service will first lookup the file 
      *                         outside the phar archive and then, if the file doesn't exist, 
