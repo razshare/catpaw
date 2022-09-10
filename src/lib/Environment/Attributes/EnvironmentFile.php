@@ -1,15 +1,11 @@
 <?php
 namespace CatPaw\Environment\Attributes;
 
-use function Amp\call;
-
-use Amp\Promise;
 use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Attributes\{Entry, File};
 use CatPaw\Environment\Services\{EnvironmentConfigurationService, EnvironmentService};
-use CatPaw\Utilities\Container;
 
 #[Attribute]
 class EnvironmentFile implements AttributeInterface {
@@ -67,13 +63,9 @@ class EnvironmentFile implements AttributeInterface {
 
     /**
      * This will set the given file names to the EnvironmentConfigurationService.
-     * @return Promise<void>
      */
-    #[Entry] public function main():Promise {
-        return call(function() {
-            /** @var EnvironmentService */
-            $environmentService = yield Container::create(EnvironmentService::class);
-            yield $environmentService->load();
-        });
+    #[Entry] public function main(EnvironmentService $environmentService) {
+        $environmentService->setFiles(...$this->files);
+        yield $environmentService->load();
     }
 }
