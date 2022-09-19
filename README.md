@@ -8,6 +8,7 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 |----------------------------|--------------|-----------------------------------------------------------------------|--------------------------------------------|
 | 🌐 Web Route Handlers       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
 | 🌐 Web Route Controllers    | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/14.WebRouteControllers.md) |
+| 🌐 File System Web Routes   | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/17.FileSystemWebRoutes.md) |
 | 🌐 Web Path Parameters      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
 | 🌐 Web Path Not Found       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
 | 🌐 Web Session              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/4.WebSession.md)           |
@@ -28,7 +29,7 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 | Type    | Implemented | Command                                         | Description                                          | Read                                   |
 |---------|-------------|-------------------------------------------------|------------------------------------------------------|----------------------------------------|
-| CLI     | ✅          | `composer create-project catpaw/starter`        | A generic starter template for creating aplications  | [Github](./README.md#get-started)                  |
+| CLI     | ✅          | `composer create-project catpaw/starter`        | A generic starter template for creating aplications  | [Github](./README.md#get-started)      |
 | Web     | ✅          | `composer create-project catpaw/web-starter`    | A starter template for creating web aplications      | [Github](./docs/16.Web.md) |
 | Svelte  | ✅          | `composer create-project catpaw/svelte-starter` | A starter template for creating web aplications using [Svelte](https://github.com/sveltejs/svelte) | [Github](./docs/15.SvelteSPAStarter.md) |
 
