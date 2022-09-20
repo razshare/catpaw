@@ -20,7 +20,6 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | 🌐 Web Sockets              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/10.WebSockets.md)          |
 | 💡 RaspberryPI             | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi) | [Github](./docs/11.RaspberryPI.md)         |
 | ⚡ Services                 | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/13.Services.md)            |
-| 🌐 OpenAPI                  | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | _TODO_                                     |
 | 🗄 MySQL Repositories       | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
 | ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)             | [Github](./docs/12.Stores.md)              |
 | ⚡ Queue                    | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)             | _TODO_                                     |
