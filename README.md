@@ -20,17 +20,20 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | 🌐 Web Sockets              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/10.WebSockets.md)          |
 | 💡 RaspberryPI             | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi) | [Github](./docs/11.RaspberryPI.md)         |
 | ⚡ Services                 | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/13.Services.md)            |
-| 🗄 MySQL Repositories       | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | _TODO_                                     |
+| 🗄 MySQL Repositories       | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | __TODO__                                   |
 | ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)             | [Github](./docs/12.Stores.md)              |
-| ⚡ Queue                    | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)             | _TODO_                                     |
+| 🌐 ServerLinking            | ❓           | __TODO__                                                              | [Github](./docs/19.ServerLinking.md)       |
 
 # Starters
 
-| Type    | Implemented | Description                                 | Read                                    | Github Template                                           |
-|---------|-------------|---------------------------------------------|-----------------------------------------|-----------------------------------------------------------|
-| App     | ✅          | using only the core libraries               | [Github](./README.md#get-started)       | [Use](https://github.com/tncrazvan/catpaw-starter)        |
-| Web     | ✅          | create a web server                         | [Github](./docs/16.Web.md)              | [Use](https://github.com/tncrazvan/catpaw-web-starter)    |
-| Svelte  | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Github](./docs/15.SvelteSPAStarter.md) | [Use](https://github.com/tncrazvan/catpaw-svelte-starter) |
+| Type     | Implemented | Description                                 | Read                                    | Github Template                                           |
+|----------|-------------|---------------------------------------------|-----------------------------------------|-----------------------------------------------------------|
+| App      | ✅          | using only the core libraries               | [Github](./README.md#get-started)       | [Use](https://github.com/tncrazvan/catpaw-starter)        |
+| Web      | ✅          | create a web server                         | [Github](./docs/16.Web.md)              | [Use](https://github.com/tncrazvan/catpaw-web-starter)    |
+| Svelte   | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Github](./docs/15.SvelteSPAStarter.md) | [Use](https://github.com/tncrazvan/catpaw-svelte-starter) |
+| Vue      | ❌          | using `Web` + Vue                           | __TODO__                                | __TODO__                                                  |
+| Markdown | ❌          | using `Web` + Markdown                      | __TODO__                                | __TODO__                                                  |
+| Binary   | ❌          | ? 😸                                        | __TODO__                                | __TODO__                                                  |
 
 
 ### Using composer
