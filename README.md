@@ -26,11 +26,11 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 # Starters
 
-| Type    | Implemented | Command                                         | Description                                          | Read                                   | Template |
-|---------|-------------|-------------------------------------------------|------------------------------------------------------|----------|----------------------------------------|
-| CLI     | ✅          | `composer create-project catpaw/starter`        | A generic starter template for creating aplications  | [Github](./README.md#get-started)      | [Use](https://github.com/tncrazvan/catpaw-starter) |
-| Web     | ✅          | `composer create-project catpaw/web-starter`    | A starter template for creating web aplications      | [Github](./docs/16.Web.md)             | [Use](https://github.com/tncrazvan/catpaw-web-starter) |
-| Svelte  | ✅          | `composer create-project catpaw/svelte-starter` | A starter template for creating web aplications using [Svelte](https://github.com/sveltejs/svelte) | [Github](./docs/15.SvelteSPAStarter.md) | [Use](https://github.com/tncrazvan/catpaw-svelte-starter) |
+| Type    | Implemented | Description                                 | Read                                    | Github Template                                           | Composer Template                               |
+|---------|-------------|---------------------------------------------|-----------------------------------------|-----------------------------------------------------------|-------------------------------------------------|
+| App     | ✅          | using only the core libraries               | [Github](./README.md#get-started)       | [Use](https://github.com/tncrazvan/catpaw-starter)        | `composer create-project catpaw/starter`        |
+| Web     | ✅          | create a web server                         | [Github](./docs/16.Web.md)              | [Use](https://github.com/tncrazvan/catpaw-web-starter)    | `composer create-project catpaw/web-starter`    |
+| Svelte  | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Github](./docs/15.SvelteSPAStarter.md) | [Use](https://github.com/tncrazvan/catpaw-svelte-starter) | `composer create-project catpaw/svelte-starter` |
 
 
 # Premise
