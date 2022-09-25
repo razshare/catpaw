@@ -109,6 +109,16 @@ After building your application, you can simply run it using
 ```
 php dist/app.phar
 ```
+The resulting `.phar`, by default (check `build.yml`), file includes the following directories:
+
+- `./src`
+- `./vendor`
+- `./resources`
+- `./dist`
+- `./bin`
+
+which means it's a portable binary, you just need to make 
+sure php is installed on whatever machine you're trying to run it on.
 
 # A note on versioning
 
