@@ -32,23 +32,21 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | Web     | ✅          | create a web server                         | [Github](./docs/16.Web.md)              | [Use](https://github.com/tncrazvan/catpaw-web-starter)    |
 | Svelte  | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Github](./docs/15.SvelteSPAStarter.md) | [Use](https://github.com/tncrazvan/catpaw-svelte-starter) |
 
-<details>
-  <summary>Using composer</summary>
 
-- App
+### Using composer
+
+- *App* 
     ```bash
     composer create-project catpaw/starter
     ```
-- Web
+- *Web*
     ```bash
     composer create-project catpaw/web-starter
     ```
-- Svelte
-    ```bash
+- *Svelte* 
+    ```bash 
     composer create-project catpaw/svelte-starter
     ```
-</details>
-
 <br/>
 
 # Premise
