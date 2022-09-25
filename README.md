@@ -22,7 +22,7 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | ⚡ Services                 | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/13.Services.md)            |
 | 🗄 MySQL Repositories       | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | __TODO__                                   |
 | ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)             | [Github](./docs/12.Stores.md)              |
-| 🌐 ServerLinking            | ❓           | __TODO__                                                              | [Github](./docs/19.ServerLinking.md)       |
+| 🌐 Server Linking           | ❓           | __TODO__                                                              | [Github](./docs/19.ServerLinking.md)       |
 | ⚡ Portable Build           | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | __TODO__                                   |
 
 # Starters
