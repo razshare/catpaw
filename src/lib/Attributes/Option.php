@@ -4,6 +4,7 @@ namespace CatPaw\Attributes;
 use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
+use CatPaw\Utilities\ReflectionTypeManager;
 use ReflectionParameter;
 
 #[Attribute]
@@ -28,7 +29,7 @@ class Option implements AttributeInterface {
         }
     }
 
-    private function findOptionByName(string $name):string {
+    private function findOptionByName(string $name):?string {
         if (isset(self::$cache[$name])) {
             return self::$cache[$name];
         }
@@ -37,13 +38,41 @@ class Option implements AttributeInterface {
                 return self::$cache[$name] = substr($value, strlen($name));
             }
         }
-        return self::$cache[$name] = '';
+        return self::$cache[$name] = null;
     }
 
     public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context) {
         /** @var string|int|bool|float $value */
         /** @var false $context */
         $option = $this->findOptionByName($this->name);
-        $value  = $option?$option:$reflection->getDefaultValue();
+        $type   = ReflectionTypeManager::unwrap($reflection)?->getName() ?? 'bool';
+
+        if (null !== $option) {
+            if ('' === $option) {
+                $value = match ($type) {
+                    "string" => '',
+                    "int"    => 1,
+                    "float"  => (float)1,
+                    "double" => (double)1,
+                    default  => $reflection->isDefaultValueAvailable()?$reflection->getDefaultValue():true,
+                };
+            } else {
+                $value = match ($type) {
+                    "string" => $option,
+                    "int"    => (int)$option,
+                    "float"  => (float)$option,
+                    "double" => (double)$option,
+                    default  => $reflection->isDefaultValueAvailable()?$reflection->getDefaultValue():true,
+                };
+            }
+        } else {
+            $value = match ($type) {
+                "string" => (string)$option,
+                "int"    => (int)$option,
+                "float"  => (float)$option,
+                "double" => (double)$option,
+                default  => $reflection->isDefaultValueAvailable()?$reflection->getDefaultValue():false,
+            };
+        }
     }
 }
