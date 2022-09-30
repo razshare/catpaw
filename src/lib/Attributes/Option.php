@@ -13,7 +13,7 @@ class Option implements AttributeInterface {
 
     private static bool $initialized = false;
     private static array $cache      = [];
-    private array $options           = [];
+    private static array $options    = [];
 
     public function __construct(private string $name) {
         global $argv;
@@ -24,7 +24,7 @@ class Option implements AttributeInterface {
                 if (0 === $i || !str_starts_with($value, '-')) {
                     continue;
                 }
-                $this->options[] = $value;
+                self::$options[] = $value;
             }
         }
     }
@@ -33,7 +33,7 @@ class Option implements AttributeInterface {
         if (isset(self::$cache[$name])) {
             return self::$cache[$name];
         }
-        foreach ($this->options as $i => $value) {
+        foreach (self::$options as $i => $value) {
             if (str_starts_with($value, $name)) {
                 return self::$cache[$name] = substr($value, strlen($name));
             }
