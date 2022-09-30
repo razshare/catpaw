@@ -8,14 +8,15 @@
             "port": 9003
         },
         {
-            "name": "TestSuite (paw)",
+            "name": "main (paw)",
             "type": "php",
             "request": "launch",
             "program": "${workspaceFolder}/bin/start",
             "cwd": "${workspaceFolder}",
             "args": [
+                "-l./src/lib/",
                 "-e./src/main.php",
-                "-l./src/lib/"
+                "--export"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
