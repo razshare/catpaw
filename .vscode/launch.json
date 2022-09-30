@@ -15,8 +15,7 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "-l./src/lib/",
-                "-e./src/main.php",
-                "--export"
+                "-e./src/main.php"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
