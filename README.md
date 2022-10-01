@@ -27,12 +27,12 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 # Starters
 
-| Type     | Implemented | Description                                 | Read                                    | Github Template                                           |
-|----------|-------------|---------------------------------------------|-----------------------------------------|-----------------------------------------------------------|
-| App      | ✅          | using only the core libraries               | [Github](./README.md#get-started)       | [Use](https://github.com/tncrazvan/catpaw-starter)        |
-| Web      | ✅          | create a web server                         | [Github](./docs/16.Web.md)              | [Use](https://github.com/tncrazvan/catpaw-web-starter)    |
-| Svelte   | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Github](./docs/15.SvelteSPAStarter.md) | [Use](https://github.com/tncrazvan/catpaw-svelte-starter) |
-| Markdown | ❌          | using `Web` + Markdown                      | __TODO__                                | __TODO__                                                  |
+| Type     | Implemented | Description                                 | Read                                    | Github Template                                               |
+|----------|-------------|---------------------------------------------|-----------------------------------------|---------------------------------------------------------------|
+| App      | ✅          | using only the core libraries               | [Github](./README.md#get-started)       | [Explore](https://github.com/tncrazvan/catpaw-starter)        |
+| Web      | ✅          | create a web server                         | [Github](./docs/16.Web.md)              | [Explore](https://github.com/tncrazvan/catpaw-web-starter)    |
+| Svelte   | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Github](./docs/15.SvelteSPAStarter.md) | [Explore](https://github.com/tncrazvan/catpaw-svelte-starter) |
+| Markdown | ❌          | using `Web` + Markdown                      | __TODO__                                | __TODO__                                                      |
 
 
 ### Using composer
