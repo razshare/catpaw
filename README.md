@@ -4,27 +4,27 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 # Table of Contents
 
-| Topic                      | Implemented  | Repository                                                            | Read                                       |
-|----------------------------|--------------|-----------------------------------------------------------------------|--------------------------------------------|
-| 🌐 Web Route Handlers       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/1.WebRouteHandlers.md)     |
-| 🌐 Web Route Controllers    | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/14.WebRouteControllers.md) |
-| 🌐 File System Web Routes   | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/17.FileSystemWebRoutes.md) |
-| 🌐 Web Path Parameters      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/2.WebPathParameters.md)    |
-| 🌐 Web Path Not Found       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/3.WebPathNotFound.md)      |
-| 🌐 Web Session              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/4.WebSession.md)           |
-| 🌐 Open API                 | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/18.OpenAPI.md)             |
-| ⚡ Entry                    | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/5.Entry.md)                |
-| 🌐 Web Byte Range Requests  | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/7.WebByteRangeRequests.md) |
-| ⚡ Custom Attributes        | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/8.CustomAttributes.md)     |
-| 🌐 Web Filters              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/9.WebFilters.md)           |
-| 🌐 Web Sockets              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                 | [Github](./docs/10.WebSockets.md)          |
-| 💡 RaspberryPI             | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi) | [Github](./docs/11.RaspberryPI.md)         |
-| ⚡ Services                 | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)               | [Github](./docs/13.Services.md)            |
-| 🗄 MySQL Repositories       | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)             | __TODO__                                   |
-| ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)             | [Github](./docs/12.Stores.md)              |
-| 🌐 Server Linking           | ❓           | __TODO__                                                              | [Github](./docs/19.ServerLinking.md)       |
+| Topic                      | Implemented  | Repository                                                                  | Read                                       |
+|----------------------------|--------------|-----------------------------------------------------------------------------|--------------------------------------------|
+| 🌐 Web Route Handlers       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/1.WebRouteHandlers.md)     |
+| 🌐 Web Route Controllers    | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/14.WebRouteControllers.md) |
+| 🌐 File System Web Routes   | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/17.FileSystemWebRoutes.md) |
+| 🌐 Web Path Parameters      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/2.WebPathParameters.md)    |
+| 🌐 Web Path Not Found       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/3.WebPathNotFound.md)      |
+| 🌐 Web Session              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/4.WebSession.md)           |
+| 🌐 Open API                 | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/18.OpenAPI.md)             |
+| ⚡ Entry                    | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Github](./docs/5.Entry.md)                |
+| 🌐 Web Byte Range Requests  | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/7.WebByteRangeRequests.md) |
+| ⚡ Custom Attributes        | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Github](./docs/8.CustomAttributes.md)     |
+| 🌐 Web Filters              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/9.WebFilters.md)           |
+| 🌐 Web Sockets              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Github](./docs/10.WebSockets.md)          |
+| 💡 RaspberryPI             | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi)       | [Github](./docs/11.RaspberryPI.md)         |
+| ⚡ Services                 | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Github](./docs/13.Services.md)            |
+| 🗄 MySQL Repositories       | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)                   | __TODO__                                   |
+| ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)                   | [Github](./docs/12.Stores.md)              |
+| 🌐 Server Linking           | ❓           | [catpaw-server-linking](https://github.com/tncrazvan/catpaw-server-linking) | [Github](./docs/19.ServerLinking.md)       |
 | ⚡ Dev Tools Binary         | ✅ [Download](https://github.com/tncrazvan/catpaw-dev-tools/releases)          | [catpaw-dev-tools](https://github.com/tncrazvan/catpaw-dev-tools)     | [Github](./docs/20.DevToolsBinary.md)      |
-| ⚡ Queues                   | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)             | [Github](./docs/21.Queues.md)      |
+| ⚡ Queues                   | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)                   | [Github](./docs/21.Queues.md)      |
 
 # Starters
 
