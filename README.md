@@ -163,7 +163,7 @@ Make new a `./.vscode/launch.json` file in your project and add the following co
             "port": 9003
         },
         {
-            "name": "Main (paw)",
+            "name": "main (paw)",
             "type": "php",
             "request": "launch",
             "program": "${workspaceFolder}/bin/start",
@@ -174,7 +174,7 @@ Make new a `./.vscode/launch.json` file in your project and add the following co
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
-                "-dxdebug.mode=debug",
+                "-dxdebug.mode=debug"
             ],
             "env": {
                 "XDEBUG_MODE": "debug",
