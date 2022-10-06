@@ -36,20 +36,24 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | Markdown | ❌          | using `Web` + Markdown                      | __TODO__                                                      | __TODO__                                |
 
 
-### Using composer
 
-- *App* 
-    ```bash
-    composer create-project catpaw/starter
-    ```
-- *Web*
-    ```bash
-    composer create-project catpaw/web-starter
-    ```
-- *Svelte* 
-    ```bash 
-    composer create-project catpaw/svelte-starter
-    ```
+> **Note**<br/>
+>   __use `starter` with composer__
+>    ```bash
+>    composer create-project catpaw/starter
+>    ```
+
+> **Note**<br/>
+>   __use `web-starter` with composer__
+>    ```bash
+>    composer create-project catpaw/web-starter
+>    ```
+
+> **Note**<br/>
+>   __use `svelte-starter` with composer__
+>    ```bash 
+>    composer create-project catpaw/svelte-starter
+>    ```
 <br/>
 
 # Premise
