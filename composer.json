@@ -1,6 +1,6 @@
 {
-    "name": "catpaw/web-starter",
-    "description": "A CatPaw starter template for web development",
+    "name": "catpaw/core",
+    "description": "CatPaw core",
     "type": "library",
     "license": "MIT",
     "keywords": [
