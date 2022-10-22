@@ -64,6 +64,9 @@ class Option implements AttributeInterface {
                     "double" => (double)$option,
                     default  => $reflection->isDefaultValueAvailable()?$reflection->getDefaultValue():true,
                 };
+                if ($value === $option && preg_match('/((?<=\").+(?=\"))/', $value, $groups) && count($groups) >= 2) {
+                    $value = $groups[1] ?? $value;
+                }
             }
         } else {
             $value = match ($type) {
