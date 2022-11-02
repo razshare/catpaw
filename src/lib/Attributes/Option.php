@@ -36,7 +36,7 @@ class Option implements AttributeInterface {
             return self::$cache[$name];
         }
         foreach (self::$options as $i => $value) {
-            if ($value === $name) {
+            if (str_starts_with($value, "$name ") || str_starts_with($value, $name.PHP_EOL) || $value === $name) {
                 return self::$cache[$name] = substr($value, strlen($name));
             }
         }

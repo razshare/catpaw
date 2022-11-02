@@ -110,9 +110,9 @@ class Container {
                 if ($entry) {
                     $args = yield Container::dependencies($method);
                     if ($method->isStatic()) {
-                        yield \Amp\call(fn() => $method->invoke(null, ...$args));
+                        yield \Amp\call(fn () => $method->invoke(null, ...$args));
                     } else {
-                        yield \Amp\call(fn() => $method->invoke($instance, ...$args));
+                        yield \Amp\call(fn () => $method->invoke($instance, ...$args));
                     }
                     break;
                 }
@@ -375,7 +375,7 @@ class Container {
                 $object = $klass->newInstance(...$attributeArguments);
                 if ($entry) {
                     $arguments = yield Container::dependencies($entry);
-                    yield call(fn():mixed => $entry->invoke($object, ...$arguments));
+                    yield call(fn ():mixed => $entry->invoke($object, ...$arguments));
                 }
             }
 
