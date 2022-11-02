@@ -86,6 +86,8 @@ class Option implements AttributeInterface {
                 };
                 if ($value === $option && preg_match('/((?<=\").+(?=\"))/', $value, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $value;
+                } else if ($value === $option && preg_match('/((?<=\').+(?=\'))/', $value, $groups) && count($groups) >= 2) {
+                    $value = $groups[1] ?? $value;
                 }
             }
         } else {
