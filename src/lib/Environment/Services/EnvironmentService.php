@@ -96,7 +96,9 @@ class EnvironmentService {
             $stringifiedFileNames = join(',', $fileNames);
             
             if (!$fileName = yield $this->findFileName()) {
-                throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
+                // throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
+                $this->logger->info("Environment files [$stringifiedFileNames] not found.");
+                return;
             }
             
             if ($_ENV['SHOW_INFO'] ?? false) {
