@@ -19,8 +19,7 @@ class Option implements AttributeInterface {
 
     public function __construct(private string $name) {
         global $argv;
-
-        echo print_r($argv, true).PHP_EOL;
+        
         $index = 0;
         if (!self::$initialized) {
             self::$initialized = true;
