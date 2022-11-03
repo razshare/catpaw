@@ -1,0 +1,4 @@
+name: app
+entry: ./src/main.php
+libraries: ./src/lib
+match: /^\.\/(\.build-cache|src|vendor|resources|bin)\/.*/
