@@ -27,7 +27,8 @@ class Option implements AttributeInterface {
                 if (0 === $i) {
                     continue;
                 } else if (!str_starts_with($value, '-') && $index - 1 > 0) {
-                    self::$options[$index - 1] .= " $value";
+                    $value = preg_replace('/"/', "\\\"", $value);
+                    self::$options[$index - 1] .= " \"$value\"";
                     continue;
                 }
 
