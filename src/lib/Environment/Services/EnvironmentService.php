@@ -97,7 +97,7 @@ class EnvironmentService {
             
             if (!$fileName = yield $this->findFileName()) {
                 // throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
-                $this->logger->info("Environment files [$stringifiedFileNames] not found.");
+                // $this->logger->info("Environment files [$stringifiedFileNames] not found.");
                 return;
             }
             
