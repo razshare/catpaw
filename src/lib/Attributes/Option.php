@@ -20,13 +20,20 @@ class Option implements AttributeInterface {
     public function __construct(private string $name) {
         global $argv;
 
+        echo print_r($argv, true).PHP_EOL;
+        $index = 0;
         if (!self::$initialized) {
             self::$initialized = true;
             foreach ($argv as $i => $value) {
-                if (0 === $i || !str_starts_with($value, '-')) {
+                if (0 === $i) {
+                    continue;
+                } else if (!str_starts_with($value, '-') && $index - 1 > 0) {
+                    self::$options[$index - 1] .= " $value";
                     continue;
                 }
-                self::$options[] = $value;
+
+                self::$options[$index] = $value;
+                $index++;
             }
         }
     }
@@ -36,7 +43,7 @@ class Option implements AttributeInterface {
             return self::$cache[$name];
         }
         foreach (self::$options as $i => $value) {
-            if (str_starts_with($value, "$name ") || str_starts_with($value, $name.PHP_EOL) || $value === $name) {
+            if (str_starts_with($value, $name)) {
                 return self::$cache[$name] = substr($value, strlen($name));
             }
         }
