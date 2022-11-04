@@ -43,7 +43,8 @@ class Option implements AttributeInterface {
         }
     }
 
-    private function findOptionByName(string $name):?string {
+    public function findValue():?string {
+        $name = $this->name;
         if (isset(self::$cache[$name])) {
             return self::$cache[$name];
         }
@@ -63,7 +64,7 @@ class Option implements AttributeInterface {
     public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context) {
         /** @var string|int|bool|float $value */
         /** @var false $context */
-        $option = $this->findOptionByName($this->name);
+        $option = $this->findValue();
         $type   = ReflectionTypeManager::unwrap($reflection)?->getName() ?? 'bool';
 
         $rtype = $reflection->getType();
