@@ -54,6 +54,10 @@ class Option implements AttributeInterface {
                 || str_starts_with($value, "$name\"")
                 || str_starts_with($value, "$name'")
                 || $value === $name
+                || (
+                    substr($value, 0, 2) !== '--'
+                    && str_starts_with($value, $name)
+                )
             ) {
                 return self::$cache[$name] = trim(substr($value, strlen($name)));
             }

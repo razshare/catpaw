@@ -1,5 +1,7 @@
 #!/usr/bin/env php
 <?php
+
+use CatPaw\Attributes\Option;
 use CatPaw\Bootstrap;
 $_ENV = [
     ...$_ENV,
@@ -7,28 +9,26 @@ $_ENV = [
 ];
 require 'vendor/autoload.php';
 
-[
-    "e" => $entry,
-    "n" => $name,
-    "l" => $libraries,
-    "r" => $resources,
-    "d" => $dieOnChange,
-    "w" => $watch,
-    "i" => $info,
-] = [
-    "e" => null,
-    "n" => null,
-    "l" => null,
-    "r" => null,
-    "d" => null,
-    "w" => null,
-    "i" => null,
-    ...getopt('e:n::l::r::d::w::i::')
-];
+
+$entryOption       = new Option('-e');
+$nameOption        = new Option('-n');
+$librariesOption   = new Option('-l');
+$resourcesOption   = new Option('-r');
+$dieOnChangeOption = new Option('-d');
+$watchOption       = new Option('-w');
+$infoOption        = new Option('-i');
+
+$entry       = $entryOption->findValue();
+$name        = $nameOption->findValue();
+$libraries   = $librariesOption->findValue();
+$resources   = $resourcesOption->findValue();
+$dieOnChange = $dieOnChangeOption->findValue();
+$watch       = $watchOption->findValue();
+$info        = $infoOption->findValue();
 
 $entry       = $entry     ?? '';
 $name        = $name      ?? 'App';
-$libraries   = $libraries   ?? '';
+$libraries   = $libraries ?? '';
 $resources   = $resources ?? '';
 $dieOnChange = false === $dieOnChange;
 $watch       = false === $watch;
