@@ -25,7 +25,6 @@ class Option implements AttributeInterface {
             self::$initialized = true;
             foreach ($argv as $i => $value) {
                 $value = trim($value);
-                echo "\$value = $value\n";
                 if (0 === $i) {
                 } else if (str_starts_with($value, '-')) {
                     self::$options[$index] = $value;
