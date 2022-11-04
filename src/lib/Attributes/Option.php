@@ -19,21 +19,27 @@ class Option implements AttributeInterface {
 
     public function __construct(private string $name) {
         global $argv;
-        
-        $index = 0;
+        $index     = 0;
+        $prev_dash = false;
         if (!self::$initialized) {
             self::$initialized = true;
             foreach ($argv as $i => $value) {
+                $value = trim($value);
+                echo "\$value = $value\n";
                 if (0 === $i) {
-                    continue;
-                } else if (!str_starts_with($value, '-') && $index - 1 > 0) {
+                } else if (str_starts_with($value, '-')) {
+                    self::$options[$index] = $value;
+                    $index++;
+                    $prev_dash = true;
+                } else if ($prev_dash) {
                     $value = preg_replace('/"/', "\\\"", $value);
                     self::$options[$index - 1] .= " \"$value\"";
-                    continue;
+                    $prev_dash = false;
+                } else {
+                    self::$options[$index] = $value;
+                    $index++;
+                    $prev_dash = false;
                 }
-
-                self::$options[$index] = $value;
-                $index++;
             }
         }
     }
