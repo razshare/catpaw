@@ -109,9 +109,13 @@ class Option implements AttributeInterface {
                     default  => $reflection->isDefaultValueAvailable()?$reflection->getDefaultValue():true,
                 };
 
-                if ($value === $option && preg_match('/^\s*=?\s*\"?(.+)\"?\s*$/', $value, $groups) && count($groups) >= 2) {
+                if ($value === $option && preg_match('/^\s*=?\s*\"(.+)\"\s*$/', $value, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $value;
-                } else if ($value === $option && preg_match('/^\s*=?\s*\'?(.+)\'?\s*$/', $value, $groups) && count($groups) >= 2) {
+                } else if ($value === $option && preg_match('/^\s*=\s*\'(.+)\'?\s*$/', $value, $groups) && count($groups) >= 2) {
+                    $value = $groups[1] ?? $value;
+                } else if ($value === $option && preg_match('/^\s*=?\s*(.+)\s*$/', $value, $groups) && count($groups) >= 2) {
+                    $value = $groups[1] ?? $value;
+                } else if ($value === $option && preg_match('/^\s*=\s*(.+)?\s*$/', $value, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $value;
                 }
             }
