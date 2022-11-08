@@ -53,6 +53,7 @@ class Option implements AttributeInterface {
                 str_starts_with($value, "$name ")
                 || str_starts_with($value, "$name\"")
                 || str_starts_with($value, "$name'")
+                || str_starts_with($value, "$name=")
                 || $value === $name
                 || (
                     substr($value, 0, 2) !== '--'
@@ -78,9 +79,10 @@ class Option implements AttributeInterface {
         if ($rtype instanceof ReflectionUnionType || $rtype instanceof ReflectionIntersectionType) {
             $types = $rtype->getTypes();
             foreach ($types as $i => $t) {
-                if ('null' !== $t) {
-                    $types[] = $t->getName();
-                }
+                /**
+                 * @psalm-suppress PossiblyUndefinedMethod
+                 */
+                $types[] = $t->getName();
             }
         }
 
@@ -106,9 +108,10 @@ class Option implements AttributeInterface {
                     "double" => (double)$option,
                     default  => $reflection->isDefaultValueAvailable()?$reflection->getDefaultValue():true,
                 };
-                if ($value === $option && preg_match('/((?<=\").+(?=\"))/', $value, $groups) && count($groups) >= 2) {
+
+                if ($value === $option && preg_match('/^\s*=?\s*\"?(.+)\"?\s*$/', $value, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $value;
-                } else if ($value === $option && preg_match('/((?<=\').+(?=\'))/', $value, $groups) && count($groups) >= 2) {
+                } else if ($value === $option && preg_match('/^\s*=?\s*\'?(.+)\'?\s*$/', $value, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $value;
                 }
             }
@@ -116,13 +119,17 @@ class Option implements AttributeInterface {
             if ($reflection->allowsNull()) {
                 $value = null;
             } else {
-                $value = match ($type) {
-                    "string" => $allowsBoolean || $allowsFalse?false:(string)$option,
-                    "int"    => $allowsBoolean || $allowsFalse?false:(int)$option,
-                    "float"  => $allowsBoolean || $allowsFalse?false:(float)$option,
-                    "double" => $allowsBoolean || $allowsFalse?false:(double)$option,
-                    default  => $allowsBoolean || $allowsFalse?false:($reflection->isDefaultValueAvailable()?$reflection->getDefaultValue():false),
-                };
+                if ($reflection->isDefaultValueAvailable()) {
+                    $value = $reflection->getDefaultValue();
+                } else {
+                    $value = match ($type) {
+                        "string" => $allowsBoolean || $allowsFalse?false:(string)$option,
+                        "int"    => $allowsBoolean || $allowsFalse?false:(int)$option,
+                        "float"  => $allowsBoolean || $allowsFalse?false:(float)$option,
+                        "double" => $allowsBoolean || $allowsFalse?false:(double)$option,
+                        default  => $allowsBoolean || $allowsFalse?false:($reflection->isDefaultValueAvailable()?$reflection->getDefaultValue():false),
+                    };
+                }
             }
         }
     }
