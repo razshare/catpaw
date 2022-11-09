@@ -18,21 +18,13 @@ $dieOnChangeOption = new Option('-d');
 $watchOption       = new Option('-w');
 $infoOption        = new Option('-i');
 
-$entry       = $entryOption->findValue();
-$name        = $nameOption->findValue();
-$libraries   = $librariesOption->findValue();
-$resources   = $resourcesOption->findValue();
-$dieOnChange = $dieOnChangeOption->findValue();
-$watch       = $watchOption->findValue();
-$info        = $infoOption->findValue();
-
-$entry       = $entry     ?? '';
-$name        = $name      ?? 'App';
-$libraries   = $libraries ?? '';
-$resources   = $resources ?? '';
-$dieOnChange = false === $dieOnChange;
-$watch       = false === $watch;
-$info        = false === $info;
+$entry       = $entryOption->findValue()                  ?? '';
+$name        = $nameOption->findValue()                   ?? 'App';
+$libraries   = $librariesOption->findValue()              ?? '';
+$resources   = $resourcesOption->findValue()              ?? '';
+$dieOnChange = $dieOnChangeOption->findValue(bool::class) ?? false;
+$watch       = $watchOption->findValue(bool::class)       ?? false;
+$info        = $infoOption->findValue(bool::class)        ?? false;
 
 try {
     if ($watch) {
