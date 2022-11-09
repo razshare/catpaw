@@ -109,7 +109,11 @@ class Option implements AttributeInterface {
             }
         } else {
             if ($allowsNullValue) {
-                $value = null;
+                if ($allowsDefaultValue) {
+                    $value = $defaultValue;
+                } else {
+                    $value = null;
+                }
             } else {
                 if ($allowsDefaultValue) {
                     $value = $defaultValue;
