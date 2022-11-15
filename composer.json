@@ -25,7 +25,10 @@
         ],
         "action:test": [],
         "test": [],
-        "build": "XDEBUG_MODE=off php -dphar.readonly=0 ./bin/start -e./bin/build"
+        "build": "XDEBUG_MODE=off php -dphar.readonly=0 ./product.phar --build-config --build",
+        "post-autoload-dump": [
+            "[ ! -f product.phar ] && wget https://github.com/tncrazvan/catpaw-dev-tools/releases/download/0.4.76/product.phar || echo \"product.phar found.\n\""
+        ]
     },
     "autoload": {
         "psr-4": {
