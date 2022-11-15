@@ -19,3 +19,5 @@
 /SESSION
 /node_modules
 /package
+/composer.lock
+/package-lock.json
