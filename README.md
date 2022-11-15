@@ -22,7 +22,6 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | ⚡ Services                 | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Github](./docs/13.Services.md)            |
 | 🗄 MySQL Repositories       | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)                   | __TODO__                                   |
 | ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)                   | [Github](./docs/12.Stores.md)              |
-| 🌐 Server Linking           | ❓           | [catpaw-server-linking](https://github.com/tncrazvan/catpaw-server-linking) | [Github](./docs/19.ServerLinking.md)       |
 | ⚡ Dev Tools Binary         | ✅ [Download](https://github.com/tncrazvan/catpaw-dev-tools/releases)          | [catpaw-dev-tools](https://github.com/tncrazvan/catpaw-dev-tools)     | [Github](./docs/20.DevToolsBinary.md)      |
 | ⚡ Queues                   | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)                   | [Github](./docs/21.Queues.md)      |
 
@@ -30,9 +29,9 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 | Type     | Implemented | Description                                 | Github Template                                               | Read                                    |
 |----------|-------------|---------------------------------------------|---------------------------------------------------------------|-----------------------------------------|
-| App      | ✅          | using only the core library                 | [Explore](https://github.com/tncrazvan/catpaw-starter)        | [Github](./README.md#get-started)       |
-| Web      | ✅          | create a web server                         | [Explore](https://github.com/tncrazvan/catpaw-web-starter)    | [Github](./docs/16.Web.md)              |
-| Svelte   | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Explore](https://github.com/tncrazvan/catpaw-svelte-starter) | [Github](./docs/15.SvelteSPAStarter.md) |
+| App      | ✅          | using only the core library                 | [Template](https://github.com/tncrazvan/catpaw-starter)        | [Read](./README.md#get-started)       |
+| Web      | ✅          | create a web server                         | [Template](https://github.com/tncrazvan/catpaw-web-starter)    | [Read](./docs/16.Web.md)              |
+| Svelte   | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Template](https://github.com/tncrazvan/catpaw-svelte-starter) | [Read](./docs/15.SvelteSPAStarter.md) |
 | Markdown | ❌          | using `Web` + Markdown                      | __TODO__                                                      | __TODO__                                |
 
 
