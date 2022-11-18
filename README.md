@@ -8,11 +8,11 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 |----------------------------|--------------|-----------------------------------------------------------------------------|--------------------------------------------|
 | 🌐 Web Route Handlers       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/1.WebRouteHandlers.md)     |
 | 🌐 Web Route Controllers    | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/14.WebRouteControllers.md) |
-| 🌐 File System Web Routes   | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/17.FileSystemWebRoutes.md) |
 | 🌐 Web Path Parameters      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/2.WebPathParameters.md)    |
 | 🌐 Web Path Not Found       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/3.WebPathNotFound.md)      |
 | 🌐 Web Session              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/4.WebSession.md)           |
 | 🌐 Open API                 | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/18.OpenAPI.md)             |
+| 🌐 File System Web Routes   | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/17.FileSystemWebRoutes.md) |
 | ⚡ Entry                    | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Read](./docs/5.Entry.md)                |
 | 🌐 Web Byte Range Requests  | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/7.WebByteRangeRequests.md) |
 | ⚡ Custom Attributes        | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Read](./docs/8.CustomAttributes.md)     |
