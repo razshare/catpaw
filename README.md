@@ -29,27 +29,20 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 | Type     | Implemented | Description                                 | Github Template                                               | Read                                    |
 |----------|-------------|---------------------------------------------|---------------------------------------------------------------|-----------------------------------------|
-| App      | ✅          | using only the core library                 | [Template](https://github.com/tncrazvan/catpaw-starter)        | [Read](./README.md#get-started)       |
+| Blank    | ✅          | using only the core library                 | [Template](https://github.com/tncrazvan/catpaw-starter)        | [Read](./README.md#get-started)       |
 | Web      | ✅          | create a web server                         | [Template](https://github.com/tncrazvan/catpaw-web-starter)    | [Read](./docs/16.Web.md)              |
 | Svelte   | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Template](https://github.com/tncrazvan/catpaw-svelte-starter) | [Read](./docs/15.SvelteSPAStarter.md) |
 | Markdown | ❌          | using `Web` + Markdown                      | __TODO__                                                      | __TODO__                                |
 
 
 
-> **Note**<br/>
->   __use `starter` with composer__
+> **Note** use with composer<br/>
 >    ```bash
 >    composer create-project catpaw/starter
 >    ```
-
-> **Note**<br/>
->   __use `web-starter` with composer__
 >    ```bash
 >    composer create-project catpaw/web-starter
 >    ```
-
-> **Note**<br/>
->   __use `svelte-starter` with composer__
 >    ```bash 
 >    composer create-project catpaw/svelte-starter
 >    ```
