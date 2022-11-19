@@ -110,7 +110,6 @@ The resulting `.phar`, by default (check `build.yml`), includes the following di
 - `./src`
 - `./vendor`
 - `./resources`
-- `./dist`
 - `./bin`
 - `./.build-cache` (created at comptile time)
 
