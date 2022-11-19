@@ -112,7 +112,7 @@ The resulting `.phar`, by default (check `build.yml`), includes the following di
 - `./resources`
 - `./dist`
 - `./bin`
-- `./.build-cache`
+- `./.build-cache` (created at comptile time)
 
 which means it's a portable binary, you just need to make 
 sure php is installed on whatever machine you're trying to run it on.
