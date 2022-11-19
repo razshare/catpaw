@@ -105,7 +105,7 @@ After building your application, you can simply run it using
 ```
 php dist/app.phar
 ```
-The resulting `.phar`, by default (check `build.yml`), file includes the following directories:
+The resulting `.phar`, by default (check `build.yml`), includes the following directories:
 
 - `./src`
 - `./vendor`
