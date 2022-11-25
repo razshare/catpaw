@@ -87,9 +87,9 @@ class Option implements AttributeInterface {
                     default  => $allowsBoolean || $allowsTrue?true:($allowsDefaultValue?$defaultValue:true),
                 };
             } else {
-                if (preg_match('/^\s*=?\s*\"(.+)\"\s*$/', $option, $groups) && count($groups) >= 2) {
+                if (preg_match('/^\s*=?\s*\"(.*)\"\s*$/', $option, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $option;
-                } else if (preg_match('/^\s*=\s*\'(.+)\'?\s*$/', $option, $groups) && count($groups) >= 2) {
+                } else if (preg_match('/^\s*=\s*\'(.*)\'?\s*$/', $option, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $option;
                 } else if (preg_match('/^\s*=?\s*(.+)\s*$/', $option, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $option;
