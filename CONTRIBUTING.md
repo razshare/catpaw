@@ -14,7 +14,7 @@ Install `^php8.1` and the following extenstions:
 Clone the repository with 
 ```sh
 git clone git@github.com:tncrazvan/catpaw-core.git
-``
+```
 
 Install dependencies with
 
