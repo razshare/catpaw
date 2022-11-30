@@ -87,16 +87,22 @@ class Option implements AttributeInterface {
                     default  => $allowsBoolean || $allowsTrue?true:($allowsDefaultValue?$defaultValue:true),
                 };
             } else {
-                if (preg_match('/^\s*=?\s*\"(.*)\"\s*$/', $option, $groups) && count($groups) >= 2) {
+                if (preg_match('/^\s*=?\s*"(.*)(?<!\\\)"\s*/U', $option, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $option;
-                } else if (preg_match('/^\s*=\s*\'(.*)\'?\s*$/', $option, $groups) && count($groups) >= 2) {
+                    $value = preg_replace('/\\\"/', '"', $value);
+                } else if (preg_match('/^\s*=?\s*\'(.*)(?<!\\\)\'\s*/U', $option, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $option;
-                } else if (preg_match('/^\s*=?\s*(.+)\s*$/', $option, $groups) && count($groups) >= 2) {
+                    $value = preg_replace('/\\\\\'/', '\'', $value);
+                } else if (preg_match('/^\s*=?\s*(.+)\s*$/U', $option, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $option;
-                } else if (preg_match('/^\s*=\s*(.+)?\s*$/', $option, $groups) && count($groups) >= 2) {
+                } else if (preg_match('/^\s*=\s*(.+)?\s*$/U', $option, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $option;
                 } else {
                     $value = null;
+                }
+
+                if (str_starts_with($value, '=') && str_starts_with($option, '=')) {
+                    $value = substr($value, 1);
                 }
 
                 $value = match ($type) {
@@ -106,10 +112,6 @@ class Option implements AttributeInterface {
                     "double" => (double)$value,
                     default  => null === $value?($allowsDefaultValue?$defaultValue:$value):$value,
                 };
-
-                if ($value === $option && '=' === $value) {
-                    $value = '';
-                }
             }
         } else {
             if ($allowsNullValue) {
