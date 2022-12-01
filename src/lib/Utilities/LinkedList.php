@@ -4,10 +4,15 @@ namespace CatPaw\Utilities;
 use Closure;
 use SplDoublyLinkedList;
 
+/**
+ * @template T
+ * @package CatPaw\Utilities
+ */
 class LinkedList extends SplDoublyLinkedList {
     private function __construct() {
     }
 
+    /** @return LinkedList<T>  */
     public static function create():self {
         return new self();
     }
