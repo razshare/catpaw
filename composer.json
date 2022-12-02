@@ -20,12 +20,12 @@
     "scripts": {
         "load": "XDEBUG_MODE=off composer dump-autoload -o",
         "fix": [
-            "XDEBUG_MODE=off php ./vendor/bin/php-cs-fixer fix src",
-            "XDEBUG_MODE=off php ./vendor/bin/php-cs-fixer fix tests"
+            "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix src",
+            "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix tests"
         ],
         "action:test": [],
         "test": [],
-        "build": "XDEBUG_MODE=off php -dphar.readonly=0 ./product.phar --build-config --build",
+        "build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./product.phar --build-config --build",
         "post-autoload-dump": [
             "[ ! -f product.phar ] && wget https://github.com/tncrazvan/catpaw-dev-tools/releases/download/0.4.103/product.phar || echo \"product.phar found.\n\""
         ]
