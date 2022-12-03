@@ -10,21 +10,21 @@ $_ENV = [
 require 'vendor/autoload.php';
 
 
-$entryOption       = new Option('-e');
-$nameOption        = new Option('-n');
-$librariesOption   = new Option('-l');
-$resourcesOption   = new Option('-r');
-$dieOnChangeOption = new Option('-d');
-$watchOption       = new Option('-w');
-$infoOption        = new Option('-i');
+$entry       = new Option('--entry');
+$name        = new Option('--name');
+$libraries   = new Option('--libraries');
+$resources   = new Option('--resources');
+$dieOnChange = new Option('--die-on-change');
+$watch       = new Option('--watch');
+$info        = new Option('--info');
 
-$entry       = $entryOption->findValue()                  ?? '';
-$name        = $nameOption->findValue()                   ?? 'App';
-$libraries   = $librariesOption->findValue()              ?? '';
-$resources   = $resourcesOption->findValue()              ?? '';
-$dieOnChange = $dieOnChangeOption->findValue(bool::class) ?? false;
-$watch       = $watchOption->findValue(bool::class)       ?? false;
-$info        = $infoOption->findValue(bool::class)        ?? false;
+$entry       = $entry->findValue()             ?? '';
+$name        = $name->findValue()              ?? 'App';
+$libraries   = $libraries->findValue()         ?? '';
+$resources   = $resources->findValue()         ?? '';
+$dieOnChange = $dieOnChange->findValue('bool') ?? false;
+$watch       = $watch->findValue('bool')       ?? false;
+$info        = $info->findValue('bool')        ?? false;
 
 try {
     if ($watch) {
