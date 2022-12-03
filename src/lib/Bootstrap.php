@@ -216,7 +216,7 @@ class Bootstrap {
             $libraries = !$libraries?[]:\preg_split('/,|;/', $libraries);
             /** @var array<string> */
             $resources = !$resources?[]:\preg_split('/,|;/', $resources);
-
+            
             $crashed = false;
 
             self::onFileChange(
@@ -228,8 +228,19 @@ class Bootstrap {
                 },
             );
 
+            /** @var false|Process */
+            $process = false;
+
+            if (DIRECTORY_SEPARATOR === '/') {
+                Loop::onSignal(\SIGINT, static function(string $watcherId) use (&$process) {
+                    $process->kill();
+                    Loop::cancel($watcherId);
+                    Loop::stop();
+                });
+            }
+
             while (true) {
-                if ($crashed) {
+                if ($crashed || ($process && $process->isRunning()) ) {
                     yield delay(100);
                     continue;
                 }
@@ -269,10 +280,6 @@ class Bootstrap {
                     yield delay(100);
                 } catch (Throwable $e) {
                     $crashed = true;
-                    // echo join("\n", [
-                    //     $e->getMessage(),
-                    //     $e->getTraceAsString()
-                    // ]).PHP_EOL;
                 }
             }
         });
