@@ -18,7 +18,7 @@
         }
     ],
     "scripts": {
-        "load": "XDEBUG_MODE=off composer dump-autoload -o",
+        "load": "composer dump-autoload -o",
         "fix": [
             "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix src",
             "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix tests"
