@@ -16,8 +16,7 @@
             "args": [
                 "--libraries='./src/lib/'",
                 "--entry='./src/main.php'",
-                "--watch",
-                "--testtest"
+                "--export"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",

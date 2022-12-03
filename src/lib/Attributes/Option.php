@@ -68,12 +68,12 @@ class Option implements AttributeInterface {
 
     public function findValue(
         string $type = 'string',
-        bool $allowsBoolean = false,
-        bool $allowsTrue = false,
-        bool $allowsFalse = false,
         bool $allowsNullValue = false,
         bool $allowsDefaultValue = false,
         mixed $defaultValue = null,
+        bool $allowsBoolean = false,
+        bool $allowsTrue = false,
+        bool $allowsFalse = false,
     ):mixed {
         $option = $this->extract();
 
@@ -166,12 +166,12 @@ class Option implements AttributeInterface {
 
         $value = $this->findValue(
             type: $type,
-            allowsBoolean: $allowsBoolean,
-            allowsTrue: $allowsTrue,
-            allowsFalse: $allowsFalse,
             allowsNullValue: $allowsNullValue,
             allowsDefaultValue: $allowsDefaultValue,
             defaultValue: $defaultValue,
+            allowsBoolean: $allowsBoolean,
+            allowsTrue: $allowsTrue,
+            allowsFalse: $allowsFalse,
         );
     }
 }

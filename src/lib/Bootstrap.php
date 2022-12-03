@@ -10,6 +10,7 @@ use function Amp\{call, delay};
 use Amp\{Loop, Promise};
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\{Container, LoggerFactory};
+use Exception;
 use Generator;
 use Psr\Log\LoggerInterface;
 
@@ -58,10 +59,10 @@ class Bootstrap {
      * Bootstrap an application from a file.
      * @param  string    $entry       the entry file of the application (it usually defines a global "main" function)
      * @param  string    $name        application name (this will be used by the default logger)
-     * @param  string    $libraries
-     * @param  string    $resources
+     * @param  string    $libraries   libraries to load
+     * @param  string    $resources   resources to load
      * @param  bool      $info
-     * @param  bool      $dieOnChange
+     * @param  bool      $dieOnChange die when a change to the entry file, libraries or resources is detected
      * @throws Throwable
      * @return void
      */
@@ -73,87 +74,92 @@ class Bootstrap {
         bool $info = false,
         bool $dieOnChange = false,
     ):void {
-        Loop::run(function() use ($entry, $libraries, $info, $dieOnChange, $resources, $name) {
-            if (!$entry) {
-                yield self::kill("Please point to a php entry file.\n");
-            }
-
-            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-
-            if (!str_starts_with($entry, './')) {
-                if (!$isWindows) {
-                    die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+        try {
+            Loop::run(function() use (
+                $entry,
+                $libraries,
+                $info,
+                $dieOnChange,
+                $resources,
+                $name
+            ) {
+                if (!$entry) {
+                    yield self::kill("Please point to a php entry file.\n");
                 }
-                if (!str_starts_with($entry, '.\\')) {
-                    die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
-                }
-            }
 
-            Container::set(LoggerInterface::class, LoggerFactory::create($name));
-            /** @var array<string> */
-            $libraries = !$libraries?[]:\preg_split('/,|;/', $libraries);
-            /** @var array<string> */
-            $resources = !$resources?[]:\preg_split('/,|;/', $resources);
+                $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 
-
-            $_ENV['ENTRY']         = $entry;
-            $_ENV['LIBRARIES']     = $libraries;
-            $_ENV['RESOURCES']     = $resources;
-            $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
-            $_ENV['SHOW_INFO']     = $info;
-
-            foreach ($libraries as $library) {
-                if (!str_starts_with($library, './')) {
+                if (!str_starts_with($entry, './')) {
                     if (!$isWindows) {
-                        yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                        die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
                     }
-                    if (!str_starts_with($library, '.\\')) {
-                        yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                    if (!str_starts_with($entry, '.\\')) {
+                        die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
                     }
                 }
-            }
 
-            foreach ($resources as $resource) {
-                if (!str_starts_with($resource, './')) {
-                    if (!$isWindows) {
-                        yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
-                    }
-                    if (!str_starts_with($resource, '.\\')) {
-                        yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
-                    }
-                }
-            }
+                Container::set(LoggerInterface::class, LoggerFactory::create($name));
+                /** @var array<string> */
+                $libraries = !$libraries?[]:\preg_split('/,|;/', $libraries);
+                /** @var array<string> */
+                $resources = !$resources?[]:\preg_split('/,|;/', $resources);
 
-            if ($dieOnChange) {
-                if (isPhar()) {
-                    /** @var LoggerInterface */
-                    $logger = yield Container::create(LoggerInterface::class);
-                    $logger->error("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
-                    yield self::kill();
+
+                $_ENV['ENTRY']         = $entry;
+                $_ENV['LIBRARIES']     = $libraries;
+                $_ENV['RESOURCES']     = $resources;
+                $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
+                $_ENV['SHOW_INFO']     = $info;
+
+                foreach ($libraries as $library) {
+                    if (!str_starts_with($library, './')) {
+                        if (!$isWindows) {
+                            yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                        }
+                        if (!str_starts_with($library, '.\\')) {
+                            yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                        }
+                    }
                 }
-                self::dieOnChange(
-                    entry: $entry,
-                    libraries: $libraries,
-                    resources: $resources,
-                );
-            }
-            try {
-                yield Container::load($libraries);
+
+                foreach ($resources as $resource) {
+                    if (!str_starts_with($resource, './')) {
+                        if (!$isWindows) {
+                            yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                        }
+                        if (!str_starts_with($resource, '.\\')) {
+                            yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                        }
+                    }
+                }
+
+                if ($dieOnChange) {
+                    if (isPhar()) {
+                        /** @var LoggerInterface */
+                        $logger = yield Container::create(LoggerInterface::class);
+                        $logger->error("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
+                        yield self::kill();
+                    }
+                    self::onFileChange(
+                        entry: $entry,
+                        libraries: $libraries,
+                        resources: $resources,
+                        callback: fn () => self::kill("Killing application..."),
+                    );
+                }
                 
+                yield Container::load($libraries);
+            
                 if ($info) {
                     echo Container::describe();
                 }
                 yield self::init($entry);
-            } catch (Throwable $e) {
-                if ($dieOnChange) {
-                    echo $e.\PHP_EOL;
-                    while (true) {
-                        yield delay(1000);
-                    }
-                }
-                throw $e;
-            }
-        });
+            });
+        } catch(Throwable $e) {
+            echo $e.PHP_EOL;
+            Loop::stop();
+            exit(1);
+        }
     }
 
     /** @var array<callable():(void|Generator|Promise)> */
@@ -178,24 +184,57 @@ class Bootstrap {
     }
     
     /**
+     * @param  string    $binary
      * @param  string    $start
+     * @param  array     $arguments
      * @throws Throwable
      * @return void
      */
-    public static function spawn(string $start) {
-        Loop::run(function() use ($start) {
-            global $argv;
-
+    public static function spawn(
+        string $binary,
+        string $fileName,
+        array $arguments = [],
+        string $entry,
+        string $libraries,
+        string $resources,
+    ) {
+        Loop::run(function() use (
+            $binary,
+            $fileName,
+            $arguments,
+            $entry,
+            $libraries,
+            $resources,
+        ) {
             $out = new ResourceOutputStream(STDOUT);
             $err = new ResourceOutputStream(STDERR);
-            $in  = new ResourceInputStream(STDIN);
+            $in  = new ResourceInputStream(STDIN);            
+            
+            $argumentsStringified = join(' ', $arguments);
+            
+            /** @var array<string> */
+            $libraries = !$libraries?[]:\preg_split('/,|;/', $libraries);
+            /** @var array<string> */
+            $resources = !$resources?[]:\preg_split('/,|;/', $resources);
 
-            $options = array_filter(array_slice($argv, 1), fn ($option) => trim($option) !== '--watch');
+            $crashed = false;
 
-            $params = join(' ', $options);
+            self::onFileChange(
+                entry: $entry,
+                libraries: $libraries,
+                resources: $resources,
+                callback: function() use (&$crashed) {
+                    $crashed = false;
+                },
+            );
+
             while (true) {
-                echo "Spawning $start $params".PHP_EOL;
-                $process = new Process("$start $params");
+                if ($crashed) {
+                    yield delay(100);
+                    continue;
+                }
+                echo "Spawning $binary $fileName $argumentsStringified".PHP_EOL;
+                $process = new Process("$binary $fileName $argumentsStringified");
 
                 yield $process->start();
 
@@ -222,33 +261,43 @@ class Bootstrap {
                 });
                 
                 try {
-                    yield $process->join();
-                    yield delay(1000);
+                    /** @var int */
+                    $code = yield $process->join();
+                    if (0 !== $code) {
+                        throw new Exception("Exiting with code $code");
+                    }
+                    yield delay(100);
                 } catch (Throwable $e) {
-                    echo join("\n", [
-                        $e->getMessage(),
-                        $e->getTraceAsString()
-                    ]).PHP_EOL;
-                    yield delay(1000 * 5);
+                    $crashed = true;
+                    // echo join("\n", [
+                    //     $e->getMessage(),
+                    //     $e->getTraceAsString()
+                    // ]).PHP_EOL;
                 }
             }
         });
     }
 
     /**
-     * Start a watcher which will kill the application when any observed file changes.
+     * Start a watcher which will detect file changes.
      * Useful for development mode.
      * @param  string        $entry
      * @param  array         $libraries
      * @param  array         $resources
      * @return Promise<void>
      */
-    private static function dieOnChange(
+    private static function onFileChange(
         string $entry,
         array $libraries,
         array $resources,
+        callable $callback,
     ):Promise {
-        return call(function() use ($entry, $libraries, $resources) {
+        return call(function() use (
+            $entry,
+            $libraries,
+            $resources,
+            $callback
+        ) {
             $fs        = new Filesystem(createDefaultDriver());
             $changes   = [];
             $firstPass = true;
@@ -270,7 +319,7 @@ class Bootstrap {
                 
                 $countThisPass = count($filenames);
                 if (!$firstPass && $countLastPass !== $countThisPass) {
-                    yield self::kill("Killing application...");
+                    yield call($callback);
                 }
 
                 foreach (array_keys($filenames) as $filename) {
@@ -285,7 +334,8 @@ class Bootstrap {
                     }
                     
                     if ($changes[$filename] !== $mtime) {
-                        yield self::kill("Killing application...");
+                        $changes[$filename] = $mtime;
+                        yield call($callback);
                     }
                 }
 

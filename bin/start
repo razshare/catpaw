@@ -16,19 +16,30 @@ $libraries   = new Option('--libraries');
 $resources   = new Option('--resources');
 $dieOnChange = new Option('--die-on-change');
 $watch       = new Option('--watch');
+$php         = new Option('--php');
 $info        = new Option('--info');
 
-$entry       = $entry->findValue()             ?? '';
-$name        = $name->findValue()              ?? 'App';
-$libraries   = $libraries->findValue()         ?? '';
-$resources   = $resources->findValue()         ?? '';
-$dieOnChange = $dieOnChange->findValue('bool') ?? false;
-$watch       = $watch->findValue('bool')       ?? false;
-$info        = $info->findValue('bool')        ?? false;
+$entry       = $entry->findValue('string', true)     ?? '';
+$name        = $name->findValue('string', true)      ?? 'App';
+$libraries   = $libraries->findValue('string', true) ?? '';
+$resources   = $resources->findValue('string', true) ?? '';
+$dieOnChange = $dieOnChange->findValue('bool')       ?? false;
+$watch       = $watch->findValue('bool')             ?? false;
+$php         = $php->findValue('string', true)       ?? 'php';
+$info        = $info->findValue('bool')              ?? false;
 
 try {
     if ($watch) {
-        Bootstrap::spawn(__FILE__);
+        $arguments   = array_filter(array_slice($argv, 1), fn ($option) => trim($option) !== '--watch');
+        $arguments[] = '--die-on-change';
+        Bootstrap::spawn(
+            binary: $php,
+            fileName: __FILE__,
+            arguments: $arguments,
+            entry: $entry,
+            libraries: $libraries,
+            resources: $resources,
+        );
     } else {
         Bootstrap::start(
             entry: $entry,
