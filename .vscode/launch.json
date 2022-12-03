@@ -15,7 +15,9 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--libraries='./src/lib/'",
-                "--entry='./src/main.php'"
+                "--entry='./src/main.php'",
+                "--watch",
+                "--testtest"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",

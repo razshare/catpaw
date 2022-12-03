@@ -28,15 +28,7 @@ $info        = $info->findValue('bool')        ?? false;
 
 try {
     if ($watch) {
-        Bootstrap::spawn(
-            start: __FILE__,
-            entry: $entry,
-            name: $name,
-            libraries: $libraries,
-            info: $info,
-            watch: true,
-            resources: $resources,
-        );
+        Bootstrap::spawn(__FILE__);
     } else {
         Bootstrap::start(
             entry: $entry,

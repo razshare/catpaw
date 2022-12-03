@@ -178,55 +178,19 @@ class Bootstrap {
     }
     
     /**
-     * @param string $start
-     * @param string $entry
-     * @param string $name
-     * @param  string    libraries
-     * @param  string    $resources
-     * @param  bool      $info
-     * @param  bool      $watch
+     * @param  string    $start
      * @throws Throwable
      * @return void
      */
-    public static function spawn(
-        string $start,
-        string $entry,
-        string $name,
-        string $libraries,
-        string $resources,
-        bool $info = false,
-        bool $watch = false,
-    ) {
-        Loop::run(function() use (
-            $start,
-            $entry,
-            $name,
-            $libraries,
-            $info,
-            $watch,
-            $resources,
-        ) {
+    public static function spawn(string $start) {
+        Loop::run(function() use ($start) {
+            global $argv;
+
             $out = new ResourceOutputStream(STDOUT);
             $err = new ResourceOutputStream(STDERR);
             $in  = new ResourceInputStream(STDIN);
 
-            $options = [ "-e\"$entry\"" ];
-
-            if ($name) {
-                $options[] = "-n\"$name\"";
-            }
-            if ($libraries) {
-                $options[] = "-l\"$libraries\"";
-            }
-            if ($resources) {
-                $options[] = "-r\"$resources\"";
-            }
-            if ($watch) {
-                $options[] = '-d';
-            }
-            if ($info) {
-                $options[] = '-i';
-            }
+            $options = array_filter(array_slice($argv, 1), fn ($option) => trim($option) !== '--watch');
 
             $params = join(' ', $options);
             while (true) {
@@ -256,8 +220,9 @@ class Bootstrap {
                         yield $pin->write($chunk);
                     }
                 });
+                
                 try {
-                    $code = yield $process->join();
+                    yield $process->join();
                     yield delay(1000);
                 } catch (Throwable $e) {
                     echo join("\n", [
