@@ -31,7 +31,6 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 |----------|-------------|---------------------------------------------|---------------------------------------------------------------|-----------------------------------------|
 | Blank    | ✅          | using only the core library                 | [Template](https://github.com/tncrazvan/catpaw-starter)        | [Read](./README.md#get-started)       |
 | Web      | ✅          | create a web server                         | [Template](https://github.com/tncrazvan/catpaw-web-starter)    | [Read](./docs/16.Web.md)              |
-| Svelte   | ✅          | using `Web` + [Svelte](https://svelte.dev/) | [Template](https://github.com/tncrazvan/catpaw-svelte-starter) | [Read](./docs/15.SvelteSPAStarter.md) |
 | Markdown | ❌          | using `Web` + Markdown                      | __TODO__                                                      | __TODO__                                |
 
 
@@ -42,9 +41,6 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 >    ```
 >    ```bash
 >    composer create-project catpaw/web-starter
->    ```
->    ```bash 
->    composer create-project catpaw/svelte-starter
 >    ```
 <br/>
 
