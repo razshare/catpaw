@@ -21,7 +21,6 @@ use Amp\Promise;
 use CatPaw\Utilities\AsciiTable;
 use CatPaw\Utilities\Stream;
 use Closure;
-use Error;
 use InvalidArgumentException;
 use Phar;
 
@@ -345,38 +344,4 @@ function readLineSilent(string $prompt): ?string {
  */
 function deferred():Deferred {
     return new Deferred;
-}
-
-/**
- * Lock a semaphore key.
- * @param  int      $key
- * @param  bool|int $timeoutMilliseconds cancel if the locking takes more that `$timeoutMilliseconds` milliseconds.
- * @throws Error
- * @return Promise
- */
-function lock(int $key, false|int $timeoutMilliseconds = false):Promise {
-    $sem   = sem_get($key);
-    $start = milliseconds();
-    return call(function() use ($sem, $timeoutMilliseconds, $start) {
-        while (!sem_acquire($sem, true)) {
-            if (false !== $timeoutMilliseconds) {
-                $delta = milliseconds() - $start;
-                if ($delta > $timeoutMilliseconds) {
-                    return false;
-                }
-            }
-            yield deferred();
-        }
-        return true;
-    });
-}
-
-/**
- * Unlock a semaphore key.
- * @param  int  $key
- * @return bool
- */
-function unlock(int $key) {
-    $sem = sem_get($key);
-    return sem_release($sem);
 }
