@@ -138,7 +138,7 @@ class Option implements AttributeInterface {
         return $value;
     }
 
-    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context) {
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context) {
         /** @var string|int|bool|float $value */
         /** @var false $context */
         $type = ReflectionTypeManager::unwrap($reflection)?->getName() ?? 'bool';

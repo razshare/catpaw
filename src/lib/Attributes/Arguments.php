@@ -28,7 +28,7 @@ class Arguments implements AttributeInterface {
         }
     }
 
-    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context) {
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context) {
         /** @var array<string|int|bool|float> $value */
         /** @var false $context */
         $value = self::$cache;

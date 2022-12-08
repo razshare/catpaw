@@ -20,34 +20,35 @@ interface AttributeInterface {
     public static function findByProperty(ReflectionProperty $reflectionProperty): Promise;
 
     /**
-     * Triggers whenever the attribute it assigned to a parameter.
-     * @param  ReflectionParameter     $reflection the reflection of the parameter.
-     * @param  mixed                   $value      the current value of the parameter.
-     * @param  mixed                   $context    the context if available, false otherwise.
+     * Invoked when this attribute is detected on a parameter.
+     * @param  ReflectionParameter     $reflection reflection of the parameter.
+     * @param  mixed                   $value      current value of the parameter.
+     * @param  mixed                   $context    context if available, false otherwise.
      * @return void|\Generator|Promise
      */
-    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context);
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context);
 
 
     /**
-     * Triggers whenever the attribute is assigned to a route handler.<br/>
-     * Route handlers are closure functions assigned using "Route::get", "Route::post", "Route::update", etc.<br/>
+     * Invoked when this attribute is detected on a route handler.
+     * 
+     * Route handlers are functions passed to "Route::get", "Route::post", "Route::update", etc.
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/1.RouteHandlers.md
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/9.Filters.md
-     * @param  ReflectionFunction      $reflection
-     * @param  Closure                 $value      the function to which this attribute is attatched to.
-     * @param  mixed                   $context    the context if available, false otherwise.
+     * @param  ReflectionFunction      $reflection reflection of the function.
+     * @param  Closure                 $value      function to which this attribute is attatched to.
+     * @param  mixed                   $context    context if available, false otherwise.
      * @return void|\Generator|Promise
      */
-    public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $context);
+    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, mixed $context);
 
 
     /**
-     * Triggers whenever a class is instantiated through dependency injection.
-     * @param  ReflectionClass         $reflection
-     * @param  mixed                   $value      the instance of the given class.
-     * @param  mixed                   $context    the context if available, false otherwise.
+     * Invoked when this attribute is detected on a class.
+     * @param  ReflectionClass         $reflection reflection of the class.
+     * @param  mixed                   $value      instance of the class.
+     * @param  mixed                   $context    context if available, false otherwise.
      * @return void|\Generator|Promise
      */
-    public function onClassInstantiation(ReflectionClass $reflection, mixed &$value, mixed $context);
+    public function onClassMount(ReflectionClass $reflection, mixed &$value, mixed $context);
 }

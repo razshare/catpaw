@@ -268,7 +268,7 @@ class Container {
                         continue;
                     }
                     yield call(function() use ($attributeInstance, &$refparams, &$parameters, &$context, $i) {
-                        return $attributeInstance->onParameter($refparams[$i], $parameters[$i], $context);
+                        return $attributeInstance->onParameterMount($refparams[$i], $parameters[$i], $context);
                     });
                     $attributeHasStorage = $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i][$j];
                     if ($attributeHasStorage) {
@@ -445,7 +445,7 @@ class Container {
                 self::$singletons[$className] = $instance;
                 if ($service) {
                     yield call(function() use ($reflection, &$instance, $service) {
-                        return $service->onClassInstantiation($reflection, $instance, false);
+                        return $service->onClassMount($reflection, $instance, false);
                     });
                 }
             }

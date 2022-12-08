@@ -163,15 +163,15 @@ trait CoreAttributeDefinition {
         });
     }
 
-    public function onParameter(ReflectionParameter $reflection, mixed &$value, mixed $context) {
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context) {
         return;
     }
 
-    public function onRouteHandler(ReflectionFunction $reflection, Closure &$value, mixed $context) {
+    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, mixed $context) {
         return;
     }
 
-    public function onClassInstantiation(ReflectionClass $reflection, mixed &$value, mixed $context) {
+    public function onClassMount(ReflectionClass $reflection, mixed &$value, mixed $context) {
         return;
     }
 }
