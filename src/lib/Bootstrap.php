@@ -26,11 +26,16 @@ class Bootstrap {
     /**
      * Initialize an application from a soruce file (that usually defines a global "main" function).
      * @param  string              $filename
+     * @param  bool                $info
      * @throws ReflectionException
      * @return Promise<void>
      */
-    public static function init(string $filename): Promise {
-        return call(function() use ($filename) {
+    public static function init(
+        string $filename,
+        array $libraries = [],
+        bool $info = false,
+    ): Promise {
+        return call(function() use ($filename, $libraries, $info) {
             if (isPhar()) {
                 $filename = \Phar::running()."/$filename";
             }
@@ -43,6 +48,13 @@ class Bootstrap {
                 if (!function_exists('main')) {
                     yield self::kill("Please define a global main function.\n");
                 }
+
+                yield Container::load($libraries);
+            
+                if ($info) {
+                    echo Container::describe();
+                }
+
                 /**
                  * @psalm-suppress InvalidArgument
                  */
@@ -147,13 +159,8 @@ class Bootstrap {
                         callback: fn () => self::kill("Killing application..."),
                     );
                 }
-                
-                yield Container::load($libraries);
-            
-                if ($info) {
-                    echo Container::describe();
-                }
-                yield self::init($entry);
+
+                yield self::init($entry, $libraries, $info);
             });
         } catch(Throwable $e) {
             echo $e.PHP_EOL;
