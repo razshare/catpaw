@@ -289,7 +289,10 @@ class Container {
      * @throws Exception
      * @return Promise<array<string>> list of directories examined.
      */
-    public static function load(array $locations, bool $append = false):Promise {
+    public static function load(
+        array $locations,
+        bool $append = false,
+    ):Promise {
         if (!$append) {
             Container::clearAll();
         }
@@ -316,8 +319,16 @@ class Container {
                     echo("Path \"$location\" is not a valid directory to load.".\PHP_EOL);
                     yield Bootstrap::kill();
                 }
+                
+                /**
+                 * @psalm-suppress PossiblyUndefinedVariable
+                 */
                 $iterator = new RecursiveIteratorIterator($directory);
-                $regex    = new RegexIterator($iterator, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);
+                $regex    = new RegexIterator(
+                    $iterator,
+                    '/^.+\.php$/i',
+                    RecursiveRegexIterator::GET_MATCH
+                );
 
                 for ($regex->rewind(); $regex->valid() ; $regex->next()) {
                     /** @var array<string> $files */
@@ -341,16 +352,14 @@ class Container {
         });
     }
 
-    
-
     /**
-     * Inject dependencies into a function and invoke it.
+     * Execute all attributes attatched to the function.
+     * 
+     * Will not execute the function itself and parameter attributes will not be instantiated at all.
      * @param  Closure|ReflectionFunction $function
-     * @param  array                      $defaultArguments
-     * @throws BadFunctionCallException
      * @return Promise<void>
      */
-    public static function run(Closure|ReflectionFunction $function): Promise {
+    public static function touch(Closure|ReflectionFunction $function):Promise {
         return call(function() use ($function) {
             if ($function instanceof Closure) {
                 $reflection = new ReflectionFunction($function);
@@ -360,7 +369,7 @@ class Container {
             }
 
             if (!$function) {
-                throw new BadFunctionCallException("Could not execute function \"{$reflection->getName()}\" inside container.");
+                throw new BadFunctionCallException("Could not touch function \"{$reflection->getName()}\" inside container.");
             }
 
             foreach ($reflection->getAttributes() as $attribute) {
@@ -377,6 +386,34 @@ class Container {
                     $arguments = yield Container::dependencies($entry);
                     yield call(fn ():mixed => $entry->invoke($object, ...$arguments));
                 }
+            }
+        });
+    }
+
+    /**
+     * Inject dependencies into a function and invoke it.
+     * @param  Closure|ReflectionFunction $function
+     * @param  bool                       $touch    if true, Container::touch will be 
+     *                                              called automatically on the function
+     * @throws BadFunctionCallException
+     * @return Promise<void>
+     */
+    public static function run(
+        Closure|ReflectionFunction $function,
+        bool $touch = true,
+    ): Promise {
+        return call(function() use ($function) {
+            if ($function instanceof Closure) {
+                $reflection = new ReflectionFunction($function);
+            } else {
+                $reflection = $function;
+                $function   = $reflection->getClosure();
+            }
+
+            yield self::touch($function);
+
+            if (!$function) {
+                throw new BadFunctionCallException("Could not execute function \"{$reflection->getName()}\" inside container.");
             }
 
             $arguments = yield Container::dependencies($reflection);

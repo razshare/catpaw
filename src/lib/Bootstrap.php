@@ -49,6 +49,13 @@ class Bootstrap {
                     yield self::kill("Please define a global main function.\n");
                 }
 
+                /**
+                 * @psalm-suppress InvalidArgument
+                 */
+                $main = new ReflectionFunction('main');
+
+                yield Container::touch($main);
+
                 yield Container::load(
                     locations: $libraries,
                     // This will maintain any singletons 
@@ -62,12 +69,7 @@ class Bootstrap {
                     echo Container::describe();
                 }
 
-                /**
-                 * @psalm-suppress InvalidArgument
-                 */
-                $main = new ReflectionFunction('main');
-                
-                yield Container::run($main);
+                yield Container::run($main, false);
             } else {
                 yield self::kill("Could not find php entry file \"$filename\".\n");
             }
