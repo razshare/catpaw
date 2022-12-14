@@ -59,12 +59,12 @@ class Container {
 
     /**
      * Set a singleton inside the container.
-     * @param  string $className
+     * @param  string $name
      * @param  mixed  $object
      * @return void
      */
-    public static function set(string $className, mixed $object): void {
-        self::$singletons[$className] = $object;
+    public static function set(string $name, mixed $object): void {
+        self::$singletons[$name] = $object;
     }
 
     /**
