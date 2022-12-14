@@ -49,7 +49,14 @@ class Bootstrap {
                     yield self::kill("Please define a global main function.\n");
                 }
 
-                yield Container::load($libraries);
+                yield Container::load(
+                    locations: $libraries,
+                    // This will maintain any singletons 
+                    // set by "require_once $filename" 
+                    // (instead of clearing all singletons before 
+                    // loading new ones)
+                    append: true
+                );
             
                 if ($info) {
                     echo Container::describe();
