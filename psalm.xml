@@ -13,6 +13,5 @@
     <projectFiles>
         <directory name="src" />
         <directory name="tests" />
-        <directory name="vendor" />
     </projectFiles>
 </psalm>
