@@ -161,8 +161,8 @@ Make new a `./.vscode/launch.json` file in your project and add the following co
             "program": "${workspaceFolder}/bin/start",
             "cwd": "${workspaceFolder}",
             "args": [
-                "-l./src/lib/",
-                "-e./src/main.php"
+                "--libraries./src/lib/",
+                "--entry./src/main.php"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes",
