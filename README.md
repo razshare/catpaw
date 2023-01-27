@@ -27,11 +27,11 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 # Starters
 
-| Type     | Implemented | Description                                 | Github Template                                               | Read                                    |
-|----------|-------------|---------------------------------------------|---------------------------------------------------------------|-----------------------------------------|
-| Blank    | ✅          | using only the core library                 | [Template](https://github.com/tncrazvan/catpaw-starter)        | [Read](./README.md#get-started)       |
-| Web      | ✅          | create a web server                         | [Template](https://github.com/tncrazvan/catpaw-web-starter)    | [Read](./docs/16.Web.md)              |
-| Markdown | ❌          | using `Web` + Markdown                      | __TODO__                                                      | __TODO__                                |
+| Type     | Implemented | Description                                 | Github Template                                                  | Read                                    |
+|----------|-------------|---------------------------------------------|------------------------------------------------------------------|-----------------------------------------|
+| Blank    | ✅          | using only the core library                 | [Template](https://github.com/tncrazvan/catpaw-starter)          | [Read](./README.md#get-started)       |
+| Web      | ✅          | create a web server                         | [Template](https://github.com/tncrazvan/catpaw-web-starter)      | [Read](./docs/16.Web.md)              |
+| Markdown | ✅          | create a web server using Markdown          | [Template](https://github.com/tncrazvan/catpaw-markdown-starter) | __TODO__                                |
 
 
 
