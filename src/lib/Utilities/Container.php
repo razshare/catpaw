@@ -402,7 +402,7 @@ class Container {
         Closure|ReflectionFunction $function,
         bool $touch = true,
     ): Promise {
-        return call(function() use ($function) {
+        return call(function() use ($function, $touch) {
             if ($function instanceof Closure) {
                 $reflection = new ReflectionFunction($function);
             } else {
@@ -410,8 +410,10 @@ class Container {
                 $function   = $reflection->getClosure();
             }
 
-            yield self::touch($function);
-
+            if ($touch) {
+                yield self::touch($function);
+            }
+            
             if (!$function) {
                 throw new BadFunctionCallException("Could not execute function \"{$reflection->getName()}\" inside container.");
             }
