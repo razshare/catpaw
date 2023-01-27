@@ -42,6 +42,9 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 >    ```bash
 >    composer create-project catpaw/web-starter
 >    ```
+>    ```bash
+>    composer create-project catpaw/markdown-starter
+>    ```
 <br/>
 
 # Premise
