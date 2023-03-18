@@ -5,6 +5,8 @@ use function Amp\ByteStream\buffer;
 
 use function Amp\call;
 use Amp\Deferred;
+
+use function Amp\delay;
 use function Amp\File\createDirectoryRecursively;
 use function Amp\File\deleteDirectory;
 use function Amp\File\deleteFile;
@@ -353,15 +355,34 @@ function deferred():Deferred {
  * 
  * This is a replacement for the default `\readline()` function which does not work in a PHAR program.
  * @param  string          $prompt You may specify a string with which to prompt the user.
+ * @param  bool            $silent if true, the user input will be hidden.
  * @throws Error
  * @return Promise<string>
  */
-function readline(string $prompt = ''):Promise {
-    return call(function() use ($prompt) {
-        \readline($prompt);
+function readline(string $prompt = '', bool $silent = false):Promise {
+    return call(function() use ($prompt, $silent) {
+        $hide    = "\033[0K\r";
+        $watcher = $silent;
+        $out     = stream(STDOUT);
+        yield $out->write($prompt);
+        if ($silent) {
+            call(function() use ($prompt, $out, $hide, &$watcher) {
+                while ($watcher) {
+                    yield $out->write($prompt);
+                    yield delay(1);
+                    yield $out->write($hide);
+                }
+            });
+        }
+
         $input = stream(STDIN);
         /** @var string */
         $data = yield $input->read();
+        yield $input->close();
+        if ($silent) {
+            yield $out->write($hide);
+        }
+        $watcher = false;
         return $data;
     });
 }
