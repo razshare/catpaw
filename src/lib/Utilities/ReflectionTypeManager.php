@@ -4,13 +4,14 @@ namespace CatPaw\Utilities;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionProperty;
 use ReflectionUnionType;
 
 class ReflectionTypeManager {
     private function __construct() {
     }
 
-    public static function unwrap(ReflectionParameter $parameter):ReflectionNamedType|null {
+    public static function unwrap(ReflectionParameter|ReflectionProperty $parameter):ReflectionNamedType|null {
         $type = $parameter->getType() ?? null;
         if (null === $type) {
             return null;
