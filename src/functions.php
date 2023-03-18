@@ -21,6 +21,7 @@ use Amp\Promise;
 use CatPaw\Utilities\AsciiTable;
 use CatPaw\Utilities\Stream;
 use Closure;
+use Error;
 use InvalidArgumentException;
 use Phar;
 
@@ -344,4 +345,23 @@ function readLineSilent(string $prompt): ?string {
  */
 function deferred():Deferred {
     return new Deferred;
+}
+
+
+/**
+ * Read input from the user.
+ * 
+ * This is a replacement for the default `\readline()` function which does not work in a PHAR program.
+ * @param  string          $prompt You may specify a string with which to prompt the user.
+ * @throws Error
+ * @return Promise<string>
+ */
+function readline(string $prompt = ''):Promise {
+    return call(function() use ($prompt) {
+        \readline($prompt);
+        $input = stream(STDIN);
+        /** @var string */
+        $data = yield $input->read();
+        return $data;
+    });
 }
