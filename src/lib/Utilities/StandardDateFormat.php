@@ -4,9 +4,9 @@ namespace CatPaw\Utilities;
 use DateTime;
 
 class StandardDateFormat {
-    public static function dateTime(int $TimeStamp):DateTime {
+    public static function unix(int $timestamp):DateTime {
         $dateTime = new DateTime();
-        $dateTime->setTimestamp($TimeStamp);
+        $dateTime->setTimestamp($timestamp);
         return $dateTime;
     }
 
@@ -23,7 +23,7 @@ class StandardDateFormat {
      */
     public static function DDMMYYYY(int|Datetime|null $dateTime, string $dateSeparator = ''): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         return !$dateTime ? 'DDMMYYYY' : $dateTime->format("d{$dateSeparator}m{$dateSeparator}Y");
     }
@@ -41,7 +41,7 @@ class StandardDateFormat {
      */
     public static function YYYYMMDD(int|Datetime|null $dateTime, string $dateSeparator = ''): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         return !$dateTime ? 'YYYYMMDD' : $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d");
     }
@@ -65,7 +65,7 @@ class StandardDateFormat {
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         $usingDateTimeSpace = $usingDateTimeSpace ? ' ' : '';
         return !$dateTime ? 'YYYYMMDDHH' : $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H");
@@ -93,7 +93,7 @@ class StandardDateFormat {
         string $timeSeparator = ''
     ): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         $usingDateTimeSpace = $usingDateTimeSpace ? ' ' : '';
         return !$dateTime ? 'YYYYMMDDHHII' : $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H{$timeSeparator}i");
@@ -122,7 +122,7 @@ class StandardDateFormat {
         string $timeSeparator = ''
     ): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         $usingDateTimeSpace = $usingDateTimeSpace ? ' ' : '';
         return !$dateTime ? 'YYYYMMDDHHIISS' : $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H{$timeSeparator}i{$timeSeparator}s");
@@ -144,7 +144,7 @@ class StandardDateFormat {
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         return !$dateTime ? 'YYMMDD' : $dateTime->format("y{$dateSeparator}m{$dateSeparator}d");
     }
@@ -160,7 +160,7 @@ class StandardDateFormat {
      */
     public static function DDMMYY(int|Datetime|null $dateTime, string $dateSeparator = ''): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         return !$dateTime ? 'DDMMYY' : $dateTime->format("d{$dateSeparator}m{$dateSeparator}y");
     }
@@ -178,7 +178,7 @@ class StandardDateFormat {
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         return $dateTime ? $dateTime->format("H{$dateSeparator}i") : 'HHII';
     }
@@ -197,7 +197,7 @@ class StandardDateFormat {
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         return $dateTime ? $dateTime->format("H{$dateSeparator}i{$dateSeparator}s") : 'HHIISS';
     }
@@ -216,7 +216,7 @@ class StandardDateFormat {
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         return !$dateTime ? 'MMYY' : $dateTime->format("m{$dateSeparator}y");
     }
@@ -236,7 +236,7 @@ class StandardDateFormat {
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         return Filler::fill(5, $dateTime ? (
             $dateTime->format('y')
@@ -262,7 +262,7 @@ class StandardDateFormat {
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
-            $dateTime = self::dateTime($dateTime);
+            $dateTime = self::unix($dateTime);
         }
         if (!$dateTime) {
             return 'CCYYMMDD';
