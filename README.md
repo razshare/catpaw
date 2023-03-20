@@ -81,13 +81,13 @@ function main(){
 After you've created your new project, you can run it using
 
 ```bash
-compsoer watch
+composer watch
 ```
 to watch file changes (useful in development)
 or
 
 ```bash
-compsoer start
+composer start
 ```
 for production mode.
 
