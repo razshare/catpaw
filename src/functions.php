@@ -360,27 +360,36 @@ function deferred():Deferred {
  * @return Promise<string>
  */
 function readline(string $prompt = '', bool $silent = false):Promise {
-    return call(function() use ($prompt, $silent) {
+    static $input  = false;
+    static $output = false;
+
+    if (!$input) {
+        $input = stream(STDIN);
+    }
+
+    if (!$output) {
+        $output = stream(STDOUT);
+    }
+
+    return call(function() use ($prompt, $silent, $input, $output) {
         $hide    = "\033[0K\r";
         $watcher = $silent;
-        $out     = stream(STDOUT);
-        yield $out->write($prompt);
+        yield $output->write($prompt);
         if ($silent) {
-            call(function() use ($prompt, $out, $hide, &$watcher) {
+            call(function() use ($prompt, $output, $hide, &$watcher) {
                 while ($watcher) {
-                    yield $out->write($prompt);
+                    yield $output->write($prompt);
                     yield delay(1);
-                    yield $out->write($hide);
+                    if ($watcher) {
+                        yield $output->write($hide);
+                    }
                 }
             });
         }
-
-        $input = stream(STDIN);
         /** @var string */
         $data = yield $input->read();
-        yield $input->close();
         if ($silent) {
-            yield $out->write($hide);
+            yield $output->write($hide);
         }
         $watcher = false;
         return $data;
