@@ -31,6 +31,27 @@ class StandardDateFormat {
         return $dateTime->format("d{$dateSeparator}m{$dateSeparator}Y");
     }
 
+    
+    /**
+     * Covnert a DateTime to a string as YYYYMM, where
+     *
+     *  - Y = year
+     *  - M = month
+     *
+     * @param  int|DateTime $dateTime      unix timestamp or DateTime
+     * @param  string       $dateSeparator
+     * @return string
+     */
+    public static function YYYYMM(
+        int|Datetime $dateTime,
+        string $dateSeparator = ''
+    ): string {
+        if (is_int($dateTime)) {
+            $dateTime = self::unix($dateTime);
+        }
+        return $dateTime->format("Y{$dateSeparator}m");
+    }
+
     /**
      * Covnert a DateTime to a string as YYYYMMDD, where
      *

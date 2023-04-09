@@ -15,8 +15,28 @@ class StandardDateParse {
      * @param  string $dateSeparator
      * @return string
      */
-    public static function DDMMYYYY(string $dateTime, string $dateSeparator = ''): DateTime|false {
+    public static function DDMMYYYY(
+        string $dateTime,
+        string $dateSeparator = ''
+    ): DateTime|false {
         return DateTime::createFromFormat("d{$dateSeparator}m{$dateSeparator}Y", $dateTime);
+    }
+
+    /**
+     * Covnert a YYYYMM string into a DateTime , where
+     *
+     *  - Y = year
+     *  - M = month
+     *
+     * @param  string $date          date as YYYYMM
+     * @param  string $dateSeparator
+     * @return string
+     */
+    public static function YYYYMM(
+        string $dateTime,
+        string $dateSeparator = ''
+    ): DateTime|false {
+        return DateTime::createFromFormat("Y{$dateSeparator}m", $dateTime);
     }
 
     /**
@@ -30,7 +50,10 @@ class StandardDateParse {
      * @param  string $dateSeparator
      * @return string
      */
-    public static function YYYYMMDD(string $dateTime, string $dateSeparator = ''): DateTime|false {
+    public static function YYYYMMDD(
+        string $dateTime,
+        string $dateSeparator = ''
+    ): DateTime|false {
         return DateTime::createFromFormat("Y{$dateSeparator}m{$dateSeparator}d", $dateTime);
     }
 

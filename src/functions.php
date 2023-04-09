@@ -354,12 +354,26 @@ function deferred():Deferred {
  * Read input from the user.
  * 
  * This is a replacement for the default `\readline()` function which does not work in a PHAR program.
- * @param  string          $prompt You may specify a string with which to prompt the user.
+ * @param string $prompt prompt the user.
+ * @param  (callable(string):bool|string)|false          $validate validate the input value.
+ * 
+ * Return `true` to indicate that the input is valid or `false` to indicate the input is not valid.
+ * 
+ * **Note**: instead of `false`, you may instead return a feedback `string` to invalidate the input.
+ * 
+ * ## Example:
+ * ```php
+ * readline("Pick a natural number between 1 and 3: ", fn($value)=>$value === '2'?true:"$value is not a natural number between 1 and 3, try again.")
+ * ```
  * @param  bool            $silent if true, the user input will be hidden.
  * @throws Error
  * @return Promise<string>
  */
-function readline(string $prompt = '', bool $silent = false):Promise {
+function readline(
+    string $prompt = '',
+    callable|false $validate = false,
+    bool $silent = false,
+):Promise {
     static $input  = false;
     static $output = false;
 
@@ -371,7 +385,7 @@ function readline(string $prompt = '', bool $silent = false):Promise {
         $output = stream(STDOUT);
     }
 
-    return call(function() use ($prompt, $silent, $input, $output) {
+    return call(function() use ($prompt, $validate, $silent, $input, $output) {
         $hide    = "\033[0K\r";
         $watcher = $silent;
         yield $output->write($prompt);
@@ -392,6 +406,21 @@ function readline(string $prompt = '', bool $silent = false):Promise {
             yield $output->write($hide);
         }
         $watcher = false;
-        return preg_replace('/\n$/i', '', $data);
+        $result  = preg_replace('/\n$/i', '', $data);
+
+        if ($validate) {
+            $validation = $validate($result);
+            if (is_string($validation)) {
+                yield $output->write($validation.PHP_EOL);
+                return readline($prompt, $validate, $silent);
+            } else if (is_bool($validation)) {
+                if (!$validation) {
+                    return readline($prompt, $validate, $silent);
+                }
+            } else {
+                throw new Error("The validation function must return either a boolean or a string.");
+            }
+        }
+        return $result;
     });
 }
