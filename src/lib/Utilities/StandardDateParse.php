@@ -23,6 +23,22 @@ class StandardDateParse {
     }
 
     /**
+     * Covnert a YYYY string into a DateTime , where
+     *
+     *  - Y = year
+     *
+     * @param  string $date          date as YYYY
+     * @param  string $dateSeparator
+     * @return string
+     */
+    public static function YYYY(
+        string $dateTime,
+        string $dateSeparator = ''
+    ): DateTime|false {
+        return DateTime::createFromFormat("Y", $dateTime);
+    }
+
+    /**
      * Covnert a YYYYMM string into a DateTime , where
      *
      *  - Y = year
