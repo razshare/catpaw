@@ -17,15 +17,18 @@ class StandardDateFormat {
      *  - M = month
      *  - Y = year
      *
-     * @param  int|DateTime|null $dateTime      unix timestamp or DateTime
-     * @param  string            $dateSeparator
+     * @param  int|DateTime $dateTime      unix timestamp or DateTime
+     * @param  string       $dateSeparator
      * @return string
      */
-    public static function DDMMYYYY(int|Datetime|null $dateTime, string $dateSeparator = ''): string {
+    public static function DDMMYYYY(
+        int|Datetime $dateTime,
+        string $dateSeparator = ''
+    ): string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
-        return !$dateTime ? 'DDMMYYYY' : $dateTime->format("d{$dateSeparator}m{$dateSeparator}Y");
+        return $dateTime->format("d{$dateSeparator}m{$dateSeparator}Y");
     }
 
     /**
@@ -35,15 +38,18 @@ class StandardDateFormat {
      *  - M = month
      *  - D = day
      *
-     * @param  int|DateTime|null $dateTime      unix timestamp or DateTime
-     * @param  string            $dateSeparator
+     * @param  int|DateTime $dateTime      unix timestamp or DateTime
+     * @param  string       $dateSeparator
      * @return string
      */
-    public static function YYYYMMDD(int|Datetime|null $dateTime, string $dateSeparator = ''): string {
+    public static function YYYYMMDD(
+        int|Datetime $dateTime,
+        string $dateSeparator = ''
+    ): string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
-        return !$dateTime ? 'YYYYMMDD' : $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d");
+        return $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d");
     }
 
     /**
@@ -54,13 +60,13 @@ class StandardDateFormat {
      *  - D = day
      *  - H = hour
      *
-     * @param  int|DateTime|null $dateTime           unix timestamp or DateTime
-     * @param  bool              $usingDateTimeSpace
-     * @param  string            $dateSeparator
+     * @param  int|DateTime $dateTime           unix timestamp or DateTime
+     * @param  bool         $usingDateTimeSpace
+     * @param  string       $dateSeparator
      * @return string
      */
     public static function YYYYMMDDHH(
-        int|Datetime|null $dateTime,
+        int|Datetime $dateTime,
         bool $usingDateTimeSpace = false,
         string $dateSeparator = ''
     ): string {
@@ -68,7 +74,7 @@ class StandardDateFormat {
             $dateTime = self::unix($dateTime);
         }
         $usingDateTimeSpace = $usingDateTimeSpace ? ' ' : '';
-        return !$dateTime ? 'YYYYMMDDHH' : $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H");
+        return $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H");
     }
 
     /**
@@ -80,14 +86,14 @@ class StandardDateFormat {
      *  - H = hour
      *  - I = minuto
      *
-     * @param  int|DateTime|null $dateTime           unix timestamp or DateTime
-     * @param  bool              $usingDateTimeSpace
-     * @param  string            $dateSeparator
-     * @param  string            $timeSeparator
+     * @param  int|DateTime $dateTime           unix timestamp or DateTime
+     * @param  bool         $usingDateTimeSpace
+     * @param  string       $dateSeparator
+     * @param  string       $timeSeparator
      * @return string
      */
     public static function YYYYMMDDHHII(
-        int|Datetime|null $dateTime,
+        int|Datetime $dateTime,
         bool $usingDateTimeSpace = false,
         string $dateSeparator = '',
         string $timeSeparator = ''
@@ -96,7 +102,7 @@ class StandardDateFormat {
             $dateTime = self::unix($dateTime);
         }
         $usingDateTimeSpace = $usingDateTimeSpace ? ' ' : '';
-        return !$dateTime ? 'YYYYMMDDHHII' : $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H{$timeSeparator}i");
+        return $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H{$timeSeparator}i");
     }
 
     /**
@@ -109,14 +115,14 @@ class StandardDateFormat {
      *  - I = minuto
      *  - S = secondo
      *
-     * @param  int|DateTime|null $dateTime           unix timestamp or DateTime
-     * @param  bool              $usingDateTimeSpace
-     * @param  string            $dateSeparator
-     * @param  string            $timeSeparator
+     * @param  int|DateTime $dateTime           unix timestamp or DateTime
+     * @param  bool         $usingDateTimeSpace
+     * @param  string       $dateSeparator
+     * @param  string       $timeSeparator
      * @return string
      */
     public static function YYYYMMDDHHIISS(
-        int|Datetime|null $dateTime,
+        int|Datetime $dateTime,
         bool $usingDateTimeSpace = false,
         string $dateSeparator = '',
         string $timeSeparator = ''
@@ -125,7 +131,7 @@ class StandardDateFormat {
             $dateTime = self::unix($dateTime);
         }
         $usingDateTimeSpace = $usingDateTimeSpace ? ' ' : '';
-        return !$dateTime ? 'YYYYMMDDHHIISS' : $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H{$timeSeparator}i{$timeSeparator}s");
+        return $dateTime->format("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H{$timeSeparator}i{$timeSeparator}s");
     }
 
     /**
@@ -135,18 +141,18 @@ class StandardDateFormat {
      *  - M = month
      *  - D = day
      *
-     * @param  int|DateTime|null $dateTime      unix timestamp or DateTime
-     * @param  string            $dateSeparator
+     * @param  int|DateTime $dateTime      unix timestamp or DateTime
+     * @param  string       $dateSeparator
      * @return string
      */
     public static function YYMMDD(
-        int|Datetime|null $dateTime,
+        int|Datetime $dateTime,
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
-        return !$dateTime ? 'YYMMDD' : $dateTime->format("y{$dateSeparator}m{$dateSeparator}d");
+        return $dateTime->format("y{$dateSeparator}m{$dateSeparator}d");
     }
 
     /**
@@ -154,33 +160,36 @@ class StandardDateFormat {
      *  - Y = year
      *  - M = month
      *  - D = day
-     * @param  int|DateTime|null $dateTime      unix timestamp or DateTime
-     * @param  string            $dateSeparator
+     * @param  int|DateTime $dateTime      unix timestamp or DateTime
+     * @param  string       $dateSeparator
      * @return string
      */
-    public static function DDMMYY(int|Datetime|null $dateTime, string $dateSeparator = ''): string {
+    public static function DDMMYY(
+        int|Datetime $dateTime,
+        string $dateSeparator = ''
+    ): string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
-        return !$dateTime ? 'DDMMYY' : $dateTime->format("d{$dateSeparator}m{$dateSeparator}y");
+        return $dateTime->format("d{$dateSeparator}m{$dateSeparator}y");
     }
 
     /**
      * Covnert a DateTime to a string as HHII, where<br/>
      * - H = hour
      * - M = minuto
-     * @param  int|DateTime|null $dateTime      unix timestamp or DateTime
-     * @param  string            $dateSeparator
+     * @param  int|DateTime $dateTime      unix timestamp or DateTime
+     * @param  string       $dateSeparator
      * @return string
      */
     public static function HHII(
-        int|Datetime|null $dateTime,
+        int|Datetime $dateTime,
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
-        return $dateTime ? $dateTime->format("H{$dateSeparator}i") : 'HHII';
+        return $dateTime->format("H{$dateSeparator}i");
     }
 
     /**
@@ -188,18 +197,18 @@ class StandardDateFormat {
      * - H = hour
      * - M = minuto
      * - S = secondo
-     * @param  int|DateTime|null $dateTime      unix timestamp or DateTime
-     * @param  string            $dateSeparator
+     * @param  int|DateTime $dateTime      unix timestamp or DateTime
+     * @param  string       $dateSeparator
      * @return string
      */
     public static function HHIISS(
-        int|Datetime|null $dateTime,
+        int|Datetime $dateTime,
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
-        return $dateTime ? $dateTime->format("H{$dateSeparator}i{$dateSeparator}s") : 'HHIISS';
+        return $dateTime->format("H{$dateSeparator}i{$dateSeparator}s");
     }
 
     /**
@@ -207,18 +216,18 @@ class StandardDateFormat {
      *  - A = year
      *  - M = month
      *
-     * @param  int|DateTime|null $dateTime      unix timestamp or DateTime
-     * @param  string            $dateSeparator
+     * @param  int|DateTime $dateTime      unix timestamp or DateTime
+     * @param  string       $dateSeparator
      * @return string
      */
     public static function MMYY(
-        int|DateTime|null $dateTime,
+        int|DateTime $dateTime,
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
-        return !$dateTime ? 'MMYY' : $dateTime->format("m{$dateSeparator}y");
+        return $dateTime->format("m{$dateSeparator}y");
     }
 
     /**
@@ -227,22 +236,23 @@ class StandardDateFormat {
      *  - Y = year
      *  - D = day dell'year (1-365)
      *
-     * @param  int|DateTime|null $dateTime      unix timestamp or DateTime
-     * @param  string            $dateSeparator
+     * @param  int|DateTime $dateTime      unix timestamp or DateTime
+     * @param  string       $dateSeparator
      * @return string
      */
     public static function YYDDD(
-        int|DateTime|null $dateTime,
+        int|DateTime $dateTime,
         string $dateSeparator = ''
     ): string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
-        return Filler::fill(5, $dateTime ? (
+        return Filler::fill(
+            5,
             $dateTime->format('y')
             .$dateSeparator
             .Filler::fill(3, ((int)$dateTime->format('z')) + 1, Filler::FILL_LEFT, '0')
-        ) : 'YYDDD');
+        );
     }
 
     /**

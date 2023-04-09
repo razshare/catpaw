@@ -392,6 +392,6 @@ function readline(string $prompt = '', bool $silent = false):Promise {
             yield $output->write($hide);
         }
         $watcher = false;
-        return $data;
+        return preg_replace('/\n$/i', '', $data);
     });
 }
