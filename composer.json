@@ -28,6 +28,9 @@
         "build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./product.phar --build-config --build",
         "download:product": "[ ! -f product.phar ] && wget https://github.com/tncrazvan/catpaw-dev-tools/releases/download/0.4.175/product.phar || echo \"product.phar found.\n\"",
         "edit:extensions": "@download:product && php product.phar --extensions",
+        "post-autoload-dump": [
+            "@download:product"
+        ],
         "post-create-project-cmd": [
             "@download:product"
         ]
