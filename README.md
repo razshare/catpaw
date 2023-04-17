@@ -24,6 +24,8 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)                   | [Read](./docs/12.Stores.md)              |
 | ⚡ Dev Tools Binary         | ✅ [Download](https://github.com/tncrazvan/catpaw-dev-tools/releases)          | [catpaw-dev-tools](https://github.com/tncrazvan/catpaw-dev-tools)     | [Read](./docs/20.DevToolsBinary.md)      |
 | ⚡ Queues                   | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)                   | [Read](./docs/21.Queues.md)      |
+| 💡 Text                   | ✅           | [catpaw-text](https://github.com/tncrazvan/catpaw-text)                   | TODO      |
+| 💡 Schedule                   | ✅           | [catpaw-schedule](https://github.com/tncrazvan/catpaw-schedule)                   | TODO      |
 
 # Starters
 
