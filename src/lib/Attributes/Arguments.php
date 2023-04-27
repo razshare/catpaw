@@ -18,7 +18,7 @@ class Arguments implements AttributeInterface {
 
     private const PATTERN_PARAM = '/^\{[0-9]*\w+\}$/';
 
-    public function __construct(private string $template) {
+    public function __construct(private string $template = '') {
         self::init();
 
         if ($pieces = preg_split('/\s+/i', $this->template)) {
@@ -50,7 +50,7 @@ class Arguments implements AttributeInterface {
         /** @var array<string|int|bool|float> $value */
         /** @var false $context */
 
-        if (ReflectionTypeManager::unwrap($reflection)->getName() === 'array') {
+        if ($this->template && ReflectionTypeManager::unwrap($reflection)->getName() === 'array') {
             $value = self::$blueprints[$this->template];
         } else {
             $value = self::$cache;
