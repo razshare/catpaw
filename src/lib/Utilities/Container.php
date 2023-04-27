@@ -455,6 +455,10 @@ class Container {
         ...$defaultArguments
     ): Promise {
         return call(function() use ($className, $defaultArguments) {
+            if ('callable' === $className) {
+                return false;
+            }
+
             if (self::$singletons[$className] ?? false) {
                 return self::$singletons[$className];
             }

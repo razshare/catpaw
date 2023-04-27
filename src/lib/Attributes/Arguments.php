@@ -18,9 +18,12 @@ class Arguments implements AttributeInterface {
 
     private const PATTERN_PARAM = '/^\{[0-9]*\w+\}$/';
 
+    /** @var callable */
+    private mixed $act;
+
     public function __construct(private string $template = '') {
         self::init();
-
+        $this->act = fn (callable $action) => $action(...self::$blueprints[$this->template]);
         if ($pieces = preg_split('/\s+/i', $this->template)) {
             foreach ($pieces as $key => $value) {
                 if (preg_match(self::PATTERN_PARAM, $value)) {
@@ -52,6 +55,8 @@ class Arguments implements AttributeInterface {
 
         if ($this->template && ReflectionTypeManager::unwrap($reflection)->getName() === 'array') {
             $value = self::$blueprints[$this->template];
+        } else if ($this->template && ReflectionTypeManager::unwrap($reflection)->getName() === 'callable') {
+            $value = $this->act;
         } else {
             $value = self::$cache;
         }
