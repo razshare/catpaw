@@ -12,33 +12,43 @@ use ReflectionUnionType;
 #[Attribute]
 class Option implements AttributeInterface {
     use CoreAttributeDefinition;
-
+    
     private static bool $initialized = false;
     private static array $cache      = [];
-    private static array $options    = [];
+    /** @var array<int,string> */
+    private static array $options = [];
+    /** @var array<bool> */
+    private static array $exists = [];
 
     public function __construct(private string $name) {
+        if (!str_starts_with($name, '-')) {
+            echo "Options must start with `-`, received `$name`.".PHP_EOL;
+            die(22);
+        }
+        self::init();
+    }
+
+    public static function exists(string $option) {
+        self::init();
+        if (isset(self::$exists[$option])) {
+            return true;
+        }
+        return self::$exists[$option] = in_array($option, self::$options);
+    }
+
+    public static function init() {
         global $argv;
-        $index     = 0;
-        $prev_dash = false;
+        $index = 0;
         if (!self::$initialized) {
             self::$initialized = true;
             foreach ($argv as $i => $value) {
                 $value = trim($value);
-                if (0 === $i) {
-                } else if (str_starts_with($value, '-')) {
-                    self::$options[$index] = $value;
-                    $index++;
-                    $prev_dash = true;
-                } else if ($prev_dash) {
-                    $value = preg_replace('/"/', "\\\"", $value);
-                    self::$options[$index - 1] .= " \"$value\"";
-                    $prev_dash = false;
-                } else {
-                    self::$options[$index] = $value;
-                    $index++;
-                    $prev_dash = false;
+                if (0 === $i || !str_starts_with($value, '-')) {
+                    continue;
                 }
+                
+                self::$options[$index] = $value;
+                $index++;
             }
         }
     }

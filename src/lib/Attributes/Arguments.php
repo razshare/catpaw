@@ -15,12 +15,16 @@ class Arguments implements AttributeInterface {
     private static array $cache      = [];
 
     public function __construct() {
+        self::init();
+    }
+
+    public static function init() {
         global $argv;
 
         if (!self::$initialized) {
             self::$initialized = true;
             foreach ($argv as $i => $value) {
-                if (0 === $i || str_starts_with($value, '-')) {
+                if (0 === $i || Option::exists($value)) {
                     continue;
                 }
                 self::$cache[] = $value;
