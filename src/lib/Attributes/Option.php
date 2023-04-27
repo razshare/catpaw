@@ -5,9 +5,7 @@ use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Utilities\ReflectionTypeManager;
-use ReflectionIntersectionType;
 use ReflectionParameter;
-use ReflectionUnionType;
 
 #[Attribute]
 class Option implements AttributeInterface {
@@ -77,7 +75,7 @@ class Option implements AttributeInterface {
     }
 
     public function findValue(
-        string $type = 'string',
+        string $className = 'string',
         bool $allowsNullValue = false,
         bool $allowsDefaultValue = false,
         mixed $defaultValue = null,
@@ -89,7 +87,7 @@ class Option implements AttributeInterface {
 
         if (null !== $option) {
             if ('' === $option) {
-                $value = match ($type) {
+                $value = match ($className) {
                     "string" => $allowsBoolean || $allowsTrue?true:'',
                     "int"    => $allowsBoolean || $allowsTrue?true:1,
                     "float"  => $allowsBoolean || $allowsTrue?true:(float)1,
@@ -115,7 +113,7 @@ class Option implements AttributeInterface {
                     $value = substr($value, 1);
                 }
 
-                $value = match ($type) {
+                $value = match ($className) {
                     "string" => $value,
                     "int"    => (int)$value,
                     "float"  => (float)$value,
@@ -134,7 +132,7 @@ class Option implements AttributeInterface {
                 if ($allowsDefaultValue) {
                     $value = $defaultValue;
                 } else {
-                    $value = match ($type) {
+                    $value = match ($className) {
                         "string" => $allowsBoolean || $allowsFalse?false:(string)$option,
                         "int"    => $allowsBoolean || $allowsFalse?false:(int)$option,
                         "float"  => $allowsBoolean || $allowsFalse?false:(float)$option,
@@ -151,37 +149,16 @@ class Option implements AttributeInterface {
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context) {
         /** @var string|int|bool|float $value */
         /** @var false $context */
-        $type = ReflectionTypeManager::unwrap($reflection)?->getName() ?? 'bool';
-
-        $rtype = $reflection->getType();
-
-        $types = [$type];
-
-        if ($rtype instanceof ReflectionUnionType || $rtype instanceof ReflectionIntersectionType) {
-            $types = $rtype->getTypes();
-            foreach ($types as $i => $t) {
-                /**
-                 * @psalm-suppress PossiblyUndefinedMethod
-                 */
-                $types[] = $t->getName();
-            }
-        }
-
-        $allowsBoolean      = in_array('bool', $types);
-        $allowsTrue         = in_array('true', $types);
-        $allowsFalse        = in_array('false', $types);
-        $allowsNullValue    = $reflection->allowsNull();
-        $allowsDefaultValue = $reflection->isDefaultValueAvailable();
-        $defaultValue       = $allowsDefaultValue?$reflection->getDefaultValue():null;
+        $wrapper = ReflectionTypeManager::wrap($reflection);
 
         $value = $this->findValue(
-            type: $type,
-            allowsNullValue: $allowsNullValue,
-            allowsDefaultValue: $allowsDefaultValue,
-            defaultValue: $defaultValue,
-            allowsBoolean: $allowsBoolean,
-            allowsTrue: $allowsTrue,
-            allowsFalse: $allowsFalse,
+            className: $wrapper->getClassName(),
+            allowsNullValue: $wrapper->allowsNullValue(),
+            allowsDefaultValue: $wrapper->allowsDefaultValue(),
+            defaultValue: $wrapper->getDefaultValue(),
+            allowsBoolean: $wrapper->allowsBoolean(),
+            allowsTrue: $wrapper->allowsTrue(),
+            allowsFalse: $wrapper->allowsFalse(),
         );
     }
 }

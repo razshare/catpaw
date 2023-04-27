@@ -14,26 +14,10 @@ class Arguments implements AttributeInterface {
 
     private static bool $initialized = false;
     private static array $cache      = [];
-    private static array $blueprints = [];
 
-    private const PATTERN_PARAM = '/^\{[0-9]*\w+\}$/';
 
-    /** @var callable */
-    private mixed $act;
-
-    public function __construct(private string $template = '') {
+    public function __construct() {
         self::init();
-        $this->act = fn (callable $action) => $action(...self::$blueprints[$this->template]);
-        if ($pieces = preg_split('/\s+/i', $this->template)) {
-            foreach ($pieces as $key => $value) {
-                if (preg_match(self::PATTERN_PARAM, $value)) {
-                    self::$blueprints[$template][] = self::$cache[$key] ?? false;
-                } else if (str_starts_with($value, '{') && str_ends_with($value, '}')) {
-                    echo "Invalid placeholder `$value` for template `$template`".PHP_EOL;
-                    die(22);
-                }
-            }
-        }
     }
 
     public static function init() {
@@ -53,12 +37,29 @@ class Arguments implements AttributeInterface {
         /** @var array<string|int|bool|float> $value */
         /** @var false $context */
 
-        if ($this->template && ReflectionTypeManager::unwrap($reflection)->getName() === 'array') {
-            $value = self::$blueprints[$this->template];
-        } else if ($this->template && ReflectionTypeManager::unwrap($reflection)->getName() === 'callable') {
-            $value = $this->act;
-        } else {
-            $value = self::$cache;
+        $wrap = ReflectionTypeManager::wrap($reflection, 'array');
+
+        $className = $wrap->getClassName();
+
+        $value = match ($className) {
+            "bool"  => (bool)self::$cache,
+            "array" => self::$cache?self::$cache:(
+                $wrap->allowsFalse()?false:(
+                    $wrap->allowsBoolean()?false:[]
+                )
+            ),
+            "string" => self::$cache?join(' ', self::$cache):(
+                $wrap->allowsFalse()?false:(
+                    $wrap->allowsBoolean()?false:''
+                )
+            ),
+            default => -1,
+        };
+
+        if (-1 === $value) {
+            echo "Invalid type `$className` for arguments template.".PHP_EOL;
+            echo "Valid types are `string` or `array`.".PHP_EOL;
+            die(22);
         }
     }
 }
