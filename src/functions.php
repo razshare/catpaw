@@ -26,6 +26,8 @@ use Closure;
 use Error;
 use InvalidArgumentException;
 use Phar;
+use RecursiveArrayIterator;
+use RecursiveIteratorIterator;
 
 /**
  * Get current time in milliseconds.
@@ -423,4 +425,8 @@ function readline(
         }
         return $result;
     });
+}
+
+function flatten(array $array):array {
+    return iterator_to_array(new RecursiveIteratorIterator(new RecursiveArrayIterator($array)), false);
 }

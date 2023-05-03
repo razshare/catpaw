@@ -17,13 +17,32 @@ class Option implements AttributeInterface {
     private static array $options = [];
     /** @var array<bool> */
     private static array $exists = [];
+    /** @var array<string,\CatPaw\Attributes\Interfaces\OptionDocumentation> */
+    private static array $linuxManual = [];
 
-    public function __construct(private string $name) {
+    public function __construct(
+        private string $name,
+        private string $example = '',
+        private string $description = '',
+    ) {
         if (!str_starts_with($name, '-')) {
             echo "Options must start with `-`, received `$name`.".PHP_EOL;
             die(22);
         }
+        self::$linuxManual[$name] = (object)[
+            "example"     => $example,
+            "description" => $description,
+        ];
         self::init();
+    }
+
+    public static function renderLinuxManual():string {
+        $result = '';
+        foreach (self::$linuxManual as $option => $guide) {
+            // $guide->
+        }
+
+        return $result;
     }
 
     public static function exists(string $option) {
