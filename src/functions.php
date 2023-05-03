@@ -427,6 +427,15 @@ function readline(
     });
 }
 
-function flatten(array $array):array {
-    return iterator_to_array(new RecursiveIteratorIterator(new RecursiveArrayIterator($array)), false);
+/**
+ * @param  array $array
+ * @param  bool  $completely if true, flatten the array completely
+ * @return array
+ */
+function flatten(array $array, bool $completely = false):array {
+    if ($completely) {
+        return iterator_to_array(new RecursiveIteratorIterator(new RecursiveArrayIterator($array)), false);
+    }
+
+    return array_merge(...array_values($array));
 }
