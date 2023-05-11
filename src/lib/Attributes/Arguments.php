@@ -3,6 +3,7 @@ namespace CatPaw\Attributes;
 
 use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
+
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Utilities\ReflectionTypeManager;
 use ReflectionParameter;

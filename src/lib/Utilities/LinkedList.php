@@ -5,15 +5,14 @@ use Closure;
 use SplDoublyLinkedList;
 
 /**
- * @template TValue
+ * @template T
  * @package CatPaw\Utilities
  */
-/** @psalm-suppress MissingTemplateParam */
 class LinkedList extends SplDoublyLinkedList {
     private function __construct() {
     }
 
-    /** @return LinkedList<TValue>  */
+    /** @return LinkedList<T>  */
     public static function create():self {
         return new self();
     }
