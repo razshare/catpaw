@@ -3,11 +3,9 @@ namespace CatPaw;
 
 use function Amp\ByteStream\buffer;
 
-use function Amp\call;
-use Amp\Deferred;
-
-use function Amp\delay;
+use Amp\DeferredFuture;
 use function Amp\File\createDirectoryRecursively;
+
 use function Amp\File\deleteDirectory;
 use function Amp\File\deleteFile;
 use function Amp\File\exists;
@@ -16,10 +14,10 @@ use function Amp\File\isDirectory;
 use function Amp\File\isFile;
 use function Amp\File\listFiles;
 use function Amp\File\read;
-
 use function Amp\File\write;
+
+use Amp\Future;
 use Amp\Process\Process;
-use Amp\Promise;
 use CatPaw\Utilities\AsciiTable;
 use CatPaw\Utilities\Stream;
 use Closure;
@@ -28,6 +26,7 @@ use InvalidArgumentException;
 use Phar;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
+use Revolt\EventLoop;
 
 /**
  * Get current time in milliseconds.
@@ -40,35 +39,33 @@ function milliseconds():float {
 /**
  * List all files (not directories) inside a directory.
  * Dot entries are not included in the resulting array (i.e. "." and "..").
- * @param  string                 $path
- * @param  array|false            $ignore
- * @return Promise<array<string>>
+ * @param  string        $path
+ * @param  array|false   $ignore
+ * @return array<string>
  */
-function listFilesRecursively(string $path, array|false $ignore = false):Promise {
+function listFilesRecursively(string $path, array|false $ignore = false):array {
     if (!\str_ends_with($path, '/')) {
         $path .= '/';
     }
-    return call(function() use ($path, $ignore) {
-        $filenames = yield listFiles($path);
-        $files     = [];
-        foreach ($filenames as $filename) {
-            if ($ignore && in_array($filename, $ignore)) {
-                continue;
-            }
-
-            $filename = "$path$filename";
-            $isDir    = yield isDirectory($filename);
-            if ($isDir) {
-                foreach (yield listFilesRecursively($filename) as $subItem) {
-                    $files[] = $subItem;
-                }
-                continue;
-            }
-
-            $files[] = $filename;
+    $filenames = listFiles($path);
+    $files     = [];
+    foreach ($filenames as $filename) {
+        if ($ignore && in_array($filename, $ignore)) {
+            continue;
         }
-        return $files;
-    });
+
+        $filename = "$path$filename";
+        $isDir    = isDirectory($filename);
+        if ($isDir) {
+            foreach (listFilesRecursively($filename) as $subItem) {
+                $files[] = $subItem;
+            }
+            continue;
+        }
+
+        $files[] = $filename;
+    }
+    return $files;
 }
 
 /**
@@ -86,6 +83,8 @@ function isAssoc(array $arr) {
 
 /**
  * Generate a universally unique identifier
+ * 
+ * *Caution*: this function does not generate cryptographically secure values, and must not be used for cryptographic purposes, or purposes that require returned values to be unguessable.
  * @return string the uuid
  */
 function uuid(): string {
@@ -122,9 +121,9 @@ function uuid(): string {
  */
 function stream(
     mixed $resource,
-    ?int $chunkSize = null,
+    int $chunkSize = -1,
 ):Stream {
-    return Stream::of($resource, $chunkSize);
+    return Stream::of($resource, $chunkSize < 0?null:$chunkSize);
 }
 
 /**
@@ -132,56 +131,45 @@ function stream(
  * @param  string                   $path   name of the directory.present.
  * @param  array|false              $ignore a map of file/directory names to ignore.
  * @throws InvalidArgumentException if the specified directory name is not actually a directory.
- * @return Promise<void>
+ * @return void
  */
-function deleteDirectoryRecursively(string $path, array|false $ignore = false):Promise {
-    return call(function() use ($path, $ignore) {
-        if (!yield isDirectory($path)) {
-            throw new InvalidArgumentException("\"$path\" is not a valid directory.");
-        }
+function deleteDirectoryRecursively(string $path, array|false $ignore = false):void {
+    if (!isDirectory($path)) {
+        throw new InvalidArgumentException("\"$path\" is not a valid directory.");
+    }
 
-        if (!str_ends_with($path, '/')) {
-            $path .= '/';
-        }
+    if (!str_ends_with($path, '/')) {
+        $path .= '/';
+    }
         
-        $files = yield listFiles($path);
+    $files = listFiles($path);
         
-        foreach ($files as $filename) {
-            if (false !== $ignore && in_array($filename, $ignore)) {
-                continue;
-            }
-
-            $target = "$path$filename";
-
-            if (yield isFile($target)) {
-                yield deleteFile($target);
-                continue;
-            }
-
-            yield deleteDirectoryRecursively($target);
+    foreach ($files as $filename) {
+        if (false !== $ignore && in_array($filename, $ignore)) {
+            continue;
         }
 
-        yield deleteDirectory($path);
-    });
+        $target = "$path$filename";
+
+        if (isFile($target)) {
+            deleteFile($target);
+            continue;
+        }
+
+        deleteDirectoryRecursively($target);
+    }
+
+    deleteDirectory($path);
 }
 
 /**
  * Copy a file.
- * @param  string        $from
- * @param  string        $to
- * @return Promise<void>
+ * @param  string $from
+ * @param  string $to
+ * @return void
  */
-function copyFile(string $from, string $to):Promise {
-    return call(function() use ($from, $to) {
-        yield write($to, yield read($from));
-        // $source      = stream(fopen($from, 'r'));
-        // $destination = stream(fopen($to, 'w+'));
-        // while ($chunk = yield $source->read()) {
-        //     yield $destination->write($chunk);
-        // }
-        // yield $destination->close();
-        // yield $source->close();
-    });
+function copyFile(string $from, string $to):void {
+    write($to, read($from));
 }
 
 /**
@@ -189,85 +177,90 @@ function copyFile(string $from, string $to):Promise {
  * @param  string      $from
  * @param  string      $to
  * @param  array|false $ignore a map of file/directory names to ignore.
- * @return Promise
+ * @return void
  */
-function copyDirectoryRecursively(string $from, string $to, array|false $ignore = false):Promise {
-    return call(function() use ($from, $to, $ignore) {
-        if (!str_ends_with($from, '/')) {
-            $from .= '/';
+function copyDirectoryRecursively(string $from, string $to, array|false $ignore = false):void {
+    if (!str_ends_with($from, '/')) {
+        $from .= '/';
+    }
+
+    if (!str_ends_with($to, '/')) {
+        $to .= '/';
+    }
+
+    if (!exists($to)) {
+        createDirectoryRecursively($to);
+    }
+
+    foreach (listFiles($from) as $filename) {
+        if (false !== $ignore && in_array($filename, $ignore)) {
+            continue;
         }
 
-        if (!str_ends_with($to, '/')) {
-            $to .= '/';
+        $source      = "$from$filename";
+        $destination = "$to$filename";
+
+        if (isFile($source)) {
+            copyFile($source, $destination);
+            continue;
         }
 
-        if (!yield exists($to)) {
-            yield createDirectoryRecursively($to);
-        }
-
-        foreach (yield listFiles($from) as $filename) {
-            if (false !== $ignore && in_array($filename, $ignore)) {
-                continue;
-            }
-
-            $source      = "$from$filename";
-            $destination = "$to$filename";
-
-            if (yield isFile($source)) {
-                yield copyFile($source, $destination);
-                continue;
-            }
-
-            yield copyDirectoryRecursively($source, $destination);
-        }
-    });
+        copyDirectoryRecursively($source, $destination);
+    }
 }
 
 /**
  * Get the filenames within a directory recursively.
- * @param  string                              $path   startup directory.
- * @param  array|false                         $ignore a map of file/directory names to ignore.
- * @return Promise<array<array<string,mixed>>>
+ * @param  string                     $path   startup directory.
+ * @param  array|false                $ignore a map of file/directory names to ignore.
+ * @return array<array<string,mixed>>
  */
-function listFilesInfoRecursively(string $path, array|false $ignore = false):Promise {
-    return call(function() use ($path, $ignore) {
-        $list = [];
-        if (yield isDirectory($path)) {
-            if (!str_ends_with($path, '/')) {
-                $path .= '/';
-            }
-            foreach (yield listFiles($path) as $i => $filename) {
-                if (false !== $ignore && \in_array($filename, $ignore)) {
-                    continue;
-                }              
-                $list = [ ...$list, ...yield listFilesInfoRecursively("$path$filename")];
-            }
-        } else {
-            $list = [
-                ...$list,
-                yield getStatus($path)
-            ];
+function listFilesInfoRecursively(string $path, array|false $ignore = false):array {
+    $list = [];
+    if (isDirectory($path)) {
+        if (!str_ends_with($path, '/')) {
+            $path .= '/';
         }
+        foreach (listFiles($path) as $i => $filename) {
+            if (false !== $ignore && \in_array($filename, $ignore)) {
+                continue;
+            }              
+            $list = [ ...$list, ...listFilesInfoRecursively("$path$filename")];
+        }
+    } else {
+        $list = [
+            ...$list,
+            getStatus($path)
+        ];
+    }
 
-        return $list;
-    });
+    return $list;
 }
 
+
+
+
 /**
- * Create a process, run it, wait for it to end and get its status code.
- * @return Promise<string> the output data of the process.
+ * Create a process, run it, wait for it to end and get the output.
+ * @param  string $command
+ * @param  string $cwd
+ * @param  array  $env
+ * @param  array  $options
+ * @return string the output data of the process.
  */
-function execute(string $command, ?string $cwd = null, array $env = [], array $options = []):Promise {
-    return call(function() use ($command, $cwd, $env, $options) {
-        $process = new Process($command, $cwd, $env, $options);
-        yield $process->start();
-        $pout   = $process->getStdout();
-        $perr   = $process->getStderr();
-        $result = yield buffer($pout);
-        $result .= yield buffer($perr);
-        yield $process->join();
-        return $result;
-    });
+function execute(
+    string $command,
+    string $cwd = '',
+    array $env = [],
+    array $options = []
+):string {
+    $process = Process::start($command, $cwd?$cwd:null, $env, $options);
+    $pout    = $process->getStdout();
+    $perr    = $process->getStderr();
+    $result  = buffer($pout);
+    $result .= buffer($perr);
+    $process->join();
+    return $result;
 }
 
 
@@ -275,14 +268,19 @@ function execute(string $command, ?string $cwd = null, array $env = [], array $o
  * Print an array as an ascii table (recursively).
  * @param array $input       the input array.
  * @param bool  $lineCounter if true a number will be visible for each line inside the ascii table.
- * @param  ?callable(AsciiTable $table, int $lvl):void $intercept   intercept the main table and each subtable.<br />
+ * @param  false|callable(AsciiTable $table, int $lvl):void $intercept   intercept the main table and each subtable.<br />
  *                                   This closure will be passed 2 parameters: the AsciiTable and the current depth level.
  * @param  int    $lvl the depth level will start counting from this value on.
  * @return string the resulting ascii table.
  */
-function tableFromArray(array $input, bool $lineCounter = false, ?callable $intercept = null, int $lvl = 0): string {
+function tableFromArray(
+    array $input,
+    bool $lineCounter = false,
+    false|callable $intercept = false,
+    int $lvl = 0
+): string {
     $table = AsciiTable::create();
-    if (null !== $intercept) {
+    if ($intercept) {
         $intercept($table, $lvl);
     }
     $table->add("Key", "Value");
@@ -313,10 +311,10 @@ function isPhar() {
 
 /**
  * Request an input from the terminal without feeding back to the display whatever it's been typed.
- * @param  string      $prompt message to display along with the input request.
- * @return string|null
+ * @param  string $prompt message to display along with the input request.
+ * @return string
  */
-function readLineSilent(string $prompt): ?string {
+function readLineSilent(string $prompt): string {
     if (preg_match('/^win/i', PHP_OS)) {
         $vbscript = sys_get_temp_dir().'prompt_password.vbs';
         file_put_contents(
@@ -332,7 +330,7 @@ function readLineSilent(string $prompt): ?string {
         $command = "/usr/bin/env bash -c 'echo OK'";
         if (rtrim(shell_exec($command)) !== 'OK') {
             trigger_error("Can't invoke bash");
-            return null;
+            return '';
         }
         $command = "/usr/bin/env bash -c 'read -s -p \""
             .addslashes($prompt)
@@ -345,10 +343,10 @@ function readLineSilent(string $prompt): ?string {
 
 /**
  * Resolve on the next event loop iteration.
- * @return Deferred
+ * @return Future<void>
  */
-function deferred():Deferred {
-    return new Deferred;
+function deferred():Future {
+    return (new DeferredFuture)->getFuture()->complete();
 }
 
 
@@ -367,15 +365,15 @@ function deferred():Deferred {
  * ```php
  * readline("Pick a natural number between 1 and 3: ", fn($value)=>$value === '2'?true:"$value is not a natural number between 1 and 3, try again.")
  * ```
- * @param  bool            $silent if true, the user input will be hidden.
+ * @param  bool   $silent if true, the user input will be hidden.
  * @throws Error
- * @return Promise<string>
+ * @return string
  */
 function readline(
     string $prompt = '',
-    callable|false $validate = false,
+    false|callable $validate = false,
     bool $silent = false,
-):Promise {
+):string {
     static $input  = false;
     static $output = false;
 
@@ -387,44 +385,41 @@ function readline(
         $output = stream(STDOUT);
     }
 
-    return call(function() use ($prompt, $validate, $silent, $input, $output) {
-        $hide    = "\033[0K\r";
-        $watcher = $silent;
-        yield $output->write($prompt);
-        if ($silent) {
-            call(function() use ($prompt, $output, $hide, &$watcher) {
-                while ($watcher) {
-                    yield $output->write($prompt);
-                    yield delay(1);
-                    if ($watcher) {
-                        yield $output->write($hide);
-                    }
-                }
-            });
-        }
-        /** @var string */
-        $data = yield $input->read();
-        if ($silent) {
-            yield $output->write($hide);
-        }
-        $watcher = false;
-        $result  = preg_replace('/\n$/i', '', $data);
-
-        if ($validate) {
-            $validation = $validate($result);
-            if (is_string($validation)) {
-                yield $output->write($validation.PHP_EOL);
-                return readline($prompt, $validate, $silent);
-            } else if (is_bool($validation)) {
-                if (!$validation) {
-                    return readline($prompt, $validate, $silent);
-                }
-            } else {
-                throw new Error("The validation function must return either a boolean or a string.");
+    $hide      = "\033[0K\r";
+    $watcher   = $silent;
+    $watcherID = false;
+    $output->write($prompt);
+    if ($silent) {
+        $watcherID = EventLoop::repeat(0.001, function() use ($prompt, $output, $hide, &$watcher) {
+            $output->write($prompt);
+            if ($watcher) {
+                $output->write($hide);
             }
+        });
+    }
+    /** @var string */
+    $data = $input->read();
+    if ($silent) {
+        $output->write($hide);
+    }
+    $watcher = false;
+    EventLoop::cancel($watcherID);
+    $result = preg_replace('/\n$/i', '', $data);
+
+    if ($validate) {
+        $validation = $validate($result);
+        if (is_string($validation)) {
+            $output->write($validation.PHP_EOL);
+            return readline($prompt, $validate, $silent);
+        } else if (is_bool($validation)) {
+            if (!$validation) {
+                return readline($prompt, $validate, $silent);
+            }
+        } else {
+            throw new Error("The validation function must return either a boolean or a string.");
         }
-        return $result;
-    });
+    }
+    return $result;
 }
 
 /**

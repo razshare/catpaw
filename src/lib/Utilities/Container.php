@@ -2,13 +2,11 @@
 
 namespace CatPaw\Utilities;
 
-use function Amp\call;
-use Amp\Promise;
-
 use Attribute;
 use BadFunctionCallException;
 use CatPaw\Attributes\{AttributeResolver, Entry, Service, Singleton};
 use CatPaw\Bootstrap;
+
 use function CatPaw\isPhar;
 use Closure;
 use Exception;
@@ -100,24 +98,22 @@ class Container {
      * @param  object                  $instance
      * @param  array<ReflectionMethod> $methods  methods of the instance
      * @throws ReflectionException
-     * @return Promise
+     * @return void
      */
-    public static function entry(object $instance, array $methods):Promise {
-        return call(function() use ($methods, $instance) {
-            /** @var ReflectionMethod $method */
-            foreach ($methods as $method) {
-                $entry = yield Entry::findByMethod($method);
-                if ($entry) {
-                    $args = yield Container::dependencies($method);
-                    if ($method->isStatic()) {
-                        yield \Amp\call(fn () => $method->invoke(null, ...$args));
-                    } else {
-                        yield \Amp\call(fn () => $method->invoke($instance, ...$args));
-                    }
-                    break;
+    public static function entry(object $instance, array $methods):void {
+        /** @var ReflectionMethod $method */
+        foreach ($methods as $method) {
+            $entry = Entry::findByMethod($method);
+            if ($entry) {
+                $args = Container::dependencies($method);
+                if ($method->isStatic()) {
+                    $method->invoke(null, ...$args);
+                } else {
+                    $method->invoke($instance, ...$args);
                 }
+                break;
             }
-        });
+        }
     }
 
 
@@ -201,98 +197,94 @@ class Container {
      * @param  ReflectionFunction|ReflectionMethod $reflection       the function/method to scan.
      * @param  false|array                         $options
      * @param  mixed                               $defaultArguments
-     * @return Promise
+     * @return array
      */
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
         false|array $options = false,
         ...$defaultArguments
-    ): Promise {
-        return call(function() use ($reflection, $options, $defaultArguments) {
-            $context = false;
-            if ($options) {
-                [
-                    "id"      => [$key1, $key2],
-                    "force"   => $force,
-                    "context" => $context,
-                ] = $options;
+    ):array {
+        $context = false;
+        if ($options) {
+            [
+                "id"      => [$key1, $key2],
+                "force"   => $force,
+                "context" => $context,
+            ] = $options;
 
-                if (!isset(self::$cache[$key1][$key2])) {
-                    self::cacheInMethodOrFunctionDependencies($reflection, $key1, $key2, ...$defaultArguments);
-                }
-                $cache = &self::$cache[$key1][$key2];
-            } else {
-                $fileName     = $reflection->getFileName();
-                $functionName = $reflection->getName();
-                if ($reflection instanceof ReflectionMethod) {
-                    $class        = $reflection->getDeclaringClass();
-                    $functionName = $class->getName().':'.$functionName;
-                }
-                if (!isset(self::$cache[$fileName][$functionName])) {
-                    self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName, ...$defaultArguments);
-                }
-                $cache = &self::$cache[$fileName][$functionName];
+            if (!isset(self::$cache[$key1][$key2])) {
+                self::cacheInMethodOrFunctionDependencies($reflection, $key1, $key2, ...$defaultArguments);
+            }
+            $cache = &self::$cache[$key1][$key2];
+        } else {
+            $fileName     = $reflection->getFileName();
+            $functionName = $reflection->getName();
+            if ($reflection instanceof ReflectionMethod) {
+                $class        = $reflection->getDeclaringClass();
+                $functionName = $class->getName().':'.$functionName;
+            }
+            if (!isset(self::$cache[$fileName][$functionName])) {
+                self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName, ...$defaultArguments);
+            }
+            $cache = &self::$cache[$fileName][$functionName];
+        }
+
+        $refparams  = $cache[self::REFLECTION_PARAMETERS];
+        $len        = $cache[self::PARAMETERS_LEN];
+        $parameters = array_fill(0, $len, false);
+
+        for ($i = 0; $i < $len; $i++) {
+            $parameters[$i] = $cache[self::PARAMETERS_INIT_VALUE][$i];
+            $cname          = $cache[self::PARAMETERS_CNAMES][$i];
+
+            if ($options && isset($force[$cname])) {
+                $parameters[$i] = $force[$cname];
+                continue;
             }
 
-            $refparams  = $cache[self::REFLECTION_PARAMETERS];
-            $len        = $cache[self::PARAMETERS_LEN];
-            $parameters = array_fill(0, $len, false);
+            if (
+                "string"  !== $cname
+                & "int"   !== $cname
+                & "float" !== $cname
+                & "bool"  !== $cname
+                & "array" !== $cname
+                & ""      !== $cname
+            ) {
+                $parameters[$i] = Container::create($cname);
+            }
 
-            for ($i = 0; $i < $len; $i++) {
-                $parameters[$i] = $cache[self::PARAMETERS_INIT_VALUE][$i];
-                $cname          = $cache[self::PARAMETERS_CNAMES][$i];
+            $alen = $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i];
 
-                if ($options && isset($force[$cname])) {
-                    $parameters[$i] = $force[$cname];
+            for ($j = 0; $j < $alen; $j++) {
+                /** @var Closure $closure */
+                $findByParameter   = $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i][$j];
+                $attributeInstance = $findByParameter($refparams[$i]);
+                if (!$attributeInstance) {
                     continue;
                 }
-
-                if (
-                    "string"  !== $cname
-                    & "int"   !== $cname
-                    & "float" !== $cname
-                    & "bool"  !== $cname
-                    & "array" !== $cname
-                    & ""      !== $cname
-                ) {
-                    $parameters[$i] = yield Container::create($cname);
-                }
-
-                $alen = $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i];
-
-                for ($j = 0; $j < $alen; $j++) {
-                    /** @var Closure $closure */
-                    $findByParameter   = $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i][$j];
-                    $attributeInstance = yield $findByParameter($refparams[$i]);
-                    if (!$attributeInstance) {
-                        continue;
-                    }
-                    yield call(function() use ($attributeInstance, &$refparams, &$parameters, &$context, $i) {
-                        return $attributeInstance->onParameterMount($refparams[$i], $parameters[$i], $context);
-                    });
-                    $attributeHasStorage = $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i][$j];
-                    if ($attributeHasStorage) {
-                        $parameters[$i] = &$parameters[$i]->storage();
-                    }
+                $attributeInstance->onParameterMount($refparams[$i], $parameters[$i], $context);
+                $attributeHasStorage = $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i][$j];
+                if ($attributeHasStorage) {
+                    $parameters[$i] = &$parameters[$i]->storage();
                 }
             }
+        }
 
-            return $parameters;
-        });
+        return $parameters;
     }
 
     /**
      * Loads singletons from some locations (only directories are allowed for now).
-     * @param  array<string>          $locations directories containing your singletons.
-     * @param  bool                   $append    if true, the found singletons will be appended, otherwise all the other singletons will 
-     *                                           be cleared before scanning.
+     * @param  array<string> $locations directories containing your singletons.
+     * @param  bool          $append    if true, the found singletons will be appended, otherwise all the other singletons will 
+     *                                  be cleared before scanning.
      * @throws Exception
-     * @return Promise<array<string>> list of directories examined.
+     * @return array<string> list of directories examined.
      */
     public static function load(
         array $locations,
         bool $append = false,
-    ):Promise {
+    ):array {
         if (!$append) {
             Container::clearAll();
         }
@@ -301,55 +293,54 @@ class Container {
             Container::set(LoggerInterface::class, LoggerFactory::create());
         }
         
-        return call(function() use ($locations) {
-            $scanned = [];
-            $isPhar  = isPhar();
-            foreach ($locations as $location) {
-                if ('' === \trim($location)) {
-                    continue;
-                }
+        $scanned = [];
+        $isPhar  = isPhar();
+        foreach ($locations as $location) {
+            if ('' === \trim($location)) {
+                continue;
+            }
 
-                if ($isPhar) {
-                    $location = \Phar::running()."/$location";
-                }
+            if ($isPhar) {
+                $location = \Phar::running()."/$location";
+            }
 
-                try {
-                    $directory = new RecursiveDirectoryIterator($location);
-                } catch (Throwable $e) {
-                    echo("Path \"$location\" is not a valid directory to load.".\PHP_EOL);
-                    yield Bootstrap::kill();
-                }
+            try {
+                $directory = new RecursiveDirectoryIterator($location);
+            } catch (Throwable) {
+                echo("Path \"$location\" is not a valid directory to load.".\PHP_EOL);
+                /** @psalm-suppress UndefinedClass */
+                Bootstrap::kill();
+            }
                 
-                /**
-                 * @psalm-suppress PossiblyUndefinedVariable
-                 */
-                $iterator = new RecursiveIteratorIterator($directory);
-                $regex    = new RegexIterator(
-                    $iterator,
-                    '/^.+\.php$/i',
-                    RecursiveRegexIterator::GET_MATCH
-                );
+            /**
+             * @psalm-suppress PossiblyUndefinedVariable
+             */
+            $iterator = new RecursiveIteratorIterator($directory);
+            $regex    = new RegexIterator(
+                $iterator,
+                '/^.+\.php$/i',
+                RecursiveRegexIterator::GET_MATCH
+            );
 
-                for ($regex->rewind(); $regex->valid() ; $regex->next()) {
-                    /** @var array<string> $files */
-                    $files = $regex->current();
-                    foreach ($files as $filename) {
-                        require_once($filename);
-                        $scanned[] = $filename;
-                    }
+            for ($regex->rewind(); $regex->valid() ; $regex->next()) {
+                /** @var array<string> $files */
+                $files = $regex->current();
+                foreach ($files as $filename) {
+                    require_once($filename);
+                    $scanned[] = $filename;
                 }
             }
+        }
 
 
-            foreach (get_declared_classes() as $classname) {
-                if (!yield Singleton::findByClass(new ReflectionClass($classname))) {
-                    continue;
-                }
-                yield Container::create($classname);
+        foreach (get_declared_classes() as $classname) {
+            if (!Singleton::findByClass(new ReflectionClass($classname))) {
+                continue;
             }
+            Container::create($classname);
+        }
             
-            return $scanned;
-        });
+        return $scanned;
     }
 
     /**
@@ -357,37 +348,35 @@ class Container {
      * 
      * Will not execute the function itself and parameter attributes will not be instantiated at all.
      * @param  Closure|ReflectionFunction $function
-     * @return Promise<void>
+     * @return void
      */
-    public static function touch(Closure|ReflectionFunction $function):Promise {
-        return call(function() use ($function) {
-            if ($function instanceof Closure) {
-                $reflection = new ReflectionFunction($function);
-            } else {
-                $reflection = $function;
-                $function   = $reflection->getClosure();
-            }
+    public static function touch(Closure|ReflectionFunction $function) {
+        if ($function instanceof Closure) {
+            $reflection = new ReflectionFunction($function);
+        } else {
+            $reflection = $function;
+            $function   = $reflection->getClosure();
+        }
 
-            if (!$function) {
-                throw new BadFunctionCallException("Could not touch function \"{$reflection->getName()}\" inside container.");
-            }
+        // if (!$function) {
+            //     throw new BadFunctionCallException("Could not touch function \"{$reflection->getName()}\" inside container.");
+        // }
 
-            foreach ($reflection->getAttributes() as $attribute) {
-                $attributeArguments = $attribute->getArguments();
-                /** @var class-string */
-                $className = $attribute->getName();
-                $klass     = new ReflectionClass($className);
-                /**
-                 * @psalm-suppress ArgumentTypeCoercion
-                 */
-                $entry  = self::findEntryMethod($klass);
-                $object = $klass->newInstance(...$attributeArguments);
-                if ($entry) {
-                    $arguments = yield Container::dependencies($entry);
-                    yield call(fn ():mixed => $entry->invoke($object, ...$arguments));
-                }
+        foreach ($reflection->getAttributes() as $attribute) {
+            $attributeArguments = $attribute->getArguments();
+            /** @var class-string */
+            $className = $attribute->getName();
+            $klass     = new ReflectionClass($className);
+            /**
+             * @psalm-suppress ArgumentTypeCoercion
+             */
+            $entry  = self::findEntryMethod($klass);
+            $object = $klass->newInstance(...$attributeArguments);
+            if ($entry) {
+                $arguments = Container::dependencies($entry);
+                $entry->invoke($object, ...$arguments);
             }
-        });
+        }
     }
 
     /**
@@ -396,31 +385,29 @@ class Container {
      * @param  bool                       $touch    if true, Container::touch will be 
      *                                              called automatically on the function
      * @throws BadFunctionCallException
-     * @return Promise<void>
+     * @return void
      */
     public static function run(
         Closure|ReflectionFunction $function,
         bool $touch = true,
-    ): Promise {
-        return call(function() use ($function, $touch) {
-            if ($function instanceof Closure) {
-                $reflection = new ReflectionFunction($function);
-            } else {
-                $reflection = $function;
-                $function   = $reflection->getClosure();
-            }
+    ):void {
+        if ($function instanceof Closure) {
+            $reflection = new ReflectionFunction($function);
+        } else {
+            $reflection = $function;
+            $function   = $reflection->getClosure();
+        }
 
-            if ($touch) {
-                yield self::touch($function);
-            }
+        if ($touch) {
+            self::touch($function);
+        }
             
-            if (!$function) {
-                throw new BadFunctionCallException("Could not execute function \"{$reflection->getName()}\" inside container.");
-            }
+        // if (!$function) {
+            //     throw new BadFunctionCallException("Could not execute function \"{$reflection->getName()}\" inside container.");
+        // }
 
-            $arguments = yield Container::dependencies($reflection);
-            yield call($function, ...$arguments);
-        });
+        $arguments = Container::dependencies($reflection);
+        $function(...$arguments);
     }
 
     /**
@@ -446,56 +433,53 @@ class Container {
     /**
      * Make a new instance of the given class.<br />
      * This method will take care of dependency injections.
-     * @param  class-string     $className           full name of the class.
-     * @param  mixed            ...$defaultArguments
-     * @return Promise<?object>
+     * @param  string       $className           full name of the class.
+     * @param  mixed        ...$defaultArguments
+     * @return false|object
      */
     public static function create(
         string $className,
         ...$defaultArguments
-    ): Promise {
-        return call(function() use ($className, $defaultArguments) {
-            if ('callable' === $className) {
-                return false;
+    ) {
+        if ('callable' === $className) {
+            return false;
+        }
+
+        if (self::$singletons[$className] ?? false) {
+            return self::$singletons[$className];
+        }
+
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $reflection = new ReflectionClass($className);
+
+        if (
+            $reflection->isInterface()
+            || AttributeResolver::issetClassAttribute($reflection, Attribute::class)
+            || count($reflection->getAttributes()) === 0
+        ) {
+            return false;
+        }
+
+        $service   = Service::findByClass($reflection);
+        $singleton = Singleton::findByClass($reflection);
+
+        $constructor = $reflection->getConstructor() ?? false;
+        $arguments   = [];
+        if ($constructor) {
+            $arguments = self::dependencies($constructor, false, ...$defaultArguments);
+        }
+
+        $instance = new $className(...$arguments);
+
+        if ($singleton || $service) {
+            self::$singletons[$className] = $instance;
+            if ($service) {
+                $service->onClassMount($reflection, $instance, false);
             }
-
-            if (self::$singletons[$className] ?? false) {
-                return self::$singletons[$className];
-            }
-
-            $reflection = new ReflectionClass($className);
-
-            if (
-                $reflection->isInterface()
-                || AttributeResolver::issetClassAttribute($reflection, Attribute::class)
-                || count($reflection->getAttributes()) === 0
-            ) {
-                return false;
-            }
-
-            $service   = yield Service::findByClass($reflection);
-            $singleton = yield Singleton::findByClass($reflection);
-
-            $constructor = $reflection->getConstructor() ?? false;
-            $arguments   = [];
-            if ($constructor) {
-                $arguments = yield self::dependencies($constructor, false, ...$defaultArguments);
-            }
-
-            $instance = new $className(...$arguments);
-
-            if ($singleton || $service) {
-                self::$singletons[$className] = $instance;
-                if ($service) {
-                    yield call(function() use ($reflection, &$instance, $service) {
-                        return $service->onClassMount($reflection, $instance, false);
-                    });
-                }
-            }
+        }
             
-            yield self::entry($instance, $reflection->getMethods());
+        self::entry($instance, $reflection->getMethods());
             
-            return $instance;
-        });
+        return $instance;
     }
 }

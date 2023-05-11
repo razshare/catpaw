@@ -2,21 +2,25 @@
 
 namespace CatPaw;
 
-use Amp\ByteStream\{ResourceInputStream, ResourceOutputStream};
+use function Amp\async;
+use Amp\ByteStream\{ReadableResourceStream, ResourceInputStream, ResourceOutputStream, WritableResourceStream};
+
+use function Amp\delay;
 use function Amp\File\{createDefaultDriver, exists};
 use Amp\File\{File, Filesystem};
+
+use function Amp\Future\await;
 use Amp\Process\Process;
-use function Amp\{call, delay};
 use Amp\{Loop, Promise};
 use CatPaw\Attributes\Entry;
 use CatPaw\Utilities\{Container, LoggerFactory};
 use Exception;
-use Generator;
 use Psr\Log\LoggerInterface;
 
 use ReflectionException;
 
 use ReflectionFunction;
+use Revolt\EventLoop;
 use Throwable;
 
 class Bootstrap {
@@ -28,52 +32,50 @@ class Bootstrap {
      * @param  string              $filename
      * @param  bool                $info
      * @throws ReflectionException
-     * @return Promise<void>
+     * @return void
      */
     public static function init(
         string $filename,
         array $libraries = [],
         bool $info = false,
-    ): Promise {
-        return call(function() use ($filename, $libraries, $info) {
-            if (isPhar()) {
-                $filename = \Phar::running()."/$filename";
+    ) {
+        if (isPhar()) {
+            $filename = \Phar::running()."/$filename";
+        }
+        if (exists($filename)) {
+            /**
+             * @psalm-suppress UnresolvableInclude
+             */
+            require_once $filename;
+            /** @var mixed $result */
+            if (!function_exists('main')) {
+                self::kill("Please define a global main function.\n");
             }
-            if (yield exists($filename)) {
-                /**
-                 * @psalm-suppress UnresolvableInclude
-                 */
-                require_once $filename;
-                /** @var mixed $result */
-                if (!function_exists('main')) {
-                    yield self::kill("Please define a global main function.\n");
-                }
 
-                /**
-                 * @psalm-suppress InvalidArgument
-                 */
-                $main = new ReflectionFunction('main');
+            /**
+             * @psalm-suppress InvalidArgument
+             */
+            $main = new ReflectionFunction('main');
 
-                yield Container::touch($main);
+            Container::touch($main);
 
-                yield Container::load(
-                    locations: $libraries,
-                    // This will maintain any singletons 
-                    // set by "require_once $filename" 
-                    // (instead of clearing all singletons before 
-                    // loading new ones)
-                    append: true
-                );
-            
-                if ($info) {
-                    echo Container::describe();
-                }
+            Container::load(
+                locations: $libraries,
+                // This will maintain any singletons 
+                // set by "require_once $filename" 
+                // (instead of clearing all singletons before 
+                // loading new ones)
+                append: true
+            );
 
-                yield Container::run($main, false);
-            } else {
-                yield self::kill("Could not find php entry file \"$filename\".\n");
+            if ($info) {
+                echo Container::describe();
             }
-        });
+
+            Container::run($main, false);
+        } else {
+            self::kill("Could not find php entry file \"$filename\".\n");
+        }
     }
 
     /**
@@ -94,18 +96,18 @@ class Bootstrap {
         string $resources,
         bool $info = false,
         bool $dieOnChange = false,
-    ):void {
+    ): void {
         try {
-            Loop::run(function() use (
+            async(function() use (
                 $entry,
                 $libraries,
                 $info,
                 $dieOnChange,
                 $resources,
-                $name
+                $name,
             ) {
                 if (!$entry) {
-                    yield self::kill("Please point to a php entry file.\n");
+                    self::kill("Please point to a php entry file.\n");
                 }
 
                 $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
@@ -121,9 +123,9 @@ class Bootstrap {
 
                 Container::set(LoggerInterface::class, LoggerFactory::create($name));
                 /** @var array<string> */
-                $libraries = !$libraries?[]:\preg_split('/,|;/', $libraries);
+                $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
                 /** @var array<string> */
-                $resources = !$resources?[]:\preg_split('/,|;/', $resources);
+                $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
 
 
                 $_ENV['ENTRY']         = $entry;
@@ -135,10 +137,10 @@ class Bootstrap {
                 foreach ($libraries as $library) {
                     if (!str_starts_with($library, './')) {
                         if (!$isWindows) {
-                            yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                            self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
                         }
                         if (!str_starts_with($library, '.\\')) {
-                            yield self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                            self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
                         }
                     }
                 }
@@ -146,10 +148,10 @@ class Bootstrap {
                 foreach ($resources as $resource) {
                     if (!str_starts_with($resource, './')) {
                         if (!$isWindows) {
-                            yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                            self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
                         }
                         if (!str_starts_with($resource, '.\\')) {
-                            yield self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                            self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
                         }
                     }
                 }
@@ -157,9 +159,9 @@ class Bootstrap {
                 if ($dieOnChange) {
                     if (isPhar()) {
                         /** @var LoggerInterface */
-                        $logger = yield Container::create(LoggerInterface::class);
+                        $logger = Container::create(LoggerInterface::class);
                         $logger->error("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
-                        yield self::kill();
+                        self::kill();
                     }
                     self::onFileChange(
                         entry: $entry,
@@ -169,36 +171,36 @@ class Bootstrap {
                     );
                 }
 
-                yield self::init($entry, $libraries, $info);
-            });
-        } catch(Throwable $e) {
+                self::init($entry, $libraries, $info);
+            })->catch(function(Throwable $e) {
+                echo $e.PHP_EOL;
+                exit(1);
+            })->await();
+        } catch (Throwable $e) {
             echo $e.PHP_EOL;
-            Loop::stop();
             exit(1);
         }
     }
 
-    /** @var array<callable():(void|Generator|Promise)> */
+    /** @var array<callable():(void)> */
     private static array $onKillActions = [];
 
     /**
      * Execute something when the application get killed through Bootstrap::kill.
-     * @param  callable():(void|Generator|Promise) $callback
+     * @param  callable():(void) $callback
      * @return void
      */
     public static function onKill(callable $callback) {
         self::$onKillActions[] = $callback;
     }
 
-    public static function kill(string $message = ''):Promise {
-        return call(function() use ($message) {
-            foreach (self::$onKillActions as $callback) {
-                yield call($callback);
-            }
-            die($message);
-        });
+    public static function kill(string $message = '') {
+        foreach (self::$onKillActions as $callback) {
+            $callback();
+        }
+        die($message);
     }
-    
+
     /**
      * @param  string    $binary
      * @param  string    $start
@@ -214,7 +216,7 @@ class Bootstrap {
         string $libraries,
         string $resources,
     ) {
-        Loop::run(function() use (
+        async(function() use (
             $binary,
             $fileName,
             $arguments,
@@ -222,17 +224,17 @@ class Bootstrap {
             $libraries,
             $resources,
         ) {
-            $out = new ResourceOutputStream(STDOUT);
-            $err = new ResourceOutputStream(STDERR);
-            $in  = new ResourceInputStream(STDIN);            
-            
+            $out = new WritableResourceStream(STDOUT);
+            $err = new WritableResourceStream(STDERR);
+            $in  = new ReadableResourceStream(STDIN);
+
             $argumentsStringified = join(' ', $arguments);
-            
+
             /** @var array<string> */
-            $libraries = !$libraries?[]:\preg_split('/,|;/', $libraries);
+            $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
             /** @var array<string> */
-            $resources = !$resources?[]:\preg_split('/,|;/', $resources);
-            
+            $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
+
             $crashed = false;
 
             self::onFileChange(
@@ -248,123 +250,115 @@ class Bootstrap {
             $process = false;
 
             if (DIRECTORY_SEPARATOR === '/') {
-                Loop::onSignal(\SIGINT, static function(string $watcherId) use (&$process) {
+                EventLoop::onSignal(\SIGINT, static function(string $watcherId) use (&$process) {
                     $process->kill();
-                    Loop::cancel($watcherId);
-                    Loop::stop();
+                    EventLoop::cancel($watcherId);
+                    // EventLoop::stop();
                 });
             }
 
             while (true) {
-                if ($crashed || ($process && $process->isRunning()) ) {
-                    yield delay(100);
+                if ($crashed || ($process && $process->isRunning())) {
+                    delay(1);
                     continue;
                 }
                 echo "Spawning $binary $fileName $argumentsStringified".PHP_EOL;
-                $process = new Process("$binary $fileName $argumentsStringified");
-
-                yield $process->start();
-
+                $process = Process::start("$binary $fileName $argumentsStringified");
+                
                 $pout = $process->getStdout();
                 $perr = $process->getStderr();
                 $pin  = $process->getStdin();
-
-                call(function() use ($pout, $out) {
-                    while ($chunk = yield $pout->read()) {
-                        yield $out->write($chunk);
-                    }
-                });
-
-                call(function() use ($perr, $err) {
-                    while ($chunk = yield $perr->read()) {
-                        yield $err->write($chunk);
-                    }
-                });
-
-                call(function() use ($pin, $in) {
-                    while ($chunk = yield $in->read()) {
-                        yield $pin->write($chunk);
-                    }
-                });
                 
+                $outWriter = async(function() use ($pout, $out) {
+                    while ($chunk = $pout->read()) {
+                        $out->write($chunk);
+                    }
+                });
+
+                $errorWriter = async(function() use ($perr, $err) {
+                    while ($chunk = $perr->read()) {
+                        $err->write($chunk);
+                    }
+                });
+
+                $inputReader = async(function() use ($pin, $in) {
+                    while ($chunk = $in->read()) {
+                        $pin->write($chunk);
+                    }
+                });
+
                 try {
+                    await([$outWriter, $errorWriter, $inputReader]);
                     /** @var int */
-                    $code = yield $process->join();
+                    $code = $process->join();
                     if (0 !== $code) {
                         throw new Exception("Exiting with code $code");
                     }
-                    yield delay(100);
+                    delay(1);
                 } catch (Throwable $e) {
                     $crashed = true;
                 }
             }
-        });
+        })->await();
     }
 
     /**
      * Start a watcher which will detect file changes.
      * Useful for development mode.
-     * @param  string        $entry
-     * @param  array         $libraries
-     * @param  array         $resources
-     * @return Promise<void>
+     * @param  string $entry
+     * @param  array  $libraries
+     * @param  array  $resources
+     * @return void
      */
     private static function onFileChange(
         string $entry,
         array $libraries,
         array $resources,
         callable $callback,
-    ):Promise {
-        return call(function() use (
-            $entry,
-            $libraries,
-            $resources,
-            $callback
-        ) {
-            $fs        = new Filesystem(createDefaultDriver());
-            $changes   = [];
-            $firstPass = true;
+    ) {
+        $fs        = new Filesystem(createDefaultDriver());
+        $changes   = [];
+        $firstPass = true;
 
-            while (true) {
-                clearstatcache();
-                $countLastPass = count($changes);
+        while (true) {
+            clearstatcache();
+            $countLastPass = count($changes);
 
-                $filenames = [ $entry => false ];
-                foreach ([...$libraries,...$resources] as $directory) {
-                    if (!yield exists($directory)) {
-                        continue;
-                    }
-                    foreach (yield listFilesRecursively(\realpath($directory)) as $i => $filename) {
-                        $filenames[$filename] = false;
-                    }
+            $filenames = [$entry => false];
+            foreach ([...$libraries, ...$resources] as $directory) {
+                if (!exists($directory)) {
+                    continue;
                 }
-
-                
-                $countThisPass = count($filenames);
-                if (!$firstPass && $countLastPass !== $countThisPass) {
-                    yield call($callback);
+                foreach (listFilesRecursively(\realpath($directory)) as $i => $filename) {
+                    $filenames[$filename] = false;
                 }
-
-                foreach (array_keys($filenames) as $filename) {
-                    if (!yield exists($filename)) {
-                        $changes[$filename] = 0;
-                        continue;
-                    }
-                    $mtime = yield $fs->getModificationTime($filename);
-                    if (!isset($changes[$filename])) {
-                        $changes[$filename] = $mtime;
-                        continue;
-                    }
-                    
-                    if ($changes[$filename] !== $mtime) {
-                        $changes[$filename] = $mtime;
-                        yield call($callback);
-                    }
-                }
-
-                $firstPass = false;
-                yield delay(1000);
             }
-        });
+
+
+            $countThisPass = count($filenames);
+            if (!$firstPass && $countLastPass !== $countThisPass) {
+                $callback();
+            }
+
+            foreach (array_keys($filenames) as $filename) {
+                if (!exists($filename)) {
+                    $changes[$filename] = 0;
+                    continue;
+                }
+                $mtime = $fs->getModificationTime($filename);
+                if (!isset($changes[$filename])) {
+                    $changes[$filename] = $mtime;
+                    continue;
+                }
+
+                if ($changes[$filename] !== $mtime) {
+                    $changes[$filename] = $mtime;
+                    $callback();
+                }
+            }
+
+            $firstPass = false;
+            delay(1000);
+        }
     }
 }

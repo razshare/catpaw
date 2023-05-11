@@ -2,17 +2,14 @@
 
 namespace CatPaw\Utilities;
 
-use Amp\ByteStream\{ClosedException, PendingReadError, ResourceInputStream, ResourceOutputStream};
-use function Amp\call;
+use Amp\ByteStream\{ClosedException, PendingReadError, ReadableResourceStream, ResourceInputStream, ResourceOutputStream, WritableResourceStream};
 
-use Amp\Loop\InvalidWatcherError;
-use Amp\Promise;
 
 use Error;
 
 class Stream {
-    private ?ResourceOutputStream $writer = null;
-    private ?ResourceInputStream $reader  = null;
+    private ?WritableResourceStream $writer = null;
+    private ?ReadableResourceStream $reader = null;
     private function __construct(
         private mixed $resource,
         private ?int $chunkSize = null,
@@ -36,11 +33,11 @@ class Stream {
      * Write data to the stream.
      * @param  string          $chunk
      * @throws ClosedException
-     * @return Promise<void>
+     * @return void
      */
-    public function write(string $chunk):Promise {
+    public function write(string $chunk):void {
         if (!$this->writer) {
-            $this->writer = new ResourceOutputStream($this->resource, $this->chunkSize);
+            $this->writer = new WritableResourceStream($this->resource, $this->chunkSize);
         }
         return $this->writer->write($chunk);
     }
@@ -48,12 +45,11 @@ class Stream {
     /**
      * Read data from the stream.
      * @throws PendingReadError
-     * @throws InvalidWatcherError
-     * @return Promise<null|string>
+     * @return null|string
      */
-    public function read():Promise {
+    public function read():null|string {
         if (!$this->reader) {
-            $this->reader = new ResourceInputStream($this->resource, $this->chunkSize ?? ResourceInputStream::DEFAULT_CHUNK_SIZE);
+            $this->reader = new ReadableResourceStream($this->resource, $this->chunkSize ?? ReadableResourceStream::DEFAULT_CHUNK_SIZE);
         }
         return $this->reader->read();
     }
@@ -61,16 +57,14 @@ class Stream {
     /**
      * Close the stream.
      * @throws Error
-     * @return Promise<void>
+     * @return void
      */
-    public function close():Promise {
-        return call(function() {
-            if ($this->writer) {
-                yield $this->writer->end();
-            }
-            if ($this->reader) {
-                $this->reader->close();
-            }
-        });
+    public function close():void {
+        if ($this->writer) {
+            $this->writer->end();
+        }
+        if ($this->reader) {
+            $this->reader->close();
+        }
     }
 }
