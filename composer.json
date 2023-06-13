@@ -23,6 +23,8 @@
             "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix src",
             "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix tests"
         ],
+        "start": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./bin/start --entry='./tests/main.php' --libraries='./tests/lib/'",
+        "debug": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --entry='./tests/main.php' --libraries='./tests/lib/' --info",
         "action:test": [],
         "test": [],
         "build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./product.phar --build-config --build",
@@ -56,7 +58,8 @@
         "amphp/process": "^2.0",
         "ext-openssl": "*",
         "ext-zlib": "*",
-        "vlucas/phpdotenv": "^5.4"
+        "vlucas/phpdotenv": "^5.4",
+        "monolog/monolog": "^3.3"
     },
     "autoload-dev": {
         "psr-4": {
