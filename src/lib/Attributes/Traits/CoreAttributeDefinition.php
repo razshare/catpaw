@@ -14,7 +14,7 @@ use ReflectionProperty;
 use SplObjectStorage;
 
 trait CoreAttributeDefinition {
-    private static ?SplObjectStorage $coreDefinitionCache = null;
+    private static SplObjectStorage|false $coreDefinitionCache = false;
     private static function initializeCache():void {
         if (!self::$coreDefinitionCache) {
             self::$coreDefinitionCache = new SplObjectStorage();
@@ -38,15 +38,15 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionFunction $reflectionFunction
-     * @return self|null
+     * @return self|false
      */
-    public static function findByFunction(ReflectionFunction $reflectionFunction): self|null {
+    public static function findByFunction(ReflectionFunction $reflectionFunction): self|false {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionFunction) && $instance = self::$coreDefinitionCache->offsetGet($reflectionFunction)) {
             return $instance;
         }
         if (!($trueClassName = AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class))) {
-            return null;
+            return false;
         }
 
         $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
@@ -63,15 +63,15 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionMethod $reflectionMethod
-     * @return self|null
+     * @return self|false
      */
-    public static function findByMethod(ReflectionMethod $reflectionMethod): self|null {
+    public static function findByMethod(ReflectionMethod $reflectionMethod): self|false {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionMethod) && $instance = self::$coreDefinitionCache->offsetGet($reflectionMethod)) {
             return $instance;
         }
         if (!($trueClassName = AttributeResolver::issetMethodAttribute($reflectionMethod, static::class))) {
-            return null;
+            return false;
         }
         $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
         $klass              = new ReflectionClass($trueClassName);
@@ -87,15 +87,15 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionClass $reflectionClass
-     * @return self|null
+     * @return self|false
      */
-    public static function findByClass(ReflectionClass $reflectionClass):self|null {
+    public static function findByClass(ReflectionClass $reflectionClass):self|false {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionClass) && $instance = self::$coreDefinitionCache->offsetGet($reflectionClass)) {
             return $instance;
         }
         if (!($trueClassName = AttributeResolver::issetClassAttribute($reflectionClass, static::class))) {
-            return null;
+            return false;
         }
         $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
         $klass              = new ReflectionClass($trueClassName);
@@ -111,15 +111,15 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionProperty $reflectionProperty
-     * @return self|null
+     * @return self|false
      */
-    public static function findByProperty(ReflectionProperty $reflectionProperty):self|null {
+    public static function findByProperty(ReflectionProperty $reflectionProperty):self|false {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionProperty) && $instance = self::$coreDefinitionCache->offsetGet($reflectionProperty)) {
             return $instance;
         }
         if (!($trueClassName = AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class))) {
-            return null;
+            return false;
         }
         $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
         $klass              = new ReflectionClass($trueClassName);
@@ -135,15 +135,15 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionParameter $reflectionParameter
-     * @return self|null
+     * @return self|false
      */
-    public static function findByParameter(ReflectionParameter $reflectionParameter): self|null {
+    public static function findByParameter(ReflectionParameter $reflectionParameter): self|false {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionParameter) && $instance = self::$coreDefinitionCache->offsetGet($reflectionParameter)) {
             return $instance;
         }
         if (!($trueClassName = AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))) {
-            return null;
+            return false;
         }
         $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
         $klass              = new ReflectionClass($trueClassName);
