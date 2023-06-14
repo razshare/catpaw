@@ -3,15 +3,12 @@
 namespace CatPaw;
 
 use function Amp\async;
-use Amp\ByteStream\ReadableResourceStream;
-use Amp\ByteStream\WritableResourceStream;
 
 use function Amp\delay;
 use function Amp\File\createDefaultDriver;
 use function Amp\File\exists;
 use Amp\File\Filesystem;
 
-use function Amp\Future\await;
 use Amp\Process\Process;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\LoggerFactory;
