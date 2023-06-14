@@ -2,7 +2,8 @@
 
 namespace CatPaw\Utilities;
 
-use Monolog\Handler\StreamHandler;
+use function Amp\ByteStream\getStdout;
+use Amp\Log\{ConsoleFormatter, StreamHandler};
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 
@@ -16,8 +17,8 @@ class LoggerFactory {
      * @return LoggerInterface
      */
     public static function create(string $loggerName = 'Logger'): LoggerInterface {
-        $handler = new StreamHandler(STDOUT);
-        // $handler->setFormatter(new ConsoleFormatter());
+        $handler = new StreamHandler(getStdout());
+        $handler->setFormatter(new ConsoleFormatter());
         $logger = new Logger($loggerName);
         $logger->pushHandler($handler);
         return $logger;

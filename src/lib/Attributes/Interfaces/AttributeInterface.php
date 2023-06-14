@@ -10,13 +10,13 @@ use ReflectionParameter;
 use ReflectionProperty;
 
 interface AttributeInterface {
-    public static function findByFunction(ReflectionFunction $reflectionFunction);
+    public static function findByFunction(ReflectionFunction $reflectionFunction): Promise;
 
-    public static function findByMethod(ReflectionMethod $reflectionMethod);
+    public static function findByMethod(ReflectionMethod $reflectionMethod): Promise;
 
-    public static function findByClass(ReflectionClass $reflectionClass);
+    public static function findByClass(ReflectionClass $reflectionClass): Promise;
 
-    public static function findByProperty(ReflectionProperty $reflectionProperty);
+    public static function findByProperty(ReflectionProperty $reflectionProperty): Promise;
 
     /**
      * Invoked when this attribute is detected on a parameter.

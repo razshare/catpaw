@@ -2,6 +2,7 @@
 namespace CatPaw\Environment\Services;
 
 use \CatPaw\Attributes\File as AttributeFile;
+use function Amp\call;
 use function Amp\File\exists;
 use function Amp\File\openFile;
 use CatPaw\Attributes\Service;
@@ -42,94 +43,95 @@ class EnvironmentService {
     /**
      * Find the first available environment file name.
      * @throws Error
-     * @return string
+     * @return Promise<string>
      */
-    private function findFileName():string {
-        $isPhar = isPhar();
-        $phar   = Phar::running();
-        foreach ($this->files as $_ => $currentFile) {
-            $currentFileName = $currentFile->getFileName();
-            if ($isPhar) {
-                $allowsExternal = $currentFile->allowsExternal();
-                if ($allowsExternal && exists($currentFileName)) {
-                    return $currentFileName;
-                }
-                $currentPharFileName = "$phar/$currentFileName";
-                if (exists($currentPharFileName)) {
-                    return $currentPharFileName;
-                }
-            } else {
-                if (exists($currentFileName)) {
-                    return $currentFileName;
+    private function findFileName():Promise {
+        return call(function() {
+            $isPhar = isPhar();
+            $phar   = Phar::running();
+            foreach ($this->files as $_ => $currentFile) {
+                $currentFileName = $currentFile->getFileName();
+                if ($isPhar) {
+                    $allowsExternal = $currentFile->allowsExternal();
+                    if ($allowsExternal && yield exists($currentFileName)) {
+                        return $currentFileName;
+                    }
+                    $currentPharFileName = "$phar/$currentFileName";
+                    if (yield exists($currentPharFileName)) {
+                        return $currentPharFileName;
+                    }
+                } else {
+                    if (yield exists($currentFileName)) {
+                        return $currentFileName;
+                    }
                 }
             }
-        }
-        return '';
+            return '';
+        });
     }
 
     /**
      * Parse the first valid environment file and update all variables in memory.
      * Multiple calls are allowed.
-     * @return void
+     * @return Promise<void>
      */
-    public function load():void {
-        $this->variables = [];
+    public function load():Promise {
+        return call(function() {
+            $this->variables = [];
             
-        $fileNames = [];
+            $fileNames = [];
 
-        foreach ($this->files as $file) {
-            $fileNames[] = $file->getFileName();
-        }
-            
-        // $stringifiedFileNames = join(',', $fileNames);
-            
-        if (!$fileName = $this->findFileName()) {
-            // throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
-            // $this->logger->info("Environment files [$stringifiedFileNames] not found.");
-            return;
-        }
-            
-        if ($_ENV['SHOW_INFO'] ?? false) {
-            $this->logger->info("Environment file is $fileName");
-        }
-
-        $file = openFile($fileName, 'r');
-
-        $contents = '';
-
-        while ($chunk = $file->read()) {
-            $contents .= $chunk;
-        }
-            
-        if (trim($contents) !== '') {
-            if (\str_ends_with($fileName, '.yml') || \str_ends_with($fileName, '.yaml')) {
-                if (\function_exists('yaml_parse')) {
-                    $vars            = \yaml_parse($contents);
-                    $this->variables = $vars?$vars:[];
-                } else {
-                    $this->logger->error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
-                    $this->variables = [];
-                }
-            } else {
-                $this->variables = \Dotenv\Dotenv::parse($contents);
+            foreach ($this->files as $file) {
+                $fileNames[] = $file->getFileName();
             }
-        }
+            
+            $stringifiedFileNames = join(',', $fileNames);
+            
+            if (!$fileName = yield $this->findFileName()) {
+                // throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
+                // $this->logger->info("Environment files [$stringifiedFileNames] not found.");
+                return;
+            }
+            
+            if ($_ENV['SHOW_INFO'] ?? false) {
+                $this->logger->info("Environment file is $fileName");
+            }
 
-        $_ENV = [
-            ...$_ENV,
-            ... $this->variables,
-        ];
+            /** @var File $file */
+            $file = yield openFile($fileName, 'r');
 
-        /**
-         * @psalm-suppress InvalidArrayOffset
-         */
-        if (isset($_ENV["CATPAW_FILE_DRIVER"]) && $_ENV["CATPAW_FILE_DRIVER"]) {
+            $contents = '';
+
+            while ($chunk = $file->read()) {
+                $contents .= $chunk;
+            }
+            
+            if (trim($contents) !== '') {
+                if (\str_ends_with($fileName, '.yml') || \str_ends_with($fileName, '.yaml')) {
+                    if (\function_exists('yaml_parse')) {
+                        $vars            = \yaml_parse($contents);
+                        $this->variables = $vars?$vars:[];
+                    } else {
+                        $this->logger->error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
+                        $this->variables = [];
+                    }
+                } else {
+                    $this->variables = \Dotenv\Dotenv::parse($contents);
+                }
+            }
+
+            $_ENV = [
+                ...$_ENV,
+                ... $this->variables,
+            ];
+
             /**
-             * How would you set a new file system driver?
-             * TODO: open a new issue about this in https://github.com/amphp/file/issues/new
+             * @psalm-suppress InvalidArrayOffset
              */
-            // EventLoop::setState(\Amp\File\Driver::class, new Filesystem(new CatPawDriver));
-        }
+            if (isset($_ENV["CATPAW_FILE_DRIVER"]) && $_ENV["CATPAW_FILE_DRIVER"]) {
+                Loop::setState(\Amp\File\Driver::class, new Filesystem(new CatPawDriver));
+            }
+        });
     }
 
     /**

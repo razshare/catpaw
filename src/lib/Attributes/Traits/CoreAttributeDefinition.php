@@ -2,8 +2,9 @@
 
 namespace CatPaw\Attributes\Traits;
 
-use CatPaw\Attributes\AttributeResolver;
-use CatPaw\Attributes\Entry;
+use function Amp\call;
+use Amp\Promise;
+use CatPaw\Attributes\{AttributeResolver, Entry};
 use CatPaw\Utilities\Container;
 use Closure;
 use ReflectionClass;
@@ -49,16 +50,16 @@ trait CoreAttributeDefinition {
             return false;
         }
 
-        $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
-        $klass              = new ReflectionClass($trueClassName);
-        /** @var object */
-        $instance = $klass->newInstance(...$attributeArguments);
-        Container::entry($instance, $klass->getMethods());
-        self::$coreDefinitionCache->attach(
-            object: $reflectionFunction,
-            info: $instance,
-        );
-        return $instance;
+            $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
+            yield Container::entry($instance, $klass->getMethods());
+            self::$coreDefinitionCache->attach(
+                object: $reflectionFunction,
+                info: $instance,
+            );
+            return $instance;
+        });
     }
 
     /**
@@ -67,7 +68,21 @@ trait CoreAttributeDefinition {
      */
     public static function findByMethod(ReflectionMethod $reflectionMethod): self|false {
         self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionMethod) && $instance = self::$coreDefinitionCache->offsetGet($reflectionMethod)) {
+        return call(function() use ($reflectionMethod) {
+            if (self::$coreDefinitionCache->contains($reflectionMethod) && $instance = self::$coreDefinitionCache->offsetGet($reflectionMethod)) {
+                return $instance;
+            }
+            if (!($trueClassName = AttributeResolver::issetMethodAttribute($reflectionMethod, static::class))) {
+                return null;
+            }
+            $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
+            yield Container::entry($instance, $klass->getMethods());
+            self::$coreDefinitionCache->attach(
+                object: $reflectionMethod,
+                info: $instance,
+            );
             return $instance;
         }
         if (!($trueClassName = AttributeResolver::issetMethodAttribute($reflectionMethod, static::class))) {
@@ -91,7 +106,21 @@ trait CoreAttributeDefinition {
      */
     public static function findByClass(ReflectionClass $reflectionClass):self|false {
         self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionClass) && $instance = self::$coreDefinitionCache->offsetGet($reflectionClass)) {
+        return call(function() use ($reflectionClass) {
+            if (self::$coreDefinitionCache->contains($reflectionClass) && $instance = self::$coreDefinitionCache->offsetGet($reflectionClass)) {
+                return $instance;
+            }
+            if (!($trueClassName = AttributeResolver::issetClassAttribute($reflectionClass, static::class))) {
+                return null;
+            }
+            $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
+            yield Container::entry($instance, $klass->getMethods());
+            self::$coreDefinitionCache->attach(
+                object: $reflectionClass,
+                info: $instance,
+            );
             return $instance;
         }
         if (!($trueClassName = AttributeResolver::issetClassAttribute($reflectionClass, static::class))) {
@@ -115,7 +144,21 @@ trait CoreAttributeDefinition {
      */
     public static function findByProperty(ReflectionProperty $reflectionProperty):self|false {
         self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionProperty) && $instance = self::$coreDefinitionCache->offsetGet($reflectionProperty)) {
+        return call(function() use ($reflectionProperty) {
+            if (self::$coreDefinitionCache->contains($reflectionProperty) && $instance = self::$coreDefinitionCache->offsetGet($reflectionProperty)) {
+                return $instance;
+            }
+            if (!($trueClassName = AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class))) {
+                return null;
+            }
+            $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
+            yield Container::entry($instance, $klass->getMethods());
+            self::$coreDefinitionCache->attach(
+                object: $reflectionProperty,
+                info: $instance,
+            );
             return $instance;
         }
         if (!($trueClassName = AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class))) {
@@ -139,7 +182,21 @@ trait CoreAttributeDefinition {
      */
     public static function findByParameter(ReflectionParameter $reflectionParameter): self|false {
         self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionParameter) && $instance = self::$coreDefinitionCache->offsetGet($reflectionParameter)) {
+        return call(function() use ($reflectionParameter) {
+            if (self::$coreDefinitionCache->contains($reflectionParameter) && $instance = self::$coreDefinitionCache->offsetGet($reflectionParameter)) {
+                return $instance;
+            }
+            if (!($trueClassName = AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))) {
+                return null;
+            }
+            $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
+            $klass              = new ReflectionClass($trueClassName);
+            $instance           = $klass->newInstance(...$attributeArguments);
+            yield Container::entry($instance, $klass->getMethods());
+            self::$coreDefinitionCache->attach(
+                object: $reflectionParameter,
+                info: $instance,
+            );
             return $instance;
         }
         if (!($trueClassName = AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))) {
