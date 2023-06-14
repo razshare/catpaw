@@ -48,6 +48,7 @@
             "src/functions.php"
         ]
     },
+    "minimum-stability": "dev",
     "require": {
         "php": "^8.1",
         "amphp/amp": "^2.6",
