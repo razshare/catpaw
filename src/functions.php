@@ -356,8 +356,8 @@ function deferred():Deferred {
  * Read input from the user.
  * 
  * This is a replacement for the default `\readline()` function which does not work in a PHAR program.
- * @param string $prompt prompt the user.
- * @param  (callable(string):bool|string)|false          $validate validate the input value.
+ * @param string                               $prompt   prompt the user.
+ * @param (callable(string):bool|string)|false $validate validate the input value.
  * 
  * Return `true` to indicate that the input is valid or `false` to indicate the input is not valid.
  * 

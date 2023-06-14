@@ -2,14 +2,19 @@
 
 namespace CatPaw;
 
-use Amp\ByteStream\{ResourceInputStream, ResourceOutputStream};
-use function Amp\File\{createDefaultDriver, exists};
-use Amp\File\{File, Filesystem};
+use function Amp\async;
+use Amp\ByteStream\ReadableResourceStream;
+use Amp\ByteStream\WritableResourceStream;
+
+use function Amp\delay;
+use function Amp\File\createDefaultDriver;
+use function Amp\File\exists;
+use Amp\File\Filesystem;
+
+use function Amp\Future\await;
 use Amp\Process\Process;
-use function Amp\{call, delay};
-use Amp\{Loop, Promise};
-use CatPaw\Attributes\Entry;
-use CatPaw\Utilities\{Container, LoggerFactory};
+use CatPaw\Utilities\Container;
+use CatPaw\Utilities\LoggerFactory;
 use Exception;
 use Generator;
 use Psr\Log\LoggerInterface;
@@ -165,7 +170,7 @@ class Bootstrap {
                         entry: $entry,
                         libraries: $libraries,
                         resources: $resources,
-                        callback: fn () => self::kill("Killing application..."),
+                        callback: static fn ():never => self::kill("Killing application..."),
                     );
                 }
 
@@ -190,13 +195,11 @@ class Bootstrap {
         self::$onKillActions[] = $callback;
     }
 
-    public static function kill(string $message = ''):Promise {
-        return call(function() use ($message) {
-            foreach (self::$onKillActions as $callback) {
-                yield call($callback);
-            }
-            die($message);
-        });
+    public static function kill(string $message = ''):never {
+        foreach (self::$onKillActions as $callback) {
+            $callback();
+        }
+        die($message);
     }
     
     /**
@@ -213,8 +216,8 @@ class Bootstrap {
         string $entry,
         string $libraries,
         string $resources,
-    ) {
-        Loop::run(function() use (
+    ):void {
+        async(function() use (
             $binary,
             $fileName,
             $arguments,

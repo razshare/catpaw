@@ -4,16 +4,8 @@ namespace CatPaw\Environment\Services;
 use \CatPaw\Attributes\File as AttributeFile;
 use function Amp\call;
 use function Amp\File\exists;
-use Amp\File\File;
-
-use Amp\File\Filesystem;
 use function Amp\File\openFile;
-use Amp\Loop;
-use Amp\Promise;
-use CatPaw\Amp\File\CatPawDriver;
-
 use CatPaw\Attributes\Service;
-use CatPaw\Environment\Exceptions\EnvironmentNotFoundException;
 use function CatPaw\isPhar;
 use Error;
 use Phar;
@@ -110,7 +102,7 @@ class EnvironmentService {
 
             $contents = '';
 
-            while ($chunk = yield $file->read(65536)) {
+            while ($chunk = $file->read()) {
                 $contents .= $chunk;
             }
             

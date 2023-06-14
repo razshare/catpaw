@@ -23,11 +23,14 @@
             "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix src",
             "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix tests"
         ],
+        "start": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./bin/start --entry='./tests/main.php' --libraries='./tests/lib/'",
+        "debug": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --entry='./tests/main.php' --libraries='./tests/lib/' --info",
         "action:test": [],
         "test": [],
         "build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./product.phar --build-config --build",
-        "download:product": "[ ! -f product.phar ] && wget https://github.com/tncrazvan/catpaw-dev-tools/releases/download/0.4.191/product.phar || echo \"product.phar found.\n\"",
         "edit:extensions": "@download:product && php product.phar --extensions",
+        "download:product": "[ ! -f product.phar ] && wget https://github.com/tncrazvan/catpaw-dev-tools/releases/download/0.4.191/product.phar || echo \"product.phar found.\n\"",
+        "download:psalm": "[ ! -f vendor/bin/psalm ] && wget -O vendor/bin/psalm https://github.com/vimeo/psalm/releases/latest/download/psalm.phar || echo \"vendor/bin/psalm found.\n\"",
         "post-autoload-dump": [
             "@download:product"
         ],
@@ -54,7 +57,8 @@
         "amphp/process": "^1.1",
         "ext-openssl": "*",
         "ext-zlib": "*",
-        "vlucas/phpdotenv": "^5.4"
+        "vlucas/phpdotenv": "^5.4",
+        "monolog/monolog": "^3.3"
     },
     "autoload-dev": {
         "psr-4": {
