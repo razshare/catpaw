@@ -3,19 +3,12 @@ namespace CatPaw\Environment\Services;
 
 use \CatPaw\Attributes\File as AttributeFile;
 use function Amp\File\exists;
-use Amp\File\File;
-
-use Amp\File\Filesystem;
 use function Amp\File\openFile;
-use CatPaw\Amp\File\CatPawDriver;
-
 use CatPaw\Attributes\Service;
-use CatPaw\Environment\Exceptions\EnvironmentNotFoundException;
 use function CatPaw\isPhar;
 use Error;
 use Phar;
 use Psr\Log\LoggerInterface;
-use Revolt\EventLoop;
 
 #[Service]
 class EnvironmentService {
@@ -104,7 +97,7 @@ class EnvironmentService {
 
         $contents = '';
 
-        while ($chunk = $file->read(null, 65536)) {
+        while ($chunk = $file->read()) {
             $contents .= $chunk;
         }
             
