@@ -44,7 +44,10 @@ class Arguments implements AttributeInterface {
         if (!self::$initialized) {
             self::$initialized = true;
             foreach ($argv as $i => $value) {
-                if (0 === $i || str_starts_with($value, '-')) {
+                if (0 === $i) {
+                    continue;
+                }
+                if (str_starts_with($value, '-')) {
                     return;
                 }
                 self::$cache[] = $value;
