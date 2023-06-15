@@ -5,7 +5,7 @@ use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Attributes\{Entry, File};
-use CatPaw\Environment\Services\{EnvironmentConfigurationService, EnvironmentService};
+use CatPaw\Environment\Services\EnvironmentService;
 
 #[Attribute]
 class Environment implements AttributeInterface {
@@ -66,6 +66,6 @@ class Environment implements AttributeInterface {
      */
     #[Entry] public function main(EnvironmentService $environmentService) {
         $environmentService->setFiles(...$this->files);
-        yield $environmentService->load();
+        $environmentService->load();
     }
 }
