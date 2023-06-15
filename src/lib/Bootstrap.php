@@ -176,7 +176,9 @@ class Bootstrap {
             })->catch(function(Throwable $e) {
                 echo $e.PHP_EOL;
                 exit(1);
-            })->await();
+            });
+
+            EventLoop::run();
         } catch (Throwable $e) {
             echo $e.PHP_EOL;
             exit(1);
