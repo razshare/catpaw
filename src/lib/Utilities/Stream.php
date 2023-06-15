@@ -2,9 +2,10 @@
 
 namespace CatPaw\Utilities;
 
-use Amp\ByteStream\{ClosedException, PendingReadError, ReadableResourceStream, ResourceInputStream, ResourceOutputStream, WritableResourceStream};
-
-
+use Amp\ByteStream\ClosedException;
+use Amp\ByteStream\PendingReadError;
+use Amp\ByteStream\ReadableResourceStream;
+use Amp\ByteStream\WritableResourceStream;
 use Error;
 
 class Stream {

@@ -6,6 +6,12 @@ use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Attributes\{Entry, File};
 use CatPaw\Environment\Services\EnvironmentService;
+use Closure;
+use ReflectionClass;
+use ReflectionFunction;
+use ReflectionMethod;
+use ReflectionParameter;
+use ReflectionProperty;
 
 #[Attribute]
 class Environment implements AttributeInterface {
@@ -59,6 +65,24 @@ class Environment implements AttributeInterface {
             }
             $this->files[] = $file;
         }
+    }
+
+    public static function findByMethod(ReflectionMethod $reflectionMethod): void {
+    }
+
+    public static function findByClass(ReflectionClass $reflectionClass): void {
+    }
+
+    public static function findByProperty(ReflectionProperty $reflectionProperty): void {
+    }
+
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context) {
+    }
+
+    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, mixed $context) {
+    }
+
+    public function onClassMount(ReflectionClass $reflection, mixed &$value, mixed $context) {
     }
 
     /**

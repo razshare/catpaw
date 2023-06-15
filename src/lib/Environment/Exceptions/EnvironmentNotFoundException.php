@@ -14,7 +14,7 @@ class EnvironmentNotFoundException extends Exception {
     }
 
     // custom string representation of object
-    public function __toString() {
+    public function __toString():string {
         return __CLASS__.": [{$this->code}]: {$this->message}\n";
     }
 }

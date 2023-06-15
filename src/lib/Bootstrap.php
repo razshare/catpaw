@@ -99,84 +99,71 @@ class Bootstrap {
         bool $dieOnChange = false,
     ): void {
         try {
-            async(function() use (
-                $entry,
-                $libraries,
-                $info,
-                $dieOnChange,
-                $resources,
-                $name,
-            ) {
-                if (!$entry) {
-                    self::kill("Please point to a php entry file.\n");
+            if (!$entry) {
+                self::kill("Please point to a php entry file.\n");
+            }
+
+            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
+            if (!str_starts_with($entry, './')) {
+                if (!$isWindows) {
+                    die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
                 }
+                if (!str_starts_with($entry, '.\\')) {
+                    die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+                }
+            }
 
-                $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+            Container::set(LoggerInterface::class, LoggerFactory::create($name));
+            /** @var array<string> */
+            $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
+            /** @var array<string> */
+            $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
 
-                if (!str_starts_with($entry, './')) {
+            $_ENV['ENTRY']         = $entry;
+            $_ENV['LIBRARIES']     = $libraries;
+            $_ENV['RESOURCES']     = $resources;
+            $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
+            $_ENV['SHOW_INFO']     = $info;
+
+            foreach ($libraries as $library) {
+                if (!str_starts_with($library, './')) {
                     if (!$isWindows) {
-                        die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+                        self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
                     }
-                    if (!str_starts_with($entry, '.\\')) {
-                        die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
-                    }
-                }
-
-                Container::set(LoggerInterface::class, LoggerFactory::create($name));
-                /** @var array<string> */
-                $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
-                /** @var array<string> */
-                $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
-
-
-                $_ENV['ENTRY']         = $entry;
-                $_ENV['LIBRARIES']     = $libraries;
-                $_ENV['RESOURCES']     = $resources;
-                $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
-                $_ENV['SHOW_INFO']     = $info;
-
-                foreach ($libraries as $library) {
-                    if (!str_starts_with($library, './')) {
-                        if (!$isWindows) {
-                            self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
-                        }
-                        if (!str_starts_with($library, '.\\')) {
-                            self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
-                        }
+                    if (!str_starts_with($library, '.\\')) {
+                        self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
                     }
                 }
+            }
 
-                foreach ($resources as $resource) {
-                    if (!str_starts_with($resource, './')) {
-                        if (!$isWindows) {
-                            self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
-                        }
-                        if (!str_starts_with($resource, '.\\')) {
-                            self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
-                        }
+            foreach ($resources as $resource) {
+                if (!str_starts_with($resource, './')) {
+                    if (!$isWindows) {
+                        self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                    }
+                    if (!str_starts_with($resource, '.\\')) {
+                        self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
                     }
                 }
+            }
 
-                if ($dieOnChange) {
-                    if (isPhar()) {
-                        /** @var LoggerInterface */
-                        $logger = Container::create(LoggerInterface::class);
-                        $logger->error("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
-                        self::kill();
-                    }
-                    self::onFileChange(
-                        entry: $entry,
-                        libraries: $libraries,
-                        resources: $resources,
-                        callback: static fn ():never => self::kill("Killing application..."),
-                    );
+            if ($dieOnChange) {
+                if (isPhar()) {
+                    /** @var LoggerInterface */
+                    $logger = Container::create(LoggerInterface::class);
+                    $logger->error("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
+                    self::kill();
                 }
+                self::onFileChange(
+                    entry: $entry,
+                    libraries: $libraries,
+                    resources: $resources,
+                    callback: static fn ():never => self::kill("Killing application..."),
+                );
+            }
 
-                self::init($entry, $libraries, $info);
-            })->catch(function(Throwable $e) {
-                echo $e.PHP_EOL;
-                exit(1);
-            })->await();
+            self::init($entry, $libraries, $info);
         } catch (Throwable $e) {
             echo $e.PHP_EOL;
             exit(1);

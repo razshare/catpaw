@@ -4,9 +4,11 @@ namespace CatPaw\Utilities;
 
 use Attribute;
 use BadFunctionCallException;
-use CatPaw\Attributes\{AttributeResolver, Entry, Service, Singleton};
+use CatPaw\Attributes\AttributeResolver;
+use CatPaw\Attributes\Entry;
+use CatPaw\Attributes\Service;
+use CatPaw\Attributes\Singleton;
 use CatPaw\Bootstrap;
-
 use function CatPaw\isPhar;
 use Closure;
 use Exception;

@@ -20,7 +20,6 @@ use Amp\Future;
 use Amp\Process\Process;
 use CatPaw\Utilities\AsciiTable;
 use CatPaw\Utilities\Stream;
-use Closure;
 use Error;
 use InvalidArgumentException;
 use Phar;
