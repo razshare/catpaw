@@ -75,17 +75,29 @@ class Option implements AttributeInterface {
 
     public static function init() {
         global $argv;
-        $index = 0;
+        $index          = 0;
+        $listingOptions = false;
         if (!self::$initialized) {
             self::$initialized = true;
             foreach ($argv as $i => $value) {
-                $value = trim($value);
-                if (0 === $i || !str_starts_with($value, '-')) {
-                    continue;
+                // $value = trim($value);
+                if (
+                    !$listingOptions
+                    && (0 !== $i && str_starts_with($value, '-'))
+                ) {
+                    $listingOptions = true;
                 }
                 
-                self::$options[$index] = $value;
-                $index++;
+                if (!$listingOptions) {
+                    continue;
+                }
+
+                if (!str_starts_with($value, '-')) {
+                    self::$options[$index - 1] .= " $value";
+                } else {
+                    self::$options[$index] = $value;
+                    $index++;
+                }
             }
         }
     }

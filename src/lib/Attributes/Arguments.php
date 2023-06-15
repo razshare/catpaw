@@ -5,7 +5,12 @@ use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Utilities\ReflectionTypeManager;
+use Closure;
+use ReflectionClass;
+use ReflectionFunction;
+use ReflectionMethod;
 use ReflectionParameter;
+use ReflectionProperty;
 
 #[Attribute]
 class Arguments implements AttributeInterface {
@@ -19,13 +24,28 @@ class Arguments implements AttributeInterface {
         self::init();
     }
 
+    public static function findByMethod(ReflectionMethod $reflectionMethod): void {
+    }
+
+    public static function findByClass(ReflectionClass $reflectionClass): void {
+    }
+
+    public static function findByProperty(ReflectionProperty $reflectionProperty): void {
+    }
+
+    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, mixed $context) {
+    }
+
+    public function onClassMount(ReflectionClass $reflection, mixed &$value, mixed $context) {
+    }
+
     public static function init() {
         global $argv;
         if (!self::$initialized) {
             self::$initialized = true;
             foreach ($argv as $i => $value) {
                 if (0 === $i || str_starts_with($value, '-')) {
-                    continue;
+                    return;
                 }
                 self::$cache[] = $value;
             }
