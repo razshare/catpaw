@@ -5,7 +5,12 @@ use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Utilities\ReflectionTypeManager;
+use Closure;
+use ReflectionClass;
+use ReflectionFunction;
+use ReflectionMethod;
 use ReflectionParameter;
+use ReflectionProperty;
 
 #[Attribute]
 class Option implements AttributeInterface {
@@ -34,6 +39,21 @@ class Option implements AttributeInterface {
             "description" => $description,
         ];
         self::init();
+    }
+
+    public static function findByMethod(ReflectionMethod $reflectionMethod) {
+    }
+
+    public static function findByClass(ReflectionClass $reflectionClass) {
+    }
+
+    public static function findByProperty(ReflectionProperty $reflectionProperty) {
+    }
+
+    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, mixed $context) {
+    }
+
+    public function onClassMount(ReflectionClass $reflection, mixed &$value, mixed $context) {
     }
 
     public static function renderLinuxManual():string {
