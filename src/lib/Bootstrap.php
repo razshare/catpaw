@@ -3,6 +3,7 @@
 namespace CatPaw;
 
 use function Amp\async;
+
 use Amp\ByteStream\ReadableResourceStream;
 use Amp\ByteStream\WritableResourceStream;
 
@@ -11,7 +12,7 @@ use function Amp\File\createDefaultDriver;
 use function Amp\File\exists;
 use Amp\File\Filesystem;
 
-use function Amp\Future\await;
+
 use Amp\Process\Process;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\LoggerFactory;
@@ -68,6 +69,10 @@ class Bootstrap {
                 locations: $libraries,
                 append: true
             );
+
+            if ($info) {
+                echo Container::describe();
+            }
 
             Container::run($main, false);
         } else {
@@ -152,7 +157,8 @@ class Bootstrap {
                     entry: $entry,
                     libraries: $libraries,
                     resources: $resources,
-                    callback: static function() {
+                    callback: function() {
+                        echo "here (start)\n";
                         self::kill("Killing application...");
                     },
                 );
@@ -176,10 +182,48 @@ class Bootstrap {
     }
 
     public static function kill(string $message = ''):never {
+        echo "killing app...\n";
         foreach (self::$onKillActions as $callback) {
             $callback();
         }
         die($message);
+    }
+
+    private static function dev(
+        Process $process,
+        WritableResourceStream $stdout,
+        WritableResourceStream $stderr,
+        bool &$change,
+    ):void {
+        async(function() use ($process, $stdout) {
+            $reader = $process->getStdout();
+            while ($chunk = $reader->read()) {
+                $stdout->write($chunk);
+            }
+        });
+
+        async(function() use ($process, $stderr) {
+            $reader = $process->getStderr();
+            while ($chunk = $reader->read()) {
+                $stderr->write($chunk);
+            }
+        });
+
+        try {
+            $code = $process->join();
+            if (0 !== $code) {
+                throw new Exception("Exiting with code $code");
+            }
+            while (!$change) {
+                delay(1);
+            }
+            $change = false;
+        } catch (Throwable $e) {
+            if ($process->isRunning()) {
+                $process->kill();
+            }
+            delay(1);
+        }
     }
 
     /**
@@ -205,80 +249,66 @@ class Bootstrap {
             $libraries,
             $resources,
         ) {
-            $out = new WritableResourceStream(STDOUT);
-            $err = new WritableResourceStream(STDERR);
-            $in  = new ReadableResourceStream(STDIN);
-
             $argumentsStringified = join(' ', $arguments);
+            $instruction          = "$binary $fileName $argumentsStringified";
+            $change               = false;
+            $stdout               = new WritableResourceStream(STDOUT);
+            $stderr               = new WritableResourceStream(STDERR);
+            $stdin                = new ReadableResourceStream(STDIN);
 
+            echo "Spawning $instruction".PHP_EOL;
+            $process = Process::start($instruction);
+        
             /** @var array<string> */
             $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
             /** @var array<string> */
             $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
 
-            $crashed = false;
+            if (DIRECTORY_SEPARATOR === '/') {
+                EventLoop::onSignal(\SIGINT, static function() use (&$process) {
+                    if ($process) {
+                        $process->kill();
+                    }
+                    self::kill();
+                });
+            }
 
             self::onFileChange(
                 entry: $entry,
                 libraries: $libraries,
                 resources: $resources,
-                callback: function() use (&$crashed) {
-                    $crashed = false;
+                callback: function() use (&$change, &$process) {
+                    if ($process) {
+                        $process->kill();
+                    }
+                    $change = true;
                 },
             );
-
-            /** @var false|Process */
-            $process = false;
-
-            if (DIRECTORY_SEPARATOR === '/') {
-                EventLoop::onSignal(\SIGINT, static function(string $watcherId) use (&$process) {
-                    $process->kill();
-                    EventLoop::cancel($watcherId);
-                    // EventLoop::stop();
-                });
-            }
+            
+            async(function() use ($process, $stdin) {
+                $writer = $process->getStdin();
+                while ($chunk = $stdin->read()) {
+                    if (!$process) {
+                        continue;
+                        $writer = false;
+                    }
+                    if (!$writer) {
+                        $writer = $process->getStdin();
+                    }
+                    $writer->write($chunk);
+                }
+            });
 
             while (true) {
-                if ($crashed || ($process && $process->isRunning())) {
-                    delay(1);
-                    continue;
-                }
-                echo "Spawning $binary $fileName $argumentsStringified".PHP_EOL;
-                $process = Process::start("$binary $fileName $argumentsStringified");
-                
-                $pout = $process->getStdout();
-                $perr = $process->getStderr();
-                $pin  = $process->getStdin();
-                
-                $outWriter = async(function() use ($pout, $out) {
-                    while ($chunk = $pout->read()) {
-                        $out->write($chunk);
-                    }
-                });
+                self::dev(
+                    process: $process,
+                    stdout: $stdout,
+                    stderr: $stderr,
+                    change: $change,
+                );
 
-                $errorWriter = async(function() use ($perr, $err) {
-                    while ($chunk = $perr->read()) {
-                        $err->write($chunk);
-                    }
-                });
-
-                $inputReader = async(function() use ($pin, $in) {
-                    while ($chunk = $in->read()) {
-                        $pin->write($chunk);
-                    }
-                });
-
-                try {
-                    await([$outWriter, $errorWriter, $inputReader]);
-                    /** @var int */
-                    $code = $process->join();
-                    if (0 !== $code) {
-                        throw new Exception("Exiting with code $code");
-                    }
-                    delay(1);
-                } catch (Throwable $e) {
-                    $crashed = true;
-                }
+                echo "Spawning $instruction".PHP_EOL;
+                $process = Process::start($instruction);
             }
         })->await();
     }
@@ -297,49 +327,56 @@ class Bootstrap {
         array $resources,
         callable $callback,
     ) {
-        $fs        = new Filesystem(createDefaultDriver());
-        $changes   = [];
-        $firstPass = true;
+        async(function() use (
+            $entry,
+            $libraries,
+            $resources,
+            $callback,
+        ) {
+            $fs        = new Filesystem(createDefaultDriver());
+            $changes   = [];
+            $firstPass = true;
 
-        while (true) {
-            clearstatcache();
-            $countLastPass = count($changes);
+            while (true) {
+                clearstatcache();
+                $countLastPass = count($changes);
 
-            $filenames = [$entry => false];
-            foreach ([...$libraries, ...$resources] as $directory) {
-                if (!exists($directory)) {
-                    continue;
-                }
-                foreach (listFilesRecursively(\realpath($directory)) as $i => $filename) {
-                    $filenames[$filename] = false;
-                }
-            }
-
-
-            $countThisPass = count($filenames);
-            if (!$firstPass && $countLastPass !== $countThisPass) {
-                $callback();
-            }
-
-            foreach (array_keys($filenames) as $filename) {
-                if (!exists($filename)) {
-                    $changes[$filename] = 0;
-                    continue;
-                }
-                $mtime = $fs->getModificationTime($filename);
-                if (!isset($changes[$filename])) {
-                    $changes[$filename] = $mtime;
-                    continue;
+                $filenames = [$entry => false];
+                foreach ([...$libraries, ...$resources] as $directory) {
+                    if (!exists($directory)) {
+                        continue;
+                    }
+                    foreach (listFilesRecursively(\realpath($directory)) as $i => $filename) {
+                        $filenames[$filename] = false;
+                    }
                 }
 
-                if ($changes[$filename] !== $mtime) {
-                    $changes[$filename] = $mtime;
+
+                $countThisPass = count($filenames);
+                if (!$firstPass && $countLastPass !== $countThisPass) {
                     $callback();
                 }
-            }
 
-            $firstPass = false;
-            delay(1000);
-        }
+                foreach (array_keys($filenames) as $filename) {
+                    if (!exists($filename)) {
+                        $changes[$filename] = 0;
+                        continue;
+                    }
+                    $mtime = $fs->getModificationTime($filename);
+                    if (!isset($changes[$filename])) {
+                        $changes[$filename] = $mtime;
+                        continue;
+                    }
+
+                    if ($changes[$filename] !== $mtime) {
+                        $changes[$filename] = $mtime;
+                        $callback();
+                    }
+                }
+
+                $firstPass = false;
+                delay(1);
+            }
+        });
     }
 }
