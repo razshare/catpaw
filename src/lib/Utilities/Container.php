@@ -430,7 +430,7 @@ class Container {
         // }
 
         $arguments = Container::dependencies($reflection);
-        $function(...$arguments);
+        async($function, ...$arguments)->await();
     }
 
     /**
