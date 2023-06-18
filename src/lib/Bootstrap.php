@@ -69,10 +69,6 @@ class Bootstrap {
                 append: true
             );
 
-            if ($info) {
-                echo Container::describe();
-            }
-
             Container::run($main, false);
         } else {
             self::kill("Could not find php entry file \"$fileName\".\n");
