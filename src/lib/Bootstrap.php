@@ -156,7 +156,9 @@ class Bootstrap {
                     entry: $entry,
                     libraries: $libraries,
                     resources: $resources,
-                    callback: static fn ():never => self::kill("Killing application..."),
+                    callback: static function() {
+                        self::kill("Killing application...");
+                    },
                 );
             }
             async(self::init(...), $entry, $libraries, $info)->await();
