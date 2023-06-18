@@ -20,15 +20,15 @@ $php         = new Option('--php');
 $info        = new Option('--info');
 $environment = new Option('--environment');
 
-$entry       = $entry->findValue('string', true)     ?? '';
-$name        = $name->findValue('string', true)      ?? 'App';
-$libraries   = $libraries->findValue('string', true) ?? '';
-$resources   = $resources->findValue('string', true) ?? '';
-$dieOnChange = $dieOnChange->findValue('bool')       ?? false;
-$watch       = $watch->findValue('bool')             ?? false;
-$php         = $php->findValue('string', true)       ?? 'php';
-$info        = $info->findValue('bool')              ?? false;
-$environment = $environment->findValue('string')     ?? './env.yml';
+$entry       = $entry->findValue('string', true)       ?? '';
+$name        = $name->findValue('string', true)        ?? 'App';
+$libraries   = $libraries->findValue('string', true)   ?? '';
+$resources   = $resources->findValue('string', true)   ?? '';
+$dieOnChange = $dieOnChange->findValue('bool')         ?? false;
+$watch       = $watch->findValue('bool')               ?? false;
+$php         = $php->findValue('string', true)         ?? 'php';
+$info        = $info->findValue('bool')                ?? false;
+$environment = $environment->findValue('string', true) ?? './env.yml';
 
 try {
     if ($watch) {
