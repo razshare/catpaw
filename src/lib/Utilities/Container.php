@@ -2,12 +2,14 @@
 
 namespace CatPaw\Utilities;
 
+use function Amp\async;
 use Attribute;
 use BadFunctionCallException;
 use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
+
 use CatPaw\Bootstrap;
 use function CatPaw\isPhar;
 use Closure;
@@ -109,8 +111,14 @@ class Container {
             if ($entry) {
                 $args = Container::dependencies($method);
                 if ($method->isStatic()) {
+                    // async(function() use ($method, &$args):mixed {
+                    //     return $method->invoke(null, ...$args);
+                    // })->await();
                     $method->invoke(null, ...$args);
                 } else {
+                    // async(function() use ($method, $instance, &$args):mixed {
+                    //     return $method->invoke($instance, ...$args);
+                    // })->await();
                     $method->invoke($instance, ...$args);
                 }
                 break;
@@ -264,7 +272,24 @@ class Container {
                 if (!$attributeInstance) {
                     continue;
                 }
-                $attributeInstance->onParameterMount($refparams[$i], $parameters[$i], $context);
+                // async(function() use (
+                //     $attributeInstance,
+                //     $refparams,
+                //     $i,
+                //     &$parameters,
+                //     $context,
+                // ):mixed {
+                //     return $attributeInstance->onParameterMount(
+                //         $refparams[$i],
+                //         $parameters[$i],
+                //         $context,
+                //     );
+                // })->await();
+                $attributeInstance->onParameterMount(
+                    $refparams[$i],
+                    $parameters[$i],
+                    $context,
+                );
                 $attributeHasStorage = $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i][$j];
                 if ($attributeHasStorage) {
                     $parameters[$i] = &$parameters[$i]->storage();
@@ -359,10 +384,6 @@ class Container {
             $reflection = $function;
             $function   = $reflection->getClosure();
         }
-
-        // if (!$function) {
-            //     throw new BadFunctionCallException("Could not touch function \"{$reflection->getName()}\" inside container.");
-        // }
 
         foreach ($reflection->getAttributes() as $attribute) {
             $attributeArguments = $attribute->getArguments();

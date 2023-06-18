@@ -30,24 +30,28 @@ class Bootstrap {
 
     /**
      * Initialize an application from a soruce file (that usually defines a global "main" function).
-     * @param  string              $filename
+     * @param  string              $fileName
      * @param  bool                $info
      * @throws ReflectionException
      * @return void
      */
     public static function init(
-        string $filename,
+        string $fileName,
         array $libraries = [],
         bool $info = false,
     ) {
         if (isPhar()) {
-            $filename = \Phar::running()."/$filename";
+            $fileName = \Phar::running()."/$fileName";
         }
-        if (exists($filename)) {
+
+        $fileExists = exists($fileName);
+        // $fileExists = true;
+
+        if ($fileExists) {
             /**
              * @psalm-suppress UnresolvableInclude
              */
-            require_once $filename;
+            require_once $fileName;
             /** @var mixed $result */
             if (!function_exists('main')) {
                 self::kill("Please define a global main function.\n");
@@ -62,10 +66,6 @@ class Bootstrap {
 
             Container::load(
                 locations: $libraries,
-                // This will maintain any singletons 
-                // set by "require_once $filename" 
-                // (instead of clearing all singletons before 
-                // loading new ones)
                 append: true
             );
 
@@ -75,7 +75,7 @@ class Bootstrap {
 
             Container::run($main, false);
         } else {
-            self::kill("Could not find php entry file \"$filename\".\n");
+            self::kill("Could not find php entry file \"$fileName\".\n");
         }
     }
 
@@ -102,30 +102,30 @@ class Bootstrap {
             if (!$entry) {
                 self::kill("Please point to a php entry file.\n");
             }
-
+    
             $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-
+    
             if (!str_starts_with($entry, './')) {
                 if (!$isWindows) {
-                    die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+                    self::kill("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
                 }
                 if (!str_starts_with($entry, '.\\')) {
-                    die("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+                    self::kill("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
                 }
             }
-
+    
             Container::set(LoggerInterface::class, LoggerFactory::create($name));
             /** @var array<string> */
             $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
             /** @var array<string> */
             $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
-
+    
             $_ENV['ENTRY']         = $entry;
             $_ENV['LIBRARIES']     = $libraries;
             $_ENV['RESOURCES']     = $resources;
             $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
             $_ENV['SHOW_INFO']     = $info;
-
+    
             foreach ($libraries as $library) {
                 if (!str_starts_with($library, './')) {
                     if (!$isWindows) {
@@ -136,7 +136,7 @@ class Bootstrap {
                     }
                 }
             }
-
+    
             foreach ($resources as $resource) {
                 if (!str_starts_with($resource, './')) {
                     if (!$isWindows) {
@@ -147,13 +147,10 @@ class Bootstrap {
                     }
                 }
             }
-
+    
             if ($dieOnChange) {
                 if (isPhar()) {
-                    /** @var LoggerInterface */
-                    $logger = Container::create(LoggerInterface::class);
-                    $logger->error("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
-                    self::kill();
+                    self::kill("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
                 }
                 self::onFileChange(
                     entry: $entry,
@@ -162,11 +159,9 @@ class Bootstrap {
                     callback: static fn ():never => self::kill("Killing application..."),
                 );
             }
-
-            self::init($entry, $libraries, $info);
+            async(self::init(...), $entry, $libraries, $info)->await();
         } catch (Throwable $e) {
-            echo $e.PHP_EOL;
-            exit(1);
+            self::kill((string)$e);
         }
     }
 

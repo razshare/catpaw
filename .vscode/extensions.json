@@ -1,8 +1,0 @@
-{
-	"recommendations": [
-		"xdebug.php-debug",
-		"bmewburn.vscode-intelephense-client",
-        "getpsalm.psalm-vscode-plugin",
-		"emeraldwalk.RunOnSave"
-	]
-}
