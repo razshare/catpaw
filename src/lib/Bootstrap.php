@@ -14,6 +14,7 @@ use Amp\File\Filesystem;
 
 
 use Amp\Process\Process;
+use CatPaw\Environment\Services\EnvironmentService;
 use CatPaw\Utilities\Container;
 use CatPaw\Utilities\LoggerFactory;
 use Exception;
@@ -80,6 +81,7 @@ class Bootstrap {
         }
     }
 
+    private const PATTERN_ENVIRONMENT_FILE_NAMES = '/(".+")|(\'.+\')|([^\s]+)/m';
     /**
      * Bootstrap an application from a file.
      * @param  string    $entry       the entry file of the application (it usually defines a global "main" function)
@@ -96,6 +98,7 @@ class Bootstrap {
         string $name,
         string $libraries,
         string $resources,
+        string $environment,
         bool $info = false,
         bool $dieOnChange = false,
     ): void {
@@ -115,7 +118,35 @@ class Bootstrap {
                 }
             }
     
-            Container::set(LoggerInterface::class, LoggerFactory::create($name));
+            $logger = LoggerFactory::create($name);
+            Container::set(LoggerInterface::class, $logger);
+
+            $environmentService   = new EnvironmentService($logger);
+            $environmentFileNames = [];
+
+            $environmentString = str_replace([',',';'], ' ', $environment);
+            while (preg_match(self::PATTERN_ENVIRONMENT_FILE_NAMES, $environmentString, $groups)) {
+                $environmentString = preg_replace(self::PATTERN_ENVIRONMENT_FILE_NAMES, '', $environmentString, 1);
+
+                $name           = $groups[4] ?? $groups[0] ?? '';
+                $originalLength = strlen($name);
+
+                $unquoted  = preg_replace('/(^\')|(\'$)/', '', $name);
+                $newLength = strlen($unquoted);
+
+                if ($newLength - 2 === $originalLength) {
+                    $environmentFileNames[] = $unquoted;
+                    continue;
+                }
+
+                $unquoted               = preg_replace('/(^")|("$)/', '', $groups[4] ?? $groups[0] ?? '');
+                $newLength              = strlen($unquoted);
+                $environmentFileNames[] = $unquoted;
+            }
+
+            $environmentService->setFiles(...$environmentFileNames);
+            $environmentService->load();
+
             /** @var array<string> */
             $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
             /** @var array<string> */
