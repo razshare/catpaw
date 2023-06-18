@@ -51,7 +51,7 @@
         ]
     },
     "require": {
-        "php": "^8.2",
+        "php": "^8.1",
         "amphp/amp": "^3.0",
         "erusev/parsedown": "^1.7",
         "amphp/file": "^3.0",
