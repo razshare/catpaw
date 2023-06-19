@@ -334,9 +334,7 @@ class Container {
             try {
                 $directory = new RecursiveDirectoryIterator($location);
             } catch (Throwable) {
-                echo("Path \"$location\" is not a valid directory to load.".\PHP_EOL);
-                /** @psalm-suppress UndefinedClass */
-                Bootstrap::kill();
+                Bootstrap::kill("Path \"$location\" is not a valid directory to load.".\PHP_EOL);
             }
                 
             /**
@@ -357,14 +355,6 @@ class Container {
                     $scanned[] = $filename;
                 }
             }
-        }
-
-
-        foreach (get_declared_classes() as $classname) {
-            if (!Singleton::findByClass(new ReflectionClass($classname))) {
-                continue;
-            }
-            Container::create($classname);
         }
             
         return $scanned;
