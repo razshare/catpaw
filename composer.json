@@ -29,7 +29,7 @@
         "test": [],
         "build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./product.phar --build-config --build",
         "edit:extensions": "@download:product && php product.phar --extensions",
-        "download:product": "[ ! -f product.phar ] && wget https://github.com/tncrazvan/catpaw-dev-tools/releases/download/0.7.426/product.phar || echo \"product.phar found.\n\"",
+        "download:product": "[ ! -f product.phar ] && wget https://github.com/tncrazvan/catpaw-dev-tools/releases/download/0.7.48/product.phar || echo \"product.phar found.\n\"",
         "download:psalm": "[ ! -f vendor/bin/psalm ] && wget -O vendor/bin/psalm https://github.com/vimeo/psalm/releases/latest/download/psalm.phar || echo \"vendor/bin/psalm found.\n\"",
         "post-autoload-dump": [
             "@download:product",
