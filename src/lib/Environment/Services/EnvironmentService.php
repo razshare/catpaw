@@ -5,6 +5,8 @@ use \CatPaw\Attributes\File as AttributeFile;
 use function Amp\File\exists;
 use function Amp\File\openFile;
 use CatPaw\Attributes\Service;
+use CatPaw\Bootstrap;
+
 use function CatPaw\isPhar;
 use Error;
 use Phar;
@@ -110,8 +112,7 @@ class EnvironmentService {
                     $vars            = \yaml_parse($contents);
                     $this->variables = $vars?$vars:[];
                 } else {
-                    $this->logger->error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
-                    $this->variables = [];
+                    Bootstrap::kill("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
                 }
             } else {
                 $this->variables = \Dotenv\Dotenv::parse($contents);
@@ -119,7 +120,6 @@ class EnvironmentService {
         }
 
         $_ENV = [
-            "info" => $info,
             ...$_ENV,
             ... $this->variables,
         ];

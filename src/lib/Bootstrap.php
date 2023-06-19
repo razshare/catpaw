@@ -71,10 +71,6 @@ class Bootstrap {
                 append: true
             );
 
-            if ($info) {
-                echo Container::describe();
-            }
-
             Container::run($main, false);
         } else {
             self::kill("Could not find php entry file \"$fileName\".\n");
@@ -191,7 +187,6 @@ class Bootstrap {
                     libraries: $libraries,
                     resources: $resources,
                     callback: function() {
-                        echo "here (start)\n";
                         self::kill("Killing application...");
                     },
                 );
