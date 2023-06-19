@@ -398,12 +398,12 @@ class Container {
      * @param  bool                       $touch    if true, Container::touch will be 
      *                                              called automatically on the function
      * @throws BadFunctionCallException
-     * @return void
+     * @return mixed
      */
     public static function run(
         Closure|ReflectionFunction $function,
         bool $touch = true,
-    ):void {
+    ):mixed {
         if ($function instanceof Closure) {
             $reflection = new ReflectionFunction($function);
         } else {
@@ -414,13 +414,9 @@ class Container {
         if ($touch) {
             self::touch($function);
         }
-            
-        // if (!$function) {
-            //     throw new BadFunctionCallException("Could not execute function \"{$reflection->getName()}\" inside container.");
-        // }
 
         $arguments = Container::dependencies($reflection);
-        async($function, ...$arguments)->await();
+        return async($function, ...$arguments)->await();
     }
 
     /**
