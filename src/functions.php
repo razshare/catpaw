@@ -438,7 +438,7 @@ function flatten(array $array, bool $completely = false):array {
 }
 
 /**
- * Assign two streams, a readable stream and a writable one which will be writing to the first stream.
+ * Return two new streams, a readable stream and a writable one which will be writing to the first stream.
  * 
  * The writer stream will automatically be disposed of when the readable stream is disposed of.
  * @param  int                                                      $bufferSize
