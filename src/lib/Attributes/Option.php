@@ -131,6 +131,10 @@ class Option implements AttributeInterface {
         bool $allowsTrue = false,
         bool $allowsFalse = false,
     ):mixed {
+        if (isset(self::$cache[$this->name])) {
+            return self::$cache[$this->name];
+        }
+
         $option = $this->extract();
 
         if (null !== $option) {
