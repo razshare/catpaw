@@ -30,8 +30,6 @@ interface AttributeInterface {
 
     /**
      * Invoked when this attribute is detected on a route handler.
-     * 
-     * Route handlers are functions passed to "Route::get", "Route::post", "Route::update", etc.
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/1.RouteHandlers.md
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/9.Filters.md
      * @param  ReflectionFunction $reflection reflection of the function.
