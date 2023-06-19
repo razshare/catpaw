@@ -88,7 +88,7 @@ class Bootstrap {
      * @param  string    $name        application name (this will be used by the default logger)
      * @param  string    $libraries   libraries to load
      * @param  string    $resources   resources to load
-     * @param  bool      $info
+     * @param  bool      $info        if true, the bootstrap starter will write feedback messages to stdout, otherwise it will be silent unless it crashes with an exception.
      * @param  bool      $dieOnChange die when a change to the entry file, libraries or resources is detected
      * @throws Throwable
      * @return void
@@ -144,8 +144,10 @@ class Bootstrap {
                 $environmentFileNames[] = $unquoted;
             }
 
-            $environmentService->setFiles(...$environmentFileNames);
-            $environmentService->load();
+            if ($environmentFileNames) {
+                $environmentService->setFiles(...$environmentFileNames);
+                $environmentService->load($info);
+            }
 
             /** @var array<string> */
             $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);

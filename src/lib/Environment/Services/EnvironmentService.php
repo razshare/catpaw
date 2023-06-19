@@ -70,9 +70,10 @@ class EnvironmentService {
     /**
      * Parse the first valid environment file and update all variables in memory.
      * Multiple calls are allowed.
+     * @param  bool $info if true, feedback messages will be written to stdout, otherwise the loading process will be silent.
      * @return void
      */
-    public function load():void {
+    public function load(bool $info = false):void {
         $this->variables = [];
             
         $fileNames = [];
@@ -81,15 +82,17 @@ class EnvironmentService {
             $fileNames[] = $file->getFileName();
         }
             
-        // $stringifiedFileNames = join(',', $fileNames);
+        $stringifiedFileNames = join(',', $fileNames);
             
         if (!$fileName = $this->findFileName()) {
             // throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
-            // $this->logger->info("Environment files [$stringifiedFileNames] not found.");
+            if ($info) {
+                $this->logger->info("Environment files [$stringifiedFileNames] not found.");
+            }
             return;
         }
-            
-        if ($_ENV['SHOW_INFO'] ?? false) {
+
+        if ($info) {
             $this->logger->info("Environment file is $fileName");
         }
 
@@ -116,6 +119,7 @@ class EnvironmentService {
         }
 
         $_ENV = [
+            "info" => $info,
             ...$_ENV,
             ... $this->variables,
         ];
