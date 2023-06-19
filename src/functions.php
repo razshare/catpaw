@@ -1,9 +1,11 @@
 <?php
 namespace CatPaw;
 
+use function Amp\async;
 use function Amp\ByteStream\buffer;
 
 use Amp\ByteStream\ReadableIterableStream;
+use Amp\ByteStream\ReadableStream;
 use Amp\ByteStream\WritableIterableStream;
 use Amp\DeferredFuture;
 use function Amp\File\createDirectoryRecursively;
@@ -22,6 +24,7 @@ use Amp\Future;
 use Amp\Process\Process;
 use CatPaw\Utilities\AsciiTable;
 use CatPaw\Utilities\Stream;
+use Closure;
 use Error;
 use InvalidArgumentException;
 use Phar;
@@ -445,4 +448,18 @@ function duplex(int $bufferSize = 8192):array {
     $writer = new WritableIterableStream($bufferSize);
     $reader = new ReadableIterableStream($writer);
     return [$reader, $writer];
+}
+
+/**
+ * Given a stream, execute a callback on new data.
+ * @param  ReadableStream $reader
+ * @param  Closure        $callback
+ * @return void
+ */
+function on(ReadableStream $reader, Closure $callback):void {
+    async(function() use ($reader, $callback) {
+        while ($chunk = $reader->read()) {
+            $callback($chunk);
+        }
+    });
 }
