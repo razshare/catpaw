@@ -3,6 +3,8 @@ namespace CatPaw;
 
 use function Amp\ByteStream\buffer;
 
+use Amp\ByteStream\ReadableIterableStream;
+use Amp\ByteStream\WritableIterableStream;
 use Amp\DeferredFuture;
 use function Amp\File\createDirectoryRecursively;
 
@@ -254,10 +256,8 @@ function execute(
     array $options = []
 ):string {
     $process = Process::start($command, $cwd?$cwd:null, $env, $options);
-    $pout    = $process->getStdout();
-    $perr    = $process->getStderr();
-    $result  = buffer($pout);
-    $result .= buffer($perr);
+    $result  = buffer($process->getStdout());
+    $result .= buffer($process->getStderr());
     $process->join();
     return $result;
 }
@@ -432,4 +432,17 @@ function flatten(array $array, bool $completely = false):array {
     }
 
     return array_merge(...array_values($array));
+}
+
+/**
+ * Assign two streams, a readable stream and a writable one which will be writing to the first stream.
+ * 
+ * The writer stream will automatically be disposed of when the readable stream is disposed of.
+ * @param  int                                                      $bufferSize
+ * @return array{0:ReadableIterableStream,1:WritableIterableStream}
+ */
+function duplex(int $bufferSize = 8192):array {
+    $writer = new WritableIterableStream($bufferSize);
+    $reader = new ReadableIterableStream($writer);
+    return [$reader, $writer];
 }
