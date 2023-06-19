@@ -4,6 +4,7 @@ namespace CatPaw\Attributes;
 use Attribute;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
+use CatPaw\Bootstrap;
 use CatPaw\Utilities\ReflectionTypeManager;
 use Closure;
 use ReflectionClass;
@@ -31,13 +32,12 @@ class Option implements AttributeInterface {
         private string $description = '',
     ) {
         if (!str_starts_with($name, '-')) {
-            echo "Options must start with `-`, received `$name`.".PHP_EOL;
-            die(22);
+            Bootstrap::kill("Options must start with `-`, received `$name`.");
         }
-        self::$linuxManual[$name] = (object)[
-            "example"     => $example,
-            "description" => $description,
-        ];
+        // self::$linuxManual[$name] = (object)[
+        //     "example"     => $example,
+        //     "description" => $description,
+        // ];
         self::init();
     }
 
@@ -56,14 +56,14 @@ class Option implements AttributeInterface {
     public function onClassMount(ReflectionClass $reflection, mixed &$value, mixed $context) {
     }
 
-    public static function renderLinuxManual():string {
-        $result = '';
-        foreach (self::$linuxManual as $option => $guide) {
-            // $guide->
-        }
+    // public static function renderLinuxManual():string {
+    //     $result = '';
+    //     foreach (self::$linuxManual as $option => $guide) {
+    //         // $guide->
+    //     }
 
-        return $result;
-    }
+    //     return $result;
+    // }
 
     public static function exists(string $option) {
         self::init();
@@ -104,9 +104,6 @@ class Option implements AttributeInterface {
 
     private function extract():?string {
         $name = $this->name;
-        if (isset(self::$cache[$name])) {
-            return self::$cache[$name];
-        }
         foreach (self::$options as $i => $value) {
             if (
                 str_starts_with($value, "$name ")
@@ -119,10 +116,10 @@ class Option implements AttributeInterface {
                     && str_starts_with($value, $name)
                 )
             ) {
-                return self::$cache[$name] = trim(substr($value, strlen($name)));
+                return trim(substr($value, strlen($name)));
             }
         }
-        return self::$cache[$name] = null;
+        return null;
     }
 
     public function findValue(
@@ -194,10 +191,16 @@ class Option implements AttributeInterface {
             }
         }
 
-        return $value;
+        return self::$cache[$this->name] = $value;
     }
 
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context) {
+        if (isset(self::$cache[$this->name])) {
+            $value = self::$cache[$this->name];
+            return;
+        }
+
+
         /** @var string|int|bool|float $value */
         /** @var false $context */
         $wrapper = ReflectionTypeManager::wrap($reflection);

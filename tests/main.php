@@ -1,11 +1,10 @@
 <?php
 
-
-use function CatPaw\execute;
-
+use CatPaw\Attributes\Option;
 
 function main(
-
+    #[Option("--info")] bool $info,
 ) {
-    echo execute("ls -lah");
+    echo $info?'info':'no info';
+    echo PHP_EOL;
 }
