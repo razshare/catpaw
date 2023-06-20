@@ -1,7 +1,6 @@
 <?php
 namespace CatPaw\Environment\Services;
 
-use \CatPaw\Attributes\File as AttributeFile;
 use function Amp\File\exists;
 use function Amp\File\openFile;
 use CatPaw\Attributes\Service;
@@ -19,22 +18,16 @@ class EnvironmentService {
     ) {
     }
 
-    /** @var array<AttributeFile> */
+    /** @var array<string> */
     private array $files = [];
 
     /**
      * Set the allowed environment file names.
-     * @param  array<string|AttributeFile> $files
+     * @param  array<string> $files
      * @return void
      */
-    public function setFiles(string|AttributeFile ...$files):void {
-        $this->files = [];
-        foreach ($files as $file) {
-            if (is_string($file)) {
-                $file = new AttributeFile($file);
-            }
-            $this->files[] = $file;
-        }
+    public function setFiles(string ...$files):void {
+        $this->files = $files;
     }
 
 
@@ -47,20 +40,16 @@ class EnvironmentService {
      * @return string
      */
     private function findFileName():string {
-        $isPhar = isPhar();
-        $phar   = Phar::running();
-        foreach ($this->files as $_ => $currentFile) {
-            $currentFileName = $currentFile->getFileName();
-            if ($isPhar) {
-                $allowsExternal = $currentFile->allowsExternal();
-                if ($allowsExternal && exists($currentFileName)) {
-                    return $currentFileName;
-                }
+        if (isPhar()) {
+            $phar = Phar::running();
+            foreach ($this->files as $_ => $currentFileName) {
                 $currentPharFileName = "$phar/$currentFileName";
                 if (exists($currentPharFileName)) {
                     return $currentPharFileName;
                 }
-            } else {
+            }
+        } else {
+            foreach ($this->files as $_ => $currentFileName) {
                 if (exists($currentFileName)) {
                     return $currentFileName;
                 }
@@ -77,17 +66,10 @@ class EnvironmentService {
      */
     public function load(bool $info = false):void {
         $this->variables = [];
-            
-        $fileNames = [];
-
-        foreach ($this->files as $file) {
-            $fileNames[] = $file->getFileName();
-        }
-            
-        $stringifiedFileNames = join(',', $fileNames);
+        
+        $stringifiedFileNames = join(',', $this->files);
             
         if (!$fileName = $this->findFileName()) {
-            // throw new EnvironmentNotFoundException("Environment files [$stringifiedFileNames] not found.");
             if ($info) {
                 $this->logger->info("Environment files [$stringifiedFileNames] not found.");
             }
@@ -123,17 +105,6 @@ class EnvironmentService {
             ...$_ENV,
             ... $this->variables,
         ];
-
-        /**
-         * @psalm-suppress InvalidArrayOffset
-         */
-        if (isset($_ENV["CATPAW_FILE_DRIVER"]) && $_ENV["CATPAW_FILE_DRIVER"]) {
-            /**
-             * How would you set a new file system driver?
-             * TODO: open a new issue about this in https://github.com/amphp/file/issues/new
-             */
-            // EventLoop::setState(\Amp\File\Driver::class, new Filesystem(new CatPawDriver));
-        }
     }
 
     /**
