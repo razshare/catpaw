@@ -27,7 +27,7 @@ $resources   = $resources->findValue('string', true)   ?? '';
 $dieOnChange = $dieOnChange->findValue('bool')         ?? false;
 $watch       = $watch->findValue('bool')               ?? false;
 $php         = $php->findValue('string', true)         ?? 'php';
-$info        = $info->findValue('bool')                ?? false;
+$info        = $info->findValue('bool', true)          ?? false;
 $environment = $environment->findValue('string', true) ?? './env.yml';
 
 try {
