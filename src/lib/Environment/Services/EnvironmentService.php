@@ -6,9 +6,7 @@ use function Amp\File\openFile;
 use CatPaw\Attributes\Service;
 use CatPaw\Bootstrap;
 
-use function CatPaw\isPhar;
 use Error;
-use Phar;
 use Psr\Log\LoggerInterface;
 
 #[Service]
@@ -26,7 +24,7 @@ class EnvironmentService {
      * @param  array<string> $files
      * @return void
      */
-    public function setFiles(string ...$files):void {
+    public function setFiles(array $files):void {
         $this->files = $files;
     }
 
@@ -40,21 +38,12 @@ class EnvironmentService {
      * @return string
      */
     private function findFileName():string {
-        if (isPhar()) {
-            $phar = Phar::running();
-            foreach ($this->files as $_ => $currentFileName) {
-                $currentPharFileName = "$phar/$currentFileName";
-                if (exists($currentPharFileName)) {
-                    return $currentPharFileName;
-                }
-            }
-        } else {
-            foreach ($this->files as $_ => $currentFileName) {
-                if (exists($currentFileName)) {
-                    return $currentFileName;
-                }
+        foreach ($this->files as $_ => $currentFileName) {
+            if (exists($currentFileName)) {
+                return $currentFileName;
             }
         }
+
         return '';
     }
 

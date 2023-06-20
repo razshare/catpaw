@@ -117,31 +117,11 @@ class Bootstrap {
             $logger = LoggerFactory::create($name);
             Container::set(LoggerInterface::class, $logger);
 
-            $environmentService   = new EnvironmentService($logger);
-            $environmentFileNames = [];
+            $environmentService = new EnvironmentService($logger);
 
-            $environmentString = str_replace([',',';'], ' ', $environment);
-            while (preg_match(self::PATTERN_ENVIRONMENT_FILE_NAMES, $environmentString, $groups)) {
-                $environmentString = preg_replace(self::PATTERN_ENVIRONMENT_FILE_NAMES, '', $environmentString, 1);
 
-                $name           = $groups[4] ?? $groups[0] ?? '';
-                $originalLength = strlen($name);
-
-                $unquoted  = preg_replace('/(^\')|(\'$)/', '', $name);
-                $newLength = strlen($unquoted);
-
-                if ($newLength - 2 === $originalLength) {
-                    $environmentFileNames[] = $unquoted;
-                    continue;
-                }
-
-                $unquoted               = preg_replace('/(^")|("$)/', '', $groups[4] ?? $groups[0] ?? '');
-                $newLength              = strlen($unquoted);
-                $environmentFileNames[] = $unquoted;
-            }
-
-            if ($environmentFileNames) {
-                $environmentService->setFiles(...$environmentFileNames);
+            if ($environment) {
+                $environmentService->setFiles([$environment]);
                 $environmentService->load($info);
             }
 
