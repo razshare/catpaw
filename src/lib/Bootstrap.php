@@ -210,7 +210,6 @@ class Bootstrap {
     }
 
     public static function kill(string $message = ''):never {
-        echo "killing app...\n";
         foreach (self::$onKillActions as $callback) {
             $callback();
         }
