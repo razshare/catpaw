@@ -387,7 +387,7 @@ class Bootstrap {
 
                 foreach (array_keys($filenames) as $filename) {
                     if (!exists($filename)) {
-                        $changes[$filename] = 0;
+                        unset($changes[$filename]);
                         continue;
                     }
                     $mtime = $fs->getModificationTime($filename);
