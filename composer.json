@@ -47,7 +47,8 @@
             ]
         },
         "files": [
-            "src/functions.php"
+            "src/functions.php",
+            "src/exit-codes.php"
         ]
     },
     "require": {
