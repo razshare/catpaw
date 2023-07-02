@@ -6,7 +6,7 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 | Topic                      | Implemented  | Repository                                                                  | Read                                       |
 |----------------------------|--------------|-----------------------------------------------------------------------------|--------------------------------------------|
-| 🌐 Routes       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/1.Routes.md)     |
+| 🌐 Routes       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/1.routes.md)     |
 | 🌐 Automated Routes   | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/17.automated-routes.md) |
 | 🌐 Route Filters              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/9.route-filters.md)           |
 | 🌐 Route Parameters      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/2.route-parameters.md)    |
