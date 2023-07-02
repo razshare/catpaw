@@ -3,6 +3,8 @@
 namespace CatPaw\Utilities;
 
 use function Amp\async;
+use function Amp\File\isDirectory;
+
 use Attribute;
 use BadFunctionCallException;
 use CatPaw\Attributes\AttributeResolver;
@@ -301,15 +303,14 @@ class Container {
     }
 
     /**
-     * Loads singletons from some locations (only directories are allowed for now).
-     * @param  array<string> $locations directories containing your singletons.
-     * @param  bool          $append    if true, the found singletons will be appended, otherwise all the other singletons will 
-     *                                  be cleared before scanning.
+     * Load libraries and create default singletons for the container.
+     * @param  string        $path
+     * @param  bool          $append if true, the resulting singletons will be appended to the container, otherwise all the other singletons will be cleared before scanning.
      * @throws Exception
-     * @return array<string> list of directories examined.
+     * @return array<string> list of files scanned.
      */
     public static function load(
-        array $locations,
+        string $path,
         bool $append = false,
     ):array {
         if (!$append) {
@@ -322,38 +323,41 @@ class Container {
         
         $scanned = [];
         $isPhar  = isPhar();
-        foreach ($locations as $location) {
-            if ('' === \trim($location)) {
-                continue;
-            }
+        if ('' === \trim($path)) {
+            return [];
+        }
 
-            if ($isPhar) {
-                $location = \Phar::running()."/$location";
-            }
+        if ($isPhar) {
+            $path = \Phar::running()."/$path";
+        }
 
-            try {
-                $directory = new RecursiveDirectoryIterator($location);
-            } catch (Throwable) {
-                Bootstrap::kill("Path \"$location\" is not a valid directory to load.".\PHP_EOL);
-            }
+        if (!isDirectory($path)) {
+            require_once($path);
+            return [$path];
+        }
+
+        try {
+            $directory = new RecursiveDirectoryIterator($path);
+        } catch (Throwable) {
+            Bootstrap::kill("Path \"$path\" is not a valid directory or file to load.".\PHP_EOL);
+        }
                 
-            /**
-             * @psalm-suppress PossiblyUndefinedVariable
-             */
-            $iterator = new RecursiveIteratorIterator($directory);
-            $regex    = new RegexIterator(
-                $iterator,
-                '/^.+\.php$/i',
-                RecursiveRegexIterator::GET_MATCH
-            );
+        /**
+         * @psalm-suppress PossiblyUndefinedVariable
+         */
+        $iterator = new RecursiveIteratorIterator($directory);
+        $regex    = new RegexIterator(
+            $iterator,
+            '/^.+\.php$/i',
+            RecursiveRegexIterator::GET_MATCH
+        );
 
-            for ($regex->rewind(); $regex->valid() ; $regex->next()) {
-                /** @var array<string> $files */
-                $files = $regex->current();
-                foreach ($files as $filename) {
-                    require_once($filename);
-                    $scanned[] = $filename;
-                }
+        for ($regex->rewind(); $regex->valid() ; $regex->next()) {
+            /** @var array<string> $files */
+            $files = $regex->current();
+            foreach ($files as $filename) {
+                require_once($filename);
+                $scanned[] = $filename;
             }
         }
             

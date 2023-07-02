@@ -66,10 +66,12 @@ class Bootstrap {
 
             Container::touch($main);
 
-            Container::load(
-                locations: $libraries,
-                append: true
-            );
+            foreach ($libraries as $path) {
+                Container::load(
+                    path: $path,
+                    append: true
+                );
+            }
 
             Container::run($main, false);
         } else {
