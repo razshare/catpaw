@@ -169,7 +169,7 @@ class Bootstrap {
                     libraries: $libraries,
                     resources: $resources,
                     callback: function() {
-                        self::kill("Killing application...");
+                        self::kill("Application killed.\n");
                     },
                 );
             }
@@ -286,10 +286,7 @@ class Bootstrap {
                 entry: $entry,
                 libraries: $libraries,
                 resources: $resources,
-                callback: function() use (&$change, &$process) {
-                    if ($process) {
-                        $process->kill();
-                    }
+                callback: function() use (&$change) {
                     $change = true;
                 },
             );
