@@ -313,6 +313,12 @@ class Bootstrap {
                     change: $change,
                 );
 
+                while (!$change) {
+                    delay(1);
+                }
+
+                $change = false;
+
                 echo "Spawning $instruction".PHP_EOL;
                 $process = Process::start($instruction);
             }
