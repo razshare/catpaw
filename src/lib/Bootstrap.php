@@ -164,14 +164,14 @@ class Bootstrap {
                 if (isPhar()) {
                     self::kill("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
                 }
-                self::onFileChange(
-                    entry: $entry,
-                    libraries: $libraries,
-                    resources: $resources,
-                    callback: function() {
-                        self::kill("Application killed.\n");
-                    },
-                );
+                // self::onFileChange(
+                //     entry: $entry,
+                //     libraries: $libraries,
+                //     resources: $resources,
+                //     callback: function() {
+                //         self::kill("Application killed.\n");
+                //     },
+                // );
             }
             async(self::init(...), $entry, $libraries, $info)->await();
         } catch (Throwable $e) {
@@ -198,7 +198,7 @@ class Bootstrap {
         die($message);
     }
 
-    private static function dev(
+    private static function watch(
         Process $process,
         WritableResourceStream $stdout,
         WritableResourceStream $stderr,
@@ -275,7 +275,7 @@ class Bootstrap {
 
             if (DIRECTORY_SEPARATOR === '/') {
                 EventLoop::onSignal(\SIGINT, static function() use (&$process) {
-                    if ($process) {
+                    if ($process && $process->isRunning()) {
                         $process->kill();
                     }
                     self::kill();
@@ -286,8 +286,11 @@ class Bootstrap {
                 entry: $entry,
                 libraries: $libraries,
                 resources: $resources,
-                callback: function() use (&$change) {
+                callback: function() use (&$change, &$process) {
                     $change = true;
+                    if ($process && $process->isRunning()) {
+                        $process->kill();
+                    }
                 },
             );
             
@@ -306,7 +309,7 @@ class Bootstrap {
             });
 
             while (true) {
-                self::dev(
+                self::watch(
                     process: $process,
                     stdout: $stdout,
                     stderr: $stderr,
