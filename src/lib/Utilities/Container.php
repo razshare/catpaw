@@ -144,8 +144,6 @@ class Container {
         }
 
         if (!isset(self::$cache[$key1][$key2])) {
-            self::$cache[$key1][$key2] = [];
-
             $cache = new SplFixedArray(8);
 
             $refparams  = $reflection->getParameters();
@@ -188,8 +186,8 @@ class Container {
                 $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i] = new SplFixedArray($alen);
 
                 if ($fallback && 0 === $alen) {
-                    $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i]     = $fallback($cname, $name);
-                    $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i] = false;
+                    $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i] = [fn () => $fallback($cname, $name)];
+                    $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i]      = 1;
                     continue;
                 }
 
@@ -303,7 +301,7 @@ class Container {
                     $parameters[$i],
                     $context,
                 );
-                $attributeHasStorage = $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i][$j];
+                $attributeHasStorage = $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i][$j] ?? false;
                 if ($attributeHasStorage) {
                     $parameters[$i] = &$parameters[$i]->storage();
                 }
