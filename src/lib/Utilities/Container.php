@@ -136,6 +136,7 @@ class Container {
         ReflectionFunction|ReflectionMethod $reflection,
         string $key1,
         string $key2,
+        false|callable $fallback = false,
         ...$defaultArguments
     ): void {
         if (!isset(self::$cache[$key1])) {
@@ -161,6 +162,7 @@ class Container {
 
             for ($i = 0; $i < $len; $i++) {
                 $type  = $refparams[$i]->getType();
+                $name  = $refparams[$i]->getName();
                 $type  = ReflectionTypeManager::unwrap($refparams[$i]);
                 $cname = $type ? $type->getName() : '';
 
@@ -184,6 +186,13 @@ class Container {
                 $alen                                                = count($attributes);
                 $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i]          = $alen;
                 $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i] = new SplFixedArray($alen);
+
+                if ($fallback && 0 === $alen) {
+                    $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i]     = $fallback($cname, $name);
+                    $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i] = false;
+                    continue;
+                }
+
                 for ($j = 0; $j < $alen; $j++) {
                     $attribute = $attributes[$j];
                     $aname     = $attribute->getName();
@@ -213,19 +222,21 @@ class Container {
      */
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
+        // TODO: improve this by using a dedicated class instead of an array
         false|array $options = false,
         ...$defaultArguments
     ):array {
         $context = false;
         if ($options) {
             [
-                "id"      => [$key1, $key2],
-                "force"   => $force,
-                "context" => $context,
+                "id"       => [$key1, $key2],
+                "force"    => $force,
+                "fallback" => $fallback,
+                "context"  => $context,
             ] = $options;
 
             if (!isset(self::$cache[$key1][$key2])) {
-                self::cacheInMethodOrFunctionDependencies($reflection, $key1, $key2, ...$defaultArguments);
+                self::cacheInMethodOrFunctionDependencies($reflection, $key1, $key2, $fallback, ...$defaultArguments);
             }
             $cache = &self::$cache[$key1][$key2];
         } else {
@@ -236,7 +247,7 @@ class Container {
                 $functionName = $class->getName().':'.$functionName;
             }
             if (!isset(self::$cache[$fileName][$functionName])) {
-                self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName, ...$defaultArguments);
+                self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName, false, ...$defaultArguments);
             }
             $cache = &self::$cache[$fileName][$functionName];
         }
