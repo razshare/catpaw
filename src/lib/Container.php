@@ -184,8 +184,9 @@ class Container {
                 $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i] = new SplFixedArray($alen);
 
                 if ($fallback && 0 === $alen) {
-                    $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i] = [fn () => $fallback($cname, $name)];
-                    $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i]      = 1;
+                    $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i]     = [fn () => $fallback($cname, $name)];
+                    $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i]          = 1;
+                    $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i] = false;
                     continue;
                 }
 
