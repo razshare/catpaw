@@ -14,7 +14,7 @@ use Amp\File\Filesystem;
 
 
 use Amp\Process\Process;
-use CatPaw\Environment\Services\EnvironmentService;
+use CatPaw\Services\EnvironmentService;
 use Exception;
 use Psr\Log\LoggerInterface;
 
