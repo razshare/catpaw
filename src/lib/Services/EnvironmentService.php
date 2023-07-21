@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Environment\Services;
+namespace CatPaw\Services;
 
 use function Amp\File\exists;
 use function Amp\File\openFile;

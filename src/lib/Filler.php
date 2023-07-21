@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utilities;
+namespace CatPaw;
 
 class Filler {
     public const FILL_LEFT  = 0;

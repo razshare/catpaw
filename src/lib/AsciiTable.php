@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utilities;
+namespace CatPaw;
 
 class AsciiTable {
     public static function create():self {

@@ -1,10 +1,10 @@
 <?php
 
-namespace CatPaw\Attributes\Traits;
+namespace CatPaw\Traits;
 
 use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
-use CatPaw\Utilities\Container;
+use CatPaw\Container;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;

@@ -2,9 +2,9 @@
 namespace CatPaw\Attributes;
 
 use Attribute;
-use CatPaw\Attributes\Interfaces\AttributeInterface;
-use CatPaw\Attributes\Traits\CoreAttributeDefinition;
-use CatPaw\Utilities\ReflectionTypeManager;
+use CatPaw\Interfaces\AttributeInterface;
+use CatPaw\ReflectionTypeManager;
+use CatPaw\Traits\CoreAttributeDefinition;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;

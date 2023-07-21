@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Attributes\Interfaces;
+namespace CatPaw\Interfaces;
 
 abstract class OptionDocumentation {
     public string $example;

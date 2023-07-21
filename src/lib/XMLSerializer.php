@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utilities;
+namespace CatPaw;
 
 use function get_object_vars;
 use stdClass;

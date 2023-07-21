@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Utilities;
+namespace CatPaw;
 
 class WrappedType {
     public function __construct(

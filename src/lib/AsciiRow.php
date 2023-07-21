@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utilities;
+namespace CatPaw;
 
 class AsciiRow {
     public static function fromCells(AsciiCell ...$cells): self {

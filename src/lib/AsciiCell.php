@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utilities;
+namespace CatPaw;
 
 /**
  * @psalm-type Options = array{
@@ -12,7 +12,7 @@ namespace CatPaw\Utilities;
  *  padding-between-lines-top: int,
  *  padding-between-lines-bottom: int
  * }
- * @package CatPaw\Utilities
+ * @package CatPaw
  */
 class AsciiCell {
     /**

@@ -2,10 +2,10 @@
 namespace CatPaw\Attributes;
 
 use Attribute;
-use CatPaw\Attributes\Interfaces\AttributeInterface;
-use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Bootstrap;
-use CatPaw\Utilities\ReflectionTypeManager;
+use CatPaw\Interfaces\AttributeInterface;
+use CatPaw\ReflectionTypeManager;
+use CatPaw\Traits\CoreAttributeDefinition;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;
@@ -23,7 +23,7 @@ class Option implements AttributeInterface {
     private static array $options = [];
     /** @var array<bool> */
     private static array $exists = [];
-    /** @var array<string,\CatPaw\Attributes\Interfaces\OptionDocumentation> */
+    /** @var array<string,\CatPaw\Interfaces\OptionDocumentation> */
     private static array $linuxManual = [];
 
     public function __construct(

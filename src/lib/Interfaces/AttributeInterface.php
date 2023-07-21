@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Attributes\Interfaces;
+namespace CatPaw\Interfaces;
 
 use Closure;
 use ReflectionClass;

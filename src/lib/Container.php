@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utilities;
+namespace CatPaw;
 
 use function Amp\async;
 use function Amp\File\isDirectory;
@@ -12,8 +12,6 @@ use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 
-use CatPaw\Bootstrap;
-use function CatPaw\isPhar;
 use Closure;
 use Exception;
 use Psr\Log\LoggerInterface;

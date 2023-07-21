@@ -22,8 +22,6 @@ use function Amp\File\write;
 
 use Amp\Future;
 use Amp\Process\Process;
-use CatPaw\Utilities\AsciiTable;
-use CatPaw\Utilities\Stream;
 use Closure;
 use Error;
 use InvalidArgumentException;
@@ -268,12 +266,12 @@ function execute(
 
 /**
  * Print an array as an ascii table (recursively).
- * @param array $input       the input array.
- * @param bool  $lineCounter if true a number will be visible for each line inside the ascii table.
+ * @param  array                                            $input       the input array.
+ * @param  bool                                             $lineCounter if true a number will be visible for each line inside the ascii table.
  * @param  false|callable(AsciiTable $table, int $lvl):void $intercept   intercept the main table and each subtable.<br />
- *                                   This closure will be passed 2 parameters: the AsciiTable and the current depth level.
- * @param  int    $lvl the depth level will start counting from this value on.
- * @return string the resulting ascii table.
+ *                                                                       This closure will be passed 2 parameters: the AsciiTable and the current depth level.
+ * @param  int                                              $lvl         the depth level will start counting from this value on.
+ * @return string                                           the resulting ascii table.
  */
 function tableFromArray(
     array $input,

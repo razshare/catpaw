@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Utilities;
+namespace CatPaw;
 
 use ReflectionIntersectionType;
 use ReflectionNamedType;

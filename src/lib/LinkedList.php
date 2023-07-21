@@ -1,12 +1,12 @@
 <?php
-namespace CatPaw\Utilities;
+namespace CatPaw;
 
 use Closure;
 use SplDoublyLinkedList;
 
 /**
  * @template T
- * @package CatPaw\Utilities
+ * @package CatPaw
  */
 /** @psalm-suppress MissingTemplateParam */
 class LinkedList extends SplDoublyLinkedList {
