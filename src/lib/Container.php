@@ -465,6 +465,9 @@ class Container {
         if ('callable' === $className) {
             return false;
         }
+        if ('object' === $className) {
+            return new \stdClass;
+        }
 
         if (self::$singletons[$className] ?? false) {
             return self::$singletons[$className];
