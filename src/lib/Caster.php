@@ -18,7 +18,12 @@ class Caster {
         if (!$obj) {
             return $obj;
         }
-        $result = new $className();
+        if ('object' === $className) {
+            $result = (object)[];
+        } else if ('object' === $className || 'stdClass' === $className) {
+            return (object)[];
+        }
+
         if (is_array($obj)) {
             foreach ($obj as $key => $value) {
                 $result->$key = $value;
