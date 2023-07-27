@@ -47,6 +47,7 @@
             ]
         },
         "files": [
+            "src/constants.php",
             "src/functions.php",
             "src/exit-codes.php"
         ]
