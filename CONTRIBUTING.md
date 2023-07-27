@@ -2,13 +2,13 @@
 
 ## Preparing
 
-Install `^php8.1` and the following extenstions:
-- `php8.1-yaml`
-- `php8.1-xml`
+Install `^php8.2` and the following extenstions:
+- `php8.2-yaml`
+- `php8.2-xml`
 
 > **Note** I suggest you also install the following optional extensions:
-> - `php8.1-curl`
-> - `php8.1-xdebug`
+> - `php8.2-curl`
+> - `php8.2-xdebug`
 
 
 Clone the repository with 

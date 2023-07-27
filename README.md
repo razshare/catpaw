@@ -54,7 +54,7 @@ Feel free to contribute fixing issues for specific platforms.
 
 # Get started
 
-In order to get started you will need [php 8.1](https://www.php.net/downloads.php) or a more recent version.
+In order to get started you will need [php 8.2](https://www.php.net/downloads.php) or a more recent version.
 
 All you need to do is create a new project using the starter template.
 
