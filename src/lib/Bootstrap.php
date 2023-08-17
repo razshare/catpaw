@@ -12,6 +12,8 @@ use function Amp\File\createDefaultDriver;
 use function Amp\File\exists;
 use Amp\File\Filesystem;
 
+use function Amp\Future\awaitAll;
+
 
 use Amp\Process\Process;
 use CatPaw\Services\EnvironmentService;
@@ -162,14 +164,14 @@ class Bootstrap {
                 if (isPhar()) {
                     self::kill("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
                 }
-                // self::onFileChange(
-                //     entry: $entry,
-                //     libraries: $libraries,
-                //     resources: $resources,
-                //     callback: function() {
-                //         self::kill("Application killed.\n");
-                //     },
-                // );
+                self::onFileChange(
+                    entry: $entry,
+                    libraries: $libraries,
+                    resources: $resources,
+                    callback: function() {
+                        self::kill("Application killed.\n");
+                    },
+                );
             }
             async(self::init(...), $entry, $libraries, $info)->await();
         } catch (Throwable $e) {
@@ -194,43 +196,6 @@ class Bootstrap {
             $callback();
         }
         die($message);
-    }
-
-    private static function watch(
-        Process $process,
-        WritableResourceStream $stdout,
-        WritableResourceStream $stderr,
-        bool &$change,
-    ):void {
-        async(function() use ($process, $stdout) {
-            $reader = $process->getStdout();
-            while ($chunk = $reader->read()) {
-                $stdout->write($chunk);
-            }
-        });
-
-        async(function() use ($process, $stderr) {
-            $reader = $process->getStderr();
-            while ($chunk = $reader->read()) {
-                $stderr->write($chunk);
-            }
-        });
-
-        try {
-            $code = $process->join();
-            if (0 !== $code) {
-                throw new Exception("Exiting with code $code");
-            }
-            while (!$change) {
-                delay(1);
-            }
-            $change = false;
-        } catch (Throwable $e) {
-            if ($process->isRunning()) {
-                $process->kill();
-            }
-            delay(1);
-        }
     }
 
     /**
@@ -284,11 +249,8 @@ class Bootstrap {
                 entry: $entry,
                 libraries: $libraries,
                 resources: $resources,
-                callback: function() use (&$change, &$process) {
+                callback: function() use (&$change) {
                     $change = true;
-                    if ($process && $process->isRunning()) {
-                        $process->kill();
-                    }
                 },
             );
             
@@ -307,18 +269,28 @@ class Bootstrap {
             });
 
             while (true) {
-                self::watch(
-                    process: $process,
-                    stdout: $stdout,
-                    stderr: $stderr,
-                    change: $change,
-                );
-
+                $out = async(function() use ($process, $stdout) {
+                    $reader = $process->getStdout();
+                    while ($chunk = $reader->read()) {
+                        $stdout->write($chunk);
+                    }
+                });
+        
+                $err = async(function() use ($process, $stderr) {
+                    $reader = $process->getStderr();
+                    while ($chunk = $reader->read()) {
+                        $stderr->write($chunk);
+                    }
+                });
+        
+                $process->join();
+                
                 while (!$change) {
                     delay(1);
                 }
-
                 $change = false;
+
+                awaitAll([$out,$err]);
 
                 echo "Spawning $instruction".PHP_EOL;
                 $process = Process::start($instruction);
