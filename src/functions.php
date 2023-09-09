@@ -241,11 +241,11 @@ function listFilesInfoRecursively(string $path, array|false $ignore = false):arr
 
 /**
  * Create a process, run it, wait for it to end and get the output.
- * @param  string $command
- * @param  string $cwd
- * @param  array  $env
- * @param  array  $options
- * @return string the output data of the process.
+ * @param  string        $command
+ * @param  string        $cwd
+ * @param  array         $env
+ * @param  array         $options
+ * @return ExecuteResult the output data of the process.
  */
 function execute(
     string $command,

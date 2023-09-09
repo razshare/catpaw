@@ -8,6 +8,17 @@ class ExecuteResult implements \Stringable {
         private string $error,
     ) {
     }
+
+    function getCode() : int {
+        return $this->code;
+    }
+    function getOutput() : string {
+        return $this->output;
+    }
+    function getError() : string {
+        return $this->error;
+    }
+
     public function __toString(): string {
         return $this->output.$this->error;
     }
