@@ -239,9 +239,6 @@ function listFilesInfoRecursively(string $path, array|false $ignore = false):arr
     return $list;
 }
 
-
-
-
 /**
  * Create a process, run it, wait for it to end and get the output.
  * @param  string $command
@@ -255,12 +252,12 @@ function execute(
     string $cwd = '',
     array $env = [],
     array $options = []
-):string {
+):ExecuteResult {
     $process = Process::start($command, $cwd?$cwd:null, $env, $options);
-    $result  = buffer($process->getStdout());
-    $result .= buffer($process->getStderr());
-    $process->join();
-    return $result;
+    $output  = buffer($process->getStdout());
+    $error   = buffer($process->getStderr());
+    $code    = $process->join();
+    return new ExecuteResult(code: $code, output: $output, error: $error);
 }
 
 
