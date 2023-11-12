@@ -20,8 +20,8 @@
     "scripts": {
         "load": "composer dump-autoload -o",
         "prod:test": [],
-        "prod:start": "php -dxdebug.mode=off ./bin/start --entry='./src/main.php' --libraries='./src/lib/'",
-        "prod:build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./build.phar --init-config --optimize",
+        "prod:start": "php ./bin/start --entry='./src/main.php' --libraries='./src/lib/'",
+        "prod:build": "php -dphar.readonly=0 ./build.phar --init-config --optimize",
         "dev:fix": [
             "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix src",
             "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix tests"
