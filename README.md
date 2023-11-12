@@ -20,7 +20,6 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 | ⚡ Services                 | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Read](./docs/13.services.md)            |
 | 🗄 MySQL Repositories       | ✅           | [catpaw-mysql](https://github.com/tncrazvan/catpaw-mysql)                   | __TODO__                                   |
 | ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)                   | [Read](./docs/12.stores.md)              |
-| ⚡ Dev Tools                | ✅ [Download](https://github.com/tncrazvan/catpaw-build/releases)          | [catpaw-build](https://github.com/tncrazvan/catpaw-build)     | [Read](./docs/20.dev-tools.md)      |
 | ⚡ Queues                   | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)                   | [Read](./docs/21.queues.md)      |
 | 💡 Text                   | ✅           | [catpaw-text](https://github.com/tncrazvan/catpaw-text)                   | TODO      |
 | 💡 Schedule                   | ✅           | [catpaw-schedule](https://github.com/tncrazvan/catpaw-schedule)                   | TODO      |
