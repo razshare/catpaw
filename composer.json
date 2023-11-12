@@ -19,17 +19,18 @@
     ],
     "scripts": {
         "load": "composer dump-autoload -o",
-        "fix": [
-            "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix src",
-            "php -dxdebug.mode=off -dxdebug.start_with_request=no ./vendor/bin/php-cs-fixer fix tests"
+        "prod:test": [],
+        "prod:start": "php -dxdebug.mode=off ./bin/start --entry='./src/main.php' --libraries='./src/lib/'",
+        "prod:build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./build.phar --init-config --optimize",
+        "dev:fix": [
+            "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix src",
+            "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix tests"
         ],
-        "start": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./bin/start --entry='./tests/main.php' --libraries='./tests/lib/'",
-        "debug": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --entry='./tests/main.php' --libraries='./tests/lib/' --info",
-        "test": [],
-        "test:debug": [],
-        "build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./build.phar --build-config --build",
-        "edit:extensions": "@download:build && php build.phar --extensions",
-        "download:build": "[ ! -f build.phar ] && wget https://github.com/tncrazvan/catpaw-build/releases/latest/download/build.phar || echo \"build.phar found.\n\"",
+        "dev:test": [],
+        "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --entry='./src/main.php' --libraries='./src/lib/' --info",
+        "dev:watch": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --entry='./src/main.php' --libraries='./src/lib/' --resources='./resources/' --info --watch",
+        "dev:build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./build.phar --init-config",
+        "download:build": "[ ! -f build.phar ] && wget https://github.com/tncrazvan/catpaw-build/releases/latest/download/build.phar || echo ''",
         "post-autoload-dump": [
             "@download:build"
         ],

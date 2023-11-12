@@ -1,4 +1,4 @@
-name: app
+name: core
 entry: ./src/main.php
 libraries: ./src/lib
 environment: ./env.yml
