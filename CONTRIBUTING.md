@@ -22,7 +22,7 @@ Install dependencies with
 composer update
 ```
 
-This will also download [product.phar](https://github.com/tncrazvan/catpaw-dev-tools/releases).
+This will also download [build.phar](https://github.com/tncrazvan/catpaw-build/releases).
 
 
 ## Writing the changes
