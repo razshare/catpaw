@@ -50,6 +50,7 @@
             "src/exit-codes.php"
         ]
     },
+    "minimum-stability": "stable",
     "require": {
         "php": "^8.2",
         "amphp/amp": "^3.0",
