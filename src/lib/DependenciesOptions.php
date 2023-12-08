@@ -4,6 +4,7 @@ namespace CatPaw;
 class DependenciesOptions {
     /**
      * @param array<string>   $ids,
+     * @param array<callable> $overwrites,
      * @param array<callable> $provides,
      * @param array<callable> $fallbacks,
      * @param array<mixed>    $defaultArguments,
@@ -11,6 +12,7 @@ class DependenciesOptions {
      */
     public function __construct(
         public array $ids,
+        public array $overwrites,
         public array $provides,
         public array $fallbacks,
         public array $defaultArguments,

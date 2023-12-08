@@ -178,6 +178,7 @@ class Container {
         if (!$options) {
             $options = new DependenciesOptions(
                 ids: [],
+                overwrites:[],
                 provides: [],
                 fallbacks: [],
                 defaultArguments: [],
@@ -191,10 +192,16 @@ class Container {
             $type                = $result->type;
             $name                = $result->name;
             $defaultValue        = $result->defaultValue;
-            $provide             = $options->provides[$type]  ?? false;
-            $fallback            = $options->fallbacks[$type] ?? false;
+            $provide             = $options->provides[$type]   ?? false;
+            $overwrite           = $options->overwrites[$type] ?? false;
+            $fallback            = $options->fallbacks[$type]  ?? false;
             $attributes          = $result->attributes;
             $numberOfAttributes  = count($result->attributes);
+
+            if ($overwrite) {
+                $parameters[$key] = $overwrite($result);
+                continue;
+            }
 
             if ($provide) {
                 $parameters[$key] = $provide($result);
@@ -433,6 +440,7 @@ class Container {
             if ($service) {
                 $service->onClassMount($reflection, $instance, new DependenciesOptions(
                     ids: [],
+                    overwrites:[],
                     provides: [],
                     fallbacks: [],
                     defaultArguments: [],
