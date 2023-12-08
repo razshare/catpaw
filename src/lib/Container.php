@@ -23,12 +23,12 @@ use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 use RegexIterator;
-use SplFixedArray;
 use Throwable;
 
 class Container {
     private function __construct() {
     }
+
 
     private static array $cache      = [];
     private static array $singletons = [];
@@ -126,183 +126,116 @@ class Container {
         }
     }
 
-
-    /**
-     * @throws ReflectionException
-     */
-    private static function cacheInMethodOrFunctionDependencies(
+    private static function findFunctionDependencies(
         ReflectionFunction|ReflectionMethod $reflection,
-        string $key1,
-        string $key2,
-        false|callable $fallback = false,
-        ...$defaultArguments
-    ): void {
-        if (!isset(self::$cache[$key1])) {
-            self::$cache[$key1] = [];
-        }
+        DependenciesOptions $options,
+    ) {
+        $defaultArguments     = $options->defaultArguments;
+        $reflectionParameters = $reflection->getParameters();
+        $items                = [];
+        foreach ($reflectionParameters as $key => $reflectionParameter) {
+            $defaultArgument = $defaultArguments[$key] ?? null;
+            $isOptional      = $reflectionParameter->isOptional();
+            $defaultValue    = $reflectionParameter->isDefaultValueAvailable()?$reflectionParameter->getDefaultValue():null;
+            $type            = ReflectionTypeManager::unwrap($reflectionParameter)?->getName() ?? '';
+            $name            = $reflectionParameter->getName();
+            $attributes      = $reflectionParameter->getAttributes();
 
-        if (!isset(self::$cache[$key1][$key2])) {
-            $cache = new SplFixedArray(8);
-
-            $refparams  = $reflection->getParameters();
-            $len        = count($refparams);
-            $parameters = array_fill(0, $len, false);
-
-            $cache[self::REFLECTION_PARAMETERS]              = $refparams;
-            $cache[self::PARAMETERS_LEN]                     = $len;
-            $cache[self::PARAMETERS_INIT_VALUE]              = new SplFixedArray($len);
-            $cache[self::PARAMETERS_CNAMES]                  = new SplFixedArray($len);
-            $cache[self::PARAMETERS_ATTRIBUTES_LEN]          = new SplFixedArray($len);
-            $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES]     = new SplFixedArray($len);
-            $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE] = new SplFixedArray($len);
-
-            for ($i = 0; $i < $len; $i++) {
-                $type  = $refparams[$i]->getType();
-                $name  = $refparams[$i]->getName();
-                $type  = ReflectionTypeManager::unwrap($refparams[$i]);
-                $cname = $type ? $type->getName() : '';
-
-                if ('bool' === $cname) {
-                    $negative = false;
-                } else {
-                    $negative = null;
-                }
-
-
-                $default = ($defaultArguments[$i] ?? $negative)?$defaultArguments[$i]:$negative;
-                if (!$default && $refparams[$i]->isOptional()) {
-                    $default = $refparams[$i]->getDefaultValue() ?? $negative;
-                }
-
-
-                $cache[self::PARAMETERS_CNAMES][$i]                  = $cname;
-                $parameters[$i]                                      = $default;
-                $cache[self::PARAMETERS_INIT_VALUE][$i]              = $parameters[$i];
-                $attributes                                          = $refparams[$i]->getAttributes();
-                $alen                                                = count($attributes);
-                $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i]          = $alen;
-                $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i] = new SplFixedArray($alen);
-
-                if ($fallback && 0 === $alen) {
-                    $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i]     = [fn () => $fallback($cname, $name)];
-                    $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i]          = 1;
-                    $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i] = false;
-                    continue;
-                }
-
-                for ($j = 0; $j < $alen; $j++) {
-                    $attribute = $attributes[$j];
-                    $aname     = $attribute->getName();
-                    $class     = new ReflectionClass($aname);
-                    $method    = $class->getMethod("findByParameter");
-
-                    $closures                                        = $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i];
-                    $closures[$j]                                    = $method->getClosure();
-                    $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i] = $closures;
-
-                    $haveStorage                                         = $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i];
-                    $haveStorage[$j]                                     = $class->hasMethod("storage");
-                    $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i] = $haveStorage;
-                }
+            if ('bool' === $type) {
+                $negative = false;
+            } else {
+                $negative = null;
             }
-            self::$cache[$key1][$key2] = $cache;
+
+            $defaultCalculated = ($defaultArgument ?? $negative)?$defaultArgument:$negative;
+
+            if (!$defaultCalculated && $isOptional) {
+                $defaultValue = $defaultValue ?? $negative;
+            } else {
+                $defaultValue = $defaultCalculated;
+            }
+
+            $items[] = new DependencySearchResultItem(
+                reflectionParameter: $reflectionParameter,
+                defaultArgument: $defaultArgument,
+                isOptional: $isOptional,
+                defaultValue: $defaultValue,
+                type: $type,
+                name: $name,
+                attributes: $attributes,
+            );
         }
+
+        return $items;
     }
 
-    /**
-     * Find (& create) all the `dependencies` of a function or method.
-     * The word `dependencies` includes `singletons` and certain `attribute` injections.
-     * @param  ReflectionFunction|ReflectionMethod $reflection       the function/method to scan.
-     * @param  false|array                         $options
-     * @param  mixed                               $defaultArguments
-     * @return array
-     */
+
+
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
-        // TODO: improve this by using a dedicated class instead of an array
-        false|array $options = false,
-        ...$defaultArguments
+        false|DependenciesOptions $options = false,
     ):array {
-        $context = false;
-        if ($options) {
-            [
-                "id"       => [$key1, $key2],
-                "force"    => $force,
-                "fallback" => $fallback,
-                "context"  => $context,
-            ] = $options;
-
-            if (!isset(self::$cache[$key1][$key2])) {
-                self::cacheInMethodOrFunctionDependencies($reflection, $key1, $key2, $fallback, ...$defaultArguments);
-            }
-            $cache = &self::$cache[$key1][$key2];
-        } else {
-            $fileName     = $reflection->getFileName();
-            $functionName = $reflection->getName();
-            if ($reflection instanceof ReflectionMethod) {
-                $class        = $reflection->getDeclaringClass();
-                $functionName = $class->getName().':'.$functionName;
-            }
-            if (!isset(self::$cache[$fileName][$functionName])) {
-                self::cacheInMethodOrFunctionDependencies($reflection, $fileName, $functionName, false, ...$defaultArguments);
-            }
-            $cache = &self::$cache[$fileName][$functionName];
+        if (!$options) {
+            $options = new DependenciesOptions(
+                ids: [],
+                provides: [],
+                fallbacks: [],
+                defaultArguments: [],
+                context: false,
+            );
         }
+        $parameters = [];
+        $results    = self::findFunctionDependencies($reflection, $options);
+        foreach ($results as $key => $result) {
+            $reflectionParameter = $result->reflectionParameter;
+            $type                = $result->type;
+            $name                = $result->name;
+            $defaultValue        = $result->defaultValue;
+            $provide             = $options->provides[$type]  ?? false;
+            $fallback            = $options->fallbacks[$type] ?? false;
+            $attributes          = $result->attributes;
+            $numberOfAttributes  = count($result->attributes);
 
-        $refparams  = $cache[self::REFLECTION_PARAMETERS];
-        $len        = $cache[self::PARAMETERS_LEN];
-        $parameters = array_fill(0, $len, false);
-
-        for ($i = 0; $i < $len; $i++) {
-            $parameters[$i] = $cache[self::PARAMETERS_INIT_VALUE][$i];
-            $cname          = $cache[self::PARAMETERS_CNAMES][$i];
-
-            if ($options && isset($force[$cname])) {
-                $parameters[$i] = $force[$cname];
-                continue;
+            if ($provide) {
+                $parameters[$key] = $provide($result);
             }
 
             if (
-                "string"  !== $cname
-                & "int"   !== $cname
-                & "float" !== $cname
-                & "bool"  !== $cname
-                & "array" !== $cname
-                & ""      !== $cname
+                "string"  !== $type
+                & "int"   !== $type
+                & "float" !== $type
+                & "bool"  !== $type
+                & "array" !== $type
+                & ""      !== $type
             ) {
-                $parameters[$i] = Container::create($cname);
+                $parameters[$key] = Container::create($type);
             }
 
-            $alen = $cache[self::PARAMETERS_ATTRIBUTES_LEN][$i];
-
-            for ($j = 0; $j < $alen; $j++) {
-                /** @var Closure $closure */
-                $findByParameter   = $cache[self::PARAMETERS_ATTRIBUTES_CLOSURES][$i][$j];
-                $attributeInstance = $findByParameter($refparams[$i]);
+            if (0 === $numberOfAttributes) {
+                if ($fallback) {
+                    $parameters[$key] = $fallback($result);
+                }
+                continue;
+            }
+            
+            foreach ($attributes as $attribute) {
+                $attributeClass    = new ReflectionClass($attribute->getName());
+                $findByParameter   = $attributeClass->getMethod('findByParameter')->getClosure();
+                $hasStorage        = $attributeClass->hasMethod("storage");
+                $attributeInstance = $findByParameter($reflectionParameter);
                 if (!$attributeInstance) {
+                    if ($fallback) {
+                        $parameters[$key] = $fallback($result);
+                    }
                     continue;
                 }
-                // async(function() use (
-                //     $attributeInstance,
-                //     $refparams,
-                //     $i,
-                //     &$parameters,
-                //     $context,
-                // ):mixed {
-                //     return $attributeInstance->onParameterMount(
-                //         $refparams[$i],
-                //         $parameters[$i],
-                //         $context,
-                //     );
-                // })->await();
                 $attributeInstance->onParameterMount(
-                    $refparams[$i],
-                    $parameters[$i],
-                    $context,
+                    $reflectionParameter,
+                    $parameters[$key],
+                    $options,
                 );
-                $attributeHasStorage = $cache[self::PARAMETERS_ATTRIBUTES_HAVE_STORAGE][$i][$j] ?? false;
-                if ($attributeHasStorage) {
-                    $parameters[$i] = &$parameters[$i]->storage();
+                if ($hasStorage) {
+                    $parameters[$key] = &$parameters[$key]->storage();
                 }
             }
         }
@@ -498,7 +431,13 @@ class Container {
         if ($singleton || $service) {
             self::$singletons[$className] = $instance;
             if ($service) {
-                $service->onClassMount($reflection, $instance, false);
+                $service->onClassMount($reflection, $instance, new DependenciesOptions(
+                    ids: [],
+                    provides: [],
+                    fallbacks: [],
+                    defaultArguments: [],
+                    context: false,
+                ));
             }
         }
             
