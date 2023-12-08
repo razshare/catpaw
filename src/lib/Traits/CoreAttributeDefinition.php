@@ -38,6 +38,36 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionFunction $reflectionFunction
+     * @return array<self>|false
+     */
+    public static function findAllByFunction(ReflectionFunction $reflectionFunction): array|false {
+        self::initializeCache();
+        if (!($trueClassNames = AttributeResolver::issetFunctionAttributes($reflectionFunction, static::class))) {
+            return false;
+        }
+        
+        $instances = [];
+
+        $allAttributesArguments = AttributeResolver::getFunctionAllAttributesArguments($reflectionFunction, static::class);
+
+        foreach ($trueClassNames as $key => $trueClassName) {
+            $attributeArguments = $allAttributesArguments[$key];
+            $klass              = new ReflectionClass($trueClassName);
+            /** @var object */
+            $instance = $klass->newInstance(...$attributeArguments);
+            Container::entry($instance, $klass->getMethods());
+            $instances[] = $instance;
+        }
+
+        if ($instances) {
+            return $instances;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param  ReflectionFunction $reflectionFunction
      * @return self|false
      */
     public static function findByFunction(ReflectionFunction $reflectionFunction): self|false {

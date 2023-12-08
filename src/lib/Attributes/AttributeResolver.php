@@ -31,6 +31,18 @@ class AttributeResolver {
         return false;
     }
 
+    public static function getFunctionAllAttributesArguments(ReflectionFunction $reflection_function, string $attributeName):?array {
+        $arguments  = [];
+        $attributes = $reflection_function->getAttributes();
+        foreach ($attributes as $attribute) {
+            $className = $attribute->getName();
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
+                $arguments[] = $attribute->getArguments();
+            }
+        }
+        return $arguments;
+    }
+
     public static function getFunctionAttributeArguments(ReflectionFunction $reflection_function, string $attributeName):?array {
         $attributes = $reflection_function->getAttributes();
         foreach ($attributes as $attribute) {
@@ -40,6 +52,23 @@ class AttributeResolver {
             }
         }
         return null;
+    }
+
+    public static function issetFunctionAttributes(ReflectionFunction $reflectionFunction, string $attributeName):false|array {
+        $attributes = $reflectionFunction->getAttributes();
+        $result     = [];
+        foreach ($attributes as $attribute) {
+            $className = $attribute->getName();
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
+                $result[] = $className;
+            }
+        }
+
+        if ($result) {
+            return $result;
+        }
+
+        return false;
     }
 
     public static function issetFunctionAttribute(ReflectionFunction $reflectionFunction, string $attributeName):false|string {

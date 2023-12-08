@@ -10,6 +10,8 @@ use ReflectionParameter;
 use ReflectionProperty;
 
 interface AttributeInterface {
+    public static function findAllByFunction(ReflectionFunction $reflectionFunction);
+    
     public static function findByFunction(ReflectionFunction $reflectionFunction);
 
     public static function findByMethod(ReflectionMethod $reflectionMethod);
