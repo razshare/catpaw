@@ -31,14 +31,14 @@
     "dev:watch": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --entry='./src/main.php' --libraries='./src/lib/' --resources='./resources/' --info --watch --php='php -dxdebug.mode=debug -dxdebug.start_with_request=yes'",
     "dev:build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./build.phar --init-config",
     "download:build": "[ ! -f build.phar ] && wget https://github.com/tncrazvan/catpaw-build/releases/latest/download/build.phar || echo ''",
-    "download:psalm": "[ ! -f psalm.phar ] && wget wget https://github.com/vimeo/psalm/releases/latest/download/psalm.phar || echo ''",
+    "download:psalm": "[ ! -f psalm.phar ] && wget https://github.com/vimeo/psalm/releases/latest/download/psalm.phar || echo ''",
     "post-autoload-dump": [
-      "@download:build",
-      "@download:psalm"
+      "@download:psalm",
+      "@download:build"
     ],
     "post-create-project-cmd": [
-      "@download:build",
-      "@download:psalm"
+      "@download:psalm",
+      "@download:build"
     ]
   },
   "autoload": {
