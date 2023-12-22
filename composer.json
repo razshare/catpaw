@@ -1,80 +1,80 @@
 {
-  "name": "catpaw/core",
-  "description": "CatPaw core",
-  "type": "library",
-  "license": "MIT",
-  "keywords": [
-    "php",
-    "cli",
-    "server",
-    "http",
-    "websocket",
-    "catpaw"
-  ],
-  "authors": [
-    {
-      "name": "Razvan Tanase",
-      "email": "tangent.jotey@gmail.com"
-    }
-  ],
-  "scripts": {
-    "load": "composer dump-autoload -o",
-    "prod:test": [],
-    "prod:start": "php ./bin/start --entry='./src/main.php' --libraries='./src/lib/'",
-    "prod:build": "php -dphar.readonly=0 ./build.phar --init-config --optimize",
-    "dev:fix": [
-      "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix src",
-      "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix tests"
+    "name": "catpaw/core",
+    "description": "CatPaw core",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "php",
+        "cli",
+        "server",
+        "http",
+        "websocket",
+        "catpaw"
     ],
-    "dev:test": [],
-    "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --entry='./src/main.php' --libraries='./src/lib/' --info",
-    "dev:watch": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --entry='./src/main.php' --libraries='./src/lib/' --resources='./resources/' --info --watch --php='php -dxdebug.mode=debug -dxdebug.start_with_request=yes'",
-    "dev:build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./build.phar --init-config",
-    "download:build": "[ ! -f build.phar ] && wget https://github.com/tncrazvan/catpaw-build/releases/latest/download/build.phar || echo ''",
-    "download:psalm": "[ ! -f psalm.phar ] && wget https://github.com/vimeo/psalm/releases/latest/download/psalm.phar || echo ''",
-    "post-autoload-dump": [
-      "@download:psalm",
-      "@download:build"
+    "authors": [
+        {
+            "name": "Razvan Tanase",
+            "email": "tangent.jotey@gmail.com"
+        }
     ],
-    "post-create-project-cmd": [
-      "@download:psalm",
-      "@download:build"
-    ]
-  },
-  "autoload": {
-    "psr-4": {
-      "CatPaw\\": [
-        "src/lib/"
-      ]
+    "scripts": {
+        "load": "composer dump-autoload -o",
+        "prod:test": [],
+        "prod:start": "php ./bin/start --entry='./src/main.php' --libraries='./src/lib/'",
+        "prod:build": "php -dphar.readonly=0 ./build.phar --init-config --optimize",
+        "dev:fix": [
+            "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix src",
+            "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix tests"
+        ],
+        "dev:test": [],
+        "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --entry='./src/main.php' --libraries='./src/lib/' --info",
+        "dev:watch": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --entry='./src/main.php' --libraries='./src/lib/' --resources='./resources/' --info --watch --php='php -dxdebug.mode=debug -dxdebug.start_with_request=yes'",
+        "dev:build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./build.phar --init-config",
+        "download:build": "[ ! -f build.phar ] && wget https://github.com/tncrazvan/catpaw-build/releases/latest/download/build.phar || echo ''",
+        "download:psalm": "[ ! -f psalm.phar ] && wget https://github.com/vimeo/psalm/releases/latest/download/psalm.phar || echo ''",
+        "post-autoload-dump": [
+            "@download:psalm",
+            "@download:build"
+        ],
+        "post-create-project-cmd": [
+            "@download:psalm",
+            "@download:build"
+        ]
     },
-    "files": [
-      "src/constants.php",
-      "src/functions.php",
-      "src/exit-codes.php"
-    ]
-  },
-  "minimum-stability": "stable",
-  "require": {
-    "php": "^8.2",
-    "amphp/amp": "^3.0",
-    "erusev/parsedown": "^1.7",
-    "amphp/file": "^3.0",
-    "amphp/process": "^2.0",
-    "ext-openssl": "*",
-    "ext-zlib": "*",
-    "vlucas/phpdotenv": "^5.4",
-    "monolog/monolog": "^3.3"
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Tests\\": "tests/"
+    "autoload": {
+        "psr-4": {
+            "CatPaw\\": [
+                "src/lib/"
+            ]
+        },
+        "files": [
+            "src/constants.php",
+            "src/functions.php",
+            "src/exit-codes.php"
+        ]
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^8.2",
+        "amphp/amp": "^3.0",
+        "erusev/parsedown": "^1.7",
+        "amphp/file": "^3.0",
+        "amphp/process": "^2.0",
+        "ext-openssl": "*",
+        "ext-zlib": "*",
+        "vlucas/phpdotenv": "^5.4",
+        "monolog/monolog": "^3.3"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.8",
+        "phpunit/phpunit": "^9"
+    },
+    "config": {
+        "preferred-install": "dist"
     }
-  },
-  "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.8",
-    "phpunit/phpunit": "^9"
-  },
-  "config": {
-    "preferred-install": "dist"
-  }
 }
