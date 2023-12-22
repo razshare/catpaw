@@ -5,6 +5,7 @@ namespace CatPaw\Traits;
 use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Container;
+use CatPaw\DependenciesOptions;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;
@@ -187,15 +188,12 @@ trait CoreAttributeDefinition {
         return $instance;
     }
 
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context) {
-        return;
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):void {
     }
 
-    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, mixed $context) {
-        return;
+    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void {
     }
 
-    public function onClassMount(ReflectionClass $reflection, mixed &$value, mixed $context) {
-        return;
+    public function onClassMount(ReflectionClass $reflection, mixed &$value, DependenciesOptions $options):void {
     }
 }

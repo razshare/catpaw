@@ -3,6 +3,7 @@ namespace CatPaw\Attributes;
 
 use Attribute;
 use CatPaw\Bootstrap;
+use CatPaw\DependenciesOptions;
 use CatPaw\Interfaces\AttributeInterface;
 use CatPaw\ReflectionTypeManager;
 use CatPaw\Traits\CoreAttributeDefinition;
@@ -41,19 +42,45 @@ class Option implements AttributeInterface {
         self::init();
     }
 
-    public static function findByMethod(ReflectionMethod $reflectionMethod) {
+    public static function findByMethod(ReflectionMethod $reflectionMethod):self|false {
+        return false;
     }
 
-    public static function findByClass(ReflectionClass $reflectionClass) {
+    public static function findByClass(ReflectionClass $reflectionClass):self|false {
+        return false;
     }
 
-    public static function findByProperty(ReflectionProperty $reflectionProperty) {
+    public static function findByProperty(ReflectionProperty $reflectionProperty):self|false {
+        return false;
     }
 
-    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, mixed $context) {
+    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void {
     }
 
-    public function onClassMount(ReflectionClass $reflection, mixed &$value, mixed $context) {
+    public function onClassMount(ReflectionClass $reflection, mixed &$value, DependenciesOptions $options):void {
+    }
+
+
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):void {
+        if (isset(self::$cache[$this->name])) {
+            $value = self::$cache[$this->name];
+            return;
+        }
+
+
+        /** @var string|int|bool|float $value */
+        
+        $wrapper = ReflectionTypeManager::wrap($reflection);
+
+        $value = $this->findValue(
+            className: $wrapper->getClassName(),
+            allowsNullValue: $wrapper->allowsNullValue(),
+            allowsDefaultValue: $wrapper->allowsDefaultValue(),
+            defaultValue: $wrapper->getDefaultValue(),
+            allowsBoolean: $wrapper->allowsBoolean(),
+            allowsTrue: $wrapper->allowsTrue(),
+            allowsFalse: $wrapper->allowsFalse(),
+        );
     }
 
     // public static function renderLinuxManual():string {
@@ -73,7 +100,7 @@ class Option implements AttributeInterface {
         return self::$exists[$option] = in_array($option, self::$options);
     }
 
-    public static function init() {
+    private static function init() {
         global $argv;
         $index          = 0;
         $listingOptions = false;
@@ -196,27 +223,5 @@ class Option implements AttributeInterface {
         }
 
         return self::$cache[$this->name] = $value;
-    }
-
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context) {
-        if (isset(self::$cache[$this->name])) {
-            $value = self::$cache[$this->name];
-            return;
-        }
-
-
-        /** @var string|int|bool|float $value */
-        /** @var false $context */
-        $wrapper = ReflectionTypeManager::wrap($reflection);
-
-        $value = $this->findValue(
-            className: $wrapper->getClassName(),
-            allowsNullValue: $wrapper->allowsNullValue(),
-            allowsDefaultValue: $wrapper->allowsDefaultValue(),
-            defaultValue: $wrapper->getDefaultValue(),
-            allowsBoolean: $wrapper->allowsBoolean(),
-            allowsTrue: $wrapper->allowsTrue(),
-            allowsFalse: $wrapper->allowsFalse(),
-        );
     }
 }

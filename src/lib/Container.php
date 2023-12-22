@@ -176,7 +176,7 @@ class Container {
         false|DependenciesOptions $options = false,
     ):array {
         if (!$options) {
-            $options = new DependenciesOptions(
+            $options = DependenciesOptions::create(
                 ids: [],
                 overwrites:[],
                 provides: [],
@@ -438,7 +438,7 @@ class Container {
         if ($singleton || $service) {
             self::$singletons[$className] = $instance;
             if ($service) {
-                $service->onClassMount($reflection, $instance, new DependenciesOptions(
+                $service->onClassMount($reflection, $instance, DependenciesOptions::create(
                     ids: [],
                     overwrites:[],
                     provides: [],

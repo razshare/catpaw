@@ -11,15 +11,15 @@ use ReflectionParameter;
 use ReflectionProperty;
 
 interface AttributeInterface {
-    public static function findAllByFunction(ReflectionFunction $reflectionFunction);
+    public static function findAllByFunction(ReflectionFunction $reflectionFunction): array|false ;
     
-    public static function findByFunction(ReflectionFunction $reflectionFunction);
+    public static function findByFunction(ReflectionFunction $reflectionFunction): self|false;
 
-    public static function findByMethod(ReflectionMethod $reflectionMethod);
+    public static function findByMethod(ReflectionMethod $reflectionMethod): self|false;
 
-    public static function findByClass(ReflectionClass $reflectionClass);
+    public static function findByClass(ReflectionClass $reflectionClass): self|false;
 
-    public static function findByProperty(ReflectionProperty $reflectionProperty);
+    public static function findByProperty(ReflectionProperty $reflectionProperty): self|false;
 
     /**
      * Invoked when this attribute is detected on a parameter.
@@ -28,7 +28,7 @@ interface AttributeInterface {
      * @param  DependenciesOptions $options    options used to find dependencies.
      * @return void
      */
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options);
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):void;
 
 
     /**
@@ -40,7 +40,7 @@ interface AttributeInterface {
      * @param  DependenciesOptions $options    options used to find dependencies.
      * @return void
      */
-    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options);
+    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void;
 
 
     /**
@@ -50,5 +50,5 @@ interface AttributeInterface {
      * @param  DependenciesOptions $options    options used to find dependencies.
      * @return void
      */
-    public function onClassMount(ReflectionClass $reflection, mixed &$value, DependenciesOptions $options);
+    public function onClassMount(ReflectionClass $reflection, mixed &$value, DependenciesOptions $options):void;
 }
