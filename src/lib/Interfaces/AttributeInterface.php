@@ -32,7 +32,7 @@ interface AttributeInterface {
 
 
     /**
-     * Invoked when this attribute is detected on a route handler.
+     * Invoked when this attribute is detected on a function.
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/1.RouteHandlers.md
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/9.Filters.md
      * @param  ReflectionFunction  $reflection reflection of the function.
@@ -40,8 +40,7 @@ interface AttributeInterface {
      * @param  DependenciesOptions $options    options used to find dependencies.
      * @return void
      */
-    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void;
-
+    public function onFunctionMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void;
 
     /**
      * Invoked when this attribute is detected on a class.

@@ -2,6 +2,7 @@
 namespace CatPaw\Attributes;
 
 use Attribute;
+use CatPaw\DependenciesOptions;
 use CatPaw\Interfaces\AttributeInterface;
 use CatPaw\ReflectionTypeManager;
 use CatPaw\Traits\CoreAttributeDefinition;
@@ -24,19 +25,22 @@ class Arguments implements AttributeInterface {
         self::init();
     }
 
-    public static function findByMethod(ReflectionMethod $reflectionMethod): void {
+    public static function findByMethod(ReflectionMethod $reflectionMethod): false|self {
+        return false;
     }
 
-    public static function findByClass(ReflectionClass $reflectionClass): void {
+    public static function findByClass(ReflectionClass $reflectionClass): false|self {
+        return false;
     }
 
-    public static function findByProperty(ReflectionProperty $reflectionProperty): void {
+    public static function findByProperty(ReflectionProperty $reflectionProperty): false|self {
+        return false;
     }
 
-    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, mixed $context) {
+    public function onFunctionMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void {
     }
 
-    public function onClassMount(ReflectionClass $reflection, mixed &$value, mixed $context) {
+    public function onClassMount(ReflectionClass $reflection, mixed &$value, DependenciesOptions $options):void {
     }
 
     public static function init() {
@@ -55,7 +59,7 @@ class Arguments implements AttributeInterface {
         }
     }
 
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, mixed $context) {
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):void {
         /** @var array<string|int|bool|float> $value */
         /** @var false $context */
 

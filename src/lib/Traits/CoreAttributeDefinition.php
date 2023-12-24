@@ -191,7 +191,7 @@ trait CoreAttributeDefinition {
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):void {
     }
 
-    public function onRouteMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void {
+    public function onFunctionMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void {
     }
 
     public function onClassMount(ReflectionClass $reflection, mixed &$value, DependenciesOptions $options):void {
