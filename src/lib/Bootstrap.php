@@ -14,10 +14,8 @@ use Amp\File\Filesystem;
 
 use function Amp\Future\awaitAll;
 
-
 use Amp\Process\Process;
 use CatPaw\Services\EnvironmentService;
-use Exception;
 use Psr\Log\LoggerInterface;
 
 use ReflectionException;

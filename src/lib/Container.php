@@ -4,6 +4,7 @@ namespace CatPaw;
 
 use function Amp\async;
 use function Amp\File\isDirectory;
+use function Amp\File\isFile;
 
 use Attribute;
 use BadFunctionCallException;
@@ -266,9 +267,14 @@ class Container {
         }
 
         if (!isset(self::$singletons[LoggerInterface::class])) {
-            Container::set(LoggerInterface::class, LoggerFactory::create());
+            $logger = LoggerFactory::create();
+            Container::set(LoggerInterface::class, $logger);
+        } else {
+            $logger = Container::create(LoggerInterface::class);
         }
         
+        /** @var LoggerInterface $logger */
+
         $scanned = [];
         $isPhar  = isPhar();
         if ('' === \trim($path)) {
@@ -279,9 +285,12 @@ class Container {
             $path = \Phar::running()."/$path";
         }
 
-        if (!isDirectory($path)) {
+        if (!isDirectory($path) && isFile($path)) {
             require_once($path);
             return [$path];
+        } else {
+            $logger->warning("It looks like the given library path `$path` does not exist, continuing without loading it.");
+            return [];
         }
 
         try {
