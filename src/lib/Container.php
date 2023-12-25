@@ -12,7 +12,7 @@ use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
-use CatPaw\Interfaces\AttributeInterface;
+use CatPaw\Interfaces\StorageInterface;
 use Closure;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -153,8 +153,6 @@ class Container {
         return $items;
     }
 
-    private static array $dependencies = [];
-
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
         false|DependenciesOptions $options = false,
@@ -210,11 +208,7 @@ class Container {
             }
             
             foreach ($attributes as $attribute) {
-                $attributeClasname = $attribute->getName();
-                $attributeClass    = new ReflectionClass($attributeClasname);
-                if ($attributeClass->implementsInterface(AttributeInterface::class)) {
-                    continue;
-                }
+                $attributeClass    = new ReflectionClass($attribute->getName());
                 $findByParameter   = $attributeClass->getMethod('findByParameter')->getClosure();
                 $attributeInstance = $findByParameter($reflectionParameter);
                 if (!$attributeInstance) {
@@ -228,6 +222,9 @@ class Container {
                     $parameters[$key],
                     $options,
                 );
+                if ($parameters[$key] instanceof StorageInterface) {
+                    $parameters[$key] = &$parameters[$key]->getStorage();
+                }
             }
         }
 

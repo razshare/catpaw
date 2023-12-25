@@ -4,25 +4,17 @@ namespace CatPaw\Interfaces;
 
 interface StorageInterface {
     /**
-     * Get the initial value of the storage.\
-     * Useful to initialize or reset the whole storage using `::setStorage`.
-     * @return mixed
-     */
-    public function getStorageInitialValue():mixed;
-
-    /**
      * Get the storage by reference.
-     * @param  string $className
-     * @return mixed
+     * @return array
      */
-    public function &getStorage():mixed;
+    public function &getStorage():array;
 
     /**
      * Set the storage by reference.
-     * @param  mixed $value
+     * @param  array $value
      * @return void
      */
-    public function setStorage(mixed &$value):void;
+    public function setStorage(array &$value):void;
 
     /**
      * Get the value.
