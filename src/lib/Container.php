@@ -265,10 +265,10 @@ class Container {
             $path = \Phar::running()."/$path";
         }
 
-        if (!isDirectory($path) && isFile($path)) {
+        if (isFile($path)) {
             require_once($path);
             return [$path];
-        } else {
+        } else if (!isDirectory($path)) {
             $logger->warning("It looks like the given library path `$path` does not exist, continuing without loading it.");
             return [];
         }
