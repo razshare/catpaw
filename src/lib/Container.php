@@ -12,7 +12,6 @@ use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
-use CatPaw\Interfaces\StorageInterface;
 use Closure;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -30,8 +29,6 @@ class Container {
     private function __construct() {
     }
 
-
-    private static array $cache      = [];
     private static array $singletons = [];
 
     public static function getSingletons():array {
@@ -81,27 +78,18 @@ class Container {
         self::$singletons[$className] = $object;
     }
 
-    private const PARAMETERS_INIT_VALUE              = 0;
-    private const REFLECTION_PARAMETERS              = 1;
-    private const PARAMETERS_LEN                     = 2;
-    private const PARAMETERS_CNAMES                  = 3;
-    private const PARAMETERS_ATTRIBUTES_LEN          = 4;
-    private const PARAMETERS_ATTRIBUTES_CLOSURES     = 5;
-    private const PARAMETERS_ATTRIBUTES_HAVE_STORAGE = 6;
-
     /**
      * Delete all singletons and cache inside the container.
      * @return void
      */
     public static function clearAll():void {
-        self::$cache      = [];
         self::$singletons = [];
     }
 
     /**
      * Run the entry method of an instance of a class.
      * @param  object                  $instance
-     * @param  array<ReflectionMethod> $methods  methods of the instance
+     * @param  array<ReflectionMethod> $methods  methods of the class.
      * @throws ReflectionException
      * @return void
      */
@@ -112,14 +100,8 @@ class Container {
             if ($entry) {
                 $args = Container::dependencies($method);
                 if ($method->isStatic()) {
-                    // async(function() use ($method, &$args):mixed {
-                    //     return $method->invoke(null, ...$args);
-                    // })->await();
                     $method->invoke(null, ...$args);
                 } else {
-                    // async(function() use ($method, $instance, &$args):mixed {
-                    //     return $method->invoke($instance, ...$args);
-                    // })->await();
                     $method->invoke($instance, ...$args);
                 }
                 break;
@@ -178,8 +160,8 @@ class Container {
     ):array {
         if (!$options) {
             $options = DependenciesOptions::create(
-                ids: [],
-                overwrites:[],
+                key: [],
+                overwrites: [],
                 provides: [],
                 fallbacks: [],
                 defaultArguments: [],
@@ -227,9 +209,9 @@ class Container {
             }
             
             foreach ($attributes as $attribute) {
-                $attributeClass    = new ReflectionClass($attribute->getName());
+                $attributeClasname = $attribute->getName();
+                $attributeClass    = new ReflectionClass($attributeClasname);
                 $findByParameter   = $attributeClass->getMethod('findByParameter')->getClosure();
-                $hasStorage        = $attributeClass->implementsInterface(StorageInterface::class);
                 $attributeInstance = $findByParameter($reflectionParameter);
                 if (!$attributeInstance) {
                     if ($fallback) {
@@ -242,9 +224,6 @@ class Container {
                     $parameters[$key],
                     $options,
                 );
-                if ($hasStorage) {
-                    $parameters[$key] = &$parameters[$key]->getStorage();
-                }
             }
         }
 
@@ -403,13 +382,11 @@ class Container {
     /**
      * Make a new instance of the given class.<br />
      * This method will take care of dependency injections.
-     * @param  string       $className           full name of the class.
-     * @param  mixed        ...$defaultArguments
+     * @param  string       $className full name of the class.
      * @return false|object
      */
     public static function create(
         string $className,
-        ...$defaultArguments
     ) {
         if ('callable' === $className) {
             return false;
@@ -437,9 +414,11 @@ class Container {
         $singleton = Singleton::findByClass($reflection);
 
         $constructor = $reflection->getConstructor() ?? false;
-        $arguments   = [];
+
+        $arguments = [];
+
         if ($constructor) {
-            $arguments = self::dependencies($constructor, false, ...$defaultArguments);
+            $arguments = self::dependencies($constructor);
         }
 
         $instance = new $className(...$arguments);
@@ -448,7 +427,7 @@ class Container {
             self::$singletons[$className] = $instance;
             if ($service) {
                 $service->onClassMount($reflection, $instance, DependenciesOptions::create(
-                    ids: [],
+                    key: [],
                     overwrites:[],
                     provides: [],
                     fallbacks: [],
@@ -457,7 +436,7 @@ class Container {
                 ));
             }
         }
-            
+
         self::entry($instance, $reflection->getMethods());
             
         return $instance;

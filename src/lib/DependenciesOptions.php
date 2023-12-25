@@ -3,7 +3,7 @@ namespace CatPaw;
 
 class DependenciesOptions {
     /**
-     * @param array<string>   $ids,
+     * @param array<string>   $key,
      * @param array<callable> $overwrites,
      * @param array<callable> $provides,
      * @param array<callable> $fallbacks,
@@ -11,7 +11,7 @@ class DependenciesOptions {
      * @param mixed           $context,
      */
     public static function create(
-        array $ids,
+        array $key,
         array $overwrites,
         array $provides,
         array $fallbacks,
@@ -19,7 +19,7 @@ class DependenciesOptions {
         mixed $context,
     ):self {
         return new self(
-            ids: $ids,
+            key: $key,
             overwrites: $overwrites,
             provides: $provides,
             fallbacks: $fallbacks,
@@ -29,7 +29,7 @@ class DependenciesOptions {
     }
 
     /**
-     * @param array<string>   $ids,
+     * @param array<string>   $key,
      * @param array<callable> $overwrites,
      * @param array<callable> $provides,
      * @param array<callable> $fallbacks,
@@ -37,7 +37,7 @@ class DependenciesOptions {
      * @param mixed           $context,
      */
     private function __construct(
-        public array $ids,
+        public array $key,
         public array $overwrites,
         public array $provides,
         public array $fallbacks,
