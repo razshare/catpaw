@@ -100,13 +100,13 @@ The building process can be configured inside the `build.yml` file.
 
 After building your application, you can simply run it using 
 ```
-php dist/app.phar
+php app.phar
 ```
 The resulting `.phar`, by default (check `build.yml`), includes the following directories:
 
 - `./src`
 - `./vendor`
-- `./resources`
+- `./server` (used for web server applications)
 - `./bin`
 - `./.build-cache` (created at comptile time)
 
