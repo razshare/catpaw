@@ -79,13 +79,13 @@ function main(){
 After you've created your new project, you can run it using
 
 ```bash
-composer watch
+composer dev:watch
 ```
 to watch file changes (useful in development)
 or
 
 ```bash
-composer start
+composer prod:start
 ```
 for production mode.
 
@@ -94,7 +94,7 @@ for production mode.
 It is possible, but not required, to build your application into a single `.phar` file using
 
 ```bash
-composer build
+composer prod:build
 ```
 The building process can be configured inside the `build.yml` file.
 
@@ -150,13 +150,13 @@ Make new a `./.vscode/launch.json` file in your project and add the following co
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Listen (paw)",
+            "name": "Listen",
             "type": "php",
             "request": "launch",
             "port": 9003
         },
         {
-            "name": "main (paw)",
+            "name": "Start",
             "type": "php",
             "request": "launch",
             "program": "${workspaceFolder}/bin/start",
