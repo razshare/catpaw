@@ -206,7 +206,7 @@ class Bootstrap {
     public static function spawn(
         string $binary,
         string $fileName,
-        array $arguments = [],
+        array $arguments,
         string $entry,
         string $libraries,
         string $resources,
