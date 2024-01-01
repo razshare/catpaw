@@ -7,12 +7,15 @@ use CatPaw\DependenciesOptions;
 use CatPaw\Interfaces\AttributeInterface;
 use CatPaw\ReflectionTypeManager;
 use CatPaw\Traits\CoreAttributeDefinition;
+use CatPaw\Unsafe;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
+
+use function CatPaw\ok;
 
 #[Attribute]
 class Option implements AttributeInterface {
@@ -42,16 +45,16 @@ class Option implements AttributeInterface {
         self::init();
     }
 
-    public static function findByMethod(ReflectionMethod $reflectionMethod):self|false {
-        return false;
+    public static function findByMethod(ReflectionMethod $reflectionMethod):Unsafe {
+        return ok(false);
     }
 
-    public static function findByClass(ReflectionClass $reflectionClass):self|false {
-        return false;
+    public static function findByClass(ReflectionClass $reflectionClass):Unsafe{
+        return ok(false);
     }
 
-    public static function findByProperty(ReflectionProperty $reflectionProperty):self|false {
-        return false;
+    public static function findByProperty(ReflectionProperty $reflectionProperty):Unsafe {
+        return ok(false);
     }
 
     public function onFunctionMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void {
@@ -82,15 +85,6 @@ class Option implements AttributeInterface {
             allowsFalse: $wrapper->allowsFalse(),
         );
     }
-
-    // public static function renderLinuxManual():string {
-    //     $result = '';
-    //     foreach (self::$linuxManual as $option => $guide) {
-    //         // $guide->
-    //     }
-
-    //     return $result;
-    // }
 
     public static function exists(string $option) {
         self::init();
@@ -131,7 +125,7 @@ class Option implements AttributeInterface {
 
     private function extract():?string {
         $name = $this->name;
-        foreach (self::$options as $i => $value) {
+        foreach (self::$options as $value) {
             if (
                 str_starts_with($value, "$name ")
                 || str_starts_with($value, "$name\"")

@@ -1,34 +1,24 @@
 <?php
 namespace CatPaw;
 
-use function Amp\async;
-use function Amp\ByteStream\buffer;
-
-use Amp\ByteStream\ReadableIterableStream;
-use Amp\ByteStream\ReadableStream;
-use Amp\ByteStream\WritableIterableStream;
-use Amp\DeferredFuture;
-use function Amp\File\createDirectoryRecursively;
-
-use function Amp\File\deleteDirectory;
-use function Amp\File\deleteFile;
-use function Amp\File\exists;
-use function Amp\File\getStatus;
-use function Amp\File\isDirectory;
-use function Amp\File\isFile;
-use function Amp\File\listFiles;
-use function Amp\File\read;
-use function Amp\File\write;
-
-use Amp\Future;
-use Amp\Process\Process;
-use Closure;
 use Error;
+use Exception;
 use InvalidArgumentException;
 use Phar;
+use function React\Async\await;
+use React\ChildProcess\Process;
+use React\Promise\Promise;
+use React\Stream\ReadableResourceStream;
+use React\Stream\ThroughStream;
+use React\Stream\WritableResourceStream;
+use React\Stream\WritableStreamInterface;
 use RecursiveArrayIterator;
+use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Revolt\EventLoop;
+use RecursiveRegexIterator;
+use RegexIterator;
+
+use Throwable;
 
 /**
  * Get current time in milliseconds.
@@ -36,38 +26,6 @@ use Revolt\EventLoop;
  */
 function milliseconds():float {
     return floor(microtime(true) * 1000);
-}
-
-/**
- * List all files (not directories) inside a directory.
- * Dot entries are not included in the resulting array (i.e. "." and "..").
- * @param  string        $path
- * @param  array|false   $ignore
- * @return array<string>
- */
-function listFilesRecursively(string $path, array|false $ignore = false):array {
-    if (!\str_ends_with($path, '/')) {
-        $path .= '/';
-    }
-    $filenames = listFiles($path);
-    $files     = [];
-    foreach ($filenames as $filename) {
-        if ($ignore && in_array($filename, $ignore)) {
-            continue;
-        }
-
-        $filename = "$path$filename";
-        $isDir    = isDirectory($filename);
-        if ($isDir) {
-            foreach (listFilesRecursively($filename) as $subItem) {
-                $files[] = $subItem;
-            }
-            continue;
-        }
-
-        $files[] = $filename;
-    }
-    return $files;
 }
 
 /**
@@ -116,189 +74,6 @@ function uuid(): string {
 }
 
 /**
- * Convert a resource into a stream.
- * @param  mixed  $resource
- * @param  ?int   $chunkSize
- * @return Stream
- */
-function stream(
-    mixed $resource,
-    int $chunkSize = -1,
-):Stream {
-    return Stream::of($resource, $chunkSize < 0?null:$chunkSize);
-}
-
-/**
- * Delete a file or directory recursively.
- * @param  string                   $path   name of the directory.present.
- * @param  array|false              $ignore a map of file/directory names to ignore.
- * @throws InvalidArgumentException if the specified directory name is not actually a directory.
- * @return void
- */
-function deleteDirectoryRecursively(string $path, array|false $ignore = false):void {
-    if (!isDirectory($path)) {
-        throw new InvalidArgumentException("\"$path\" is not a valid directory.");
-    }
-
-    if (!str_ends_with($path, '/')) {
-        $path .= '/';
-    }
-        
-    $files = listFiles($path);
-        
-    foreach ($files as $filename) {
-        if (false !== $ignore && in_array($filename, $ignore)) {
-            continue;
-        }
-
-        $target = "$path$filename";
-
-        if (isFile($target)) {
-            deleteFile($target);
-            continue;
-        }
-
-        deleteDirectoryRecursively($target);
-    }
-
-    deleteDirectory($path);
-}
-
-/**
- * Copy a file.
- * @param  string $from
- * @param  string $to
- * @return void
- */
-function copyFile(string $from, string $to):void {
-    write($to, read($from));
-}
-
-/**
- * Copy a file or directory recursively.
- * @param  string      $from
- * @param  string      $to
- * @param  array|false $ignore a map of file/directory names to ignore.
- * @return void
- */
-function copyDirectoryRecursively(string $from, string $to, array|false $ignore = false):void {
-    if (!str_ends_with($from, '/')) {
-        $from .= '/';
-    }
-
-    if (!str_ends_with($to, '/')) {
-        $to .= '/';
-    }
-
-    if (!exists($to)) {
-        createDirectoryRecursively($to);
-    }
-
-    foreach (listFiles($from) as $filename) {
-        if (false !== $ignore && in_array($filename, $ignore)) {
-            continue;
-        }
-
-        $source      = "$from$filename";
-        $destination = "$to$filename";
-
-        if (isFile($source)) {
-            copyFile($source, $destination);
-            continue;
-        }
-
-        copyDirectoryRecursively($source, $destination);
-    }
-}
-
-/**
- * Get the filenames within a directory recursively.
- * @param  string                     $path   startup directory.
- * @param  array|false                $ignore a map of file/directory names to ignore.
- * @return array<array<string,mixed>>
- */
-function listFilesInfoRecursively(string $path, array|false $ignore = false):array {
-    $list = [];
-    if (isDirectory($path)) {
-        if (!str_ends_with($path, '/')) {
-            $path .= '/';
-        }
-        foreach (listFiles($path) as $i => $filename) {
-            if (false !== $ignore && \in_array($filename, $ignore)) {
-                continue;
-            }              
-            $list = [ ...$list, ...listFilesInfoRecursively("$path$filename")];
-        }
-    } else {
-        $list = [
-            ...$list,
-            getStatus($path)
-        ];
-    }
-
-    return $list;
-}
-
-/**
- * Create a process, run it, wait for it to end and get the output.
- * @param  string        $command
- * @param  string        $cwd
- * @param  array         $env
- * @param  array         $options
- * @return ExecuteResult the output data of the process.
- */
-function execute(
-    string $command,
-    string $cwd = '',
-    array $env = [],
-    array $options = []
-):ExecuteResult {
-    $process = Process::start($command, $cwd?$cwd:null, $env, $options);
-    $output  = buffer($process->getStdout());
-    $error   = buffer($process->getStderr());
-    $code    = $process->join();
-    return new ExecuteResult(code: $code, output: $output, error: $error);
-}
-
-
-/**
- * Print an array as an ascii table (recursively).
- * @param  array                                            $input       the input array.
- * @param  bool                                             $lineCounter if true a number will be visible for each line inside the ascii table.
- * @param  false|callable(AsciiTable $table, int $lvl):void $intercept   intercept the main table and each subtable.<br />
- *                                                                       This closure will be passed 2 parameters: the AsciiTable and the current depth level.
- * @param  int                                              $lvl         the depth level will start counting from this value on.
- * @return string                                           the resulting ascii table.
- */
-function tableFromArray(
-    array $input,
-    bool $lineCounter = false,
-    false|callable $intercept = false,
-    int $lvl = 0
-): string {
-    $table = AsciiTable::create();
-    if ($intercept) {
-        $intercept($table, $lvl);
-    }
-    $table->add("Key", "Value");
-    foreach ($input as $key => &$item) {
-        if (is_array($item)) {
-            $table->add($key, tableFromArray($item, $lineCounter, $intercept, $lvl + 1));
-            continue;
-        } else {
-            if (is_object($item)) {
-                $table->add($key, get_class($item));
-                continue;
-            }
-        }
-        $table->add($key, $item);
-    }
-
-    $table->countLines($lineCounter);
-    return $table->__toString();
-}
-
-/**
  * Check if the current application is running inside a .phar archive or not.
  * @return bool
  */
@@ -308,116 +83,22 @@ function isPhar() {
 
 /**
  * Request an input from the terminal without feeding back to the display whatever it's been typed.
- * @param  string $prompt message to display along with the input request.
- * @return string
+ * @param  string         $prompt message to display along with the input request.
+ * @return Unsafe<string>
  */
-function readLineSilent(string $prompt): string {
-    if (preg_match('/^win/i', PHP_OS)) {
-        $vbscript = sys_get_temp_dir().'prompt_password.vbs';
-        file_put_contents(
-            $vbscript,
-            'wscript.echo(InputBox("'
-            .addslashes($prompt)
-            .'", "", "password here"))'
-        );
-        $command  = "cscript //nologo ".escapeshellarg($vbscript);
-        $password = rtrim(shell_exec($command));
-        unlink($vbscript);
-    } else {
-        $command = "/usr/bin/env bash -c 'echo OK'";
-        if (rtrim(shell_exec($command)) !== 'OK') {
-            trigger_error("Can't invoke bash");
-            return '';
-        }
-        $command = "/usr/bin/env bash -c 'read -s -p \""
-            .addslashes($prompt)
-            ."\" mypassword && echo \$mypassword'";
-        $password = rtrim(shell_exec($command));
-        echo "\n";
+function readLineSilent(string $prompt):Unsafe {
+    $command = "/usr/bin/env bash -c 'echo OK'";
+    if (rtrim(shell_exec($command)) !== 'OK') {
+        return error("Can't invoke bash");
     }
-    return $password;
+    $command = "/usr/bin/env bash -c 'read -s -p \""
+        .addslashes($prompt)
+        ."\" hidden_value && echo \$hidden_value'";
+    $hiddenValue = rtrim(shell_exec($command));
+    echo "\n";
+    return ok($hiddenValue);
 }
 
-/**
- * Resolve on the next event loop iteration.
- * @return Future<void>
- */
-function deferred():Future {
-    return (new DeferredFuture)->getFuture()->complete();
-}
-
-
-/**
- * Read input from the user.
- * 
- * This is a replacement for the default `\readline()` function which does not work in a PHAR program.
- * @param string                               $prompt   prompt the user.
- * @param (callable(string):bool|string)|false $validate validate the input value.
- * 
- * Return `true` to indicate that the input is valid or `false` to indicate the input is not valid.
- * 
- * **Note**: instead of `false`, you may instead return a feedback `string` to invalidate the input.
- * 
- * ## Example:
- * ```php
- * readline("Pick a natural number between 1 and 3: ", fn($value)=>$value === '2'?true:"$value is not a natural number between 1 and 3, try again.")
- * ```
- * @param  bool   $silent if true, the user input will be hidden.
- * @throws Error
- * @return string
- */
-function readline(
-    string $prompt = '',
-    false|callable $validate = false,
-    bool $silent = false,
-):string {
-    static $input  = false;
-    static $output = false;
-
-    if (!$input) {
-        $input = stream(STDIN);
-    }
-
-    if (!$output) {
-        $output = stream(STDOUT);
-    }
-
-    $hide      = "\033[0K\r";
-    $watcher   = $silent;
-    $watcherID = false;
-    $output->write($prompt);
-    if ($silent) {
-        $watcherID = EventLoop::repeat(0.001, function() use ($prompt, $output, $hide, &$watcher) {
-            $output->write($prompt);
-            if ($watcher) {
-                $output->write($hide);
-            }
-        });
-    }
-    /** @var string */
-    $data = $input->read();
-    if ($silent) {
-        $output->write($hide);
-    }
-    $watcher = false;
-    EventLoop::cancel($watcherID);
-    $result = preg_replace('/\n$/i', '', $data);
-
-    if ($validate) {
-        $validation = $validate($result);
-        if (is_string($validation)) {
-            $output->write($validation.PHP_EOL);
-            return readline($prompt, $validate, $silent);
-        } else if (is_bool($validation)) {
-            if (!$validation) {
-                return readline($prompt, $validate, $silent);
-            }
-        } else {
-            throw new Error("The validation function must return either a boolean or a string.");
-        }
-    }
-    return $result;
-}
 
 /**
  * @param  array $array
@@ -432,29 +113,614 @@ function flatten(array $array, bool $completely = false):array {
     return array_merge(...array_values($array));
 }
 
+
 /**
- * Return two new streams, a readable stream and a writable one which will be writing to the first stream.
- * 
- * The writer stream will automatically be disposed of when the readable stream is disposed of.
- * @param  int                                                      $bufferSize
- * @return array{0:ReadableIterableStream,1:WritableIterableStream}
+ * Get the stdout as a stream.
  */
-function duplex(int $bufferSize = 8192):array {
-    $writer = new WritableIterableStream($bufferSize);
-    $reader = new ReadableIterableStream($writer);
-    return [$reader, $writer];
+function out():WritableResourceStream {
+    return new WritableResourceStream(STDOUT);
 }
 
 /**
- * Given a stream, execute a callback on new data.
- * @param  ReadableStream $reader
- * @param  Closure        $callback
- * @return void
+ * Get the stdin as a stream.
  */
-function on(ReadableStream $reader, Closure $callback):void {
-    async(function() use ($reader, $callback) {
-        while ($chunk = $reader->read()) {
-            $callback($chunk);
+function in():ReadableResourceStream {
+    return new ReadableResourceStream(STDIN);
+}
+
+/**
+ * @template T
+ */
+class Unsafe {
+    /**
+     * @param T           $value
+     * @param false|Error $error
+     */
+    public function __construct(
+        public readonly mixed $value,
+        public readonly false|Error $error
+    ) {
+        if ($error && !($error instanceof Error)) {
+            $this->error = new Error($error);
         }
+    }
+}
+
+/**
+ * @template T
+ * @param  T         $value
+ * @return Unsafe<T>
+ */
+function ok(mixed $value = null):Unsafe {
+    return new Unsafe($value, false);
+}
+
+/**
+ * @template T
+ * @param  string|Error $message
+ * @return Unsafe<T>
+ */
+function error(string|Error $message):Unsafe {
+    if (is_string($message)) {
+        return new Unsafe(null, new Error($message));
+    }
+
+    return new Unsafe(null, $message);
+}
+
+
+class Signal {
+    private bool $busy = false;
+    public static function create():self {
+        return new self(LinkedList::create());
+    }
+
+    /**
+     * @param LinkedList<callable(...mixed):void> $list
+     */
+    private function __construct(private LinkedList $list) {
+    }
+
+    /**
+     * Send signal and trigger listeners.
+     * @param int $code code to send, defaults to `SIGTERM`.
+     * 
+     */
+    public function send($code = SIGTERM) {
+        if ($this->busy) {
+            return;
+        }
+        $this->busy = true;
+        for ($this->list->rewind();$this->list->valid();$this->list->next()) {
+            $function = $this->list->current();
+            $function($code);
+        }
+        $this->busy = false;
+    }
+
+    /**
+     * @param callable(int):void
+     */
+    public function listen(callable $function):void {
+        $this->list->push($function);
+    }
+
+    /**
+     * Clear all lsiteners.
+     */
+    public function clear() {
+        $this->list->setIteratorMode(LinkedList::IT_MODE_DELETE);
+        for ($this->list->rewind();$this->list->valid();$this->list->next()) {
+            continue;
+        }
+    }
+}
+
+
+/**
+ * Execute a command.
+ * @param  string                        $command instruction to run.
+ * @param  false|WritableStreamInterface $writer  send the output of the process to this stream.
+ * @param  false|Signal                  $signal  when this signal is triggered the process is killed.
+ * @return Promise<Unsafe<void>>
+ */
+function execute(string $command, false|WritableStreamInterface $writer = false, false|Signal $signal = false):Promise {
+    return new Promise(function($ok) use ($command, $writer, $signal) {
+        $process = new Process($command);
+
+        try {
+            $process->start();
+        } catch(Throwable $e) {
+            $ok(error($e->getMessage()));
+            return;
+        }
+
+        if ($signal) {
+            $signal->listen(static function($code) use ($process) {
+                if ($process->isTerminated() || $process->isStopped()) {
+                    return;
+                }
+                $process->terminate($code);
+            });
+        }
+
+        if ($writer) {
+            $process->stdout->on('data', static function($chunk) use ($writer) {
+                $writer->write($chunk);
+            });
+        }
+        
+        $process->stdout->on('end', static function() use ($ok) {
+            $ok(ok());
+        });
+        
+        $process->stdout->on('error', static function(Exception $e) use ($ok) {
+            $ok(error($e->getMessage()));
+        });
+        
+        $process->stdout->on('close', static function() use ($ok) {
+            $ok(ok());
+        });
     });
+}
+
+/**
+ * Execute a command and return its output.
+ * @param  string                  $command command to run
+ * @return Promise<Unsafe<string>>
+ */
+function get(string $command):Promise {
+    $through = new ThroughStream();
+    execute($command, $through);
+    $output = '';
+
+    return new Promise(static function($ok) use ($through, &$output) {
+        $through->on('data', static function($chunk) use ($through, &$output) {
+            $output .= $chunk;
+        });
+        
+        $through->on('end', static function() use ($ok, &$output) {
+            $ok(ok($output));
+        });
+        
+        $through->on('error', static function(Exception $e) use ($ok) {
+            $ok(error($e->getMessage()));
+        });
+        
+        $through->on('close', static function() use ($ok, &$output) {
+            $ok(ok($output));
+        });
+    });
+}
+
+class File {
+    /**
+     * Copy a file.
+     * @param  string                $from
+     * @param  string                $to
+     * @return Promise<Unsafe<void>>
+     */
+    function copyFile(string $from, string $to):Promise {
+        $source = File::open($from);
+        if ($source->error) {
+            return error($source->error);
+        }
+        $destination = File::open($to);
+        if ($destination->error) {
+            return error($destination->error);
+        }
+        return $destination->value->writeStream($source->value->getStream());
+    }
+
+    /**
+     * Copy a file or directory recursively.
+     * @param  string      $from
+     * @param  string      $to
+     * @param  array|false $ignore a map of file/directory names to ignore.
+     * @return Unsafe
+     */
+    function copyDirectoryRecursively(string $from, string $to, array|false $ignore = false):Unsafe {
+        if (!str_ends_with($from, '/')) {
+            $from .= '/';
+        }
+
+        if (!str_ends_with($to, '/')) {
+            $to .= '/';
+        }
+
+        if (!File::exists($to)) {
+            if ($error = File::createDirectoryRecursively($to)->error) {
+                return error($error);
+            }
+        }
+
+        $list = File::list($from);
+
+        if ($list->error) {
+            return error($list->error);
+        }
+
+        foreach ($list->value as $fileName) {
+            if (false !== $ignore && in_array($fileName, $ignore)) {
+                continue;
+            }
+
+            $source      = "$from$fileName";
+            $destination = "$to$fileName";
+
+            if (self::isFile($source)) {
+                if ($error = await(self::copyFile($source, $destination))->error) {
+                    return error($error);
+                }
+                continue;
+            }
+
+            
+            if ($error = self::copyDirectoryRecursively($source, $destination)->error) {
+                return error($error);
+            }
+        }
+    }
+
+
+    /**
+     * List files and directories in a directory.
+     * @param  string                $directoryName directory to scan.
+     * @return Unsafe<array<string>>
+     */
+    public static function list(string $directoryName):Unsafe {
+        if (!self::isDirectory($directoryName)) {
+            return error("Directory $directoryName doesn't exist.");
+        }
+
+        $files = array_diff(scandir($directoryName), ['.', '..']);
+
+        return ok($files?:[]);
+    }
+
+    /**
+     * List all files inside a directory recursively.
+     * @param  string                $directoryName directory to scan.
+     * @param  string                $pattern       regex pattern to match while scanning.
+     * @return Unsafe<array<string>>
+     */
+    public static function listFilesRecursively(string $directoryName, false|string $pattern = false):Unsafe {
+        try {
+            $directory = new RecursiveDirectoryIterator($directoryName);
+        } catch(Throwable $e) {
+            return error($e);
+        }
+
+        $iterator = new RecursiveIteratorIterator($directory);
+
+        if (false !== $pattern) {
+            $iterator = new RegexIterator(
+                $iterator,
+                $pattern,
+                RecursiveRegexIterator::GET_MATCH
+            );
+        }
+
+        /** @var array<string> */
+        $fileNames = [];
+
+        for ($iterator->rewind();$iterator->valid();$iterator->next()) {
+            foreach ($iterator->current() as $fileName) {
+                $fileNames[] = $fileName;
+            }
+        }
+
+        return ok($fileNames);
+    }
+
+
+    /**
+     * Get the filenames within a directory recursively.
+     * @param  string                             $directoryName startup directory.
+     * @param  string                             $pattern       regex pattern to match while scanning.
+     * @return Unsafe<array<array<string,mixed>>>
+     */
+    function listFilesInfosRecursively(string $directoryName, false|string $pattern = false):Unsafe {
+        $list = self::listFilesRecursively($directoryName, $pattern);
+        if ($list->error) {
+            return error($list->error);
+        }
+
+        $fileInfos = [];
+
+        foreach ($list->value as $fileName) {
+            $fileInfo = File::getStatus($fileName);
+            if ($fileInfo->error) {
+                return error($fileInfo->error);
+            }
+        }
+
+
+        return ok($fileInfos);
+    }
+
+    /**
+     * @return Unsafe<array>
+     */
+    public static function getStatus(string $fileName):Unsafe {
+        $info = stat($fileName);
+        if (false === $info) {
+            return error("Could not get status of file $fileName.");
+        }
+
+        return ok($info);
+    }
+
+    /**
+     * @return Unsafe<int>
+     */
+    public static function getModificationTime(string $fileName):Unsafe {
+        $mtime = filemtime($fileName);
+        if (false === $mtime) {
+            return error("Could not find file $fileName modification time.");
+        }
+        return ok($mtime);
+    }
+
+    public static function exists(string $fileName):bool {
+        return file_exists($fileName);
+    }
+
+    public static function isFile(string $fileName):bool {
+        return is_file($fileName);
+    }
+
+    public static function isDirectory(string $fileName):bool {
+        return is_dir($fileName);
+    }
+
+    public static function deleteFile(string $fileName):Unsafe {
+        if (!unlink($fileName)) {
+            return error("Could not delete file $fileName");
+        }
+        return ok();
+    }
+    
+    /**
+     * Delete a file or directory recursively.
+     * @param  string                   $directoryName name of the directory.present.
+     * @param  array|false              $ignore        a map of file/directory names to ignore.
+     * @throws InvalidArgumentException if the specified directory name is not actually a directory.
+     * @return Unsafe<void>
+     */
+    public function deleteDirectory(string $directoryName, array|false $ignore = false):Unsafe {
+        if (!str_ends_with($directoryName, '/')) {
+            $directoryName .= '/';
+        }
+            
+        $list = self::list($directoryName);
+            
+        if ($list->error) {
+            return error($list->error);
+        }
+
+        foreach ($list->value as $fileName) {
+            if (false !== $ignore && in_array($fileName, $ignore)) {
+                continue;
+            }
+
+            $target = "$directoryName$fileName";
+
+            if (self::isFile($target)) {
+                if ($error = self::deleteFile($target)->error) {
+                    return error($error);
+                }
+                continue;
+            }
+
+            if ($error = self::deleteDirectory($target)->error) {
+                return error($error);
+            }
+        }
+
+        if ($error = self::deleteDirectory($directoryName)->error) {
+            return error($error);
+        }
+
+        return ok();
+    }
+
+    /**
+     * @return Unsafe
+     */
+    public static function createDirectoryRecursively(string $directoryName):Unsafe {
+        if ('' === $directoryName) {
+            return error("Directory name cannot be empty.");
+        }
+
+        if (self::exists($directoryName)) {
+            if (!self::isDirectory($directoryName)) {
+                return error("The given directory $directoryName is actually an already existing file.");
+            }
+            return ok();
+        }
+
+        $currentDirectoryName = '';
+
+        foreach (explode('/', $directoryName) as $part) {
+            $currentDirectoryName .= "/$part";
+            if (self::exists($currentDirectoryName)) {
+                continue;
+            }
+
+            $result = File::createDirectory($currentDirectoryName);
+            if ($result->error) {
+                return error($result->error);
+            }
+        }
+
+        return ok();
+    }
+
+    /**
+     * @return Unsafe
+     */
+    public static function createDirectory(string $directoryName):Unsafe {
+        if (mkdir($directoryName)) {
+            return error("Could not create directory $directoryName.");
+        }
+        return ok();
+    }
+
+    /**
+     * @return Unsafe<File>
+     */
+    public static function open(string $fileName, string $mode = 'r'):Unsafe {
+        if (!self::exists($fileName)) {
+            return error("File $fileName not found.");
+        }
+        $file = fopen($fileName, $mode);
+        if (!$file) {
+            return error("Could not open file $fileName");
+        }
+        return ok(new self($file));
+    }
+
+    private ReadableResourceStream $reader;
+    private WritableResourceStream $writer;
+    private function __construct(
+        private $stream
+    ) {
+    }
+
+
+    private function setupReader():Unsafe {
+        if (isset($this->reader)) {
+            if (!$this->reader->isReadable()) {
+                return error("The readable stream has already been closed, you cannot read anymore from this file.");
+            }
+            return ok();
+        }
+        $this->reader = new ReadableResourceStream($this->stream);
+        return ok();
+    }
+
+    private function setupWriter():Unsafe {
+        if (isset($this->writer)) {
+            if ($this->writer->isWritable()) {
+                return error("The writable stream has already been closed, you cannot write anymore to this file.");
+            }
+            return ok();
+        }
+        $this->writer = new WritableResourceStream($this->stream);
+        return ok();
+    }
+    
+    /**
+     * @return Promise<Unsafe<void>>
+     */
+    public function writeContent(string $content):Promise {
+        $setup = $this->setupWriter();
+
+        if ($setup->error) {
+            return new Promise(static fn ($ok) => $ok(error($setup->error)));
+        }
+
+        $writer = $this->writer;
+        if (is_string($content)) {
+            if ($writer->write($content)) {
+                return new Promise(static fn ($ok) => $ok(ok()));
+            }
+            return new Promise(static fn ($ok) => $ok(error("Could not write to file.")));
+        }
+    }
+
+    /**
+     * @return Promise<Unsafe<void>>
+     */
+    public function writeStream(ReadableResourceStream $reader):Promise {
+        $setup = $this->setupWriter();
+
+        if ($setup->error) {
+            return new Promise(static fn ($ok) => $ok(error($setup->error)));
+        }
+
+        $writer = $this->writer;
+
+        $resolved = false;
+        return new Promise(static function($ok) use ($reader, $writer, &$resolved) {
+            $reader->on('data', static function($chunk) use ($writer) {
+                $writer->write($chunk);
+            });
+
+            $reader->on('end', static function() use ($ok, $reader, &$resolved) {
+                $ok(ok());
+                $resolved = true;
+                $reader->close();
+            });
+            
+            $reader->on('error', static function(Exception $e) use ($ok, $reader, &$resolved) {
+                $ok(error($e->getMessage()));
+                $resolved = true;
+                $reader->close();
+            });
+            
+            $reader->on('close', static function() use ($ok, &$resolved) {
+                if ($resolved) {
+                    return;
+                }
+                $resolved = true;
+                $ok(ok());
+            });
+        });
+    }
+    
+    
+    /**
+     * @return Promise<Unsafe<string>>
+     */
+    public function readAll():Promise {
+        $setup = $this->setupReader();
+
+        if ($setup->error) {
+            return new Promise(static fn ($ok) => $ok(error($setup->error)));
+        }
+
+        $reader   = $this->reader;
+        $content  = '';
+        $resolved = false;
+        return new Promise(static function($ok) use ($reader, &$content, &$resolved) {
+            $reader->on('data', static function($chunk) use (&$content) {
+                $content .= $chunk;
+            });
+
+            $reader->on('end', static function() use ($ok, &$content, $reader, &$resolved) {
+                $ok(ok($content));
+                $resolved = true;
+                $reader->close();
+            });
+            
+            $reader->on('error', static function(Exception $e) use ($ok, $reader, &$resolved) {
+                $ok(error($e->getMessage()));
+                $resolved = true;
+                $reader->close();
+            });
+            
+            $reader->on('close', static function() use ($ok, &$content, &$resolved) {
+                if ($resolved) {
+                    return;
+                }
+                $resolved = true;
+                $ok(ok($content));
+            });
+        });
+    }
+
+    public function getStream():ReadableResourceStream {
+        return new ReadableResourceStream($this->stream);
+    }
+
+    public function close() {
+        if ($this->reader) {
+            $this->reader->close();
+        }
+        if ($this->writer) {
+            $this->writer->close();
+        }
+    }
 }

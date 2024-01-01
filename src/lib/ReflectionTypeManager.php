@@ -13,7 +13,8 @@ class ReflectionTypeManager {
     }
 
     public static function wrap(ReflectionParameter|ReflectionProperty $reflection, string $defaultClassName = 'bool'): WrappedType {
-        $className = ReflectionTypeManager::unwrap($reflection)?->getName() ?? $defaultClassName;
+        $reflectionType = ReflectionTypeManager::unwrap($reflection);
+        $className = $reflectionType?$reflectionType->getName(): $defaultClassName;
 
         $rtype = $reflection->getType();
 
@@ -21,7 +22,7 @@ class ReflectionTypeManager {
 
         if ($rtype instanceof ReflectionUnionType || $rtype instanceof ReflectionIntersectionType) {
             $classNames = $rtype->getTypes();
-            foreach ($classNames as $i => $t) {
+            foreach ($classNames as $t) {
                 /**
                  * @psalm-suppress PossiblyUndefinedMethod
                  */
@@ -47,15 +48,15 @@ class ReflectionTypeManager {
         );
     }
 
-    public static function unwrap(ReflectionParameter|ReflectionProperty $parameter): ReflectionNamedType|null {
-        $type = $parameter->getType() ?? null;
-        if (null === $type) {
-            return null;
+    public static function unwrap(ReflectionParameter|ReflectionProperty $parameter): ReflectionNamedType|false {
+        $type = $parameter->getType() ?? false;
+        if (false === $type) {
+            return false;
         }
         if ($type instanceof ReflectionUnionType || $type instanceof ReflectionIntersectionType) {
             $types = $type->getTypes();
             $type  = $types[0];
-            foreach ($types as $i => $t) {
+            foreach ($types as $t) {
                 if ('null' !== $t && 'false' !== $t) {
                     /** @var ReflectionNamedType */
                     return $t;

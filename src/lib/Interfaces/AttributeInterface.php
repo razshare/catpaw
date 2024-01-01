@@ -3,6 +3,7 @@
 namespace CatPaw\Interfaces;
 
 use CatPaw\DependenciesOptions;
+use CatPaw\Unsafe;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;
@@ -11,15 +12,35 @@ use ReflectionParameter;
 use ReflectionProperty;
 
 interface AttributeInterface {
-    public static function findAllByFunction(ReflectionFunction $reflectionFunction): array|false ;
-    
-    public static function findByFunction(ReflectionFunction $reflectionFunction): self|false;
+    /**
+     * @param ReflectionFunction $reflectionFunction
+     * @return Unsafe<array<self>>
+     */
+    public static function findAllByFunction(ReflectionFunction $reflectionFunction):Unsafe;
 
-    public static function findByMethod(ReflectionMethod $reflectionMethod): self|false;
+    /**
+     * @param ReflectionFunction $reflectionFunction
+     * @return Unsafe<false|self>
+     */
+    public static function findByFunction(ReflectionFunction $reflectionFunction):Unsafe;
 
-    public static function findByClass(ReflectionClass $reflectionClass): self|false;
+    /**
+     * @param ReflectionMethod $reflectionMethod
+     * @return Unsafe<false|self>
+     */
+    public static function findByMethod(ReflectionMethod $reflectionMethod):Unsafe;
 
-    public static function findByProperty(ReflectionProperty $reflectionProperty): self|false;
+    /**
+     * @param ReflectionClass $reflectionClass
+     * @return Unsafe<false|self>
+     */
+    public static function findByClass(ReflectionClass $reflectionClass):Unsafe;
+
+    /**
+     * @param ReflectionProperty $reflectionProperty
+     * @return Unsafe<false|self>
+     */
+    public static function findByProperty(ReflectionProperty $reflectionProperty):Unsafe;
 
     /**
      * Invoked when this attribute is detected on a parameter.

@@ -8,9 +8,9 @@ use function filter_var;
 
 class StringExpansion {
     /**
-     * @throws Exception
+     * @return Unsafe<string>
      */
-    public static function variable(string $content, array $parameters): string {
+    public static function variable(string $content, array $parameters): Unsafe {
         $result = '';
 
         $stack       = StringStack::of($content);
@@ -27,7 +27,7 @@ class StringExpansion {
 
             if ($tokenFound && '}}' === $token) {
                 if (!isset($parameters[$prev])) {
-                    throw new Exception("Parameter \"$prev\" it not valid.");
+                    return error("Parameter $prev it not valid.");
                 }
                 $result .= $parameters[$prev];
                 $tokenFound = false;
@@ -37,7 +37,7 @@ class StringExpansion {
             $result .= $prev;
         }
 
-        return $result;
+        return ok($result);
     }
 
 
@@ -158,11 +158,11 @@ class StringExpansion {
     }
 
     /**
-     * @throws Exception
+     * @return Unsafe<bool>
      */
-    public static function groupCondition(string $content, int $depth = 0): bool {
+    public static function groupCondition(string $content, int $depth = 0): Unsafe {
         if ($depth > 10) {
-            throw new Exception("Too many nested groups in the condition (max 10).");
+            return error("Too many nested groups in the condition (max 10).");
         }
 
         //Il numero di parentesi aperte deve essere uguale al numero di parentesi chiuse
@@ -170,7 +170,7 @@ class StringExpansion {
         $numberOfClosedParenthesis = preg_match_all('/\)/', $content);
 
         if (false === $numberOfOpenParenthesis || false === $numberOfClosedParenthesis || $numberOfOpenParenthesis !== $numberOfClosedParenthesis) {
-            throw new Exception("The number of opened and closed parenthesis must match (opened:$numberOfOpenParenthesis, closedd:$numberOfClosedParenthesis).");
+            return error("The number of opened and closed parenthesis must match (opened:$numberOfOpenParenthesis, closedd:$numberOfClosedParenthesis).");
         }
 
         $content     = strtolower(trim($content));
@@ -183,7 +183,7 @@ class StringExpansion {
         for ($occurrences->rewind(); $occurrences->valid(); $occurrences->next()) {
             [$previous, $token] = $occurrences->current();
             if (false === $token && '' === $result) {
-                return self::linearCondition($content);
+                return ok(self::linearCondition($content));
             }
             if (false === $previous) {
                 continue;
@@ -212,16 +212,20 @@ class StringExpansion {
             return self::groupCondition($result, ++$depth);
         }
 
-        return self::linearCondition($result);
+        return ok(self::linearCondition($result));
     }
 
     /**
      * @param  string    $content
      * @param  array     $parameters
      * @throws Exception
-     * @return bool
+     * @return Unsafe<bool>
      */
-    public static function condition(string $content, array $parameters): bool {
-        return self::groupCondition(self::variable($content, $parameters));
+    public static function condition(string $content, array $parameters): Unsafe {
+        $variable = self::variable($content, $parameters);
+        if($variable->error){
+            return error($variable->error);
+        }
+        return self::groupCondition($variable->value);
     }
 }

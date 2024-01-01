@@ -2,28 +2,21 @@
 
 namespace CatPaw;
 
-use function Amp\async;
-use function Amp\File\isDirectory;
-use function Amp\File\isFile;
-
 use Attribute;
-use BadFunctionCallException;
-use CatPaw\Attributes\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 use CatPaw\Interfaces\StorageInterface;
 use Closure;
-use Exception;
 use Psr\Log\LoggerInterface;
+use function React\Async\async;
+use React\Promise\Promise;
 use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use RecursiveRegexIterator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
-use RegexIterator;
+
 use Throwable;
 
 class Container {
@@ -34,19 +27,6 @@ class Container {
 
     public static function getSingletons():array {
         return self::$singletons;
-    }
-
-    /**
-     * Returns an ASCI table describing all existing routes.
-     * @return string
-     */
-    public static function describe(): string {
-        $table = AsciiTable::create();
-        $table->add("Singleton");
-        foreach (self::$singletons as $classname) {
-            $table->add(\get_class($classname));
-        }
-        return $table->__toString().PHP_EOL;
     }
 
     /**
@@ -69,17 +49,6 @@ class Container {
     }
 
     /**
-     * Set a singleton inside the container.
-     * @param  string $className
-     * @param  mixed  $object
-     * @return void
-     * @deprecated use Container::set instead
-     */
-    public static function setObject(string $className, mixed $object): void {
-        self::$singletons[$className] = $object;
-    }
-
-    /**
      * Delete all singletons and cache inside the container.
      * @return void
      */
@@ -91,72 +60,92 @@ class Container {
      * Run the entry method of an instance of a class.
      * @param  object                  $instance
      * @param  array<ReflectionMethod> $methods  methods of the class.
-     * @throws ReflectionException
-     * @return void
+     * @return Unsafe<void>
      */
-    public static function entry(object $instance, array $methods):void {
-        /** @var ReflectionMethod $method */
-        foreach ($methods as $method) {
-            $entry = Entry::findByMethod($method);
-            if ($entry) {
-                $args = Container::dependencies($method);
-                if ($method->isStatic()) {
-                    $method->invoke(null, ...$args);
-                } else {
-                    $method->invoke($instance, ...$args);
+    public static function entry(object $instance, array $methods):Unsafe {
+        try {
+            foreach ($methods as $method) {
+                $entry = Entry::findByMethod($method);
+                if ($entry->error) {
+                    return error($entry->error);
                 }
-                break;
+                if ($entry->value) {
+                    $arguments = Container::dependencies($method);
+                    if ($arguments->error) {
+                        return error($arguments->error);
+                    }
+    
+                    if ($method->isStatic()) {
+                        $method->invoke(null, ...$arguments->value);
+                    } else {
+                        $method->invoke($instance, ...$arguments->value);
+                    }
+                    break;
+                }
             }
+            return ok();
+        } catch(Throwable $e) {
+            return error($e);
         }
     }
 
+    /**
+     * @return Unsafe<array<mixed>>
+     */
     private static function findFunctionDependencies(
         ReflectionFunction|ReflectionMethod $reflection,
         DependenciesOptions $options,
-    ) {
-        $defaultArguments     = $options->defaultArguments;
-        $reflectionParameters = $reflection->getParameters();
-        $items                = [];
-        foreach ($reflectionParameters as $key => $reflectionParameter) {
-            $defaultArgument = $defaultArguments[$key] ?? null;
-            $isOptional      = $reflectionParameter->isOptional();
-            $defaultValue    = $reflectionParameter->isDefaultValueAvailable()?$reflectionParameter->getDefaultValue():null;
-            $type            = ReflectionTypeManager::unwrap($reflectionParameter)?->getName() ?? '';
-            $name            = $reflectionParameter->getName();
-            $attributes      = $reflectionParameter->getAttributes();
+    ):Unsafe {
+        try {
+            $defaultArguments     = $options->defaultArguments;
+            $reflectionParameters = $reflection->getParameters();
+            $items                = [];
+            foreach ($reflectionParameters as $key => $reflectionParameter) {
+                $defaultArgument = $defaultArguments[$key] ?? null;
+                $isOptional      = $reflectionParameter->isOptional();
+                $defaultValue    = $reflectionParameter->isDefaultValueAvailable()?$reflectionParameter->getDefaultValue():null;
+                $type            = ReflectionTypeManager::unwrap($reflectionParameter)?->getName() ?: '';
+                $name            = $reflectionParameter->getName();
+                $attributes      = $reflectionParameter->getAttributes();
 
-            if ('bool' === $type) {
-                $negative = false;
-            } else {
-                $negative = null;
+                if ('bool' === $type) {
+                    $negative = false;
+                } else {
+                    $negative = null;
+                }
+
+                $defaultCalculated = ($defaultArgument ?? $negative)?$defaultArgument:$negative;
+
+                if (!$defaultCalculated && $isOptional) {
+                    $defaultValue = $defaultValue ?? $negative;
+                } else {
+                    $defaultValue = $defaultCalculated;
+                }
+
+                $items[] = new DependencySearchResultItem(
+                    reflectionParameter: $reflectionParameter,
+                    defaultArgument: $defaultArgument,
+                    isOptional: $isOptional,
+                    defaultValue: $defaultValue,
+                    type: $type,
+                    name: $name,
+                    attributes: $attributes,
+                );
             }
 
-            $defaultCalculated = ($defaultArgument ?? $negative)?$defaultArgument:$negative;
-
-            if (!$defaultCalculated && $isOptional) {
-                $defaultValue = $defaultValue ?? $negative;
-            } else {
-                $defaultValue = $defaultCalculated;
-            }
-
-            $items[] = new DependencySearchResultItem(
-                reflectionParameter: $reflectionParameter,
-                defaultArgument: $defaultArgument,
-                isOptional: $isOptional,
-                defaultValue: $defaultValue,
-                type: $type,
-                name: $name,
-                attributes: $attributes,
-            );
+            return ok($items);
+        } catch(Throwable $e) {
+            return error($e);
         }
-
-        return $items;
     }
 
+    /**
+     * @return Unsafe<array<mixed>>
+     */
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
         false|DependenciesOptions $options = false,
-    ):array {
+    ):Unsafe {
         if (!$options) {
             $options = DependenciesOptions::create(
                 key: '',
@@ -169,7 +158,11 @@ class Container {
         }
         $parameters = [];
         $results    = self::findFunctionDependencies($reflection, $options);
-        foreach ($results as $key => $result) {
+        if ($results->error) {
+            return error($results->error);
+        }
+
+        foreach ($results->value as $key => $result) {
             $reflectionParameter = $result->reflectionParameter;
             $type                = $result->type;
             $name                = $result->name;
@@ -197,7 +190,11 @@ class Container {
                 & "array" !== $type
                 & ""      !== $type
             ) {
-                $parameters[$key] = Container::create($type);
+                $instance = Container::create($type);
+                if ($instance->error) {
+                    return error($instance->error);
+                }
+                $parameters[$key] = $instance->value;
             }
 
             if (0 === $numberOfAttributes) {
@@ -206,42 +203,44 @@ class Container {
                 }
                 continue;
             }
-            
-            foreach ($attributes as $attribute) {
-                $attributeClass    = new ReflectionClass($attribute->getName());
-                $findByParameter   = $attributeClass->getMethod('findByParameter')->getClosure();
-                $attributeInstance = $findByParameter($reflectionParameter);
-                if (!$attributeInstance) {
-                    if ($fallback) {
-                        $parameters[$key] = $fallback($result);
+            try {
+                foreach ($attributes as $attribute) {
+                    $attributeClass    = new ReflectionClass($attribute->getName());
+                    $findByParameter   = $attributeClass->getMethod('findByParameter')->getClosure();
+                    $attributeInstance = $findByParameter($reflectionParameter);
+                    if (!$attributeInstance) {
+                        if ($fallback) {
+                            $parameters[$key] = $fallback($result);
+                        }
+                        continue;
                     }
-                    continue;
+                    $attributeInstance->onParameterMount(
+                        $reflectionParameter,
+                        $parameters[$key],
+                        $options,
+                    );
+                    if ($parameters[$key] instanceof StorageInterface) {
+                        $parameters[$key] = &$parameters[$key]->getStorage();
+                    }
                 }
-                $attributeInstance->onParameterMount(
-                    $reflectionParameter,
-                    $parameters[$key],
-                    $options,
-                );
-                if ($parameters[$key] instanceof StorageInterface) {
-                    $parameters[$key] = &$parameters[$key]->getStorage();
-                }
+            } catch(Throwable $e) {
+                return error($e);
             }
         }
 
-        return $parameters;
+        return ok($parameters);
     }
 
     /**
      * Load libraries and create default singletons for the container.
-     * @param  string        $path
-     * @param  bool          $append if true, the resulting singletons will be appended to the container, otherwise all the other singletons will be cleared before scanning.
-     * @throws Exception
-     * @return array<string> list of files scanned.
+     * @param  string                $path
+     * @param  bool                  $append if true, the resulting singletons will be appended to the container, otherwise all the other singletons will be cleared before scanning.
+     * @return Unsafe<array<string>> list of files scanned.
      */
     public static function load(
         string $path,
         bool $append = false,
-    ):array {
+    ):Unsafe {
         if (!$append) {
             Container::clearAll();
         }
@@ -250,55 +249,38 @@ class Container {
             $logger = LoggerFactory::create();
             Container::set(LoggerInterface::class, $logger);
         } else {
-            $logger = Container::create(LoggerInterface::class);
+            $result = Container::create(LoggerInterface::class);
+            if ($result->error) {
+                return error($result->error);
+            }
+            $logger = $result->value;
         }
         
         /** @var LoggerInterface $logger */
 
-        $scanned = [];
-        $isPhar  = isPhar();
+        $isPhar = isPhar();
         if ('' === \trim($path)) {
-            return [];
+            return ok([]);
         }
 
         if ($isPhar) {
             $path = \Phar::running()."/$path";
         }
 
-        if (isFile($path)) {
+        if (File::isFile($path)) {
             require_once($path);
             return [$path];
-        } else if (!isDirectory($path)) {
-            $logger->warning("It looks like the given library path `$path` does not exist, continuing without loading it.");
-            return [];
+        } else if (!File::isDirectory($path)) {
+            return ok([]);
         }
 
         try {
             $directory = new RecursiveDirectoryIterator($path);
         } catch (Throwable) {
-            Bootstrap::kill("Path \"$path\" is not a valid directory or file to load.".\PHP_EOL);
+            return error("Path \"$path\" is not a valid directory or file to load.");
         }
-                
-        /**
-         * @psalm-suppress PossiblyUndefinedVariable
-         */
-        $iterator = new RecursiveIteratorIterator($directory);
-        $regex    = new RegexIterator(
-            $iterator,
-            '/^.+\.php$/i',
-            RecursiveRegexIterator::GET_MATCH
-        );
 
-        for ($regex->rewind(); $regex->valid() ; $regex->next()) {
-            /** @var array<string> $files */
-            $files = $regex->current();
-            foreach ($files as $filename) {
-                require_once($filename);
-                $scanned[] = $filename;
-            }
-        }
-            
-        return $scanned;
+        return File::listFilesRecursively($directory, '/^.+\.php$/i');
     }
 
     /**
@@ -328,36 +310,47 @@ class Container {
             $object = $klass->newInstance(...$attributeArguments);
             if ($entry) {
                 $arguments = Container::dependencies($entry);
-                $entry->invoke($object, ...$arguments);
+                if ($arguments->error) {
+                    return error($arguments->error);
+                }
+                $entry->invoke($object, ...$arguments->value);
             }
         }
     }
 
     /**
      * Inject dependencies into a function and invoke it.
+     * @template T
      * @param  Closure|ReflectionFunction $function
      * @param  bool                       $touch    if true, Container::touch will be 
      *                                              called automatically on the function
-     * @throws BadFunctionCallException
-     * @return mixed
+     * @return Unsafe<Promise<T>>
      */
     public static function run(
         Closure|ReflectionFunction $function,
         bool $touch = true,
-    ):mixed {
-        if ($function instanceof Closure) {
-            $reflection = new ReflectionFunction($function);
-        } else {
-            $reflection = $function;
-            $function   = $reflection->getClosure();
-        }
+    ):Unsafe {
+        try {
+            if ($function instanceof Closure) {
+                $reflection = new ReflectionFunction($function);
+            } else {
+                $reflection = $function;
+                $function   = $reflection->getClosure();
+            }
 
-        if ($touch) {
-            self::touch($function);
-        }
+            if ($touch) {
+                self::touch($function);
+            }
 
-        $arguments = Container::dependencies($reflection);
-        return async($function, ...$arguments)->await();
+            $arguments = Container::dependencies($reflection);
+            if ($arguments->error) {
+                return error($arguments->error);
+            }
+
+            return ok(async($function)(...$arguments->value));
+        } catch(Throwable $e) {
+            return error($e);
+        }
     }
 
     /**
@@ -383,51 +376,61 @@ class Container {
     /**
      * Make a new instance of the given class.<br />
      * This method will take care of dependency injections.
-     * @param  string       $className full name of the class.
-     * @return false|object
+     * @param  string         $className full name of the class.
+     * @return Unsafe<object>
      */
-    public static function create(
-        string $className,
-    ) {
+    public static function create(string $className):Unsafe {
         if ('callable' === $className) {
-            return false;
+            return error("Cannot instantiate callables.");
         } else if ('object' === $className || 'stdClass' === $className) {
             return (object)[];
         }
         
 
         if (self::$singletons[$className] ?? false) {
-            return self::$singletons[$className];
+            return ok(self::$singletons[$className]);
         }
 
-        /** @psalm-suppress ArgumentTypeCoercion */
         $reflection = new ReflectionClass($className);
 
-        if (
-            $reflection->isInterface()
-            || AttributeResolver::issetClassAttribute($reflection, Attribute::class)
-            || count($reflection->getAttributes()) === 0
-        ) {
-            return false;
+        if ($reflection->isInterface()) {
+            return error("Cannot instantiate $className because it's an interface.");
         }
 
-        $service   = Service::findByClass($reflection);
+        if (AttributeResolver::issetClassAttribute($reflection, Attribute::class)) {
+            return error("Cannot instantiate $className because it's meant to be an attribute.");
+        }
+
+        if (count($reflection->getAttributes()) === 0) {
+            return error("Cannot instantiate $className because it's not marked as a service or a singleton.");
+        }
+
+        $service = Service::findByClass($reflection);
+        if ($service->error) {
+            return error($service->error);
+        }
         $singleton = Singleton::findByClass($reflection);
+        if ($singleton->error) {
+            return error($singleton->error);
+        }
 
         $constructor = $reflection->getConstructor() ?? false;
 
-        $arguments = [];
-
         if ($constructor) {
             $arguments = self::dependencies($constructor);
+            if ($arguments->error) {
+                return error($arguments->error);
+            }
+            $instance = new $className(...$arguments->value);
+        } else {
+            $instance = new $className();
         }
 
-        $instance = new $className(...$arguments);
 
-        if ($singleton || $service) {
+        if ($singleton->value || $service->value) {
             self::$singletons[$className] = $instance;
-            if ($service) {
-                $service->onClassMount($reflection, $instance, DependenciesOptions::create(
+            if ($service->value) {
+                $service->value->onClassMount($reflection, $instance, DependenciesOptions::create(
                     key: '',
                     overwrites:[],
                     provides: [],
@@ -438,8 +441,10 @@ class Container {
             }
         }
 
-        self::entry($instance, $reflection->getMethods());
+        if ($error = self::entry($instance, $reflection->getMethods())->error) {
+            return error($error);
+        }
             
-        return $instance;
+        return ok($instance);
     }
 }

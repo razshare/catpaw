@@ -6,12 +6,15 @@ use CatPaw\DependenciesOptions;
 use CatPaw\Interfaces\AttributeInterface;
 use CatPaw\ReflectionTypeManager;
 use CatPaw\Traits\CoreAttributeDefinition;
+use CatPaw\Unsafe;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
+
+use function CatPaw\ok;
 
 #[Attribute]
 class Arguments implements AttributeInterface {
@@ -25,16 +28,16 @@ class Arguments implements AttributeInterface {
         self::init();
     }
 
-    public static function findByMethod(ReflectionMethod $reflectionMethod): false|self {
-        return false;
+    public static function findByMethod(ReflectionMethod $reflectionMethod):Unsafe {
+        return ok(false);
     }
 
-    public static function findByClass(ReflectionClass $reflectionClass): false|self {
-        return false;
+    public static function findByClass(ReflectionClass $reflectionClass):Unsafe {
+        return ok(false);
     }
 
-    public static function findByProperty(ReflectionProperty $reflectionProperty): false|self {
-        return false;
+    public static function findByProperty(ReflectionProperty $reflectionProperty):Unsafe {
+        return ok(false);
     }
 
     public function onFunctionMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):void {

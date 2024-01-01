@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Attributes;
+namespace CatPaw;
 
 use ReflectionClass;
 use ReflectionFunction;

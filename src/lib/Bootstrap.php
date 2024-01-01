@@ -2,26 +2,17 @@
 
 namespace CatPaw;
 
-use function Amp\async;
-
-use Amp\ByteStream\ReadableResourceStream;
-use Amp\ByteStream\WritableResourceStream;
-
-use function Amp\delay;
-use function Amp\File\createDefaultDriver;
-use function Amp\File\exists;
-use Amp\File\Filesystem;
-
-use function Amp\Future\awaitAll;
-
-use Amp\Process\Process;
 use CatPaw\Services\EnvironmentService;
 use Psr\Log\LoggerInterface;
+use function React\Async\async;
+use function React\Async\await;
+use function React\Async\delay;
+
+use React\EventLoop\Loop;
+use React\Promise\Promise;
 
 use ReflectionException;
-
 use ReflectionFunction;
-use Revolt\EventLoop;
 use Throwable;
 
 class Bootstrap {
@@ -30,54 +21,44 @@ class Bootstrap {
 
     /**
      * Initialize an application from a soruce file (that usually defines a global "main" function).
-     * @param  string              $fileName
-     * @param  bool                $info
+     * @param  string                       $fileName
+     * @param  bool                         $info
      * @throws ReflectionException
-     * @return void
+     * @return Unsafe<mixed|Promise<mixed>>
      */
     public static function init(
         string $fileName,
         array $libraries = [],
         bool $info = false,
-    ) {
+    ):Unsafe {
         if (isPhar()) {
             $fileName = \Phar::running()."/$fileName";
         }
+        
 
-        $fileExists = exists($fileName);
-        // $fileExists = true;
-
-        if ($fileExists) {
-            /**
-             * @psalm-suppress UnresolvableInclude
-             */
-            require_once $fileName;
-            /** @var mixed $result */
-            if (!function_exists('main')) {
-                self::kill("Please define a global main function.\n");
-            }
-
-            /**
-             * @psalm-suppress InvalidArgument
-             */
-            $main = new ReflectionFunction('main');
-
-            Container::touch($main);
-
-            foreach ($libraries as $path) {
-                Container::load(
-                    path: $path,
-                    append: true
-                );
-            }
-
-            Container::run($main, false);
-        } else {
-            self::kill("Could not find php entry file \"$fileName\".\n");
+        if (!File::exists($fileName)) {
+            return error("Could not find php entry file $fileName.");
         }
+
+        require_once $fileName;
+        
+        if (!function_exists('main')) {
+            return error("could not find a global main function.\n");
+        }
+
+        $main = new ReflectionFunction('main');
+
+        Container::touch($main);
+
+        foreach ($libraries as $path) {
+            if ($error = Container::load(path:$path, append:true)->error) {
+                return error($error);
+            }
+        }
+
+        return Container::run($main, false);
     }
 
-    private const PATTERN_ENVIRONMENT_FILE_NAMES = '/(".+")|(\'.+\')|([^\s]+)/m';
     /**
      * Bootstrap an application from a file.
      * @param  string    $entry       the entry file of the application (it usually defines a global "main" function)
@@ -115,13 +96,16 @@ class Bootstrap {
             }
     
             $logger = LoggerFactory::create($name);
-            Container::set(LoggerInterface::class, $logger);
+            if ($logger->error) {
+                self::kill($logger->error->getMessage().PHP_EOL);
+            }
+            Container::set(LoggerInterface::class, $logger->value);
 
-            $environmentService = new EnvironmentService($logger);
+            $environmentService = new EnvironmentService($logger->value);
 
 
             if ($environment) {
-                $environmentService->setFiles([$environment]);
+                $environmentService->setFileName($environment);
                 $environmentService->load($info);
             }
 
@@ -171,7 +155,13 @@ class Bootstrap {
                     },
                 );
             }
-            async(self::init(...), $entry, $libraries, $info)->await();
+            
+            Loop::futureTick(function() use ($entry, $libraries, $info) {
+                if ($error = self::init($entry, $libraries, $info)->error) {
+                    self::kill($error.PHP_EOL);
+                }
+            });
+            Loop::run();
         } catch (Throwable $e) {
             self::kill((string)$e);
         }
@@ -211,7 +201,7 @@ class Bootstrap {
         string $libraries,
         string $resources,
     ):void {
-        async(function() use (
+        Loop::futureTick(function() use (
             $binary,
             $fileName,
             $arguments,
@@ -222,12 +212,11 @@ class Bootstrap {
             $argumentsStringified = join(' ', $arguments);
             $instruction          = "$binary $fileName $argumentsStringified";
             $change               = false;
-            $stdout               = new WritableResourceStream(STDOUT);
-            $stderr               = new WritableResourceStream(STDERR);
-            $stdin                = new ReadableResourceStream(STDIN);
 
             echo "Spawning $instruction".PHP_EOL;
-            $process = Process::start($instruction);
+
+
+            $kill = Signal::create();
         
             /** @var array<string> */
             $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
@@ -235,65 +224,40 @@ class Bootstrap {
             $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
 
             if (DIRECTORY_SEPARATOR === '/') {
-                EventLoop::onSignal(\SIGINT, static function() use (&$process) {
-                    if ($process && $process->isRunning()) {
-                        $process->kill();
-                    }
+                Loop::addSignal(SIGINT, static function() use ($kill) {
+                    $kill->send();
                     self::kill();
                 });
             }
+
+            /** @var false|callable():void */
+            $resolve = false;
+            /** @var Promise<Unsafe<void>> */
+            $ready = new Promise(static fn ($ok) => $ok(ok()));
 
             self::onFileChange(
                 entry: $entry,
                 libraries: $libraries,
                 resources: $resources,
-                callback: function() use (&$change) {
-                    $change = true;
+                callback: static function() use (&$resolve) {
+                    if (!$resolve) {
+                        return;
+                    }
+                    $resolve();
                 },
             );
-            
-            async(function() use ($process, $stdin) {
-                $writer = $process->getStdin();
-                while ($chunk = $stdin->read()) {
-                    if (!$process) {
-                        continue;
-                        $writer = false;
-                    }
-                    if (!$writer) {
-                        $writer = $process->getStdin();
-                    }
-                    $writer->write($chunk);
-                }
-            });
 
             while (true) {
-                $out = async(function() use ($process, $stdout) {
-                    $reader = $process->getStdout();
-                    while ($chunk = $reader->read()) {
-                        $stdout->write($chunk);
-                    }
-                });
-        
-                $err = async(function() use ($process, $stderr) {
-                    $reader = $process->getStderr();
-                    while ($chunk = $reader->read()) {
-                        $stderr->write($chunk);
-                    }
-                });
-        
-                $process->join();
-                
-                while (!$change) {
-                    delay(1);
+                await($ready);
+                if ($error = await(execute($instruction, out(), $kill))->error) {
+                    echo (string)$error.PHP_EOL;
+                    $ready = new Promise(static function($ok) use (&$resolve) {
+                        $resolve = $ok;
+                    });
                 }
-                $change = false;
-
-                awaitAll([$out,$err]);
-
-                echo "Spawning $instruction".PHP_EOL;
-                $process = Process::start($instruction);
             }
-        })->await();
+        });
+        Loop::run();
     }
 
     /**
@@ -316,7 +280,6 @@ class Bootstrap {
             $resources,
             $callback,
         ) {
-            $fs        = new Filesystem(createDefaultDriver());
             $changes   = [];
             $firstPass = true;
 
@@ -324,35 +287,35 @@ class Bootstrap {
                 clearstatcache();
                 $countLastPass = count($changes);
 
-                $filenames = [$entry => false];
+                $fileNames = [$entry => false];
                 foreach ([...$libraries, ...$resources] as $directory) {
-                    if (!exists($directory)) {
+                    if (!File::exists($directory)) {
                         continue;
                     }
-                    foreach (listFilesRecursively(\realpath($directory)) as $i => $filename) {
-                        $filenames[$filename] = false;
+                    foreach (File::listFilesRecursively(\realpath($directory)) as $fileName) {
+                        $fileNames[$fileName] = false;
                     }
                 }
 
 
-                $countThisPass = count($filenames);
+                $countThisPass = count($fileNames);
                 if (!$firstPass && $countLastPass !== $countThisPass) {
                     $callback();
                 }
 
-                foreach (array_keys($filenames) as $filename) {
-                    if (!exists($filename)) {
-                        unset($changes[$filename]);
+                foreach (array_keys($fileNames) as $fileName) {
+                    if (!File::exists($fileName)) {
+                        unset($changes[$fileName]);
                         continue;
                     }
-                    $mtime = $fs->getModificationTime($filename);
-                    if (!isset($changes[$filename])) {
-                        $changes[$filename] = $mtime;
+                    $mtime = File::getModificationTime($fileName);
+                    if (!isset($changes[$fileName])) {
+                        $changes[$fileName] = $mtime;
                         continue;
                     }
 
-                    if ($changes[$filename] !== $mtime) {
-                        $changes[$filename] = $mtime;
+                    if ($changes[$fileName] !== $mtime) {
+                        $changes[$fileName] = $mtime;
                         $callback();
                     }
                 }

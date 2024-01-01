@@ -2,10 +2,11 @@
 
 namespace CatPaw\Traits;
 
-use CatPaw\Attributes\AttributeResolver;
+use CatPaw\AttributeResolver;
 use CatPaw\Attributes\Entry;
 use CatPaw\Container;
 use CatPaw\DependenciesOptions;
+use CatPaw\Unsafe;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;
@@ -13,6 +14,10 @@ use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 use SplObjectStorage;
+use Throwable;
+
+use function CatPaw\error;
+use function CatPaw\ok;
 
 trait CoreAttributeDefinition {
     private static SplObjectStorage|false $coreDefinitionCache = false;
@@ -21,171 +26,188 @@ trait CoreAttributeDefinition {
             self::$coreDefinitionCache = new SplObjectStorage();
         }
     }
+    
+
     /**
-     * @return array|false
+     * @param  ReflectionFunction $reflectionFunction
+     * @return Unsafe<array<self>>
      */
-    private static function entry(): array|false {
+    public static function findAllByFunction(ReflectionFunction $reflectionFunction): Unsafe {
         self::initializeCache();
-        $i = new ReflectionClass(static::class);
-        foreach ($i->getMethods() as $method) {
-            if (($attributes = $method->getAttributes(Entry::class))) {
-                if (count($attributes) > 0) {
-                    return [$i, $method];
-                }
-            }
+        if (!($trueClassNames = AttributeResolver::issetFunctionAttributes($reflectionFunction, static::class))) {
+            return ok([]);
         }
-        return [$i, false];
+        
+
+        try{
+            $instances = [];
+    
+            $allAttributesArguments = AttributeResolver::getFunctionAllAttributesArguments($reflectionFunction, static::class);
+            
+            foreach ($trueClassNames as $key => $trueClassName) {
+                $attributeArguments = $allAttributesArguments[$key];
+                $klass              = new ReflectionClass($trueClassName);
+                /** @var object */
+                $instance = $klass->newInstance(...$attributeArguments);
+                if($error = Container::entry($instance, $klass->getMethods())->error){
+                    return error($error);
+                }
+                $instances[] = $instance;
+            }
+            return ok($instances);
+        } catch(Throwable $e){
+            return error($e);
+        }
     }
 
     /**
      * @param  ReflectionFunction $reflectionFunction
-     * @return array<self>|false
+     * @return Unsafe<false|self>
      */
-    public static function findAllByFunction(ReflectionFunction $reflectionFunction): array|false {
+    public static function findByFunction(ReflectionFunction $reflectionFunction): Unsafe {
         self::initializeCache();
-        if (!($trueClassNames = AttributeResolver::issetFunctionAttributes($reflectionFunction, static::class))) {
-            return false;
+        if (self::$coreDefinitionCache->contains($reflectionFunction) && $instance = self::$coreDefinitionCache->offsetGet($reflectionFunction)) {
+            return ok($instance);
         }
-        
-        $instances = [];
+        if (!($trueClassName = AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class))) {
+            return ok(false);
+        }
 
-        $allAttributesArguments = AttributeResolver::getFunctionAllAttributesArguments($reflectionFunction, static::class);
-
-        foreach ($trueClassNames as $key => $trueClassName) {
-            $attributeArguments = $allAttributesArguments[$key];
+        try{
+            $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
             $klass              = new ReflectionClass($trueClassName);
             /** @var object */
             $instance = $klass->newInstance(...$attributeArguments);
             Container::entry($instance, $klass->getMethods());
-            $instances[] = $instance;
+            self::$coreDefinitionCache->attach(
+                object: $reflectionFunction,
+                info: $instance,
+            );
+            return ok($instance);
+        }catch(Throwable $e){
+            return error($e);
         }
-
-        if ($instances) {
-            return $instances;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param  ReflectionFunction $reflectionFunction
-     * @return self|false
-     */
-    public static function findByFunction(ReflectionFunction $reflectionFunction): self|false {
-        self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionFunction) && $instance = self::$coreDefinitionCache->offsetGet($reflectionFunction)) {
-            return $instance;
-        }
-        if (!($trueClassName = AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class))) {
-            return false;
-        }
-
-        $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
-        $klass              = new ReflectionClass($trueClassName);
-        /** @var object */
-        $instance = $klass->newInstance(...$attributeArguments);
-        Container::entry($instance, $klass->getMethods());
-        self::$coreDefinitionCache->attach(
-            object: $reflectionFunction,
-            info: $instance,
-        );
-        return $instance;
     }
 
     /**
      * @param  ReflectionMethod $reflectionMethod
-     * @return self|false
+     * @return Unsafe<self|false>
      */
-    public static function findByMethod(ReflectionMethod $reflectionMethod): self|false {
+    public static function findByMethod(ReflectionMethod $reflectionMethod):Unsafe {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionMethod) && $instance = self::$coreDefinitionCache->offsetGet($reflectionMethod)) {
-            return $instance;
+            return ok($instance);
         }
+
         if (!($trueClassName = AttributeResolver::issetMethodAttribute($reflectionMethod, static::class))) {
-            return false;
+            return ok(false);
         }
-        $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
-        $klass              = new ReflectionClass($trueClassName);
-        /** @var object */
-        $instance = $klass->newInstance(...$attributeArguments);
-        Container::entry($instance, $klass->getMethods());
-        self::$coreDefinitionCache->attach(
-            object: $reflectionMethod,
-            info: $instance,
-        );
-        return $instance;
+
+        try{
+            $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
+            $klass              = new ReflectionClass($trueClassName);
+            /** @var object */
+            $instance = $klass->newInstance(...$attributeArguments);
+            Container::entry($instance, $klass->getMethods());
+            self::$coreDefinitionCache->attach(
+                object: $reflectionMethod,
+                info: $instance,
+            );
+            return ok($instance);
+
+        }catch(Throwable $e){
+            return error($e);
+        }
     }
 
     /**
      * @param  ReflectionClass $reflectionClass
-     * @return self|false
+     * @return Unsafe<self|false>
      */
-    public static function findByClass(ReflectionClass $reflectionClass):self|false {
+    public static function findByClass(ReflectionClass $reflectionClass):Unsafe {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionClass) && $instance = self::$coreDefinitionCache->offsetGet($reflectionClass)) {
-            return $instance;
+            return ok($instance);
         }
+
         if (!($trueClassName = AttributeResolver::issetClassAttribute($reflectionClass, static::class))) {
-            return false;
+            return ok(false);
         }
-        $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
-        $klass              = new ReflectionClass($trueClassName);
-        /** @var object */
-        $instance = $klass->newInstance(...$attributeArguments);
-        Container::entry($instance, $klass->getMethods());
-        self::$coreDefinitionCache->attach(
-            object: $reflectionClass,
-            info: $instance,
-        );
-        return $instance;
+
+        try{
+            $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
+            $klass              = new ReflectionClass($trueClassName);
+            /** @var object */
+            $instance = $klass->newInstance(...$attributeArguments);
+            Container::entry($instance, $klass->getMethods());
+            self::$coreDefinitionCache->attach(
+                object: $reflectionClass,
+                info: $instance,
+            );
+            return ok($instance);
+        }catch(Throwable $e){
+            return error($e);
+        }
     }
 
     /**
      * @param  ReflectionProperty $reflectionProperty
-     * @return self|false
+     * @return Unsafe<self|false>
      */
-    public static function findByProperty(ReflectionProperty $reflectionProperty):self|false {
+    public static function findByProperty(ReflectionProperty $reflectionProperty):Unsafe{
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionProperty) && $instance = self::$coreDefinitionCache->offsetGet($reflectionProperty)) {
-            return $instance;
+            return ok($instance);
         }
+
         if (!($trueClassName = AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class))) {
-            return false;
+            return ok(false);
         }
-        $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
-        $klass              = new ReflectionClass($trueClassName);
-        /** @var object */
-        $instance = $klass->newInstance(...$attributeArguments);
-        Container::entry($instance, $klass->getMethods());
-        self::$coreDefinitionCache->attach(
-            object: $reflectionProperty,
-            info: $instance,
-        );
-        return $instance;
+
+        try {
+            $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
+            $klass              = new ReflectionClass($trueClassName);
+            /** @var object */
+            $instance = $klass->newInstance(...$attributeArguments);
+            Container::entry($instance, $klass->getMethods());
+            self::$coreDefinitionCache->attach(
+                object: $reflectionProperty,
+                info: $instance,
+            );
+            return ok($instance);
+        } catch(Throwable $e) {
+            return error($e);
+        }
     }
 
     /**
      * @param  ReflectionParameter $reflectionParameter
-     * @return self|false
+     * @return Unsafe<self|false>
      */
-    public static function findByParameter(ReflectionParameter $reflectionParameter): self|false {
+    public static function findByParameter(ReflectionParameter $reflectionParameter):Unsafe {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionParameter) && $instance = self::$coreDefinitionCache->offsetGet($reflectionParameter)) {
-            return $instance;
+            return ok($instance);
         }
+
         if (!($trueClassName = AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))) {
-            return false;
+            return ok(false);
         }
-        $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
-        $klass              = new ReflectionClass($trueClassName);
-        /** @var object */
-        $instance = $klass->newInstance(...$attributeArguments);
-        Container::entry($instance, $klass->getMethods());
-        self::$coreDefinitionCache->attach(
-            object: $reflectionParameter,
-            info: $instance,
-        );
-        return $instance;
+        
+        try {
+            $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
+            $klass              = new ReflectionClass($trueClassName);
+            /** @var object */
+            $instance = $klass->newInstance(...$attributeArguments);
+            Container::entry($instance, $klass->getMethods());
+            self::$coreDefinitionCache->attach(
+                object: $reflectionParameter,
+                info: $instance,
+            );
+            return ok($instance);
+        } catch(Throwable $e) {
+            return error($e);
+        }
     }
 
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):void {

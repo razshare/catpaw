@@ -1,13 +1,14 @@
 <?php
 namespace CatPaw\Services;
 
-use function Amp\File\exists;
-use function Amp\File\openFile;
 use CatPaw\Attributes\Service;
-use CatPaw\Bootstrap;
+use function CatPaw\error;
+use CatPaw\File;
+use function CatPaw\ok;
 
-use Error;
+use CatPaw\Unsafe;
 use Psr\Log\LoggerInterface;
+use function React\Async\await;
 
 #[Service]
 class EnvironmentService {
@@ -16,16 +17,16 @@ class EnvironmentService {
     ) {
     }
 
-    /** @var array<string> */
-    private array $files = [];
+    /** @var string */
+    private string $fileName = '';
 
     /**
-     * Set the allowed environment file names.
-     * @param  array<string> $files
+     * Set the environment file name.
+     * @param  string $fileName
      * @return void
      */
-    public function setFiles(array $files):void {
-        $this->files = $files;
+    public function setFileName(string $fileName):void {
+        $this->fileName = $fileName;
     }
 
 
@@ -33,57 +34,45 @@ class EnvironmentService {
     private array $variables = [];
 
     /**
-     * Find the first available environment file name.
-     * @throws Error
-     * @return string
-     */
-    private function findFileName():string {
-        foreach ($this->files as $_ => $currentFileName) {
-            if (exists($currentFileName)) {
-                return $currentFileName;
-            }
-        }
-
-        return '';
-    }
-
-    /**
      * Parse the first valid environment file and update all variables in memory.
      * Multiple calls are allowed.
-     * @param  bool $info if true, feedback messages will be written to stdout, otherwise the loading process will be silent.
-     * @return void
+     * @param  bool         $info if true, feedback messages will be written to stdout, otherwise the loading process will be silent.
+     * @return Unsafe<void>
      */
-    public function load(bool $info = false):void {
+    public function load(bool $info = false):Unsafe {
         $this->variables = [];
-        
-        $stringifiedFileNames = join(',', $this->files);
             
-        if (!$fileName = $this->findFileName()) {
+        if (!$fileName = $this->fileName) {
             if ($info) {
-                $this->logger->info("Environment files [$stringifiedFileNames] not found.");
+                $this->logger->info("Environment file $this->fileName not found.");
             }
-            return;
+            return ok();
         }
 
         if ($info) {
             $this->logger->info("Environment file is $fileName");
         }
 
-        $file = openFile($fileName, 'r');
-
-        $contents = '';
-
-        while ($chunk = $file->read()) {
-            $contents .= $chunk;
+        $file = File::open($fileName, 'r');
+        if ($file->error) {
+            return error($file->error);
         }
+
+        $read = await($file->value->readAll());
+        if ($read->error) {
+            return error($read->error);
+        }
+
+        $contents = $read->value;
+
             
         if (trim($contents) !== '') {
-            if (\str_ends_with($fileName, '.yml') || \str_ends_with($fileName, '.yaml')) {
+            if (\str_ends_with($fileName, '.yaml') || \str_ends_with($fileName, '.yml')) {
                 if (\function_exists('yaml_parse')) {
                     $vars            = \yaml_parse($contents);
                     $this->variables = $vars?$vars:[];
                 } else {
-                    Bootstrap::kill("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
+                    return error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
                 }
             } else {
                 $this->variables = \Dotenv\Dotenv::parse($contents);
@@ -94,6 +83,8 @@ class EnvironmentService {
             ...$_ENV,
             ... $this->variables,
         ];
+
+        return ok();
     }
 
     /**
