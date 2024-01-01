@@ -3,7 +3,7 @@ namespace CatPaw;
 
 use Error;
 use Exception;
-use InvalidArgumentException;
+use FilesystemIterator;
 use Phar;
 use function React\Async\await;
 use React\ChildProcess\Process;
@@ -16,6 +16,7 @@ use RecursiveArrayIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RecursiveRegexIterator;
+
 use RegexIterator;
 
 use Throwable;
@@ -293,89 +294,65 @@ function get(string $command):Promise {
     });
 }
 
-class File {
+class Directory {
     /**
-     * Copy a file.
-     * @param  string                $from
-     * @param  string                $to
-     * @return Promise<Unsafe<void>>
+     * Delete a file or directory recursively.
+     * @param  string       $directoryName name of the directory.present.
+     * @return Unsafe<void>
      */
-    function copyFile(string $from, string $to):Promise {
-        $source = File::open($from);
-        if ($source->error) {
-            return error($source->error);
-        }
-        $destination = File::open($to);
-        if ($destination->error) {
-            return error($destination->error);
-        }
-        return $destination->value->writeStream($source->value->getStream());
-    }
-
-    /**
-     * Copy a file or directory recursively.
-     * @param  string      $from
-     * @param  string      $to
-     * @param  array|false $ignore a map of file/directory names to ignore.
-     * @return Unsafe
-     */
-    function copyDirectoryRecursively(string $from, string $to, array|false $ignore = false):Unsafe {
-        if (!str_ends_with($from, '/')) {
-            $from .= '/';
+    public static function delete(string $directoryName):Unsafe {
+        $directoryName = realpath($directoryName);
+        try {
+            $directory = new RecursiveDirectoryIterator($directoryName);
+        } catch(Throwable $e) {
+            return error($e);
         }
 
-        if (!str_ends_with($to, '/')) {
-            $to .= '/';
-        }
+        $iterator = new RecursiveIteratorIterator($directory);
 
-        if (!File::exists($to)) {
-            if ($error = File::createDirectoryRecursively($to)->error) {
-                return error($error);
-            }
-        }
+        $directories = [];
 
-        $list = File::list($from);
-
-        if ($list->error) {
-            return error($list->error);
-        }
-
-        foreach ($list->value as $fileName) {
-            if (false !== $ignore && in_array($fileName, $ignore)) {
-                continue;
-            }
-
-            $source      = "$from$fileName";
-            $destination = "$to$fileName";
-
-            if (self::isFile($source)) {
-                if ($error = await(self::copyFile($source, $destination))->error) {
+        for ($iterator->rewind();$iterator->valid();$iterator->next()) {
+            foreach ($iterator->current() as $fileName) {
+                if ($error = File::delete($fileName)->error) {
                     return error($error);
                 }
-                continue;
+                $currentDirectoryName = dirname($fileName);
+                if (!isset($directories[$currentDirectoryName])) {
+                    $directories[$currentDirectoryName] = true;
+                }
             }
+        }
 
-            
-            if ($error = self::copyDirectoryRecursively($source, $destination)->error) {
+        foreach (array_keys($directories) as $directoryName) {
+            if ($error = File::delete($directoryName)->error) {
                 return error($error);
             }
         }
+
+        return ok();
     }
 
-
     /**
-     * List files and directories in a directory.
-     * @param  string                $directoryName directory to scan.
-     * @return Unsafe<array<string>>
+     * @return Unsafe<void>
      */
-    public static function list(string $directoryName):Unsafe {
-        if (!self::isDirectory($directoryName)) {
-            return error("Directory $directoryName doesn't exist.");
+    public static function create(string $directoryName):Unsafe {
+        if ('' === $directoryName) {
+            return error("Directory name cannot be empty.");
         }
 
-        $files = array_diff(scandir($directoryName), ['.', '..']);
+        if (File::exists($directoryName)) {
+            if (!isDirectory($directoryName)) {
+                return error("The given directory $directoryName is actually an already existing file.");
+            }
+            return ok();
+        }
 
-        return ok($files?:[]);
+        if (mkdir($directoryName, 0777, true)) {
+            return error("Could not create directory $directoryName.");
+        }
+
+        return ok();
     }
 
     /**
@@ -384,7 +361,7 @@ class File {
      * @param  string                $pattern       regex pattern to match while scanning.
      * @return Unsafe<array<string>>
      */
-    public static function listFilesRecursively(string $directoryName, false|string $pattern = false):Unsafe {
+    public static function flat(string $directoryName, false|string $pattern = false):Unsafe {
         try {
             $directory = new RecursiveDirectoryIterator($directoryName);
         } catch(Throwable $e) {
@@ -413,31 +390,140 @@ class File {
         return ok($fileNames);
     }
 
-
     /**
-     * Get the filenames within a directory recursively.
-     * @param  string                             $directoryName startup directory.
-     * @param  string                             $pattern       regex pattern to match while scanning.
-     * @return Unsafe<array<array<string,mixed>>>
+     * List files and directories in a directory.
+     * @param  string                $directoryName directory to scan.
+     * @param  string                $pattern       regex pattern to match while scanning.
+     * @return Unsafe<array<string>>
      */
-    function listFilesInfosRecursively(string $directoryName, false|string $pattern = false):Unsafe {
-        $list = self::listFilesRecursively($directoryName, $pattern);
-        if ($list->error) {
-            return error($list->error);
+    public static function list(string $directoryName, false|string $pattern = false):Unsafe {
+        try {
+            $iterator = new FilesystemIterator($directoryName);
+        } catch(Throwable $e) {
+            return error($e);
         }
 
-        $fileInfos = [];
+        if (false !== $pattern) {
+            $iterator = new RegexIterator(
+                $iterator,
+                $pattern,
+                RecursiveRegexIterator::GET_MATCH
+            );
+        }
 
-        foreach ($list->value as $fileName) {
-            $fileInfo = File::getStatus($fileName);
-            if ($fileInfo->error) {
-                return error($fileInfo->error);
+        /** @var array<string> */
+        $fileNames = [];
+
+        for ($iterator->rewind();$iterator->valid();$iterator->next()) {
+            foreach ($iterator->current() as $fileName) {
+                $fileNames[] = $fileName;
             }
         }
 
-
-        return ok($fileInfos);
+        return ok($fileNames);
     }
+
+
+    /**
+     * Copy a directory.
+     * @param  string                $from
+     * @param  string                $to
+     * @param  string                $pattern regex pattern to match while scanning.
+     * @return Promise<Unsafe<void>>
+     */
+    function copy(string $from, string $to, false|string $pattern = false):Promise {
+        return new Promise(static function($ok) use ($from, $to, $pattern) {
+            if (!isDirectory($from)) {
+                $ok(error("Directory $from not found."));
+                return;
+            }
+            
+            try {
+                $iterator = new FilesystemIterator($from);
+            } catch(Throwable $e) {
+                $ok(error($e));
+                return;
+            }
+
+            if (false !== $pattern) {
+                $iterator = new RegexIterator(
+                    $iterator,
+                    $pattern,
+                    RecursiveRegexIterator::GET_MATCH
+                );
+            }
+
+            $key = str_starts_with($from, './')?substr($from, 1):$from;
+
+            for ($iterator->rewind();$iterator->valid();$iterator->next()) {
+                foreach ($iterator->current() as $fileName) {
+                    $parts            = explode($key, $fileName, 2);
+                    $relativeFileName = end($parts);
+                    if ($error = await(File::copy($fileName, "$to/$relativeFileName"))->error) {
+                        $ok(error($error));
+                        return;
+                    }
+                }
+            }
+            $ok(ok());
+        });
+    }
+
+    private function __construct() {
+    }
+}
+
+function isFile(string $fileName):bool {
+    return is_file($fileName);
+}
+
+function isDirectory(string $fileName):bool {
+    return is_dir($fileName);
+}
+
+class File {
+    /**
+     * @param  string      $fileName
+     * @return Unsafe<int>
+     */
+    public static function getSize(string $fileName):Unsafe {
+        $size = filesize($fileName);
+        if (false === $size) {
+            return error("Could not retrieve the size of the file.");
+        }
+
+        return ok($size);
+    }
+    /**
+     * Copy a file.
+     * @param  string                $from
+     * @param  string                $to
+     * @return Promise<Unsafe<void>>
+     */
+    public static function copy(string $from, string $to):Promise {
+        $source = File::open($from);
+        if ($source->error) {
+            return new Promise(static fn ($ok) => $ok(error($source->error)));
+        }
+
+        $toDirectory = dirname($to);
+
+        if (!File::exists($toDirectory)) {
+            if ($error = Directory::create($toDirectory)->error) {
+                return new Promise(static fn ($ok) => $ok(error($error)));
+            }
+        }
+
+        $destination = File::open($to, 'x');
+
+        if ($destination->error) {
+            return new Promise(static fn ($ok) => $ok(error($destination->error)));
+        }
+
+        return $destination->value->writeStream($source->value->getStream());
+    }
+
+
 
     /**
      * @return Unsafe<array>
@@ -466,103 +552,9 @@ class File {
         return file_exists($fileName);
     }
 
-    public static function isFile(string $fileName):bool {
-        return is_file($fileName);
-    }
-
-    public static function isDirectory(string $fileName):bool {
-        return is_dir($fileName);
-    }
-
-    public static function deleteFile(string $fileName):Unsafe {
+    public static function delete(string $fileName):Unsafe {
         if (!unlink($fileName)) {
             return error("Could not delete file $fileName");
-        }
-        return ok();
-    }
-    
-    /**
-     * Delete a file or directory recursively.
-     * @param  string                   $directoryName name of the directory.present.
-     * @param  array|false              $ignore        a map of file/directory names to ignore.
-     * @throws InvalidArgumentException if the specified directory name is not actually a directory.
-     * @return Unsafe<void>
-     */
-    public function deleteDirectory(string $directoryName, array|false $ignore = false):Unsafe {
-        if (!str_ends_with($directoryName, '/')) {
-            $directoryName .= '/';
-        }
-            
-        $list = self::list($directoryName);
-            
-        if ($list->error) {
-            return error($list->error);
-        }
-
-        foreach ($list->value as $fileName) {
-            if (false !== $ignore && in_array($fileName, $ignore)) {
-                continue;
-            }
-
-            $target = "$directoryName$fileName";
-
-            if (self::isFile($target)) {
-                if ($error = self::deleteFile($target)->error) {
-                    return error($error);
-                }
-                continue;
-            }
-
-            if ($error = self::deleteDirectory($target)->error) {
-                return error($error);
-            }
-        }
-
-        if ($error = self::deleteDirectory($directoryName)->error) {
-            return error($error);
-        }
-
-        return ok();
-    }
-
-    /**
-     * @return Unsafe
-     */
-    public static function createDirectoryRecursively(string $directoryName):Unsafe {
-        if ('' === $directoryName) {
-            return error("Directory name cannot be empty.");
-        }
-
-        if (self::exists($directoryName)) {
-            if (!self::isDirectory($directoryName)) {
-                return error("The given directory $directoryName is actually an already existing file.");
-            }
-            return ok();
-        }
-
-        $currentDirectoryName = '';
-
-        foreach (explode('/', $directoryName) as $part) {
-            $currentDirectoryName .= "/$part";
-            if (self::exists($currentDirectoryName)) {
-                continue;
-            }
-
-            $result = File::createDirectory($currentDirectoryName);
-            if ($result->error) {
-                return error($result->error);
-            }
-        }
-
-        return ok();
-    }
-
-    /**
-     * @return Unsafe
-     */
-    public static function createDirectory(string $directoryName):Unsafe {
-        if (mkdir($directoryName)) {
-            return error("Could not create directory $directoryName.");
         }
         return ok();
     }
@@ -571,7 +563,7 @@ class File {
      * @return Unsafe<File>
      */
     public static function open(string $fileName, string $mode = 'r'):Unsafe {
-        if (!self::exists($fileName)) {
+        if (!File::exists($fileName)) {
             return error("File $fileName not found.");
         }
         $file = fopen($fileName, $mode);

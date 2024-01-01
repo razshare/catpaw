@@ -9,6 +9,4 @@ function main(EnvironmentService $env) {
     if ($load->error) {
         return $load;
     }
-
-    echo $_ENV['libraries'];
 }

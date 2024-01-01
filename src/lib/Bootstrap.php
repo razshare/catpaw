@@ -292,7 +292,7 @@ class Bootstrap {
                     if (!File::exists($directory)) {
                         continue;
                     }
-                    foreach (File::listFilesRecursively(\realpath($directory)) as $fileName) {
+                    foreach (Directory::flat(\realpath($directory)) as $fileName) {
                         $fileNames[$fileName] = false;
                     }
                 }

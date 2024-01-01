@@ -267,10 +267,10 @@ class Container {
             $path = \Phar::running()."/$path";
         }
 
-        if (File::isFile($path)) {
+        if (isFile($path)) {
             require_once($path);
             return [$path];
-        } else if (!File::isDirectory($path)) {
+        } else if (!isDirectory($path)) {
             return ok([]);
         }
 
@@ -280,7 +280,7 @@ class Container {
             return error("Path \"$path\" is not a valid directory or file to load.");
         }
 
-        return File::listFilesRecursively($directory, '/^.+\.php$/i');
+        return Directory::flat($directory, '/^.+\.php$/i');
     }
 
     /**
