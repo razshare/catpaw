@@ -44,11 +44,10 @@ class RouteResolver {
                 /** @var PathResolver $pathResolver */
                 $pathResolver = self::$cache[$key];
                 $parameters   = $pathResolver->findParametersFromPath($requestPath);
-                if (false === $parameters) {
+                if (false !== $parameters) {
+                    $requestPathParameters = $parameters;
                     break;
                 }
-                
-                $requestPathParameters = $parameters;
                 continue;
             }
 
