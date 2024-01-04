@@ -1,12 +1,16 @@
 <?php
 
-use CatPaw\Services\EnvironmentService;
+use CatPaw\Web\Server;
 
-function main(EnvironmentService $env) {
-    $env->setFileName("./build.yml");
-    $load = $env->load();
-
-    if ($load->error) {
-        return $load;
+function main() {
+    $server = Server::create();
+    if ($server->error) {
+        return $server;
     }
+
+    $server->value->router->get("/{any}", static function() {
+        return "hello world";
+    });
+    
+    $server->value->start();
 }
