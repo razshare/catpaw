@@ -9,7 +9,7 @@ use CatPaw\Web\Services\OpenApiService;
 
 function main() {
     return anyError(
-        $server = Server::create(),
+        $server = Server::create(apiPrefix:'api'),
         $server->value->router->get("/index", static fn () => "hello world"),
         $server->value->router->get("/openapi", static fn (OpenApiService $openApiService) => $openApiService->getData()),
         $fileServer = FileServer::create($server->value),

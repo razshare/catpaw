@@ -91,6 +91,14 @@ class Server {
         string $www = './server/www/',
         string $apiPrefix = '',
     ): Unsafe {
+        $api = realpath($api);
+        if (false === $api) {
+            return error("Invalid api directory.");
+        }
+        $www = realpath($www);
+        if (false === $www) {
+            return error("Invalid web root directory.");
+        }
         $api = preg_replace('/\/+$/', '', $api);
         $www = preg_replace('/\/+$/', '', $www);
 
@@ -143,12 +151,16 @@ class Server {
         public readonly Router $router,
         public readonly LoggerInterface $logger,
     ) {
-        self::initializeRoutes(
+        $initialisationAttempt = self::initializeRoutes(
             logger: $this->logger,
             router: $router,
             apiPrefix: $this->apiPrefix,
             api: $this->api,
         );
+
+        if ($initialisationAttempt->error) {
+            $logger->error($initialisationAttempt->error->getMessage());
+        }
 
         if (!Session::getOperations()) {
             Session::setOperations(
@@ -233,9 +245,14 @@ class Server {
         Router $router,
         string $apiPrefix,
         string $api,
-    ): void {
+    ): Unsafe {
         if ($api) {
-            foreach (Directory::flat($api) as $fileName) {
+            $flatListAttempt = Directory::flat($api);
+            if ($flatListAttempt->error) {
+                return error($flatListAttempt->error);
+            }
+
+            foreach ($flatListAttempt->value as $fileName) {
                 if (!str_ends_with(strtolower($fileName), '.php')) {
                     continue;
                 }
@@ -258,14 +275,15 @@ class Server {
 
                         if (!$routeExists) {
                             $cwd = dirname($api.$fileName)?:'';
-                            $router->initialize($method, $path, $handler, $cwd);
+                            $router->initialize($symbolicMethod, $symbolicPath, $handler, $cwd);
                         } else {
-                            $logger->info("Route $method $path already exists. Will not overwrite.");
+                            $logger->info("Route $symbolicMethod $symbolicPath already exists. Will not overwrite.");
                         }
                     }
                 }
             }
         }
+        return ok();
     }
 
     /**

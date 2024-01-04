@@ -179,16 +179,16 @@ class HttpInvoker {
                 $response->withHeader("Content-Type", $produced[0] ?? 'text/plain');
                 return match ($produced[0]) {
                     'application/json' => $modifier->forJson($response),
-                    'application/xml'  => $modifier->forXml($response),
-                    default            => $modifier->forText($response),
+                    'application/xml'  => ok($modifier->forXml($response)),
+                    default            => ok($modifier->forText($response)),
                 };
             }
             if (in_array($acceptable, $produced)) {
                 $response->withHeader("Content-Type", $acceptable);
                 return match ($acceptable) {
                     'application/json' => $modifier->forJson($response),
-                    'application/xml'  => $modifier->forxml($response),
-                    default            => $modifier->forText($response),
+                    'application/xml'  => ok($modifier->forxml($response)),
+                    default            => ok($modifier->forText($response)),
                 };
             }
         }

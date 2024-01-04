@@ -8,7 +8,6 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RecursiveRegexIterator;
 use RegexIterator;
-
 use Throwable;
 
 class Directory {
@@ -99,9 +98,14 @@ class Directory {
         $fileNames = [];
 
         for ($iterator->rewind();$iterator->valid();$iterator->next()) {
-            foreach ($iterator->current() as $fileName) {
-                $fileNames[] = $fileName;
+            /** @var FileInfo */
+            $fileInfo = $iterator->current();
+            $fileName = $fileInfo->getFilename();
+            $filePath = $fileInfo->getRealPath();
+            if ('.' === $fileName || '..' === $fileName) {
+                continue;
             }
+            $fileNames[] = realpath($filePath);
         }
 
         return ok($fileNames);
@@ -132,9 +136,14 @@ class Directory {
         $fileNames = [];
 
         for ($iterator->rewind();$iterator->valid();$iterator->next()) {
-            foreach ($iterator->current() as $fileName) {
-                $fileNames[] = $fileName;
+            /** @var FileInfo */
+            $fileInfo = $iterator->current();
+            $fileName = $fileInfo->getFilename();
+            $filePath = $fileInfo->getRealPath();
+            if ('.' === $fileName || '..' === $fileName) {
+                continue;
             }
+            $fileNames[] = realpath($filePath);
         }
 
         return ok($fileNames);
