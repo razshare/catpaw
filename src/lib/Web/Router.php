@@ -22,6 +22,7 @@ use CatPaw\Web\Interfaces\OnResult;
 use CatPaw\Web\Services\OpenApiService;
 
 use Closure;
+
 use function implode;
 use ReflectionException;
 use ReflectionFunction;
@@ -52,6 +53,10 @@ class Router {
         string $workDirectory = '',
     ):Unsafe {
         try {
+            if (!str_starts_with($symbolicPath, '/')) {
+                return error("Symbolic paths must start with `/`, received `$symbolicPath`.");
+            }
+
             if (!$callback instanceof Closure) {
                 $callback = Closure::fromCallable($callback);
             }

@@ -2,7 +2,9 @@
 
 namespace CatPaw\Web\Services;
 
+use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
+
 use function CatPaw\error;
 use CatPaw\File;
 use function CatPaw\ok;
@@ -13,9 +15,16 @@ use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\ByteRangeWriterInterface;
 use CatPaw\Web\Mime;
 use InvalidArgumentException;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
-use function React\Async\async;
+use React\EventLoop\Loop;
+
+
 use React\Http\Io\ReadableBodyStream;
+
+
+
 
 use React\Http\Message\Response;
 use React\Stream\ThroughStream;
@@ -23,6 +32,13 @@ use SplFixedArray;
 
 #[Service]
 class ByteRangeService {
+    private LoggerInterface $logger;
+
+    #[Entry] function start(LoggerInterface $logger) {
+        $this->logger = $logger;
+        $logger->info("Byte range service initialized.");
+    }
+
     /**
      * 
      * @param  string                     $rangeQuery
@@ -78,67 +94,87 @@ class ByteRangeService {
 
     /**
      * 
-     * @param  ByteRangeWriterInterface $interface
-     * @return Unsafe<Response>
+     * @param  ByteRangeWriterInterface  $interface
+     * @return Unsafe<ResponseInterface>
      */
     public function response(
         ByteRangeWriterInterface $interface
     ): Unsafe {
-        $response      = new Response();
-        $headers       = [];
-        $rangeQuery    = $interface->getRangeQuery();
-        $contentLength = $interface->getContentLength();
-
-        if ($contentLength < 0) {
-            return error("Could not retrieve file size.");
+        $headers           = [];
+        $rangeQueryAttempt = $interface->getRangeQuery();
+        if ($rangeQueryAttempt->error) {
+            return error($rangeQueryAttempt->error);
         }
-
-        $contentType = $interface->getContentType();
-
+        $rangeQuery    = $rangeQueryAttempt->value;
         $rangesAttempt = $this->parse($rangeQuery);
 
         if ($rangesAttempt->error) {
             return error($rangesAttempt->error);
         }
 
-        $ranges = $rangesAttempt->value;
+        $contentLengthAttempt = $interface->getContentLength();
+        if ($contentLengthAttempt->error) {
+            return error($contentLengthAttempt->error);
+        }
+        $contentLength = $contentLengthAttempt->value;
 
-        $count = $ranges->count();
-
-        $through = new ThroughStream();
+        if ($contentLength < 0) {
+            return error("Could not retrieve file size.");
+        }
         
+        $contentTypeAttempt = $interface->getContentType();
+        if ($contentTypeAttempt->error) {
+            return error($contentTypeAttempt->error);
+        }
+        $contentType    = $contentTypeAttempt->value;
+        $ranges         = $rangesAttempt->value;
+        $count          = $ranges->count();
+        $throughStream  = new ThroughStream();
+        $readableStream = new ReadableBodyStream($throughStream);
+
+
+
         if (1 === $count) {
+            $this->logger->info("Serving one single range query.");
             [[$start, $end]] = $ranges;
 
             [$start, $end] = $this->fixClientAmbiguity($start, $end, $contentLength);
 
             $headers['Content-Length'] = $end - $start + 1;
             $headers['Content-Range']  = "bytes $start-$end/$contentLength";
-
-
+            
             $interface->start();
 
-            async(static function() use ($start, $end, $through, $interface) {
-                if ($start === $end) {
-                    $interface->end();
-                    return;
-                }
-                $interface->send($through->write(...), $start, $end - $start + 1);
-                $interface->end();
-            })();
-
             try {
-                $response->withStatus(HttpStatus::PARTIAL_CONTENT);
-                foreach ($headers as $key => $value) {
-                    $response->withHeader($key, $value);
-                }
-                $response->withBody(new ReadableBodyStream($through));
-                return ok($response);
+                $response = new Response(
+                    status: HttpStatus::PARTIAL_CONTENT,
+                    headers: $headers,
+                    body: $readableStream,
+                );
             } catch(InvalidArgumentException $e) {
                 return error($e);
             }
+
+            if ($start === $end) {
+                $interface->close();
+                return ok($response);
+            }
+
+            Loop::futureTick(static function() use ($throughStream, $readableStream, $start, $end, $interface) {
+                $dataAttempt = $interface->send($start, $end - $start + 1);
+                if ($dataAttempt->error) {
+                    return error($dataAttempt->error);
+                }
+                $throughStream->write($dataAttempt->value);
+                $throughStream->close();
+                // $readableStream->close();
+                $interface->close();
+            });
+
+            return ok($response);
         }
 
+        $this->logger->info("Serving multiple range queries.");
 
         $boundary                = uuid();
         $headers['Content-Type'] = "multipart/byterange; boundary=$boundary";
@@ -149,8 +185,19 @@ class ByteRangeService {
         
         $interface->start();
 
-        async(function() use (
-            $through,
+        try {
+            $response = new Response(
+                status: HttpStatus::PARTIAL_CONTENT,
+                headers: $headers,
+                body: $readableStream,
+            );
+        } catch(InvalidArgumentException $e) {
+            return error($e);
+        }
+
+        Loop::futureTick(function() use (
+            $throughStream,
+            $readableStream,
             $interface,
             $ranges,
             $boundary,
@@ -162,38 +209,35 @@ class ByteRangeService {
 
                 [$start, $end] = $this->fixClientAmbiguity($start, $end, $contentLength);
 
-                $through->write("--$boundary\r\n");
+                $throughStream->write("--$boundary\r\n");
 
-                $through->write("Content-Type: $contentType\r\n");
-                $through->write("Content-Range: bytes $start-$end/$contentLength\r\n");
+                $throughStream->write("Content-Type: $contentType\r\n");
+                $throughStream->write("Content-Range: bytes $start-$end/$contentLength\r\n");
 
                 if ($end < 0) {
                     $end = $contentLength - 1;
                 }
-                $interface->send($through->write(...), $start, $end - $start + 1);
-                $through->write("\r\n");
+                $dataAttempt = $interface->send($start, $end - $start + 1);
+                if ($dataAttempt->error) {
+                    return error($dataAttempt->error);
+                }
+                $throughStream->write($dataAttempt->value);
+                $throughStream->write("\r\n");
             }
-            $through->write("--$boundary--");
-            $interface->end();
-        })();
+            $throughStream->write("--$boundary--");
+            $throughStream->close();
+            // $readableStream->close();
+            $interface->close();
+        });
 
-        try {
-            $response->withStatus(HttpStatus::PARTIAL_CONTENT);
-            foreach ($headers as $key => $value) {
-                $response->withHeader($key, $value);
-            }
-            $response->withBody(new ReadableBodyStream($through));
-            return ok($response);
-        } catch(InvalidArgumentException $e) {
-            return error($e);
-        }
+        return ok($response);
     }
 
     /**
      * 
-     * @param  string           $fileName
-     * @param  Request          $request
-     * @return Unsafe<Response>
+     * @param  string                    $fileName
+     * @param  Request                   $request
+     * @return Unsafe<ResponseInterface>
      */
     public function file(
         string $fileName,
@@ -209,37 +253,48 @@ class ByteRangeService {
                 ) {
                 }
 
-                public function getRangeQuery(): string {
-                    return $this->rangeQuery;
+                public function getRangeQuery():Unsafe {
+                    return ok($this->rangeQuery);
                 }
 
-                public function getContentType(): string {
-                    return Mime::findContentType($this->fileName);
+                public function getContentType():Unsafe {
+                    return ok(Mime::findContentType($this->fileName));
                 }
 
-                public function getContentLength(): int {
+                public function getContentLength():Unsafe {
                     $size = File::getSize($this->fileName);
                     if ($size->error) {
+                        return error($size->error);
                         return -1;
                     }
-                    return $size->value;
+                    return ok($size->value);
                 }
 
-                public function start():void {
-                    $this->file = File::open($this->fileName, "r");
-                }
-
-                public function send(callable $emit, int $start, int $length): void {
-                    $this->file->seek($start);
-                    $data = $this->file->read($length);
-                    if ($data->error) {
-                        return;
+                public function start():Unsafe {
+                    $fileAttempt = File::open($this->fileName, "r");
+                    if ($fileAttempt->error) {
+                        return error($fileAttempt->error);
                     }
-                    $emit($data);
+                    $this->file = $fileAttempt->value;
+                    return ok();
                 }
 
-                public function end(): void {
+                public function send(int $start, int $length):Unsafe {
+                    if (!isset($this->file)) {
+                        return error("Trying to send payload but the file is not opened.");
+                    }
+                    if ($error = $this->file->seek($start)->error) {
+                        return error($error);
+                    }
+                    return $this->file->read($length);
+                }
+
+                public function close():Unsafe {
+                    if (!isset($this->file)) {
+                        return error("Trying to close the stream but the file is not opened.");
+                    }
                     $this->file->close();
+                    return ok();
                 }
             }
         );

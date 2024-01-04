@@ -49,7 +49,7 @@ class SuccessResponseModifier implements ResponseModifier {
             $this->type = self::PRIMITIVE;
         }
     }
-
+    
     public function isPrimitive():bool {
         return self::PRIMITIVE === $this->type;
     }

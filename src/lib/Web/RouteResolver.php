@@ -75,13 +75,13 @@ class RouteResolver {
 
             $requestPathParameters = $pathResolver->findParametersFromPath($requestPath);
 
-            if (false === $requestPathParameters) {
+            if (false !== $requestPathParameters) {
                 break;
             }
         }
 
-        if (!$requestPathParameters) {
-            return error("Parameters not found for {$request->getUri()}.");
+        if (false === $requestPathParameters) {
+            return ok(new Response(status:HttpStatus::NOT_FOUND, reason:HttpStatus::getReason(HttpStatus::NOT_FOUND)));
         }
         
         $requestQueryStrings = $this->findQueryStringsFromRequest($request);

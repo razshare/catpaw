@@ -20,6 +20,14 @@ function download(Response $response):Response {
     return $response;
 }
 
+function redirect(string $to):SuccessResponseModifier {
+    return success(
+        status: HttpStatus::FOUND,
+        headers: [
+            'Location' => $to,
+        ]
+    );
+}
 
 /**
  * Success response.
@@ -33,7 +41,7 @@ function success(
     mixed $data = '',
     int $status = 200,
     array $headers = [],
-    false|string $message = '',
+    false|string $message = false,
 ):SuccessResponseModifier {
     if (false === $message) {
         $message = HttpStatus::getReason($status);

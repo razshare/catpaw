@@ -1,16 +1,19 @@
 <?php
 
+use function CatPaw\anyError;
+use function CatPaw\ok;
+use CatPaw\Web\FileServer;
+
 use CatPaw\Web\Server;
+use CatPaw\Web\Services\OpenApiService;
 
 function main() {
-    $server = Server::create();
-    if ($server->error) {
-        return $server;
-    }
-
-    $server->value->router->get("/{any}", static function() {
-        return "hello world";
-    });
-    
-    $server->value->start();
+    return anyError(
+        $server = Server::create(),
+        $server->value->router->get("/index", static fn () => "hello world"),
+        $server->value->router->get("/openapi", static fn (OpenApiService $openApiService) => $openApiService->getData()),
+        $fileServer = FileServer::create($server->value),
+        ok($server->value->setFileServer($fileServer->value)),
+        ok($server->value->start()),
+    );
 }

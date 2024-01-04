@@ -14,16 +14,14 @@ use function CatPaw\ok;
 
 use CatPaw\Unsafe;
 use CatPaw\Web\Attributes\Session;
-use CatPaw\Web\Services\ByteRangeService;
+use CatPaw\Web\Interfaces\FileServerInterface;
 use Error;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use React\EventLoop\Loop;
 use React\Http\HttpServer;
 use React\Http\Message\Response;
 use React\Socket\SocketServer;
-use ReflectionException;
 
 use Revolt\EventLoop\UnsupportedFeatureException;
 
@@ -79,12 +77,11 @@ class Server {
 
     /**
      * 
-     * @param  string|array   $interface       network interface to bind to
-     * @param  string|array   $secureInterface same as `$interfaces` but using secure certificates
-     * @param  string|array   $api             api directory
-     * @param  string|array   $www             static assets directory
-     * @param  string|array   $apiPrefix       a prefix to add to the api path
-     * @param  false|Router   $router          server router, if false a default one will be provided
+     * @param  string         $interface       network interface to bind to
+     * @param  string         $secureInterface same as `$interfaces` but using secure certificates
+     * @param  string         $api             api directory
+     * @param  string         $www             static assets directory
+     * @param  string         $apiPrefix       a prefix to add to the api path
      * @return Unsafe<Server>
      */
     public static function create(
@@ -93,8 +90,10 @@ class Server {
         string $api = './server/api/',
         string $www = './server/www/',
         string $apiPrefix = '',
-        false|Router $router = false,
     ): Unsafe {
+        $api = preg_replace('/\/+$/', '', $api);
+        $www = preg_replace('/\/+$/', '', $www);
+
         /** @var Unsafe<LoggerInterface> */
         $loggerAttempt = Container::create(LoggerInterface::class);
         if ($loggerAttempt->error) {
@@ -124,13 +123,12 @@ class Server {
             apiPrefix: $apiPrefix,
             www: $www,
             api: $api,
-            router: $router?:Router::create(),
+            router: Router::create(),
             logger: $logger,
         ));
     }
 
-    /** @var callable(Request, Response, ByteRangeService):void */
-    private mixed $fileServer;
+    private FileServerInterface $fileServer;
     private RouteResolver $resolver;
     private SocketServer $socket;
     private HttpServer $httpServer;
@@ -172,13 +170,8 @@ class Server {
         $this->resolver = RouteResolver::create($this);
     }
 
-    /**
-     * 
-     * @param  callable(Request, Response):void $fileServer
-     * @throws ReflectionException
-     * @return Server
-     */
-    public function setFileServer(callable $fileServer):self {
+
+    public function setFileServer(FileServerInterface $fileServer):self {
         $this->fileServer = $fileServer;
         return $this;
     }
@@ -207,11 +200,6 @@ class Server {
         if ($loggerAttempt->error) {
             return error($loggerAttempt->error);
         }
-
-        Loop::addSignal(SIGHUP, $this->stop(...));
-        Loop::addSignal(SIGINT, $this->stop(...));
-        Loop::addSignal(SIGQUIT, $this->stop(...));
-        Loop::addSignal(SIGTERM, $this->stop(...));
 
         $logger = $loggerAttempt->value;
 
@@ -292,19 +280,15 @@ class Server {
      */
     private function respond(RequestInterface $request):ResponseInterface {
         try {
-            $responseAttempt = $this->resolver->resolve($request);
-            if ($responseAttempt->error) {
-                throw $responseAttempt->error;
+            $responseFromFileServer = $this->fileServer->serve($request);
+            if (HttpStatus::NOT_FOUND === $responseFromFileServer->getStatusCode()) {
+                $responseAttempt = $this->resolver->resolve($request);
+                if ($responseAttempt->error) {
+                    throw $responseAttempt->error;
+                }
+                return $responseAttempt->value;
             }
-
-            if (!$responseAttempt->value) {
-                $response = new Response();
-                ($this->fileServer)($request, $response);
-            } else {
-                $response = $responseAttempt->value;
-            }
-
-            return $response;
+            return $responseFromFileServer;
         } catch (Throwable $e) {
             $message    = $e->getMessage();
             $fileName   = $e->getFile();

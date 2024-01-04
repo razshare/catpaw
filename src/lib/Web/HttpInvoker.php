@@ -177,19 +177,19 @@ class HttpInvoker {
             $acceptable = trim($acceptable);
             if (str_starts_with($acceptable, "*/*")) {
                 $response->withHeader("Content-Type", $produced[0] ?? 'text/plain');
-                return ok(match ($produced[0]) {
+                return match ($produced[0]) {
                     'application/json' => $modifier->forJson($response),
                     'application/xml'  => $modifier->forXml($response),
                     default            => $modifier->forText($response),
-                });
+                };
             }
             if (in_array($acceptable, $produced)) {
                 $response->withHeader("Content-Type", $acceptable);
-                return ok(match ($acceptable) {
+                return match ($acceptable) {
                     'application/json' => $modifier->forJson($response),
                     'application/xml'  => $modifier->forxml($response),
                     default            => $modifier->forText($response),
-                });
+                };
             }
         }
 
