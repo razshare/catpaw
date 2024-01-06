@@ -11,7 +11,7 @@ readonly class RequestContext {
      * @param Route             $route
      * @param RequestInterface  $request
      * @param ResponseInterface $response
-     * @param array<string>     $requestQueryStrings
+     * @param array<string>     $requestQueries
      * @param array<string>     $requestPathParameters
      */
     public static function create(
@@ -20,7 +20,7 @@ readonly class RequestContext {
         Server $server,
         RequestInterface $request,
         ResponseInterface $response,
-        array $requestQueryStrings,
+        array $requestQueries,
         array $requestPathParameters,
     ):self {
         return new self(
@@ -29,7 +29,7 @@ readonly class RequestContext {
             server: $server,
             request: $request,
             response: $response,
-            requestQueryStrings: $requestQueryStrings,
+            requestQueries: $requestQueries,
             requestPathParameters: $requestPathParameters,
         );
     }
@@ -40,7 +40,7 @@ readonly class RequestContext {
         public Server $server,
         public RequestInterface $request,
         public ResponseInterface $response,
-        public array $requestQueryStrings,
+        public array $requestQueries,
         public array $requestPathParameters,
     ) {
     }

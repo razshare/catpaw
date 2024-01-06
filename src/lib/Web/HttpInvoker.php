@@ -206,8 +206,8 @@ class HttpInvoker {
                 Request::class  => static fn () => $context->request,
                 Response::class => static fn () => $response,
                 Page::class     => static function() use ($context) {
-                    $start = $context->requestQueryStrings['start'] ?? 0;
-                    $size  = $context->requestQueryStrings['size']  ?? 10;
+                    $start = $context->requestQueries['start'] ?? 0;
+                    $size  = $context->requestQueries['size']  ?? 10;
                     return
                         Page::create(start: $start, size: $size)
                             ->setUri($context->request->getUri());

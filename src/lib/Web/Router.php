@@ -213,9 +213,9 @@ class Router {
             $schema = ["type" => $type];
             
 
-            $name    = $queryAttribute?$queryAttribute->value->getName():'';
-            $summary = $summaryAttribute?$summaryAttribute->value->getValue():'';
-            $example = $exampleAttribute?$exampleAttribute->value->getValue():[];
+            $name    = $queryAttribute->value?$queryAttribute->value->getName():'';
+            $summary = $summaryAttribute->value?$summaryAttribute->value->getValue():'';
+            $example = $exampleAttribute->value?$exampleAttribute->value->getValue():[];
             
             
             if ('' === $name) {

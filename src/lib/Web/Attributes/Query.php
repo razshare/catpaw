@@ -58,7 +58,7 @@ class Query implements AttributeInterface, OnParameterMount {
         $type    = ReflectionTypeManager::unwrap($reflection);
         $key     = '' === $this->name?$reflection->getName():$this->name;
         if (!$type) {
-            die("Handler \"$context->key\" must specify at least 1 type for query \"$key\".\n");
+            return error("Handler \"$context->key\" must specify at least 1 type for query \"$key\".\n");
         }
         $typeName = $type->getName();
 
@@ -89,12 +89,12 @@ class Query implements AttributeInterface, OnParameterMount {
     }
 
     /**
-     * @param  HttpContRequestContextext $http
+     * @param  RequestContext       $http
      * @return Unsafe<false|string>
      */
     public function toString(RequestContext $http, string $key):Unsafe {
-        if (isset($http->query[$key])) {
-            return ok(urldecode($http->query[$key]));
+        if (isset($http->requestQueries[$key])) {
+            return ok(urldecode($http->requestQueries[$key]));
         }
         return error("Could not convert $key to string.");
     }
@@ -105,8 +105,8 @@ class Query implements AttributeInterface, OnParameterMount {
      * @return Unsafe<false|int>
      */
     private function toInteger(RequestContext $http, string $key):Unsafe {
-        if (isset($http->requestQueryStrings[$key])) {
-            $value = urldecode($http->requestQueryStrings[$key]);
+        if (isset($http->requestQueries[$key])) {
+            $value = urldecode($http->requestQueries[$key]);
             if (is_numeric($value)) {
                 return ok((int)$value);
             } else {
@@ -122,8 +122,8 @@ class Query implements AttributeInterface, OnParameterMount {
      * @return Unsafe<bool>
      */
     private function toBool(RequestContext $http, string $key):Unsafe {
-        if (isset($http->requestQueryStrings[$key])) {
-            return ok(filter_var(urldecode($http->requestQueryStrings[$key]), FILTER_VALIDATE_BOOLEAN));
+        if (isset($http->requestQueries[$key])) {
+            return ok(filter_var(urldecode($http->requestQueries[$key]), FILTER_VALIDATE_BOOLEAN));
         }
         return error("Could not convert $key to bool.");
     }
@@ -133,8 +133,8 @@ class Query implements AttributeInterface, OnParameterMount {
      * @return Unsafe<false|float>
      */
     private function toFloat(RequestContext $http, string $key):Unsafe {
-        if (isset($http->requestQueryStrings[$key])) {
-            $value = urldecode($http->requestQueryStrings[$key]);
+        if (isset($http->requestQueries[$key])) {
+            $value = urldecode($http->requestQueries[$key]);
             if (is_numeric($value)) {
                 return ok((float)$value);
             } else {

@@ -188,7 +188,13 @@ class FileServer implements FileServerInterface {
             $logger->error($fileAttempt->error);
             return $this->failure();
         }
-        $file = $fileAttempt->value;
+
+        $file   = $fileAttempt->value;
+        $stream = $file->getReadableStream();
+
+        if ($stream->error) {
+            return error($stream->error);
+        }
 
         $fileSizeAttempt = File::getSize($fileName);
         if ($fileSizeAttempt->error) {
@@ -205,7 +211,7 @@ class FileServer implements FileServerInterface {
                 "Content-Length" => $fileSize,
                 ...$attachmentHeaders,
             ],
-            data: $file->getStream(),
+            data: $stream->value,
         );
     }
 }

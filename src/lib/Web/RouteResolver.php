@@ -83,7 +83,7 @@ class RouteResolver {
             return ok(new Response(status:HttpStatus::NOT_FOUND, reason:HttpStatus::getReason(HttpStatus::NOT_FOUND)));
         }
         
-        $requestQueryStrings = $this->findQueryStringsFromRequest($request);
+        $requestQueries = $this->findQueriesFromRequest($request);
 
         $response = new Response();
 
@@ -93,7 +93,7 @@ class RouteResolver {
             server: $server,
             request: $request,
             response: $response,
-            requestQueryStrings: $requestQueryStrings,
+            requestQueries: $requestQueries,
             requestPathParameters: $requestPathParameters,
         );
 
@@ -105,18 +105,18 @@ class RouteResolver {
         return ok($resultAttmpt->value);
     }
 
-    private function findQueryStringsFromRequest(RequestInterface $request):array {
+    private function findQueriesFromRequest(RequestInterface $request):array {
         $queries     = [];
-        $queryChunks = explode('&', preg_replace('/^\?/', '', $request->getUri()->getQuery(), 1));
-        $query       = [];
+        $queryString = $request->getUri()->getQuery();
+        $queryChunks = explode('&', preg_replace('/^\?/', '', $queryString, 1));
 
         foreach ($queryChunks as $chunk) {
             $split = explode('=', $chunk);
             $l     = count($split);
             if (2 === $l) {
-                $query[urldecode($split[0])] = urldecode($split[1] ?? '');
+                $queries[urldecode($split[0])] = urldecode($split[1] ?? '');
             } elseif (1 === $l && '' !== $split[0]) {
-                $query[urldecode($split[0])] = true;
+                $queries[urldecode($split[0])] = true;
             }
         }
         return $queries;

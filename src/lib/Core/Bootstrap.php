@@ -34,7 +34,6 @@ class Bootstrap {
         if (isPhar()) {
             $fileName = \Phar::running()."/$fileName";
         }
-        
 
         if (!File::exists($fileName)) {
             return error("Could not find php entry file $fileName.");
@@ -80,23 +79,18 @@ class Bootstrap {
         bool $dieOnChange = false,
     ): void {
         try {
-            Loop::addSignal(SIGHUP, static fn () => self::kill("Killing application...\n"));
-            Loop::addSignal(SIGINT, static fn () => self::kill("Killing application...\n"));
-            Loop::addSignal(SIGQUIT, static fn () => self::kill("Killing application...\n"));
-            Loop::addSignal(SIGTERM, static fn () => self::kill("Killing application...\n"));
-
             if (!$entry) {
-                self::kill("Please point to a php entry file.\n");
+                self::kill("Please point to a php entry file.");
             }
     
             $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
     
             if (!str_starts_with($entry, './')) {
                 if (!$isWindows) {
-                    self::kill("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+                    self::kill("The entry file path must be relative to the project, received: $entry.");
                 }
                 if (!str_starts_with($entry, '.\\')) {
-                    self::kill("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
+                    self::kill("The entry file path must be relative to the project, received: $entry.");
                 }
             }
     
@@ -129,10 +123,10 @@ class Bootstrap {
             foreach ($libraries as $library) {
                 if (!str_starts_with($library, './')) {
                     if (!$isWindows) {
-                        self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                        self::kill("All library directory paths must be relative to the project, received: $library.");
                     }
                     if (!str_starts_with($library, '.\\')) {
-                        self::kill("All library directory paths must be relative to the project, received: $library.".PHP_EOL);
+                        self::kill("All library directory paths must be relative to the project, received: $library.");
                     }
                 }
             }
@@ -140,10 +134,10 @@ class Bootstrap {
             foreach ($resources as $resource) {
                 if (!str_starts_with($resource, './')) {
                     if (!$isWindows) {
-                        self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                        self::kill("All resource directory paths must be relative to the project, received: $resource.");
                     }
                     if (!str_starts_with($resource, '.\\')) {
-                        self::kill("All resource directory paths must be relative to the project, received: $resource.".PHP_EOL);
+                        self::kill("All resource directory paths must be relative to the project, received: $resource.");
                     }
                 }
             }
@@ -156,8 +150,8 @@ class Bootstrap {
                     entry: $entry,
                     libraries: $libraries,
                     resources: $resources,
-                    callback: function() {
-                        self::kill("Application killed.\n");
+                    callback: static function() {
+                        self::kill("Killing application...");
                     },
                 );
             }
@@ -189,7 +183,7 @@ class Bootstrap {
         foreach (self::$onKillActions as $callback) {
             $callback();
         }
-        die($message);
+        die($message.PHP_EOL);
     }
 
     /**
@@ -207,10 +201,10 @@ class Bootstrap {
         string $libraries,
         string $resources,
     ):void {
-        Loop::addSignal(SIGHUP, static fn () => self::kill("Killing application...\n"));
-        Loop::addSignal(SIGINT, static fn () => self::kill("Killing application...\n"));
-        Loop::addSignal(SIGQUIT, static fn () => self::kill("Killing application...\n"));
-        Loop::addSignal(SIGTERM, static fn () => self::kill("Killing application...\n"));
+        Loop::addSignal(SIGHUP, static fn () => self::kill("Killing application..."));
+        Loop::addSignal(SIGINT, static fn () => self::kill("Killing application..."));
+        Loop::addSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
+        Loop::addSignal(SIGTERM, static fn () => self::kill("Killing application..."));
 
         Loop::futureTick(function() use (
             $binary,

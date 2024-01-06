@@ -45,7 +45,13 @@ class File {
             return new Promise(static fn ($ok) => $ok(error($destination->error)));
         }
 
-        return $destination->value->writeStream($source->value->getStream());
+        $stream = $source->value->getReadableStream();
+
+        if ($stream->error) {
+            return new Promise(static fn ($ok) => $ok(error($stream->error)));
+        }
+
+        return $destination->value->writeStream($stream->value);
     }
 
 
@@ -109,7 +115,7 @@ class File {
     private function setupReader():Unsafe {
         if (isset($this->reader)) {
             if (!$this->reader->isReadable()) {
-                return error("The readable stream has already been closed, you cannot read anymore from this file.");
+                return error("File stream is not readable.");
             }
             return ok();
         }
@@ -120,7 +126,7 @@ class File {
     private function setupWriter():Unsafe {
         if (isset($this->writer)) {
             if ($this->writer->isWritable()) {
-                return error("The writable stream has already been closed, you cannot write anymore to this file.");
+                return error("File stream is not writable.");
             }
             return ok();
         }
@@ -250,8 +256,24 @@ class File {
         });
     }
 
-    public function getStream():ReadableResourceStream {
-        return new ReadableResourceStream($this->stream);
+    /**
+     * @return Unsafe<ReadableResourceStream>
+     */
+    public function getReadableStream():Unsafe {
+        if ($error = $this->setupReader()->error) {
+            return error($error);
+        }
+        return ok($this->reader);
+    }
+
+    /**
+     * @return Unsafe<WritableResourceStream>
+     */
+    public function getWritableStream():Unsafe {
+        if ($error = $this->setupWriter()->error) {
+            return error($error);
+        }
+        return ok($this->writer);
     }
 
     public function close() {

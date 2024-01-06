@@ -19,14 +19,16 @@ use Error;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use React\EventLoop\Loop;
 use React\Http\HttpServer;
 use React\Http\Message\Response;
+use React\Promise\Promise;
+use React\Promise\PromiseInterface;
 use React\Socket\SocketServer;
 
 use Revolt\EventLoop\UnsupportedFeatureException;
 
 use Throwable;
-use TypeError;
 
 class Server {
     private static function findFirstValidWebDirectory(array $www):string {
@@ -204,34 +206,42 @@ class Server {
      * @throws Throwable
      * @throws CompositeException
      * @throws UnsupportedFeatureException
-     * @return Unsafe<void>
+     * @return Promise<Unsafe<void>>
      */
-    public function start():Unsafe {
-        /** @var Unsafe<LoggerInterface> */
-        $loggerAttempt = Container::create(LoggerInterface::class);
-        if ($loggerAttempt->error) {
-            return error($loggerAttempt->error);
-        }
+    public function start():PromiseInterface {
+        return new Promise(function($ok) {
+            $stopper = false;
+            $stopper = function() use ($ok, &$stopper) {
+                Loop::removeSignal(SIGHUP, $stopper);
+                Loop::removeSignal(SIGINT, $stopper);
+                Loop::removeSignal(SIGQUIT, $stopper);
+                Loop::removeSignal(SIGTERM, $stopper);
+                $this->stop();
+                $ok(ok());
+            };
 
-        $logger = $loggerAttempt->value;
+            /** @var Unsafe<LoggerInterface> */
+            $loggerAttempt = Container::create(LoggerInterface::class);
+            if ($loggerAttempt->error) {
+                return error($loggerAttempt->error);
+            }
 
-        $this->httpServer = new HttpServer($this->respond(...));
-        $this->socket     = new SocketServer($this->interface);
+            $logger = $loggerAttempt->value;
 
-        $this->httpServer->listen($this->socket);
+            $this->httpServer = new HttpServer($this->respond(...));
+            $this->socket     = new SocketServer($this->interface);
 
-        $logger->info("Server started at http://$this->interface");
+            $this->httpServer->listen($this->socket);
 
-        return ok();
+            $logger->info("Server started at http://$this->interface");
+
+            $ok(ok());
+        });
     }
 
     /**
      * 
      * Stop the server.
-     * @throws Error
-     * @throws TypeError
-     * @throws CancelledException
-     * @throws CompositeException
      * @return void
      */
     public function stop(): void {
