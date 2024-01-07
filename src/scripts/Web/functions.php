@@ -2,9 +2,9 @@
 
 namespace CatPaw\Web;
 
+use Amp\Http\Server\Response;
 use League\Uri\Uri;
 use Psr\Http\Message\UriInterface;
-use React\Http\Message\Response;
 
 
 
@@ -16,7 +16,7 @@ use React\Http\Message\Response;
  * @return Response
  */
 function download(Response $response):Response {
-    $response->withHeader("application/octet-stream", '');
+    $response->setHeader("application/octet-stream", '');
     return $response;
 }
 

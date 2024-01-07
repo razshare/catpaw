@@ -1,7 +1,6 @@
 <?php
 namespace CatPaw\Web;
 
-use function Amp\async;
 use Amp\ByteStream\ReadableIterableStream;
 use Amp\ByteStream\WritableIterableStream;
 use Amp\Http\Server\Response;
@@ -24,7 +23,7 @@ class ServerSentEvent {
      */
     static function create(Closure $emitter):self {
         [$reader, $writer] = duplex();
-        async($emitter, $writer->write(...));
+        $emitter($writer->write(...));
         return new self(
             reader: $reader,
             writer: $writer,

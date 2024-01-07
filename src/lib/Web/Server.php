@@ -1,33 +1,32 @@
 <?php
 namespace CatPaw\Web;
 
+use function Amp\async;
+use Amp\DeferredFuture;
+
+use function Amp\File\isDirectory;
+use Amp\Future;
+use Amp\Http\Server\Middleware;
+
+use function Amp\Http\Server\Middleware\stackMiddleware;
+use Amp\Http\Server\SocketHttpServer;
 use CatPaw\Attributes\Option;
+
 use CatPaw\Bootstrap;
 use CatPaw\Container;
 use CatPaw\Directory;
 use function CatPaw\error;
 use CatPaw\File;
 
-use function CatPaw\isDirectory;
 use function CatPaw\isPhar;
 use function CatPaw\ok;
 
 use CatPaw\Unsafe;
 use CatPaw\Web\Attributes\Session;
 use CatPaw\Web\Interfaces\FileServerInterface;
-use Error;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Phar;
 use Psr\Log\LoggerInterface;
-use React\EventLoop\Loop;
-use React\Http\HttpServer;
-use React\Http\Message\Response;
-use React\Promise\Promise;
-use React\Promise\PromiseInterface;
-use React\Socket\SocketServer;
-
-use Revolt\EventLoop\UnsupportedFeatureException;
-
+use Revolt\EventLoop;
 use Throwable;
 
 class Server {
@@ -93,13 +92,11 @@ class Server {
         string $www = './server/www/',
         string $apiPrefix = '',
     ): Unsafe {
-        $api = realpath($api);
-        if (false === $api) {
-            return error("Invalid api directory.");
+        if(!str_starts_with($api, './')){
+            return error("The api directory must be a relative path and within the project directory.");
         }
-        $www = realpath($www);
-        if (false === $www) {
-            return error("Invalid web root directory.");
+        if(!str_starts_with($www, './')){
+            return error("The web root directory must be a relative path and within the project directory.");
         }
         $api = preg_replace('/\/+$/', '', $api);
         $www = preg_replace('/\/+$/', '', $www);
@@ -138,10 +135,11 @@ class Server {
         ));
     }
 
-    private FileServerInterface $fileServer;
+    private SocketHttpServer $server;
     private RouteResolver $resolver;
-    private SocketServer $socket;
-    private HttpServer $httpServer;
+    private FileServerInterface $fileServer;
+    /** @var array<Middleware> */
+    private array $middlewares = [];
     public SessionOperationsInterface $sessionOperations;
 
     private function __construct(
@@ -184,6 +182,9 @@ class Server {
         $this->resolver = RouteResolver::create($this);
     }
 
+    public function appendMiddleware(Middleware $middleware) {
+        $this->middlewares[] = $middleware;
+    }
 
     public function setFileServer(FileServerInterface $fileServer):self {
         $this->fileServer = $fileServer;
@@ -202,40 +203,42 @@ class Server {
      * Start the server.
      * 
      * This method will await untill one of the following signals is sent to the program `SIGHUP`, `SIGINT, `SIGQUIT`, `SIGTERM`.
-     * @throws Error
-     * @throws Throwable
-     * @throws CompositeException
-     * @throws UnsupportedFeatureException
-     * @return Promise<Unsafe<void>>
+     * @return Future<Unsafe<void>>
      */
-    public function start():PromiseInterface {
-        return new Promise(function($ok) {
-            $stopper = false;
-            $stopper = function() use ($ok, &$stopper) {
-                Loop::removeSignal(SIGHUP, $stopper);
-                Loop::removeSignal(SIGINT, $stopper);
-                Loop::removeSignal(SIGQUIT, $stopper);
-                Loop::removeSignal(SIGTERM, $stopper);
-                $this->stop();
-                $ok(ok());
-            };
-
-            /** @var Unsafe<LoggerInterface> */
-            $loggerAttempt = Container::create(LoggerInterface::class);
-            if ($loggerAttempt->error) {
-                return error($loggerAttempt->error);
+    public function start():Future {
+        return async(function() {
+            try {
+                $stopper = function(string $callbackId) {
+                    EventLoop::cancel($callbackId);
+                    $this->stop();
+                    Bootstrap::kill();
+                };
+    
+                EventLoop::onSignal(SIGHUP, $stopper);
+                EventLoop::onSignal(SIGINT, $stopper);
+                EventLoop::onSignal(SIGQUIT, $stopper);
+                EventLoop::onSignal(SIGTERM, $stopper);
+    
+                /** @var Unsafe<LoggerInterface> */
+                $loggerAttempt = Container::create(LoggerInterface::class);
+                if ($loggerAttempt->error) {
+                    return error($loggerAttempt->error);
+                }
+    
+                $endSignal      = new DeferredFuture;
+                $logger         = $loggerAttempt->value;
+                $requestHandler = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
+                $stackedHandler = stackMiddleware($requestHandler, ...$this->middlewares);
+                $errorHandler   = ServerErrorHandler::create($logger);
+                $this->server   = SocketHttpServer::createForDirectAccess($logger);
+                $this->server->onStop(static fn () => $endSignal->complete());
+                $this->server->expose($this->interface);
+                $this->server->start($stackedHandler, $errorHandler);
+                $endSignal->getFuture()->await();
+                return ok();
+            } catch (Throwable $e) {
+                return error($e);
             }
-
-            $logger = $loggerAttempt->value;
-
-            $this->httpServer = new HttpServer($this->respond(...));
-            $this->socket     = new SocketServer($this->interface);
-
-            $this->httpServer->listen($this->socket);
-
-            $logger->info("Server started at http://$this->interface");
-
-            $ok(ok());
         });
     }
 
@@ -245,8 +248,8 @@ class Server {
      * @return void
      */
     public function stop(): void {
-        if (isset($this->socket)) {
-            $this->socket->close();
+        if (isset($this->server)) {
+            $this->server->stop();
         }
     }
 
@@ -257,6 +260,10 @@ class Server {
         string $api,
     ): Unsafe {
         if ($api) {
+            if(isPhar()){
+                $api = Phar::running()."/$api";
+            }
+            
             $flatListAttempt = Directory::flat($api);
             if ($flatListAttempt->error) {
                 return error($flatListAttempt->error);
@@ -294,38 +301,5 @@ class Server {
             }
         }
         return ok();
-    }
-
-    /**
-     * 
-     * @param  RequestInterface                                  $request
-     * @param  HttpInvoker                                       $invoker
-     * @param  LoggerInterface                                   $logger
-     * @param  callable(RequestInterface,ResponseInterface):void $fileServer
-     * @throws \Throwable
-     * @throws \ReflectionException
-     * @return ResponseInterface
-     */
-    private function respond(RequestInterface $request):ResponseInterface {
-        try {
-            $responseFromFileServer = $this->fileServer->serve($request);
-            if (HttpStatus::NOT_FOUND === $responseFromFileServer->getStatusCode()) {
-                $responseAttempt = $this->resolver->resolve($request);
-                if ($responseAttempt->error) {
-                    throw $responseAttempt->error;
-                }
-                return $responseAttempt->value;
-            }
-            return $responseFromFileServer;
-        } catch (Throwable $e) {
-            $message    = $e->getMessage();
-            $fileName   = $e->getFile();
-            $lineNumber = $e->getLine();
-            $this->logger->error("$message", [
-                "file" => $fileName,
-                "line" => $lineNumber,
-            ]);
-            return new Response(HttpStatus::INTERNAL_SERVER_ERROR, [], HttpStatus::getReason(HttpStatus::INTERNAL_SERVER_ERROR));
-        }
     }
 }

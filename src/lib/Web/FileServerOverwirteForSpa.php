@@ -1,9 +1,8 @@
 <?php
 namespace CatPaw\Web;
 
+use function Amp\File\isDirectory;
 use CatPaw\File;
-use function CatPaw\isDirectory;
-
 use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 
 class FileServerOverwirteForSpa implements FileServerOverwriteInterface {

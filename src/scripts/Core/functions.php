@@ -1,18 +1,24 @@
 <?php
 namespace CatPaw;
 
+use function Amp\async;
+
+use Amp\ByteStream\ReadableIterableStream;
+use Amp\ByteStream\WritableIterableStream;
+use Amp\Future;
+use Amp\Process\Process;
 use Error;
 use Exception;
 use Phar;
-use React\ChildProcess\Process;
 use React\Promise\Promise;
 use React\Stream\ReadableResourceStream;
 use React\Stream\ThroughStream;
 use React\Stream\WritableResourceStream;
 use React\Stream\WritableStreamInterface;
 use RecursiveArrayIterator;
-use RecursiveIteratorIterator;
 
+
+use RecursiveIteratorIterator;
 
 use Throwable;
 
@@ -109,15 +115,6 @@ function flatten(array $array, bool $completely = false):array {
     return array_merge(...array_values($array));
 }
 
-
-function isFile(string $fileName):bool {
-    return is_file($fileName);
-}
-
-function isDirectory(string $fileName):bool {
-    return is_dir($fileName);
-}
-
 /**
  * Get the stdout as a stream.
  */
@@ -156,48 +153,65 @@ function error(string|Error $message):Unsafe {
 
 /**
  * Execute a command.
- * @param  string                        $command instruction to run.
- * @param  false|WritableStreamInterface $writer  send the output of the process to this stream.
- * @param  false|Signal                  $signal  when this signal is triggered the process is killed.
- * @return Promise<Unsafe<void>>
+ * @param  string                        $command   instruction to run.
+ * @param  false|WritableStreamInterface $writer    send the output of the process to this stream.
+ * @param  false|Signal                  $signal    when this signal is triggered the process is killed.
+ * @param  bool                          $autoClose automatically close the `$writer` stream when the process is over.
+ * @return Future<Unsafe<void>>
  */
-function execute(string $command, false|WritableStreamInterface $writer = false, false|Signal $signal = false):Promise {
-    return new Promise(function($ok) use ($command, $writer, $signal) {
-        $process = new Process($command);
-
+function execute(
+    string $command,
+    false|WritableStreamInterface $writer = false,
+    false|Signal $signal = false,
+    bool $autoClose = true,
+):Future {
+    return async(static function($ok) use ($command, $writer, $signal, $autoClose) {
         try {
-            $process->start();
+            $process = Process::start($command);
         } catch(Throwable $e) {
-            $ok(error($e->getMessage()));
-            return;
+            if ($writer && $autoClose) {
+                $writer->close();
+            }
+            return error($e->getMessage());
         }
 
         if ($signal) {
-            $signal->listen(static function($code) use ($process) {
-                if ($process->isTerminated() || $process->isStopped()) {
+            $signal->listen(static function(int $code) use ($process) {
+                if (!$process->isRunning()) {
                     return;
                 }
-                $process->terminate($code);
+                $process->signal($code);
             });
         }
 
-        if ($writer) {
-            $process->stdout->on('data', static function($chunk) use ($writer) {
-                $writer->write($chunk);
-            });
-        }
         
-        $process->stdout->on('end', static function() use ($ok) {
-            $ok(ok());
-        });
+
+        // if ($writer) {
+        //     $process->stdout->on('data', static function($chunk) use ($writer) {
+        //         $writer->write($chunk);
+        //     });
+        // }
         
-        $process->stdout->on('error', static function(Exception $e) use ($ok) {
-            $ok(error($e->getMessage()));
-        });
+        // $process->stdout->on('end', static function() use ($ok, $autoClose, $writer) {
+        //     if ($autoClose) {
+        //         $writer->close();
+        //     }
+        //     $ok(ok());
+        // });
         
-        $process->stdout->on('close', static function() use ($ok) {
-            $ok(ok());
-        });
+        // $process->stdout->on('error', static function(Exception $e) use ($ok, $autoClose, $writer) {
+        //     if ($autoClose) {
+        //         $writer->close();
+        //     }
+        //     $ok(error($e->getMessage()));
+        // });
+        
+        // $process->stdout->on('close', static function() use ($ok, $autoClose, $writer) {
+        //     if ($autoClose) {
+        //         $writer->close();
+        //     }
+        //     $ok(ok());
+        // });
     });
 }
 
@@ -242,4 +256,17 @@ function anyError(Unsafe ...$unsafes):Unsafe {
         }
     }
     return ok();
+}
+
+/**
+ * Return two new streams, a readable stream and a writable one which will be writing to the first stream.
+ * 
+ * The writer stream will automatically be disposed of when the readable stream is disposed of.
+ * @param  int                                                      $bufferSize
+ * @return array{0:ReadableIterableStream,1:WritableIterableStream}
+ */
+function duplex(int $bufferSize = 8192):array {
+    $writer = new WritableIterableStream($bufferSize);
+    $reader = new ReadableIterableStream($writer);
+    return [$reader, $writer];
 }

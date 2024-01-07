@@ -2,6 +2,8 @@
 
 namespace CatPaw\Web;
 
+use Amp\Http\Server\Request;
+use Amp\Http\Server\Response;
 use CatPaw\Container;
 use CatPaw\DependenciesOptions;
 use CatPaw\DependencySearchResultItem;
@@ -17,8 +19,6 @@ use function in_array;
 use Psr\Http\Message\RequestInterface;
 
 use Psr\Http\Message\ResponseInterface;
-use React\Http\Message\Request;
-use React\Http\Message\Response;
 use ReflectionException;
 use Throwable;
 
@@ -110,7 +110,7 @@ class HttpInvoker {
             $isAlreadyModifier = ($modifier instanceof ResponseModifier);
         
             if (!$isAlreadyModifier) {
-                $status = $context->response->getStatusCode();
+                $status = $context->response->getStatus();
                 if ($status >= 300) {
                     $modifier = failure((string)$modifier, $status);
                 } else {
@@ -158,25 +158,25 @@ class HttpInvoker {
                 } else {
                     $produced = ['application/json'];
                 }
-                $response->withHeader("Content-Type", $produced);
+                $response->setHeader("Content-Type", $produced);
             } else {
                 if ($modifierIsPrimitive) {
                     $produced = ['text/plain'];
                 } else {
                     $produced = ['application/json'];
                 }
-                $response->withHeader("Content-Type", $produced);
+                $response->setHeader("Content-Type", $produced);
             }
         } else {
             $produced = $response->getHeader("Content-Type");
         }
 
-        $acceptables = explode(",", $context->request->getHeader("Accept")[0] ?? "*/*");
+        $acceptables = explode(",", $context->request->getHeader("Accept") ?? "*/*");
 
         foreach ($acceptables as $acceptable) {
             $acceptable = trim($acceptable);
             if (str_starts_with($acceptable, "*/*")) {
-                $response->withHeader("Content-Type", $produced[0] ?? 'text/plain');
+                $response->setHeader("Content-Type", $produced[0] ?? 'text/plain');
                 return match ($produced[0]) {
                     'application/json' => $modifier->forJson($response),
                     'application/xml'  => ok($modifier->forXml($response)),
@@ -184,7 +184,7 @@ class HttpInvoker {
                 };
             }
             if (in_array($acceptable, $produced)) {
-                $response->withHeader("Content-Type", $acceptable);
+                $response->setHeader("Content-Type", $acceptable);
                 return match ($acceptable) {
                     'application/json' => $modifier->forJson($response),
                     'application/xml'  => ok($modifier->forxml($response)),

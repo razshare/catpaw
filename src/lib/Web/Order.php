@@ -20,7 +20,7 @@ class Order implements Stringable {
      */
     public static function fromFirstValidString(string ...$items):false|self {
         /** @var string */
-        foreach ($items as $_ => $value) {
+        foreach ($items as $value) {
             if ($page = self::fromString($value)) {
                 return $page;
             }

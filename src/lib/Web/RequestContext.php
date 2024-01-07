@@ -2,24 +2,24 @@
 
 namespace CatPaw\Web;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Amp\Http\Server\Request;
+use Amp\Http\Server\Response;
 
 readonly class RequestContext {
     /**
-     * @param string            $key
-     * @param Route             $route
-     * @param RequestInterface  $request
-     * @param ResponseInterface $response
-     * @param array<string>     $requestQueries
-     * @param array<string>     $requestPathParameters
+     * @param string        $key
+     * @param Route         $route
+     * @param Request       $request
+     * @param Response      $response
+     * @param array<string> $requestQueries
+     * @param array<string> $requestPathParameters
      */
     public static function create(
         string $key,
         Route $route,
         Server $server,
-        RequestInterface $request,
-        ResponseInterface $response,
+        Request $request,
+        Response $response,
         array $requestQueries,
         array $requestPathParameters,
     ):self {
@@ -38,8 +38,8 @@ readonly class RequestContext {
         public string $key,
         public Route $route,
         public Server $server,
-        public RequestInterface $request,
-        public ResponseInterface $response,
+        public Request $request,
+        public Response $response,
         public array $requestQueries,
         public array $requestPathParameters,
     ) {

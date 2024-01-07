@@ -2,18 +2,13 @@
 
 namespace CatPaw\Web;
 
+use function Amp\File\isDirectory;
 use CatPaw\Directory;
 use function CatPaw\error;
 use CatPaw\File;
-
-use function CatPaw\isDirectory;
 use function CatPaw\ok;
-
 use CatPaw\Unsafe;
-
 use CatPaw\Web\Attributes\Session;
-use function React\Async\await;
-
 use Throwable;
 
 class FileSystemSessionOperations implements SessionOperationsInterface {
@@ -56,16 +51,18 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
         $filename = "$this->directoryName/$id";
         if ((File::exists($filename))) {
             $file = File::open($filename, 'r');
+
             if ($file->error) {
                 return error($file->error);
             }
-            $contents = await($file->value->readAll());
 
-            if ($contents->error) {
-                return error($contents->error);
+            $readingAttempt = $file->value->readAll()->await();
+
+            if ($readingAttempt->error) {
+                return error($readingAttempt->error);
             }
 
-            $data = json_decode($contents->value, true) ?? false;
+            $data = json_decode($readingAttempt->value, true) ?? false;
 
             if ($data) {
                 $storage = $data["STORAGE"] ?? [];
@@ -154,7 +151,9 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
      */
     public function persistSession(string $id): Unsafe {
         if (!isDirectory($this->directoryName)) {
-            Directory::create($this->directoryName);
+            if($error = Directory::create($this->directoryName)->error){
+                return error($error);
+            }
         }
 
         $filename = "$this->directoryName/$id";
@@ -169,13 +168,12 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
             return error($file->error);
         }
 
-        $writing = await($file->value->write(json_encode([
+        $writingAttempt = $file->value->write(json_encode([
             "STORAGE" => $session->value->getStorage(),
             "TIME"    => $session->value->getTime(),
-        ])));
-
-        if ($writing->error) {
-            return error($writing->error);
+        ]))->await();
+        if ($writingAttempt->error) {
+            return error($writingAttempt->error);
         }
 
         $file->value->close();

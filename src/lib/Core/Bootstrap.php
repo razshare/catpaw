@@ -2,17 +2,15 @@
 
 namespace CatPaw;
 
+use function Amp\async;
+use Amp\DeferredFuture;
+
+use function Amp\delay;
 use CatPaw\Services\EnvironmentService;
 use Psr\Log\LoggerInterface;
-use function React\Async\async;
-use function React\Async\await;
-use function React\Async\delay;
-
-use React\EventLoop\Loop;
-use React\Promise\Promise;
-
 use ReflectionException;
 use ReflectionFunction;
+use Revolt\EventLoop;
 use Throwable;
 
 class Bootstrap {
@@ -21,10 +19,10 @@ class Bootstrap {
 
     /**
      * Initialize an application from a soruce file (that usually defines a global "main" function).
-     * @param  string                       $fileName
-     * @param  bool                         $info
+     * @param  string              $fileName
+     * @param  bool                $info
      * @throws ReflectionException
-     * @return Unsafe<mixed|Promise<mixed>>
+     * @return Unsafe<mixed>
      */
     public static function init(
         string $fileName,
@@ -60,13 +58,12 @@ class Bootstrap {
 
     /**
      * Bootstrap an application from a file.
-     * @param  string    $entry       the entry file of the application (it usually defines a global "main" function)
-     * @param  string    $name        application name (this will be used by the default logger)
-     * @param  string    $libraries   libraries to load
-     * @param  string    $resources   resources to load
-     * @param  bool      $info        if true, the bootstrap starter will write feedback messages to stdout, otherwise it will be silent unless it crashes with an exception.
-     * @param  bool      $dieOnChange die when a change to the entry file, libraries or resources is detected
-     * @throws Throwable
+     * @param  string $entry       the entry file of the application (it usually defines a global "main" function)
+     * @param  string $name        application name (this will be used by the default logger)
+     * @param  string $libraries   libraries to load
+     * @param  string $resources   resources to load
+     * @param  bool   $info        if true, the bootstrap starter will write feedback messages to stdout, otherwise it will be silent unless it crashes with an exception.
+     * @param  bool   $dieOnChange die when a change to the entry file, libraries or resources is detected
      * @return void
      */
     public static function start(
@@ -94,19 +91,22 @@ class Bootstrap {
                 }
             }
     
-            $logger = LoggerFactory::create($name);
-            if ($logger->error) {
-                self::kill($logger->error->getMessage().PHP_EOL);
+            $loggerAttempt = LoggerFactory::create($name);
+            if ($loggerAttempt->error) {
+                self::kill($loggerAttempt->error->getMessage());
             }
-            
-            Container::set(LoggerInterface::class, $logger->value);
 
-            $environmentService = new EnvironmentService($logger->value);
-
+            $logger = $loggerAttempt->value;
+            Container::set(LoggerInterface::class, $logger);
+            $environmentService = new EnvironmentService($logger);
 
             if ($environment) {
-                $environmentService->setFileName($environment);
-                $environmentService->load($info);
+                if (File::exists($environment)) {
+                    $environmentService->setFileName($environment);
+                    if ($error = $environmentService->load($info)->error) {
+                        self::kill($error->getMessage());
+                    }
+                }
             }
 
             /** @var array<string> */
@@ -155,13 +155,10 @@ class Bootstrap {
                     },
                 );
             }
-            
-            Loop::futureTick(function() use ($entry, $libraries, $info) {
-                if ($error = self::init($entry, $libraries, $info)->error) {
-                    self::kill($error.PHP_EOL);
-                }
-            });
-            Loop::run();
+
+            if ($error = self::init($entry, $libraries, $info)->error) {
+                self::kill($error.PHP_EOL);
+            }
         } catch (Throwable $e) {
             self::kill((string)$e);
         }
@@ -201,12 +198,12 @@ class Bootstrap {
         string $libraries,
         string $resources,
     ):void {
-        Loop::addSignal(SIGHUP, static fn () => self::kill("Killing application..."));
-        Loop::addSignal(SIGINT, static fn () => self::kill("Killing application..."));
-        Loop::addSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
-        Loop::addSignal(SIGTERM, static fn () => self::kill("Killing application..."));
+        EventLoop::onSignal(SIGHUP, static fn () => self::kill("Killing application..."));
+        EventLoop::onSignal(SIGINT, static fn () => self::kill("Killing application..."));
+        EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
+        EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
 
-        Loop::futureTick(function() use (
+        async( static function() use (
             $binary,
             $fileName,
             $arguments,
@@ -216,10 +213,8 @@ class Bootstrap {
         ) {
             $argumentsStringified = join(' ', $arguments);
             $instruction          = "$binary $fileName $argumentsStringified";
-            $change               = false;
 
             echo "Spawning $instruction".PHP_EOL;
-
 
             $kill = Signal::create();
         
@@ -229,40 +224,40 @@ class Bootstrap {
             $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
 
             if (DIRECTORY_SEPARATOR === '/') {
-                Loop::addSignal(SIGINT, static function() use ($kill) {
+                EventLoop::onSignal(SIGINT, static function(string $id) use ($kill) {
                     $kill->send();
                     self::kill();
                 });
             }
 
-            /** @var false|callable():void */
-            $resolve = false;
-            /** @var Promise<Unsafe<void>> */
-            $ready = new Promise(static fn ($ok) => $ok(ok()));
+
+            /** @var false|DeferredFuture<void> */
+            $ready = false;
 
             self::onFileChange(
                 entry: $entry,
                 libraries: $libraries,
                 resources: $resources,
-                callback: static function() use (&$resolve) {
-                    if (!$resolve) {
+                callback: static function() use (&$ready) {
+                    if (!$ready) {
                         return;
                     }
-                    $resolve();
+                    $ready->complete();
                 },
             );
 
             while (true) {
-                await($ready);
-                if ($error = await(execute($instruction, out(), $kill))->error) {
+                if ($ready) {
+                    $ready->getFuture()->await();
+                }
+                if ($error = execute($instruction, out(), $kill)->await()->error) {
                     echo (string)$error.PHP_EOL;
-                    $ready = new Promise(static function($ok) use (&$resolve) {
-                        $resolve = $ok;
-                    });
+                    $ready = new DeferredFuture;
                 }
             }
         });
-        Loop::run();
+
+        EventLoop::run();
     }
 
     /**
@@ -297,7 +292,13 @@ class Bootstrap {
                     if (!File::exists($directory)) {
                         continue;
                     }
-                    foreach (Directory::flat(\realpath($directory)) as $fileName) {
+                    $listAttempt = Directory::flat(\realpath($directory));
+
+                    if ($listAttempt->error) {
+                        return error($listAttempt->error);
+                    }
+
+                    foreach ($listAttempt->value as $fileName) {
                         $fileNames[$fileName] = false;
                     }
                 }
@@ -313,7 +314,15 @@ class Bootstrap {
                         unset($changes[$fileName]);
                         continue;
                     }
-                    $mtime = File::getModificationTime($fileName);
+
+                    $mtimeAttempt = File::getModificationTime($fileName);
+
+                    if ($mtimeAttempt->error) {
+                        return error($mtimeAttempt->error);
+                    }
+
+                    $mtime = $mtimeAttempt->value;
+
                     if (!isset($changes[$fileName])) {
                         $changes[$fileName] = $mtime;
                         continue;
@@ -328,6 +337,7 @@ class Bootstrap {
                 $firstPass = false;
                 delay(1);
             }
+            return ok();
         });
     }
 }

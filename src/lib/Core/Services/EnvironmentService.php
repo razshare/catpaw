@@ -8,7 +8,6 @@ use function CatPaw\ok;
 
 use CatPaw\Unsafe;
 use Psr\Log\LoggerInterface;
-use function React\Async\await;
 
 #[Service]
 class EnvironmentService {
@@ -58,7 +57,7 @@ class EnvironmentService {
             return error($file->error);
         }
 
-        $read = await($file->value->readAll());
+        $read = $file->value->readAll()->await();
         if ($read->error) {
             return error($read->error);
         }

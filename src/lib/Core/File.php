@@ -1,10 +1,18 @@
 <?php
 namespace CatPaw;
 
-use Exception;
-use React\Promise\Promise;
-use React\Stream\ReadableResourceStream;
-use React\Stream\WritableResourceStream;
+use function Amp\async;
+use Amp\ByteStream\ReadableStream;
+
+use function Amp\File\deleteFile;
+use function Amp\File\exists;
+use Amp\File\File as AmpFile;
+use function Amp\File\getModificationTime;
+use function Amp\File\getSize;
+use function Amp\File\getStatus;
+use function Amp\File\openFile;
+use Amp\Future;
+use Throwable;
 
 class File {
     /**
@@ -14,274 +22,210 @@ class File {
     public static function getSize(string $fileName):Unsafe {
         $size = filesize($fileName);
         if (false === $size) {
-            return error("Could not retrieve the size of the file.");
+            return error("Could not retrieve size of file $fileName.");
         }
 
         return ok($size);
     }
+
     /**
      * Copy a file.
-     * @param  string                $from
-     * @param  string                $to
-     * @return Promise<Unsafe<void>>
+     * @param  string               $from
+     * @param  string               $to
+     * @return Future<Unsafe<void>>
      */
-    public static function copy(string $from, string $to):Promise {
-        $source = File::open($from);
-        if ($source->error) {
-            return new Promise(static fn ($ok) => $ok(error($source->error)));
-        }
-
-        $toDirectory = dirname($to);
-
-        if (!File::exists($toDirectory)) {
-            if ($error = Directory::create($toDirectory)->error) {
-                return new Promise(static fn ($ok) => $ok(error($error)));
+    public static function copy(string $from, string $to):Future {
+        return async(static function() use ($from, $to) {
+            $source = File::open($from);
+            if ($source->error) {
+                return error($source->error);
             }
-        }
 
-        $destination = File::open($to, 'x');
+            $toDirectory = dirname($to);
 
-        if ($destination->error) {
-            return new Promise(static fn ($ok) => $ok(error($destination->error)));
-        }
+            if (!File::exists($toDirectory)) {
+                if ($error = Directory::create($toDirectory)->error) {
+                    return error($error);
+                }
+            }
 
-        $stream = $source->value->getReadableStream();
+            $destination = File::open($to, 'x');
 
-        if ($stream->error) {
-            return new Promise(static fn ($ok) => $ok(error($stream->error)));
-        }
+            if ($destination->error) {
+                return error($destination->error);
+            }
 
-        return $destination->value->writeStream($stream->value);
+            $stream = $source->value->getAmpFile();
+
+            if ($stream->error) {
+                return error($stream->error);
+            }
+
+            return $destination->value->writeStream($stream->value)->await();
+        });
     }
-
 
 
     /**
      * @return Unsafe<array>
      */
     public static function getStatus(string $fileName):Unsafe {
-        $info = stat($fileName);
-        if (false === $info) {
-            return error("Could not get status of file $fileName.");
+        $status = getStatus($fileName);
+        if (null === $status) {
+            return error("Could not get status of file $fileName because it doesn't exist.");
         }
-
-        return ok($info);
+        return ok($status);
     }
 
     /**
      * @return Unsafe<int>
      */
     public static function getModificationTime(string $fileName):Unsafe {
-        $mtime = filemtime($fileName);
-        if (false === $mtime) {
-            return error("Could not find file $fileName modification time.");
+        try {
+            $mtime = getModificationTime($fileName);
+            return ok($mtime);
+        } catch(Throwable $e) {
+            return error($e);
         }
-        return ok($mtime);
     }
 
     public static function exists(string $fileName):bool {
-        return file_exists($fileName);
+        return exists($fileName);
     }
 
     public static function delete(string $fileName):Unsafe {
-        if (!unlink($fileName)) {
-            return error("Could not delete file $fileName");
+        try {
+            deleteFile($fileName);
+            return ok();
+        } catch (\Throwable $e) {
+            return error($e);
         }
-        return ok();
     }
 
     /**
      * @return Unsafe<File>
      */
     public static function open(string $fileName, string $mode = 'r'):Unsafe {
-        if (!File::exists($fileName)) {
-            return error("File $fileName not found.");
+        try {
+            $file = openFile($fileName, $mode);
+        } catch(Throwable $e) {
+            return error($e);
         }
-        $file = fopen($fileName, $mode);
-        if (!$file) {
-            return error("Could not open file $fileName");
-        }
-        return ok(new self($file));
+        return ok(new self($file, $mode, $fileName));
     }
 
-    private ReadableResourceStream $reader;
-    private WritableResourceStream $writer;
     private function __construct(
-        private $stream
+        private AmpFile $ampFile,
+        private string $mode,
+        private string $fileName,
     ) {
     }
-
-
-    private function setupReader():Unsafe {
-        if (isset($this->reader)) {
-            if (!$this->reader->isReadable()) {
-                return error("File stream is not readable.");
-            }
-            return ok();
-        }
-        $this->reader = new ReadableResourceStream($this->stream);
-        return ok();
-    }
-
-    private function setupWriter():Unsafe {
-        if (isset($this->writer)) {
-            if ($this->writer->isWritable()) {
-                return error("File stream is not writable.");
-            }
-            return ok();
-        }
-        $this->writer = new WritableResourceStream($this->stream);
-        return ok();
-    }
     
     /**
-     * @return Promise<Unsafe<void>>
+     * @return Future<Unsafe<void>>
      */
-    public function write(string $content):Promise {
-        $setup = $this->setupWriter();
-
-        if ($setup->error) {
-            return new Promise(static fn ($ok) => $ok(error($setup->error)));
-        }
-
-        $writer = $this->writer;
-        if (is_string($content)) {
-            if ($writer->write($content)) {
-                return new Promise(static fn ($ok) => $ok(ok()));
-            }
-            return new Promise(static fn ($ok) => $ok(error("Could not write to file.")));
-        }
-    }
-
-    /**
-     * @return Promise<Unsafe<void>>
-     */
-    public function writeStream(ReadableResourceStream $reader):Promise {
-        $setup = $this->setupWriter();
-
-        if ($setup->error) {
-            return new Promise(static fn ($ok) => $ok(error($setup->error)));
-        }
-
-        $writer = $this->writer;
-
-        $resolved = false;
-        return new Promise(static function($ok) use ($reader, $writer, &$resolved) {
-            $reader->on('data', static function($chunk) use ($writer) {
-                $writer->write($chunk);
-            });
-
-            $reader->on('end', static function() use ($ok, $reader, &$resolved) {
-                $ok(ok());
-                $resolved = true;
-                $reader->close();
-            });
-            
-            $reader->on('error', static function(Exception $e) use ($ok, $reader, &$resolved) {
-                $ok(error($e->getMessage()));
-                $resolved = true;
-                $reader->close();
-            });
-            
-            $reader->on('close', static function() use ($ok, &$resolved) {
-                if ($resolved) {
-                    return;
+    public function write(string $content, int $chunkSize = 8192):Future {
+        $ampFile = $this->ampFile;
+        return async(static function() use ($ampFile, $content, $chunkSize) {
+            try {
+                $wroteSoFar = 0;
+                $length     = strlen($content);
+                while (true) {
+                    $step  = $wroteSoFar + $chunkSize;
+                    $chunk = substr($content, $wroteSoFar, $step);
+                    async(static fn () => $ampFile->write($chunk))->await();
+                    $wroteSoFar = $wroteSoFar + $step;
+                    if ($wroteSoFar >= $length) {
+                        return ok();
+                    }
                 }
-                $resolved = true;
-                $ok(ok());
-            });
-        });
-    }
-    
-    /**
-     * @return Unsafe<int>
-     */
-    public function seek(int $position):Unsafe {
-        $result = fseek($this->stream, $position);
-        if (-1 === $result) {
-            return error("Could not feek to $position.");
-        }
-        return ok($position);
-    }
-
-    /**
-     * @return Unsafe<string>
-     */
-    public function read(int $length = 8096):Unsafe {
-        $result = fread($this->stream, $length);
-        if (false === $result) {
-            return error("Could not read from file.");
-        }
-
-        return ok($result);
-    }
-    
-    /**
-     * @return Promise<Unsafe<string>>
-     */
-    public function readAll():Promise {
-        $setup = $this->setupReader();
-
-        if ($setup->error) {
-            return new Promise(static fn ($ok) => $ok(error($setup->error)));
-        }
-
-        $reader   = $this->reader;
-        $content  = '';
-        $resolved = false;
-        return new Promise(static function($ok) use ($reader, &$content, &$resolved) {
-            $reader->on('data', static function($chunk) use (&$content) {
-                $content .= $chunk;
-            });
-
-            $reader->on('end', static function() use ($ok, &$content, $reader, &$resolved) {
-                $ok(ok($content));
-                $resolved = true;
-                $reader->close();
-            });
-            
-            $reader->on('error', static function(Exception $e) use ($ok, $reader, &$resolved) {
-                $ok(error($e->getMessage()));
-                $resolved = true;
-                $reader->close();
-            });
-            
-            $reader->on('close', static function() use ($ok, &$content, &$resolved) {
-                if ($resolved) {
-                    return;
-                }
-                $resolved = true;
-                $ok(ok($content));
-            });
+            } catch(Throwable $e) {
+                return error($e);
+            }
         });
     }
 
     /**
-     * @return Unsafe<ReadableResourceStream>
+     * @return Future<Unsafe<void>>
      */
-    public function getReadableStream():Unsafe {
-        if ($error = $this->setupReader()->error) {
-            return error($error);
-        }
-        return ok($this->reader);
+    public function writeStream(ReadableStream $readableStream, int $chunkSize = 8192):Future {
+        $ampFile = $this->ampFile;
+        return async(function() use ($ampFile, $readableStream, $chunkSize) {
+            try {
+                while (true) {
+                    $chunk = async(static fn () => $readableStream->read(null, $chunkSize))->await();
+                    if (null === $chunk) {
+                        return ok();
+                    }
+                    async(static fn () => $ampFile->write($chunk))->await();
+                }
+            } catch(Throwable $e) {
+                return error($e);
+            }
+        });
+    }
+    
+    /**
+     * @return int
+     */
+    public function seek(int $position) {
+        return $this->ampFile->seek($position);
     }
 
     /**
-     * @return Unsafe<WritableResourceStream>
+     * @return Future<Unsafe<string>>
      */
-    public function getWritableStream():Unsafe {
-        if ($error = $this->setupWriter()->error) {
-            return error($error);
-        }
-        return ok($this->writer);
+    public function read(int $length = 8192, int $chunkSize = 8192):Future {
+        $ampFile = $this->ampFile;
+        return async(static function() use ($ampFile, $length, $chunkSize) {
+            try {
+                $readSoFar = 0;
+                $buffer    = '';
+                while (true) {
+                    if ($length < $readSoFar + $chunkSize) {
+                        $step = $length - $readSoFar;
+                    } else {
+                        $step = $chunkSize;
+                    }
+                    $chunk     = async(static fn () => $ampFile->read(null, $step))->await();
+                    $readSoFar = $readSoFar + $step;
+                    if (null === $chunk) {
+                        return ok($buffer);
+                    }
+                    $buffer = $buffer.$chunk;
+                    if ($readSoFar >= $length) {
+                        return ok($buffer);
+                    }
+                }
+            } catch(Throwable $e) {
+                return error($e);
+            }
+        });
     }
+    
+    /**
+     * @return Future<Unsafe<string>>
+     */
+    public function readAll(int $chunkSize = 8192):Future {
+        $fileName = $this->fileName;
+        return async(function() use ($fileName, $chunkSize) {
+            $fileSize = async(static fn () => getSize($fileName))->await();
+            return $this->read($fileSize, $chunkSize)->await();
+        });
+    }
+
+    /**
+     * @return AmpFile
+     */
+    public function getAmpFile():AmpFile {
+        return $this->ampFile;
+    }
+
 
     public function close() {
-        if (isset($this->reader)) {
-            $this->reader->close();
+        if ($this->ampFile->isClosed()) {
+            return;
         }
-        if (isset($this->writer)) {
-            $this->writer->close();
-        }
+        $this->ampFile->close();
     }
 }

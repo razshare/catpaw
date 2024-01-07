@@ -1,6 +1,6 @@
-name: core
-entry: ./src/main.php
+name: app
+entry: ./preview/server.php
 libraries: ./src/lib
 environment: ./env.yml
 info: false
-match: /(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(\.\/env\.yml)/
+match: /(^\.\/(\.build-cache|preview|src|server|vendor|bin)\/.*)|(\.\/env\.yml)/

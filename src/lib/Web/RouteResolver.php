@@ -2,15 +2,14 @@
 
 namespace CatPaw\Web;
 
+use Amp\Http\Server\Request;
+use Amp\Http\Server\Response;
+
 use function CatPaw\error;
 use function CatPaw\ok;
-
 use CatPaw\Unsafe;
 use CatPaw\Web\Attributes\Session;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
-use React\Http\Message\Response;
 use ReflectionFunction;
 
 use Throwable;
@@ -18,12 +17,10 @@ use Throwable;
 class RouteResolver {
     private static $cache = [];
     /**
-     * @param  RequestInterface       $request
+     * @param  Request                $request
      * @return Unsafe<false|Response>
      */
-    public function resolve(
-        RequestInterface $request,
-    ):Unsafe {
+    public function resolve(Request $request):Unsafe {
         $server = $this->server;
         $router = $server->router;
 
@@ -80,7 +77,9 @@ class RouteResolver {
         }
 
         if (false === $requestPathParameters) {
-            return ok(new Response(status:HttpStatus::NOT_FOUND, reason:HttpStatus::getReason(HttpStatus::NOT_FOUND)));
+            $response = new Response();
+            $response->setStatus(HttpStatus::NOT_FOUND, HttpStatus::getReason(HttpStatus::NOT_FOUND));
+            return ok($response);
         }
         
         $requestQueries = $this->findQueriesFromRequest($request);
@@ -105,7 +104,7 @@ class RouteResolver {
         return ok($resultAttmpt->value);
     }
 
-    private function findQueriesFromRequest(RequestInterface $request):array {
+    private function findQueriesFromRequest(Request $request):array {
         $queries     = [];
         $queryString = $request->getUri()->getQuery();
         $queryChunks = explode('&', preg_replace('/^\?/', '', $queryString, 1));
@@ -122,7 +121,7 @@ class RouteResolver {
         return $queries;
     }
 
-    private function respondWithRedirectToHttps(UriInterface $uri):ResponseInterface {
+    private function respondWithRedirectToHttps(UriInterface $uri):Response {
         return new Response(HttpStatus::FOUND, [
             "Location" => preg_replace('/^http/', 'https', (string)$uri),
         ]);

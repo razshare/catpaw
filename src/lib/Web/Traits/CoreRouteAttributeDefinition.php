@@ -1,7 +1,7 @@
 <?php
 namespace CatPaw\Web\Traits;
 
-use React\Http\Message\Request;
+use Amp\Http\Server\Request;
 
 trait CoreRouteAttributeDefinition {
     public function onRequest(Request $request): void {

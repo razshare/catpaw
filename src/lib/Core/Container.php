@@ -2,23 +2,25 @@
 
 namespace CatPaw;
 
+use function Amp\File\isDirectory;
+use function Amp\File\isFile;
 use Attribute;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 use CatPaw\Interfaces\OnParameterMount;
 use CatPaw\Interfaces\StorageInterface;
+
+
 use Closure;
 use Psr\Log\LoggerInterface;
-
-
-use React\Promise\Promise;
 use RecursiveDirectoryIterator;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionFunction;
-use ReflectionMethod;
 
+use ReflectionFunction;
+
+use ReflectionMethod;
 use Throwable;
 
 class Container {
@@ -290,14 +292,8 @@ class Container {
         } else if (!isDirectory($path)) {
             return ok([]);
         }
-
-        try {
-            $directory = new RecursiveDirectoryIterator($path);
-        } catch (Throwable) {
-            return error("Path \"$path\" is not a valid directory or file to load.");
-        }
-
-        return Directory::flat($directory, '/^.+\.php$/i');
+        
+        return Directory::flat($path, '/^.+\.php$/i');
     }
 
     /**
@@ -341,7 +337,7 @@ class Container {
      * @param  Closure|ReflectionFunction $function
      * @param  bool                       $touch    if true, Container::touch will be 
      *                                              called automatically on the function
-     * @return Unsafe<Promise<T>>
+     * @return Unsafe<T>
      */
     public static function run(
         Closure|ReflectionFunction $function,

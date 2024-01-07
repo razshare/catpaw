@@ -2,6 +2,7 @@
 
 namespace CatPaw\Web\Attributes;
 
+use Amp\Http\Server\RequestBody;
 use Attribute;
 use CatPaw\DependenciesOptions;
 use function CatPaw\error;
@@ -14,7 +15,6 @@ use CatPaw\Traits\CoreAttributeDefinition;
 use CatPaw\Unsafe;
 use CatPaw\Web\BodyParser;
 use CatPaw\Web\RequestContext;
-use Psr\Http\Message\StreamInterface;
 use ReflectionParameter;
 
 /**
@@ -47,7 +47,7 @@ class Body implements AttributeInterface, OnParameterMount {
         $attempt = match ($className) {
             "array" => $this->toArray(
                 body       : $context->request->getBody(),
-                contentType: $context->request->getHeader("Content-Type")[0] ?? '',
+                contentType: $context->request->getHeader("Content-Type") ?? '',
             ),
 
             "string" => $context->request->getBody(),
@@ -64,11 +64,11 @@ class Body implements AttributeInterface, OnParameterMount {
                 body: $context->request->getBody(),
             ),
             
-            StreamInterface::class => $context->request->getBody(),
+            RequestBody::class => $context->request->getBody(),
 
             default => $this->toArray(
                 body       : $context->request->getBody(),
-                contentType: $context->request->getHeader("Content-Type")[0] ?? '',
+                contentType: $context->request->getHeader("Content-Type") ?? '',
             ),
         };
 

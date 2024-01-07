@@ -1,13 +1,12 @@
 <?php
 namespace CatPaw\Web;
 
+use Amp\Http\Server\Response;
 use function CatPaw\error;
 use function CatPaw\ok;
 use CatPaw\Unsafe;
 use CatPaw\Web\Interfaces\ResponseModifier;
-
-use Psr\Http\Message\ResponseInterface;
-use React\Http\Message\Response;
+use CatPaw\XMLSerializer;
 use Throwable;
 
 class ErrorResponseModifier implements ResponseModifier {
@@ -52,51 +51,42 @@ class ErrorResponseModifier implements ResponseModifier {
         ];
     }
 
-    public function forText(ResponseInterface $response):ResponseInterface {
-        $plaintext = Response::plaintext($this->message);
-        $plaintext->withStatus($this->status);
-        foreach ($response->getHeaders() as $key => $value) {
-            $plaintext->withHeader($key, $value);
-        }
+    public function forText(Response $response):Response {
+        $response->setBody($this->message);
+        $response->setStatus($this->status);
         foreach ($this->headers as $key => $value) {
-            $plaintext->withHeader($key, $value);
+            $response->setHeader($key, $value);
         }
-        return $plaintext;
+        return $response;
     }
 
     /**
-     * @return Unsafe<ResponseInterface>
+     * @return Unsafe<Response>
      */
-    public function forJson(ResponseInterface $response):Unsafe {
+    public function forJson(Response $response):Unsafe {
         $payload = $this->isStructured?$this->createStructuredPayload():$this->message;
 
         try {
-            $json = Response::json($payload);
+            $json = json_encode($payload);
         } catch(Throwable $e) {
             return error($e);
         }
-
-        $json->withStatus($this->status);
-        foreach ($response->getHeaders() as $key => $value) {
-            $json->withHeader($key, $value);
-        }
+        $response->setBody($json);
+        $response->setStatus($this->status);
         foreach ($this->headers as $key => $value) {
-            $json->withHeader($key, $value);
+            $response->setHeader($key, $value);
         }
-        return ok($json);
+        return ok($response);
     }
 
-    public function forXml(ResponseInterface $response):ResponseInterface {
+    public function forXml(Response $response):Response {
         $payload = $this->isStructured?$this->createStructuredPayload():$this->message;
-        $xml     = Response::xml($payload);
-        $xml->withStatus($this->status);
-        foreach ($response->getHeaders() as $key => $value) {
-            $xml->withHeader($key, $value);
-        }
+        $response->setBody(XMLSerializer::generateValidXmlFromArray($payload));
+        $response->setStatus($this->status);
         foreach ($this->headers as $key => $value) {
-            $xml->withHeader($key, $value);
+            $response->setHeader($key, $value);
         }
-        return $xml;
+        return $response;
     }
 
     /**

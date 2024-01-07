@@ -1,9 +1,9 @@
 <?php
 namespace CatPaw\Web\Interfaces;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Amp\Http\Server\Request;
+use Amp\Http\Server\Response;
 
 interface FileServerInterface {
-    public function serve(RequestInterface $request):ResponseInterface;
+    public function serve(Request $request):Response;
 }

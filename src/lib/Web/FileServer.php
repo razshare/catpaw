@@ -1,22 +1,19 @@
 <?php
 namespace CatPaw\Web;
 
+use function Amp\File\isDirectory;
+use function Amp\File\isFile;
+use Amp\Http\Server\Request;
+use Amp\Http\Server\Response;
 use CatPaw\Container;
 use function CatPaw\error;
 use CatPaw\File;
-use function CatPaw\isDirectory;
-use function CatPaw\isFile;
 use function CatPaw\ok;
 use CatPaw\Unsafe;
-
 use CatPaw\Web\Interfaces\FileServerInterface;
 use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 use CatPaw\Web\Services\ByteRangeService;
-use Psr\Http\Message\RequestInterface;
-
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use React\Http\Message\Response;
 
 class FileServer implements FileServerInterface {
     /**
@@ -76,11 +73,11 @@ class FileServer implements FileServerInterface {
     ) {
     }
 
-    private function notFound():ResponseInterface {
-        return new Response(status:HttpStatus::NOT_FOUND, reason:HttpStatus::getReason(HttpStatus::NOT_FOUND));
+    private function notFound():Response {
+        return new Response(status:HttpStatus::NOT_FOUND);
     }
 
-    private function redirect(string $to):ResponseInterface {
+    private function redirect(string $to):Response {
         return new Response(
             status: HttpStatus::FOUND,
             headers: [
@@ -92,17 +89,17 @@ class FileServer implements FileServerInterface {
 
     /**
      * Success response.
-     * @param  mixed             $data
-     * @param  int               $status
-     * @param  array             $headers
-     * @param  string            $message
-     * @return ResponseInterface
+     * @param  mixed    $data
+     * @param  int      $status
+     * @param  array    $headers
+     * @param  string   $message
+     * @return Response
      */
     private function success(
         mixed $data = '',
         int $status = 200,
         array $headers = [],
-    ):ResponseInterface {
+    ):Response {
         return new Response(
             body: $data,
             status: $status,
@@ -112,19 +109,20 @@ class FileServer implements FileServerInterface {
 
     /**
      * Something is wrong, notify the client with a code and a message.
-     * @param  false|string      $message
-     * @param  int               $status
-     * @param  array             $headers
-     * @return ResponseInterface
+     * @param  false|string $message
+     * @param  int          $status
+     * @param  array        $headers
+     * @return Response
      */
     private function failure(
         false|string $message = false,
         int $status = 500,
         array $headers = []
-    ):ResponseInterface {
+    ):Response {
         if (false === $message) {
             $message = HttpStatus::getReason($status);
         }
+        
         return new Response(
             status: $status,
             body: $message,
@@ -132,14 +130,13 @@ class FileServer implements FileServerInterface {
         );
     }
 
-    public function serve(RequestInterface $request):ResponseInterface {
+    public function serve(Request $request):Response {
         $path             = urldecode($request->getUri()->getPath());
         $server           = $this->server;
         $fallback         = $this->fallback;
         $overwrite        = $this->overwrite;
         $byteRangeService = $this->byteRangeService;
         $logger           = $this->logger;
-
 
         if (!$server->www || strpos($path, '../')) {
             return $this->notFound();
@@ -150,6 +147,7 @@ class FileServer implements FileServerInterface {
         if ($overwrite) {
             $fileName = $overwrite->overwrite($fileName);
         }
+
 
         if (isDirectory($fileName)) {
             if (str_ends_with($path, '/') && File::exists("$fileName$fallback")) {
@@ -175,7 +173,7 @@ class FileServer implements FileServerInterface {
         }
 
         $rangedResponseAttempt = $byteRangeService->file(
-            rangeQuery: $request->getHeader("Range")[0] ?? '',
+            rangeQuery: $request->getHeader("Range") ?? '',
             fileName: $fileName,
         );
 
@@ -190,11 +188,7 @@ class FileServer implements FileServerInterface {
         }
 
         $file   = $fileAttempt->value;
-        $stream = $file->getReadableStream();
-
-        if ($stream->error) {
-            return error($stream->error);
-        }
+        $stream = $file->getAmpFile();
 
         $fileSizeAttempt = File::getSize($fileName);
         if ($fileSizeAttempt->error) {
@@ -211,7 +205,7 @@ class FileServer implements FileServerInterface {
                 "Content-Length" => $fileSize,
                 ...$attachmentHeaders,
             ],
-            data: $stream->value,
+            data: $stream,
         );
     }
 }

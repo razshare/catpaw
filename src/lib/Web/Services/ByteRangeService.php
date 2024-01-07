@@ -2,9 +2,12 @@
 
 namespace CatPaw\Web\Services;
 
-use CatPaw\Attributes\Entry;
+use Amp\ByteStream\ReadableIterableStream;
+use Amp\ByteStream\WritableIterableStream;
+use Amp\Http\Server\Response;
 use CatPaw\Attributes\Service;
 
+use function CatPaw\duplex;
 use function CatPaw\error;
 use CatPaw\File;
 use function CatPaw\ok;
@@ -16,29 +19,11 @@ use CatPaw\Web\Interfaces\ByteRangeWriterInterface;
 use CatPaw\Web\Mime;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
-
-use React\EventLoop\Loop;
-
-
-use React\Http\Io\ReadableBodyStream;
-
-
-
-
-use React\Http\Message\Response;
-use React\Stream\ThroughStream;
+use Revolt\EventLoop;
 use SplFixedArray;
 
 #[Service]
 class ByteRangeService {
-    private LoggerInterface $logger;
-
-    #[Entry] function start(LoggerInterface $logger) {
-        $this->logger = $logger;
-        $logger->info("Byte range service initialized.");
-    }
-
     /**
      * 
      * @param  string                     $rangeQuery
@@ -126,56 +111,50 @@ class ByteRangeService {
         if ($contentTypeAttempt->error) {
             return error($contentTypeAttempt->error);
         }
-        $contentType    = $contentTypeAttempt->value;
-        $ranges         = $rangesAttempt->value;
-        $count          = $ranges->count();
-        $throughStream  = new ThroughStream();
-        $readableStream = new ReadableBodyStream($throughStream);
+        $contentType = $contentTypeAttempt->value;
+        $ranges      = $rangesAttempt->value;
+        $count       = $ranges->count();
+        
+
+        /** @var ReadableIterableStream $reader */
+        /** @var WritableIterableStream $writer */
+
+        [$reader,$writer] = duplex();
 
 
 
         if (1 === $count) {
-            $this->logger->info("Serving one single range query.");
-            [[$start, $end]] = $ranges;
-
-            [$start, $end] = $this->fixClientAmbiguity($start, $end, $contentLength);
-
+            [[$start, $end]]           = $ranges;
+            [$start, $end]             = $this->fixClientAmbiguity($start, $end, $contentLength);
             $headers['Content-Length'] = $end - $start + 1;
             $headers['Content-Range']  = "bytes $start-$end/$contentLength";
             
             $interface->start();
 
-            try {
-                $response = new Response(
-                    status: HttpStatus::PARTIAL_CONTENT,
-                    headers: $headers,
-                    body: $readableStream,
-                );
-            } catch(InvalidArgumentException $e) {
-                return error($e);
-            }
+            $response = new Response(
+                status: HttpStatus::PARTIAL_CONTENT,
+                headers: $headers,
+                body: $reader,
+            );
 
             if ($start === $end) {
                 $interface->close();
                 return ok($response);
             }
 
-            Loop::futureTick(static function() use ($throughStream, $readableStream, $start, $end, $interface) {
+            EventLoop::defer(static function() use ($writer, $start, $end, $interface) {
                 $dataAttempt = $interface->send($start, $end - $start + 1);
                 if ($dataAttempt->error) {
                     return error($dataAttempt->error);
                 }
-                $throughStream->write($dataAttempt->value);
-                $throughStream->close();
-                // $readableStream->close();
+                $writer->write($dataAttempt->value);
+                $writer->close();
                 $interface->close();
             });
 
             return ok($response);
         }
-
-        $this->logger->info("Serving multiple range queries.");
-
+        
         $boundary                = uuid();
         $headers['Content-Type'] = "multipart/byterange; boundary=$boundary";
         $length                  = 0;
@@ -189,15 +168,14 @@ class ByteRangeService {
             $response = new Response(
                 status: HttpStatus::PARTIAL_CONTENT,
                 headers: $headers,
-                body: $readableStream,
+                body: $reader,
             );
         } catch(InvalidArgumentException $e) {
             return error($e);
         }
 
-        Loop::futureTick(function() use (
-            $throughStream,
-            $readableStream,
+        EventLoop::defer(function() use (
+            $writer,
             $interface,
             $ranges,
             $boundary,
@@ -206,13 +184,10 @@ class ByteRangeService {
         ) {
             foreach ($ranges as $range) {
                 [$start, $end] = $range;
-
                 [$start, $end] = $this->fixClientAmbiguity($start, $end, $contentLength);
-
-                $throughStream->write("--$boundary\r\n");
-
-                $throughStream->write("Content-Type: $contentType\r\n");
-                $throughStream->write("Content-Range: bytes $start-$end/$contentLength\r\n");
+                $writer->write("--$boundary\r\n");
+                $writer->write("Content-Type: $contentType\r\n");
+                $writer->write("Content-Range: bytes $start-$end/$contentLength\r\n");
 
                 if ($end < 0) {
                     $end = $contentLength - 1;
@@ -221,12 +196,11 @@ class ByteRangeService {
                 if ($dataAttempt->error) {
                     return error($dataAttempt->error);
                 }
-                $throughStream->write($dataAttempt->value);
-                $throughStream->write("\r\n");
+                $writer->write($dataAttempt->value);
+                $writer->write("\r\n");
             }
-            $throughStream->write("--$boundary--");
-            $throughStream->close();
-            // $readableStream->close();
+            $writer->write("--$boundary--");
+            $writer->close();
             $interface->close();
         });
 
@@ -235,9 +209,9 @@ class ByteRangeService {
 
     /**
      * 
-     * @param  string                    $fileName
-     * @param  Request                   $request
-     * @return Unsafe<ResponseInterface>
+     * @param  string           $fileName
+     * @param  Request          $request
+     * @return Unsafe<Response>
      */
     public function file(
         string $fileName,
@@ -283,10 +257,8 @@ class ByteRangeService {
                     if (!isset($this->file)) {
                         return error("Trying to send payload but the file is not opened.");
                     }
-                    if ($error = $this->file->seek($start)->error) {
-                        return error($error);
-                    }
-                    return $this->file->read($length);
+                    $this->file->seek($start);
+                    return $this->file->read($length)->await();
                 }
 
                 public function close():Unsafe {

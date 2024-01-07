@@ -2,26 +2,27 @@
 
 namespace CatPaw\Web;
 
+use Amp\Http\Server\Request;
+use Amp\Http\Server\Response;
 use DateTime;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Stringable;
 
 readonly class Cookie implements Stringable {
     /**
-     * @param  RequestInterface $request
+     * @param  Request      $request
      * @return false|Cookie
      */
-    public static function findFromRequestByName(RequestInterface $request, string $cookieName):false|Cookie {
+    public static function findFromRequestByName(Request $request, string $cookieName):false|Cookie {
         $cookies = self::listFromRequest($request);
         return $cookies[$cookieName] ?? false;
     }
 
     /**
-     * @param  ResponseInterface $response
+     * @param  Response     $response
      * @return false|Cookie
      */
-    public static function findFromResponseByName(ResponseInterface $response, string $cookieName):false|Cookie {
+    public static function findFromResponseByName(Response $response, string $cookieName):false|Cookie {
         $cookies = self::listFromResponse($response);
         return $cookies[$cookieName] ?? false;
     }
@@ -37,42 +38,20 @@ readonly class Cookie implements Stringable {
     }
     
     /**
-     * @param  RequestInterface $request
+     * @param  Request       $request
      * @return array<Cookie>
      */
-    public static function listFromRequest(RequestInterface $request):array {
-        $cookies = [];
-        $entries = $request->getHeader("Cookie");
-        foreach ($entries as $raw) {
-            $parts = explode('=', $raw, 2);
-            $key   = $parts[0] ?? '';
-            if (!$key) {
-                continue;
-            }
-            $value         = $parts[1] ?? '';
-            $cookies[$key] = new Cookie(urldecode($key), urldecode($value));
-        }
-        return $cookies;
+    public static function listFromRequest(Request $request):array {
+        return $request->getCookies();
     }
 
 
     /**
-     * @param  ResponseInterface $response
+     * @param  Response      $response
      * @return array<Cookie>
      */
-    public static function listFromResponse(ResponseInterface $response):array {
-        $cookies = [];
-        $entries = $response->getHeader("Cookie");
-        foreach ($entries as $raw) {
-            $parts = explode('=', $raw, 2);
-            $key   = $parts[0] ?? '';
-            if (!$key) {
-                continue;
-            }
-            $value         = $parts[1] ?? '';
-            $cookies[$key] = new Cookie(urldecode($key), urldecode($value));
-        }
-        return $cookies;
+    public static function listFromResponse(Response $response):array {
+        return $response->getCookies();
     }
 
     private false|DateTime $expiration;

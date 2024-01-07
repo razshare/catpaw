@@ -65,13 +65,13 @@ class Header implements AttributeInterface, OnParameterMount {
         $className = ReflectionTypeManager::unwrap($reflection)?->getName() ?? '';
 
         $value = match ($className) {
-            'string' => $context->request->getHeader($this->key)[0]         ?? '',
-            'bool'   => (bool)$context->request->getHeader($this->key)[0]   ?? '',
-            'int'    => (int)$context->request->getHeader($this->key)[0]    ?? '',
-            'double' => (double)$context->request->getHeader($this->key)[0] ?? '',
-            'float'  => (float)$context->request->getHeader($this->key)[0]  ?? '',
-            'array'  => $context->request->getHeader($this->key),
-            default  => $context->request->getHeader($this->key)[0] ?? '',
+            'string' => $context->request->getHeader($this->key)         ?? '',
+            'bool'   => (bool)$context->request->getHeader($this->key)   ?? '',
+            'int'    => (int)$context->request->getHeader($this->key)    ?? '',
+            'double' => (double)$context->request->getHeader($this->key) ?? '',
+            'float'  => (float)$context->request->getHeader($this->key)  ?? '',
+            'array'  => $context->request->getHeaderPairs($this->key),
+            default  => $context->request->getHeader($this->key) ?? '',
         } ?? $value;
 
         return ok();
