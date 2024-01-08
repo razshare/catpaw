@@ -4,7 +4,7 @@ namespace CatPaw;
 
 use SplDoublyLinkedList;
 
-class StringStack {
+readonly class StringStack {
     private function __construct(private string $contents = '') {
     }
 
@@ -18,8 +18,8 @@ class StringStack {
     }
 
     /**
-     * Find token within a string and resolve them into a list containing items in the form of <i>[<b>$preceeding</b>, <b>$token</b>]</i>,
-     * where <b>$token</b> is the matching token and <b>$preceeding</b> is the value that preceeds the current token.
+     * Find token within a string and resolve them into a list containing items in the form of <i>[<b>$preceding</b>, <b>$token</b>]</i>,
+     * where <b>$token</b> is the matching token and <b>$preceding</b> is the value that $precedes the current token.
      * @param  string              ...$tokens
      * @return SplDoublyLinkedList
      */
@@ -31,10 +31,10 @@ class StringStack {
         for ($i = 0; $i < $len; $i++) {
             $stack .= $name[$i];
             foreach ($tokens as $token) {
-                $tlen = strlen($token);
+                $length = strlen($token);
                 if (str_ends_with($stack, $token)) {
-                    $precedding = substr($stack, 0, -$tlen);
-                    $list->push(['' === $precedding ? false:$precedding ?? false, $token]);
+                    $preceding = substr($stack, 0, -$length);
+                    $list->push(['' === $preceding ? false: $preceding, $token]);
                     $stack = '';
                     break;
                 }

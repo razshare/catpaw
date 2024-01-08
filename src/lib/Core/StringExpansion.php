@@ -170,7 +170,7 @@ class StringExpansion {
         $numberOfClosedParenthesis = preg_match_all('/\)/', $content);
 
         if (false === $numberOfOpenParenthesis || false === $numberOfClosedParenthesis || $numberOfOpenParenthesis !== $numberOfClosedParenthesis) {
-            return error("The number of opened and closed parenthesis must match (opened:$numberOfOpenParenthesis, closedd:$numberOfClosedParenthesis).");
+            return error("The number of opened and closed parenthesis must match (opened:$numberOfOpenParenthesis, closed:$numberOfClosedParenthesis).");
         }
 
         $content     = strtolower(trim($content));

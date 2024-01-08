@@ -5,13 +5,17 @@ use Amp\ByteStream\ReadableIterableStream;
 use Amp\ByteStream\WritableIterableStream;
 use Amp\Http\Server\Response;
 
+use CatPaw\Unsafe;
+use Throwable;
 use function CatPaw\duplex;
 use Closure;
+use function CatPaw\error;
+use function CatPaw\ok;
 
 class ServerSentEvent {
     private function __construct(
-        private ReadableIterableStream $reader,
-        private WritableIterableStream $writer,
+        private readonly ReadableIterableStream $reader,
+        private readonly WritableIterableStream $writer,
         private array $headers = []
     ) {
     }
@@ -32,13 +36,17 @@ class ServerSentEvent {
 
     /**
      * Build the response `Response`.
-     * @return Response
+     * @return Unsafe<Response>
      */
-    function toResponse():Response {
+    function toResponse():Unsafe {
         $response = new Response();
         $response->setBody($this->reader);
-        $response->setHeaders($this->headers);
-        return $response;
+        try {
+            $response->setHeaders($this->headers);
+        } catch(Throwable $e) {
+            return error($e);
+        }
+        return ok($response);
     }
 
     /**
@@ -74,6 +82,7 @@ class ServerSentEvent {
      * Overwriting header `Content-Type` to something other than `text/event-stream` will break the SSE contract and the event will stop working as intended.
      * @param string $name
      * @param string $value
+     * @return ServerSentEvent
      */
     function setHeader(string $name, string $value):self {
         $this->headers[$name] = $value;

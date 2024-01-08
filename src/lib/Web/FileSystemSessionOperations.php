@@ -10,6 +10,8 @@ use function CatPaw\ok;
 use CatPaw\Unsafe;
 use CatPaw\Web\Attributes\Session;
 use Throwable;
+use function hash;
+use function rand;
 
 class FileSystemSessionOperations implements SessionOperationsInterface {
     /**
@@ -33,9 +35,9 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
     }
 
     private function __construct(
-        private int $ttl,
-        private string $directoryName,
-        private bool $keepAlive,
+        private readonly int  $ttl,
+        private string        $directoryName,
+        private readonly bool $keepAlive,
     ) {
         $this->directoryName = preg_replace('/[\\/\\\]+(?=$)/', '', $this->directoryName);
     }
@@ -50,7 +52,7 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
         $session  = Session::create();
         $filename = "$this->directoryName/$id";
         if ((File::exists($filename))) {
-            $file = File::open($filename, 'r');
+            $file = File::open($filename);
 
             if ($file->error) {
                 return error($file->error);
@@ -104,9 +106,6 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
                         return ok(false);
                     }
                     $id = $session->getId();
-                } else {
-                    /** @var Session */
-                    $session = $this->sessions[$id];
                 }
 
                 /** @var Session $session */
@@ -125,7 +124,7 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
             $session->setTime($time);
             $session->setId($this->makeSessionID());
             $this->setSession($session);
-            return $session;
+            return ok($session);
         } catch (Throwable) {
             return ok(false);
         }
@@ -198,10 +197,10 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
      * @inheritDoc
      */
     public function makeSessionID(): string {
-        $id = hash('sha3-224', (string)\rand());
-        $id = $id?$id:'';
+        $id = hash('sha3-224', (string)rand());
+        $id = $id?:'';
         while ($this->issetSession($id)) {
-            $id = \hash('sha3-224', (string)\rand());
+            $id = hash('sha3-224', (string)rand());
         }
         return $id;
     }

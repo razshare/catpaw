@@ -10,9 +10,9 @@ use function preg_split;
 class FormParser {
     private function __construct() {
     }
-    public static function parse(string $ctype, string $input): object|array {
+    public static function parse(string $contentType, string $input): object|array {
         // grab multipart boundary from content type header
-        if (!preg_match('/boundary=(.*)$/', $ctype, $matches)) {
+        if (!preg_match('/boundary=(.*)$/', $contentType, $matches)) {
             return [false, []];
         }
 
@@ -44,21 +44,21 @@ class FormParser {
                 $lines  = preg_split('/(\r?\n)+/', $header);
                 $header = null;
 
-                foreach ($lines as &$line) {
+                foreach ($lines as $line) {
                     if (preg_match('/(?<=^Content-Disposition:).+/', $line, $attrs)) {
                         $attrs      = preg_split('/;\s+/', $attrs[0] ?? '');
                         $attrs_len  = count($attrs);
                         $attributes = [];
                         for ($i = 0;$i < $attrs_len;$i++) {
-                            $attrs[$i] = preg_replace('/^\s+/', '', $attrs[$i]);
-                            if (preg_match('/(.+)(\=\")(.+)(\")/', $attrs[$i], $pair)) {
+                            $attrs[$i] = ltrim($attrs[$i]);
+                            if (preg_match('/(.+)(=\")(.+)(\")/', $attrs[$i], $pair)) {
                                 $attributes[$pair[1] ?? ''] = $pair[3] ?? '';
                             }
                         }
                         $entry['attributes'] = &$attributes;
                     } elseif (preg_match('/(?<=^Content-Type:).+/', $line, $ct)) {
-                        $contentType          = preg_replace('/^\s+/', '', $ct[0] ?? '');
-                        $entry['contentType'] = &$contentType;
+                        $contentTypeLocal          = ltrim($ct[0] ?? '');
+                        $entry['contentType'] = &$contentTypeLocal;
                     }
                 }
                 if (isset($entry['attributes']['name'])) {

@@ -9,7 +9,7 @@ use CatPaw\Web\Interfaces\FileServerInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-class ServerRequestHandler implements RequestHandler {
+readonly class ServerRequestHandler implements RequestHandler {
     public static function create(
         LoggerInterface $logger,
         FileServerInterface $fileServer,
@@ -19,9 +19,9 @@ class ServerRequestHandler implements RequestHandler {
     }
 
     private function __construct(
-        private LoggerInterface $logger,
+        private LoggerInterface     $logger,
         private FileServerInterface $fileServer,
-        private RouteResolver $resolver,
+        private RouteResolver       $resolver,
     ) {
     }
 

@@ -49,10 +49,9 @@ class Consumes implements AttributeInterface {
 
         foreach ($contentTypes as $contentType) {
             $this->request[] = ConsumedRequest::create(
-                type: $contentType,
-                description: '',
-                className: $schema,
-                example: $example,
+                className  : $schema,
+                type       : $contentType,
+                example    : $example,
             );
         }
     }

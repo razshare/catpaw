@@ -54,6 +54,7 @@ class Param implements AttributeInterface, OnParameterMount {
         return $this->example;
     }
 
+    /** @var array<string,mixed>  */
     private static array $cache = [];
 
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
@@ -74,7 +75,7 @@ class Param implements AttributeInterface, OnParameterMount {
 
         $cname = self::$cache[$context->key];
 
-        $value = $context->key[$name] ?? $value;
+        $value = $context->requestPathParameters[$name] ?? $value;
 
         if ("bool" === $cname) {
             $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);

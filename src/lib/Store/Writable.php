@@ -41,7 +41,7 @@ class Writable {
     public function set(mixed $value): void {
         $this->value = $value;
         for ($this->callbacks->rewind(); $this->callbacks->valid(); $this->callbacks->next()) {
-            /** @var Closure */
+            /** @var Closure $callback */
             $callback = $this->callbacks->current();
             ($callback)($this->value);
         }
@@ -61,7 +61,7 @@ class Writable {
      * Subscribe to this store and get notified of every update.
      * @param  Closure        $callback callback executed whenever there's an update,
      *                                  it takes 1 parameter, the new value of the store.
-     * @return Closure():void a function that cancels this subscriptions.
+     * @return Closure():void a function that cancels this subscription.
      */
     public function subscribe(Closure $callback): Closure {
         $this->callbacks->push($callback);

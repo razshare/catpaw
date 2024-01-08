@@ -4,33 +4,33 @@ namespace CatPaw;
 
 use function Amp\async;
 use Amp\DeferredFuture;
-
 use function Amp\delay;
 use CatPaw\Services\EnvironmentService;
+
+use Phar;
+use function preg_split;
 use Psr\Log\LoggerInterface;
-use ReflectionException;
 use ReflectionFunction;
 use Revolt\EventLoop;
+use Revolt\EventLoop\UnsupportedFeatureException;
 use Throwable;
 
 class Bootstrap {
-    private function __contruct() {
+    private function __construct() {
     }
 
     /**
-     * Initialize an application from a soruce file (that usually defines a global "main" function).
-     * @param  string              $fileName
-     * @param  bool                $info
-     * @throws ReflectionException
+     * Initialize an application from a source file (that usually defines a global "main" function).
+     * @param  string        $fileName
+     * @param  array         $libraries
      * @return Unsafe<mixed>
      */
     public static function init(
         string $fileName,
         array $libraries = [],
-        bool $info = false,
     ):Unsafe {
         if (isPhar()) {
-            $fileName = \Phar::running()."/$fileName";
+            $fileName = Phar::running()."/$fileName";
         }
 
         if (!File::exists($fileName)) {
@@ -62,6 +62,7 @@ class Bootstrap {
      * @param  string $name        application name (this will be used by the default logger)
      * @param  string $libraries   libraries to load
      * @param  string $resources   resources to load
+     * @param  string $environment
      * @param  bool   $info        if true, the bootstrap starter will write feedback messages to stdout, otherwise it will be silent unless it crashes with an exception.
      * @param  bool   $dieOnChange die when a change to the entry file, libraries or resources is detected
      * @return void
@@ -109,18 +110,19 @@ class Bootstrap {
                 }
             }
 
-            /** @var array<string> */
-            $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
-            /** @var array<string> */
-            $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
+            /** @var array<string> $librariesList */
+            $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
+
+            /** @var array<string> $resourcesList */
+            $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
     
             $_ENV['ENTRY']         = $entry;
-            $_ENV['LIBRARIES']     = $libraries;
-            $_ENV['RESOURCES']     = $resources;
+            $_ENV['LIBRARIES']     = $librariesList;
+            $_ENV['RESOURCES']     = $resourcesList;
             $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
             $_ENV['SHOW_INFO']     = $info;
     
-            foreach ($libraries as $library) {
+            foreach ($librariesList as $library) {
                 if (!str_starts_with($library, './')) {
                     if (!$isWindows) {
                         self::kill("All library directory paths must be relative to the project, received: $library.");
@@ -131,7 +133,7 @@ class Bootstrap {
                 }
             }
     
-            foreach ($resources as $resource) {
+            foreach ($resourcesList as $resource) {
                 if (!str_starts_with($resource, './')) {
                     if (!$isWindows) {
                         self::kill("All resource directory paths must be relative to the project, received: $resource.");
@@ -148,15 +150,15 @@ class Bootstrap {
                 }
                 self::onFileChange(
                     entry: $entry,
-                    libraries: $libraries,
-                    resources: $resources,
+                    libraries: $librariesList,
+                    resources: $resourcesList,
                     callback: static function() {
                         self::kill("Killing application...");
                     },
                 );
             }
 
-            if ($error = self::init($entry, $libraries, $info)->error) {
+            if ($error = self::init($entry, $librariesList)->error) {
                 self::kill((string)$error);
             }
 
@@ -174,7 +176,7 @@ class Bootstrap {
      * @param  callable():(void) $callback
      * @return void
      */
-    public static function onKill(callable $callback) {
+    public static function onKill(callable $callback): void {
         self::$onKillActions[] = $callback;
     }
 
@@ -187,10 +189,13 @@ class Bootstrap {
     }
 
     /**
-     * @param  string    $binary
-     * @param  array     $arguments
-     * @param  string    $start
-     * @throws Throwable
+     * @param  string                      $binary
+     * @param  string                      $fileName
+     * @param  array                       $arguments
+     * @param  string                      $entry
+     * @param  string                      $libraries
+     * @param  string                      $resources
+     * @throws UnsupportedFeatureException
      * @return void
      */
     public static function spawn(
@@ -221,10 +226,11 @@ class Bootstrap {
 
             $kill = Signal::create();
         
-            /** @var array<string> */
-            $libraries = !$libraries ? [] : \preg_split('/,|;/', $libraries);
-            /** @var array<string> */
-            $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
+            /** @var array<string> $librariesList */
+            $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
+
+            /** @var array<string> $resourcesList */
+            $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
 
             if (DIRECTORY_SEPARATOR === '/') {
                 EventLoop::onSignal(SIGINT, static function() use ($kill) {
@@ -234,13 +240,13 @@ class Bootstrap {
             }
 
 
-            /** @var false|DeferredFuture<void> */
+            /** @var false|DeferredFuture<void> $ready */
             $ready = false;
 
             self::onFileChange(
                 entry: $entry,
-                libraries: $libraries,
-                resources: $resources,
+                libraries: $librariesList,
+                resources: $resourcesList,
                 callback: static function() use (&$ready) {
                     if (!$ready) {
                         return;
@@ -254,7 +260,7 @@ class Bootstrap {
                     $ready->getFuture()->await();
                 }
                 if ($error = execute($instruction, out(), $kill)->await()->error) {
-                    echo (string)$error.PHP_EOL;
+                    echo $error.PHP_EOL;
                     $ready = new DeferredFuture;
                 }
             }
@@ -266,9 +272,10 @@ class Bootstrap {
     /**
      * Start a watcher which will detect file changes.
      * Useful for development mode.
-     * @param  string $entry
-     * @param  array  $libraries
-     * @param  array  $resources
+     * @param string   $entry
+     * @param array    $libraries
+     * @param array    $resources
+     * @param callable $callback
      * @return void
      */
     private static function onFileChange(
@@ -276,7 +283,7 @@ class Bootstrap {
         array $libraries,
         array $resources,
         callable $callback,
-    ) {
+    ): void {
         async(function() use (
             $entry,
             $libraries,
@@ -290,8 +297,9 @@ class Bootstrap {
                 clearstatcache();
                 $countLastPass = count($changes);
 
-                $fileNames = [$entry => false];
-                foreach ([...$libraries, ...$resources] as $directory) {
+                $fileNames   = [$entry => false];
+                $directories = [...$libraries, ...$resources];
+                foreach ($directories as $directory) {
                     if (!File::exists($directory)) {
                         continue;
                     }
@@ -340,7 +348,6 @@ class Bootstrap {
                 $firstPass = false;
                 delay(1);
             }
-            return ok();
         });
     }
 }

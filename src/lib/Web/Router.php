@@ -29,7 +29,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Throwable;
 
-class Router {
+readonly class Router {
     public static function create():self {
         return new self(RouterContext::create());
     }
@@ -97,7 +97,7 @@ class Router {
                     continue;
                 }
 
-                /** @var Unsafe<false|self> */
+                /** @var Unsafe<false|self> $attributeInstance */
                 $attributeInstance = $aname::findByFunction($reflectionFunction);
 
                 if ($attributeInstance->error) {
@@ -130,17 +130,17 @@ class Router {
 
             $route = Route::create(
                 reflectionFunction: $reflectionFunction,
-                symbolicMethod: $symbolicMethod,
-                symbolicPath: $symbolicPath,
-                workDirectory: $workDirectory,
-                callback: $callback,
-                consumes: $consumes,
-                produces: $produces,
-                onRequest: $onRequest,
-                onResult: $onRequest,
-                onMount: $onMount,
-                ignoreOpenApi: $ignoreOpenApi,
-                ignoreDescribe: $ignoreDescribe,
+                workDirectory     : $workDirectory,
+                symbolicMethod    : $symbolicMethod,
+                symbolicPath      : $symbolicPath,
+                callback          : $callback,
+                consumes          : $consumes,
+                produces          : $produces,
+                onRequest         : $onRequest,
+                onResult          : $onResult,
+                onMount           : $onMount,
+                ignoreOpenApi     : $ignoreOpenApi,
+                ignoreDescribe    : $ignoreDescribe,
             );
 
             $options = DependenciesOptions::create(
@@ -157,7 +157,9 @@ class Router {
             $route->setOptions($options);
 
             if (!$ignoreOpenApi) {
-                $this->registerRouteForOpenApi($route);
+                if ($error = $this->registerRouteForOpenApi($route)->error) {
+                    return error($error);
+                }
             }
         } catch (ReflectionException $e) {
             return error($e);
@@ -175,7 +177,7 @@ class Router {
     ):Unsafe {
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
-            /** @var Unsafe<Query> */
+            /** @var Unsafe<Query> $queryAttribute */
             $queryAttribute = Query::findByParameter($paramReflection);
 
             if ($queryAttribute->error) {
@@ -186,13 +188,13 @@ class Router {
                 continue;
             }
 
-            /** @var Unsafe<Summary> */
+            /** @var Unsafe<Summary> $summaryAttribute */
             $summaryAttribute = Summary::findByParameter($paramReflection);
             if ($summaryAttribute->error) {
                 return error($summaryAttribute->error);
             }
 
-            /** @var Unsafe<Example> */
+            /** @var Unsafe<Example> $exampleAttribute */
             $exampleAttribute = Example::findByParameter($paramReflection);
             if ($exampleAttribute->error) {
                 return error($exampleAttribute->error);
@@ -214,7 +216,7 @@ class Router {
             $schema = ["type" => $type];
             
 
-            $name    = $queryAttribute->value?$queryAttribute->value->getName():'';
+            $name    = $queryAttribute->value->getName();
             $summary = $summaryAttribute->value?$summaryAttribute->value->getValue():'';
             $example = $exampleAttribute->value?$exampleAttribute->value->getValue():[];
             
@@ -248,7 +250,7 @@ class Router {
     ):Unsafe {
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
-            /** @var Unsafe<Header> */
+            /** @var Unsafe<Header> $headerAttribute */
             $headerAttribute = Header::findByParameter($paramReflection);
             if ($headerAttribute->error) {
                 return error($headerAttribute->error);
@@ -257,25 +259,20 @@ class Router {
                 continue;
             }
 
-            /** @var Unsafe<Summary> */
+            /** @var Unsafe<false|Summary> $summaryAttribute */
             $summaryAttribute = Summary::findByParameter($paramReflection);
             if ($summaryAttribute->error) {
                 return error($summaryAttribute->error);
             }
 
-
-            /** @var Unsafe<Example> */
+            /** @var Unsafe<false|Example> $exampleAttribute */
             $exampleAttribute = Example::findByParameter($paramReflection);
             if ($exampleAttribute->error) {
                 return error($exampleAttribute->error);
             }
 
-
-
             $reflectionType = ReflectionTypeManager::unwrap($paramReflection);
-
-
-            $type = $reflectionType?$reflectionType->getName():'string';
+            $type           = $reflectionType?$reflectionType->getName():'string';
 
             $type = match ($type) {
                 'int'   => 'integer',
@@ -287,9 +284,9 @@ class Router {
             $schema = ["type" => $type];
             
 
-            $name    = $headerAttribute?$headerAttribute->value->getKey():'';
-            $summary = $summaryAttribute?$summaryAttribute->value->getValue():'';
-            $example = $exampleAttribute?$exampleAttribute->value->getValue():[];
+            $name    = $headerAttribute->value->getKey();
+            $summary = $summaryAttribute->value?$summaryAttribute->value->getValue():'';
+            $example = $exampleAttribute->value?$exampleAttribute->value->getValue():[];
             
             
             if ('' === $name) {
@@ -314,10 +311,9 @@ class Router {
 
     /**
      * 
-     * @param  ReflectionFunction  $reflectionFunction
-     * @param  string              $path
-     * @param  OpenApiService      $oa
-     * @throws ReflectionException
+     * @param  ReflectionFunction $reflectionFunction
+     * @param  string             $path
+     * @param  OpenApiService     $oa
      * @return Unsafe<array>
      */
     private function findRouteOpenApiPathParameters(
@@ -326,7 +322,7 @@ class Router {
         OpenApiService $oa,
     ):Unsafe {
         $parametersReflections = $reflectionFunction->getParameters();
-        /** @var Unsafe<PathResolver> */
+        /** @var Unsafe<PathResolver> $configurations */
         $configurations = PathResolver::findMatchingPathConfigurations($path, $parametersReflections);
         if ($configurations->error) {
             return error($configurations->error);
@@ -352,21 +348,16 @@ class Router {
                 continue;
             }
 
-            $summary = '';
-            /** @var array{type:string} */
-            $schema  = ["type" => "string"];
-            $example = [];
-
             $reflectionType = ReflectionTypeManager::unwrap($paramReflection);
 
-            /** @var Unsafe<Summary> */
+            /** @var Unsafe<Summary> $summaryAttribute */
             $summaryAttribute = Summary::findByParameter($paramReflection);
             if ($summaryAttribute->error) {
                 return error($summaryAttribute->error);
             }
 
 
-            /** @var Unsafe<Example> */
+            /** @var Unsafe<Example> $exampleAttribute */
             $exampleAttribute = Example::findByParameter($paramReflection);
             if ($exampleAttribute->error) {
                 return error($exampleAttribute->error);
@@ -425,9 +416,9 @@ class Router {
                         "type" => "integer",
                     ],
                     examples: $oa->createExample(
-                        title: 'Beginning of the page',
+                        title  : 'Beginning of the page',
+                        value  : 0,
                         summary: '0',
-                        value: 0,
                     ),
                 ),
                 ...$oa->createParameter(
@@ -439,9 +430,9 @@ class Router {
                         "type" => "integer",
                     ],
                     examples: $oa->createExample(
-                        title: 'Size of the page',
+                        title  : 'Size of the page',
+                        value  : 3,
                         summary: '3',
-                        value: 3,
                     ),
                 ),
             ];
@@ -474,14 +465,14 @@ class Router {
 
         if ($produces) {
             foreach ($produces->getResponse() as $response) {
-                foreach ($response->getValue() as $status => $response) {
+                foreach ($response->getValue() as $status => $value) {
                     if ($responses[$status] ?? false) {
                         $content = [
                             ...($responses[$status]['content'] ?? []),
-                            ...$response['content'] ?? [],
+                            ...$value['content'] ?? [],
                         ];
                     } else {
-                        $content = $response['content'] ?? [];
+                        $content = $value['content'] ?? [];
                     }
     
                     $responses[$status] = [
@@ -491,7 +482,7 @@ class Router {
                 }
             }
         }
-        /** @var Unsafe<OpenApiService> */
+        /** @var Unsafe<OpenApiService> $openApiAttempt */
         $openApiAttempt = Container::create(OpenApiService::class);
         if ($openApiAttempt->error) {
             return error($openApiAttempt->error);
@@ -509,7 +500,12 @@ class Router {
             return error($queries->error);
         }
 
-        $parameters = $this->findRouteOpenApiPathParameters($reflectionFunction, $symbolicPath, $openApi, );
+        try {
+            $parameters = $this->findRouteOpenApiPathParameters($reflectionFunction, $symbolicPath, $openApi);
+        } catch(Throwable $e) {
+            return error($e);
+        }
+
         if ($parameters->error) {
             return error($parameters->error);
         }
@@ -523,7 +519,7 @@ class Router {
         ];
 
 
-        /** @var Unsafe<false|Summary> */
+        /** @var Unsafe<false|Summary> $summaryAttempt */
         $summaryAttempt = Summary::findByFunction($reflectionFunction);
         if ($summaryAttempt->error) {
             return error($summaryAttempt->error);
@@ -536,16 +532,16 @@ class Router {
             path: $symbolicPath,
             pathContent: [
                 ...$openApi->createPathContent(
-                    method: $symbolicMethod,
+                    method     : $symbolicMethod,
                     operationID: \sha1("$symbolicMethod:$symbolicPath:".\sha1(\json_encode($parameters))),
-                    summary: $summary->getValue(),
-                    parameters: $parameters,
-                    responses: $responses,
+                    summary    : $summary->getValue(),
+                    parameters : $parameters,
                     requestBody: $openApi->createRequestBody(
                         description: $crequests > 0?'This is the body of the request':'',
                         required: $crequests    > 0,
                         content: $requests,
                     ),
+                    responses  : $responses,
                 ),
             ],
         );
@@ -595,6 +591,8 @@ class Router {
 
     /**
      * Check if a route exists.
+     * @param  string $symbolicMethod
+     * @param  string $symbolicPath
      * @return bool
      */
     public function routeExists(string $symbolicMethod, string $symbolicPath): bool {
@@ -622,11 +620,12 @@ class Router {
             $originalRoute = $this->context->findRoute($originalSymbolicMethod, $originalSymbolicPath);
             $this->custom($originalSymbolicMethod, $aliasSymbolicPath, $originalRoute->callback);
         } else {
-            return error("Trying to create alias \"$aliasSymbolicPath\" => \"$originalSymbolicPath\", but the original route \"$originalSymbolicPath\" has not beed defined.\n");
+            return error("Trying to create alias \"$aliasSymbolicPath\" => \"$originalSymbolicPath\", but the original route \"$originalSymbolicPath\" has not been defined.\n");
         }
         // if (isset($this->context->routes[$method][$original])) {
         //     $this->custom($method, $alias, $this->context->routes[$method][$original]);
         // }
+        return ok();
     }
 
     /**

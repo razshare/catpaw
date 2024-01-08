@@ -27,7 +27,7 @@ class GpioService {
 
     /**
      * Export the pin and return its file handler.
-     * @param  string       $pin       pin number, can one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
+     * @param  string       $pin       can be one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
      * @param  int          $direction direction of the pin, `0` means `read` and `1` means `write`.
      * @return Unsafe<File>
      */
@@ -104,7 +104,7 @@ class GpioService {
 
     /**
      * Create a pin reader.
-     * @param  string     $pin pin number, can one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
+     * @param  string     $pin can be one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
      * @return GpioReader
      */
     public function createReader(string $pin):GpioReader {
@@ -139,7 +139,7 @@ class GpioService {
 
     /**
      * Create a pin writer.
-     * @param  string     $pin pin number, can one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
+     * @param  string     $pin can be one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
      * @return GpioWriter
      */
     public function createWriter(string $pin):GpioWriter {

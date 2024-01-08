@@ -15,7 +15,8 @@ use ReflectionFunction;
 use Throwable;
 
 class RouteResolver {
-    private static $cache = [];
+    private static array $cache = [];
+
     /**
      * @param  Request                $request
      * @return Unsafe<false|Response>
@@ -29,7 +30,7 @@ class RouteResolver {
 
         $routes = $router->findRoutesByMethod($requestMethod);
 
-        
+
         $requestPathParameters = false;
 
         foreach ($routes as $symbolicPath => $route) {
@@ -56,7 +57,7 @@ class RouteResolver {
 
             $reflectionParameters = $reflectionFunction->getParameters();
 
-            /** @var Unsafe<PathResolver> */
+            /** @var Unsafe<PathResolver> $pathResolverAttempt */
             $pathResolverAttempt = PathResolver::findResolver(
                 symbolicMethod: $symbolicMethod,
                 symbolicPath: $symbolicPath,
@@ -67,7 +68,7 @@ class RouteResolver {
             }
             $pathResolver      = $pathResolverAttempt->value;
             self::$cache[$key] = $pathResolver;
-            
+
 
             $requestPathParameters = $pathResolver->findParametersFromPath($requestPath);
 
@@ -81,7 +82,7 @@ class RouteResolver {
             $response->setStatus(HttpStatus::NOT_FOUND, HttpStatus::getReason(HttpStatus::NOT_FOUND));
             return ok($response);
         }
-        
+
         $requestQueries = $this->findQueriesFromRequest($request);
 
         $response = new Response();
@@ -96,12 +97,16 @@ class RouteResolver {
             requestPathParameters: $requestPathParameters,
         );
 
-        $resultAttmpt = $this->invoker->invoke($context);
-        if ($resultAttmpt->error) {
-            return error($resultAttmpt->error);
+        try {
+            $resultAttempt = $this->invoker->invoke($context);
+        } catch(Throwable $e) {
+            return error($e);
+        }
+        if ($resultAttempt->error) {
+            return error($resultAttempt->error);
         }
 
-        return ok($resultAttmpt->value);
+        return ok($resultAttempt->value);
     }
 
     private function findQueriesFromRequest(Request $request):array {

@@ -16,7 +16,7 @@ class ScheduleService {
     private const PATTERN = '/in\s+([0-9])+\s+(minutes|seconds|hours|months|years|minute|second|hour|month|year)/i';
 
     /**
-     * @param  string       $due      a human readable string pattern indicating the due time.<br/>
+     * @param  string       $due      a human-readable string pattern indicating the due time.<br/>
      *                                Example: <br/>
      *                                - `in 2 minutes`
      *                                - `in 1 week`
@@ -59,7 +59,7 @@ class ScheduleService {
         
         $delta = $value * $unit;
 
-        $delta = EventLoop::delay($delta, static function() use ($function) {
+        EventLoop::delay($delta, static function() use ($function) {
             $function();
         });
 

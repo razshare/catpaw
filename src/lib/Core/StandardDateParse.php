@@ -11,9 +11,9 @@ class StandardDateParse {
      *  - M = month
      *  - Y = year
      *
-     * @param  string $dateSeparator
-     * @param  string $date          date as DDMMYYYY
-     * @return string
+     * @param  string         $dateTime
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function DDMMYYYY(
         string $dateTime,
@@ -23,30 +23,26 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a YYYY string into a DateTime , where
+     * Convert a YYYY string into a DateTime , where
      *
      *  - Y = year
      *
-     * @param  string $dateSeparator
-     * @param  string $date          date as YYYY
-     * @return string
+     * @param  string         $dateTime
+     * @return DateTime|false
      */
-    public static function YYYY(
-        string $dateTime,
-        string $dateSeparator = ''
-    ): DateTime|false {
+    public static function YYYY(string $dateTime): DateTime|false {
         return DateTime::createFromFormat("Y", $dateTime);
     }
 
     /**
-     * Covnert a YYYYMM string into a DateTime , where
+     * Convert a YYYYMM string into a DateTime , where
      *
      *  - Y = year
      *  - M = month
      *
-     * @param  string $dateSeparator
-     * @param  string $date          date as YYYYMM
-     * @return string
+     * @param  string         $dateTime
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function YYYYMM(
         string $dateTime,
@@ -56,15 +52,15 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a YYYYMMDD string into a DateTime , where
+     * Convert a YYYYMMDD string into a DateTime , where
      *
      *  - Y = year
      *  - M = month
      *  - D = day
      *
-     * @param  string $dateSeparator
-     * @param  string $date          date as YYYYMMDD
-     * @return string
+     * @param  string         $dateTime
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function YYYYMMDD(
         string $dateTime,
@@ -74,17 +70,17 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a YYYYMMDDHH string into a DateTime , where
+     * Convert a YYYYMMDDHH string into a DateTime , where
      *
      *  - Y = year
      *  - M = month
      *  - D = day
      *  - H = hour
      *
-     * @param  string $dateTime           datetime as YYYYMMDDHH
-     * @param  bool   $usingDateTimeSpace
-     * @param  string $dateSeparator
-     * @return string
+     * @param  string         $dateTime           datetime as YYYYMMDDHH
+     * @param  bool           $usingDateTimeSpace
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function YYYYMMDDHH(
         string $dateTime,
@@ -96,7 +92,7 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a YYYYMMDDHHII string into a DateTime, where
+     * Convert a YYYYMMDDHHII string into a DateTime, where
      *
      *  - Y = year
      *  - M = month
@@ -104,11 +100,11 @@ class StandardDateParse {
      *  - H = hour
      *  - I = minute
      *
-     * @param  string $dateTime           datetime as YYYYMMDDHHII
-     * @param  bool   $usingDateTimeSpace
-     * @param  string $dateSeparator
-     * @param  string $timeSeparator
-     * @return string
+     * @param  string         $dateTime           datetime as YYYYMMDDHHII
+     * @param  bool           $usingDateTimeSpace
+     * @param  string         $dateSeparator
+     * @param  string         $timeSeparator
+     * @return DateTime|false
      */
     public static function YYYYMMDDHHII(
         string $dateTime,
@@ -121,7 +117,7 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a YYYYMMDDHHIISS string into a DateTime, where
+     * Convert a YYYYMMDDHHIISS string into a DateTime, where
      *
      *  - Y = year
      *  - M = month
@@ -130,11 +126,11 @@ class StandardDateParse {
      *  - I = minute
      *  - S = secondo
      *
-     * @param  string $dateTime           datetime as YYYYMMDDHHIISS
-     * @param  bool   $usingDateTimeSpace
-     * @param  string $dateSeparator
-     * @param  string $timeSeparator
-     * @return string
+     * @param  string         $dateTime           datetime as YYYYMMDDHHIISS
+     * @param  bool           $usingDateTimeSpace
+     * @param  string         $dateSeparator
+     * @param  string         $timeSeparator
+     * @return DateTime|false
      */
     public static function YYYYMMDDHHIISS(
         string $dateTime,
@@ -147,15 +143,15 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a YYMMDD string into a DateTime, where
+     * Convert a YYMMDD string into a DateTime, where
      *
      *  - Y = year
      *  - M = month
      *  - D = day
      *
-     * @param  string $date          date as YYMMDD
-     * @param  string $dateSeparator
-     * @return string
+     * @param  string         $date          date as YYMMDD
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function YYMMDD(
         string $date,
@@ -165,13 +161,13 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a DDMMYY string into a DateTime, where
+     * Convert a DDMMYY string into a DateTime, where
      *  - Y = year
      *  - M = month
      *  - D = day
-     * @param  string $date          date as DDMMYY
-     * @param  string $dateSeparator
-     * @return string
+     * @param  string         $date          date as DDMMYY
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function DDMMYY(
         string $date,
@@ -181,12 +177,12 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a HHII string into a DateTime, where<br/>
+     * Convert a HHII string into a DateTime, where<br/>
      * - H = hour
      * - M = minute
-     * @param  string $time          time as HHII
-     * @param  string $dateSeparator
-     * @return string
+     * @param  string         $time          time as HHII
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function HHII(
         string $time,
@@ -196,13 +192,13 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a HHIISS stringo into a DateTime, where<br/>
+     * Convert a HHIISS stringo into a DateTime, where<br/>
      * - H = hour
      * - M = minute
      * - S = secondo
-     * @param  string $time          time as HHIISS
-     * @param  string $dateSeparator
-     * @return string
+     * @param  string         $time          time as HHIISS
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function HHIISS(
         string $time,
@@ -212,13 +208,13 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a MMYY string into a DateTime, where
+     * Convert a MMYY string into a DateTime, where
      *  - A = year
      *  - M = month
      *
-     * @param  string $date          date as MMYY
-     * @param  string $dateSeparator
-     * @return string
+     * @param  string         $date          date as MMYY
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function MMYY(
         string $date,
@@ -228,14 +224,14 @@ class StandardDateParse {
     }
 
     /**
-     * Covnert a YYDD string (Julian format) into a DateTime, where
+     * Convert a YYDD string (Julian format) into a DateTime, where
      *
      *  - Y = year
-     *  - D = day dell'year (1-365)
+     *  - D = day of year (1-365)
      *
-     * @param  string $date          date as YYDD (Julian format)
-     * @param  string $dateSeparator
-     * @return string
+     * @param  string         $date          date as YYDD (Julian format)
+     * @param  string         $dateSeparator
+     * @return DateTime|false
      */
     public static function YYDDD(
         string $date,

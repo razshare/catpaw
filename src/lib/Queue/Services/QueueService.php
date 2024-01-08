@@ -60,7 +60,7 @@ class QueueService {
                 $queue->setIteratorMode(SplDoublyLinkedList::IT_MODE_DELETE);
                 $promises[] = async(function() use ($queue, $tag) {
                     for ($queue->rewind(); $queue->valid(); $queue->next()) {
-                        /** @var Closure */
+                        /** @var Closure $action */
                         $action = $queue->current();
                         $action($tag);
                     }

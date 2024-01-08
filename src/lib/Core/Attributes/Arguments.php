@@ -41,7 +41,7 @@ class Arguments implements AttributeInterface, OnParameterMount {
         return ok(false);
     }
 
-    public static function init() {
+    public static function init(): void {
         global $argv;
         if (!self::$initialized) {
             self::$initialized = true;
@@ -67,7 +67,7 @@ class Arguments implements AttributeInterface, OnParameterMount {
 
         $value = match ($className) {
             "bool"  => (bool)self::$cache,
-            "array" => self::$cache?self::$cache:(
+            "array" => self::$cache?:(
                 $wrap->allowsFalse()?false:(
                     $wrap->allowsBoolean()?false:[]
                 )

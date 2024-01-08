@@ -15,7 +15,7 @@ use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 use CatPaw\Web\Services\ByteRangeService;
 use Psr\Log\LoggerInterface;
 
-class FileServer implements FileServerInterface {
+readonly class FileServer implements FileServerInterface {
     /**
      * Create a file server that serves static files as requested by the 
      * client and return 404 responses whenever a static file is not found.
@@ -56,19 +56,19 @@ class FileServer implements FileServerInterface {
         }
 
         return ok(new self(
-            server: $server,
-            fallback: 'index.html',
-            logger: $loggerAttempt->value,
+            server:           $server,
+            fallback:         'index.html',
+            logger:           $loggerAttempt->value,
             byteRangeService: $rangeAttempt->value,
-            overwrite: FileServerOverwirteForSpa::create($server),
+            overwrite:        FileServerOverwriteForSpa::create($server),
         ));
     }
 
     private function __construct(
-        private Server $server,
-        private string $fallback,
-        private LoggerInterface $logger,
-        private ByteRangeService $byteRangeService,
+        private Server                             $server,
+        private string                             $fallback,
+        private LoggerInterface                    $logger,
+        private ByteRangeService                   $byteRangeService,
         private FileServerOverwriteInterface|false $overwrite = false,
     ) {
     }
@@ -89,10 +89,9 @@ class FileServer implements FileServerInterface {
 
     /**
      * Success response.
-     * @param  mixed    $data
-     * @param  int      $status
-     * @param  array    $headers
-     * @param  string   $message
+     * @param mixed $data
+     * @param int   $status
+     * @param array $headers
      * @return Response
      */
     private function success(
@@ -101,9 +100,9 @@ class FileServer implements FileServerInterface {
         array $headers = [],
     ):Response {
         return new Response(
-            body: $data,
-            status: $status,
+            status : $status,
             headers: $headers,
+            body   : $data,
         );
     }
 
@@ -124,9 +123,9 @@ class FileServer implements FileServerInterface {
         }
         
         return new Response(
-            status: $status,
-            body: $message,
+            status : $status,
             headers: $headers,
+            body   : $message,
         );
     }
 
@@ -173,8 +172,8 @@ class FileServer implements FileServerInterface {
         }
 
         $rangedResponseAttempt = $byteRangeService->file(
+            fileName  : $fileName,
             rangeQuery: $request->getHeader("Range") ?? '',
-            fileName: $fileName,
         );
 
         if (!$rangedResponseAttempt->error) {
@@ -199,13 +198,13 @@ class FileServer implements FileServerInterface {
 
         $mimeType = Mime::findContentType($fileName);
         return $this->success(
+            data   : $stream,
             headers: [
                 "Accept-Ranges"  => "bytes",
                 "Content-Type"   => $mimeType,
                 "Content-Length" => $fileSize,
                 ...$attachmentHeaders,
             ],
-            data: $stream,
         );
     }
 }

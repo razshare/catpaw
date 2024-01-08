@@ -13,7 +13,7 @@ interface OnFunctionMount {
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/1.RouteHandlers.md
      * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/9.Filters.md
      * @param  ReflectionFunction  $reflection reflection of the function.
-     * @param  Closure             $value      function to which this attribute is attatched to.
+     * @param  Closure             $value      function to which this attribute is attached to.
      * @param  DependenciesOptions $options    options used to find dependencies.
      * @return Unsafe<void>
      */

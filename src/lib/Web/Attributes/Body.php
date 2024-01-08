@@ -8,14 +8,15 @@ use CatPaw\DependenciesOptions;
 use function CatPaw\error;
 use CatPaw\Interfaces\AttributeInterface;
 use CatPaw\Interfaces\OnParameterMount;
-
 use function CatPaw\ok;
+
 use CatPaw\ReflectionTypeManager;
 use CatPaw\Traits\CoreAttributeDefinition;
 use CatPaw\Unsafe;
 use CatPaw\Web\BodyParser;
 use CatPaw\Web\RequestContext;
 use ReflectionParameter;
+use Throwable;
 
 /**
  * Get the body of the request.
@@ -43,34 +44,33 @@ class Body implements AttributeInterface, OnParameterMount {
         }
         
         $className = ReflectionTypeManager::unwrap($reflection)?->getName() ?? '';
-        
-        $attempt = match ($className) {
-            "array" => $this->toArray(
-                body       : $context->request->getBody(),
-                contentType: $context->request->getHeader("Content-Type") ?? '',
-            ),
 
-            "string" => $context->request->getBody(),
+        try {
+            $attempt = match ($className) {
+                "string" => $context->request->getBody()->buffer(),
 
-            "int" => $this->toInteger(
-                body: $context->request->getBody(),
-            ),
+                "int" => $this->toInteger(
+                    body: $context->request->getBody(),
+                ),
 
-            "bool" => $this->toBool(
-                body: $context->request->getBody(),
-            ),
+                "bool" => $this->toBool(
+                    body: $context->request->getBody(),
+                ),
 
-            "float" => $this->toFloat(
-                body: $context->request->getBody(),
-            ),
-            
-            RequestBody::class => $context->request->getBody(),
+                "float" => $this->toFloat(
+                    body: $context->request->getBody(),
+                ),
 
-            default => $this->toArray(
-                body       : $context->request->getBody(),
-                contentType: $context->request->getHeader("Content-Type") ?? '',
-            ),
-        };
+                RequestBody::class => $context->request->getBody(),
+
+                default => $this->toArray(
+                    body       : $context->request->getBody(),
+                    contentType: $context->request->getHeader("Content-Type") ?? '',
+                ),
+            };
+        } catch(Throwable $e) {
+            return error($e);
+        }
 
         if ($attempt->error) {
             return error($attempt->error);
@@ -85,12 +85,7 @@ class Body implements AttributeInterface, OnParameterMount {
      * @@return Unsafe<mixed>
      */
     private function toArray(string $body, string $contentType): Unsafe {
-        return BodyParser::parse(
-            $body,
-            $contentType,
-            false,
-            true,
-        );
+        return BodyParser::parse($body, $contentType);
     }
 
     /**
@@ -106,7 +101,8 @@ class Body implements AttributeInterface, OnParameterMount {
 
 
     /**
-     * @@return bool
+     * @param  string $body
+     * @return bool
      */
     private function toBool(string $body):bool {
         return filter_var($body, FILTER_VALIDATE_BOOLEAN);

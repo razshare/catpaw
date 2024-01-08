@@ -8,19 +8,21 @@ use Attribute;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
+use CatPaw\Interfaces\AttributeInterface;
 use CatPaw\Interfaces\OnParameterMount;
 use CatPaw\Interfaces\StorageInterface;
 use CatPaw\Store\Readable;
 use CatPaw\Store\Writable;
 use Closure;
+use Phar;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
-use ReflectionException;
 
 use ReflectionFunction;
 
 use ReflectionMethod;
 use Throwable;
+use function trim;
 
 class Container {
     private function __construct() {
@@ -87,7 +89,6 @@ class Container {
                         return $result;
                     }
                     return ok($result);
-                    break;
                 }
             }
             return ok();
@@ -97,7 +98,7 @@ class Container {
     }
 
     /**
-     * @return Unsafe<array<mixed>>
+     * @return Unsafe<array>
      */
     private static function findFunctionDependencies(
         ReflectionFunction|ReflectionMethod $reflection,
@@ -147,7 +148,7 @@ class Container {
     }
 
     /**
-     * @return Unsafe<array<mixed>>
+     * @return Unsafe<array>
      */
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
@@ -256,7 +257,7 @@ class Container {
     }
 
     /**
-     * Load libraries and create default singletons for the container.
+     * Load libraries and create singletons for the container.
      * @param  string                $path
      * @param  bool                  $append if true, the resulting singletons will be appended to the container, otherwise all the other singletons will be cleared before scanning.
      * @return Unsafe<array<string>> list of files scanned.
@@ -287,56 +288,75 @@ class Container {
         /** @var LoggerInterface $logger */
 
         $isPhar = isPhar();
-        if ('' === \trim($path)) {
+        if ('' === trim($path)) {
             return ok([]);
         }
 
         if ($isPhar) {
-            $path = \Phar::running()."/$path";
+            $path = Phar::running()."/$path";
         }
 
         if (isFile($path)) {
             require_once($path);
-            return [$path];
+            return ok([$path]);
         } else if (!isDirectory($path)) {
             return ok([]);
         }
         
-        return Directory::flat($path, '/^.+\.php$/i');
+        $flatListAttempt = Directory::flat($path);
+        if ($flatListAttempt->error) {
+            return  error($flatListAttempt->error);
+        }
+
+        $phpFileNames = [];
+
+        $flatList = $flatListAttempt->value;
+        foreach ($flatList as $fileName) {
+            if (str_ends_with(strtolower($fileName), '.php')) {
+                continue;
+            }
+            $phpFileNames[] = $fileName;
+        }
+        return ok($phpFileNames);
     }
 
     /**
-     * Execute all attributes attatched to the function.
+     * Execute all attributes attached to the function.
      * 
      * Will not execute the function itself and parameter attributes will not be instantiated at all.
      * @param  Closure|ReflectionFunction $function
-     * @return void
+     * @return Unsafe
      */
-    public static function touch(Closure|ReflectionFunction $function) {
-        if ($function instanceof Closure) {
-            $reflection = new ReflectionFunction($function);
-        } else {
-            $reflection = $function;
-            $function   = $reflection->getClosure();
-        }
-
-        foreach ($reflection->getAttributes() as $attribute) {
-            $attributeArguments = $attribute->getArguments();
-            /** @var class-string */
-            $className = $attribute->getName();
-            $klass     = new ReflectionClass($className);
-            /**
-             * @psalm-suppress ArgumentTypeCoercion
-             */
-            $entry  = self::findEntryMethod($klass);
-            $object = $klass->newInstance(...$attributeArguments);
-            if ($entry) {
-                $arguments = Container::dependencies($entry);
-                if ($arguments->error) {
-                    return error($arguments->error);
-                }
-                $entry->invoke($object, ...$arguments->value);
+    public static function touch(Closure|ReflectionFunction $function): Unsafe {
+        try {
+            if ($function instanceof Closure) {
+                $reflection = new ReflectionFunction($function);
+            } else {
+                $reflection = $function;
+                $function   = $reflection->getClosure();
             }
+
+            foreach ($reflection->getAttributes() as $attribute) {
+                $attributeArguments = $attribute->getArguments();
+                /** @var class-string $className */
+                $className = $attribute->getName();
+                $klass     = new ReflectionClass($className);
+                /**
+                 * @psalm-suppress ArgumentTypeCoercion
+                 */
+                $entry  = self::findEntryMethod($klass);
+                $object = $klass->newInstance(...$attributeArguments);
+                if ($entry) {
+                    $arguments = Container::dependencies($entry);
+                    if ($arguments->error) {
+                        return error($arguments->error);
+                    }
+                    $entry->invoke($object, ...$arguments->value);
+                }
+            }
+            return ok();
+        } catch(Throwable $e) {
+            return error($e);
         }
     }
 
@@ -384,7 +404,6 @@ class Container {
     /**
      * 
      * @param  ReflectionClass        $klass
-     * @throws ReflectionException
      * @return ReflectionMethod|false
      */
     private static function findEntryMethod(ReflectionClass $klass): ReflectionMethod|false {
@@ -411,7 +430,7 @@ class Container {
         if ('callable' === $className) {
             return error("Cannot instantiate callables.");
         } else if ('object' === $className || 'stdClass' === $className) {
-            return (object)[];
+            return ok((object)[]);
         }
         
 
@@ -419,7 +438,11 @@ class Container {
             return ok(Singleton::get($className));
         }
 
-        $reflection = new ReflectionClass($className);
+        try {
+            $reflection = new ReflectionClass($className);
+        } catch(Throwable $e) {
+            return error($e);
+        }
 
         if ($reflection->isInterface()) {
             return error("Cannot instantiate $className because it's an interface.");
@@ -429,13 +452,13 @@ class Container {
             return error("Cannot instantiate $className because it's meant to be an attribute.");
         }
         
-        /** @var Unsafe<Singleton> */
+        /** @var Unsafe<Singleton> $singleton */
         $singleton = Singleton::findByClass($reflection);
         if ($singleton->error) {
             return error($singleton->error);
         }
 
-        /** @var Unsafe<Service> */
+        /** @var Unsafe<Service> $service */
         $service = Service::findByClass($reflection);
         if ($service->error) {
             return error($service->error);
@@ -463,6 +486,10 @@ class Container {
             }
         } else {
             return error("Cannot instantiate $className because it's not marked as a service or a singleton.");
+        }
+        
+        if (!$instance) {
+            return error("Instance of $className is null.");
         }
 
         if ($error = self::entry($instance, $reflection->getMethods())->error) {

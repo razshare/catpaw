@@ -22,7 +22,7 @@ class QueueTest extends TestCase {
         $this->assertFalse($unsafe->error);
     }
 
-    private function execution(QueueService $queue) {
+    private function execution(QueueService $queue): void {
         $executed = false;
         $queue->queue("my-tag", function() use (&$executed) {
             $executed = true;
@@ -31,7 +31,7 @@ class QueueTest extends TestCase {
         $this->assertTrue($executed);
     }
 
-    private function tag(QueueService $queue) {
+    private function tag(QueueService $queue): void {
         $queue->queue("my-tag", function($tag) {
             $this->assertEquals("my-tag", $tag);
         });
@@ -39,7 +39,7 @@ class QueueTest extends TestCase {
         echo "DONE\n";
     }
     
-    private function order(QueueService $queue) {
+    private function order(QueueService $queue): void {
         $stack = [];
         $queue->queue("my-tag-1", function($tag) use (&$stack) {
             $stack[] = $tag;
@@ -57,7 +57,7 @@ class QueueTest extends TestCase {
         $this->assertEquals("my-tag-2", $stack[1]);
     }
 
-    private function timedQueue(QueueService $queue, LoggerInterface $logger) {
+    private function timedQueue(QueueService $queue, LoggerInterface $logger): void {
         $queue->queue("my-tag-1", function($tag) use ($logger) {
             delay(.005);
             $logger->info("Executed $tag");

@@ -22,7 +22,7 @@ use Throwable;
 class Singleton implements AttributeInterface, OnClassInstantiation {
     use CoreAttributeDefinition;
 
-    private static $cache = [];
+    private static array $cache = [];
 
     public static function clearAll():void {
         self::$cache = [];

@@ -8,6 +8,9 @@ use CatPaw\Web\Attributes\Session;
 interface SessionOperationsInterface {
     /**
      * Create operations for sessions.
+     * @param int    $ttl
+     * @param string $dirname
+     * @param bool   $keepAlive
      * @return SessionOperationsInterface
      */
     public static function create(

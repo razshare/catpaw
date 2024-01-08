@@ -14,7 +14,7 @@ use function Amp\File\openFile;
 use Amp\Future;
 use Throwable;
 
-class File {
+readonly class File {
     /**
      * @param  string      $fileName
      * @return Unsafe<int>
@@ -57,11 +57,7 @@ class File {
 
             $stream = $source->value->getAmpFile();
 
-            if ($stream->error) {
-                return error($stream->error);
-            }
-
-            return $destination->value->writeStream($stream->value)->await();
+            return $destination->value->writeStream($stream)->await();
         });
     }
 
@@ -97,7 +93,7 @@ class File {
         try {
             deleteFile($fileName);
             return ok();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return error($e);
         }
     }
@@ -164,11 +160,12 @@ class File {
             }
         });
     }
-    
+
     /**
+     * @param int $position
      * @return int
      */
-    public function seek(int $position) {
+    public function seek(int $position): int {
         return $this->ampFile->seek($position);
     }
 
@@ -222,7 +219,7 @@ class File {
     }
 
 
-    public function close() {
+    public function close(): void {
         if ($this->ampFile->isClosed()) {
             return;
         }

@@ -1,6 +1,8 @@
 <?php
 namespace CatPaw;
 
+use SplDoublyLinkedList;
+
 class Signal {
     private bool $busy = false;
     public static function create():self {
@@ -8,9 +10,9 @@ class Signal {
     }
 
     /**
-     * @param LinkedList<callable(...mixed):void> $list
+     * @param LinkedList<callable(mixed...):void> $list
      */
-    private function __construct(private LinkedList $list) {
+    private function __construct(private readonly LinkedList $list) {
     }
 
     /**
@@ -18,7 +20,7 @@ class Signal {
      * @param int $code code to send, defaults to `SIGTERM`.
      * 
      */
-    public function send($code = SIGTERM):self {
+    public function send(int $code = SIGTERM):self {
         if ($this->busy) {
             return $this;
         }
@@ -32,7 +34,7 @@ class Signal {
     }
 
     /**
-     * @param callable(int):void
+     * @param callable(int):void $function
      */
     public function listen(callable $function):self {
         $this->list->push($function);
@@ -40,10 +42,10 @@ class Signal {
     }
 
     /**
-     * Clear all lsiteners.
+     * Clear all listeners.
      */
     public function clear():self {
-        $this->list->setIteratorMode(LinkedList::IT_MODE_DELETE);
+        $this->list->setIteratorMode(SplDoublyLinkedList::IT_MODE_DELETE);
         for ($this->list->rewind();$this->list->valid();$this->list->next()) {
             continue;
         }

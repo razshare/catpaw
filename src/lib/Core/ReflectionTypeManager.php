@@ -7,6 +7,7 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionProperty;
 use ReflectionUnionType;
+use Throwable;
 
 class ReflectionTypeManager {
     private function __construct() {
@@ -35,7 +36,11 @@ class ReflectionTypeManager {
         $allowsFalse        = in_array('false', $classNames);
         $allowsNullValue    = $reflection->allowsNull();
         $allowsDefaultValue = $reflection->isDefaultValueAvailable();
-        $defaultValue       = $allowsDefaultValue ? $reflection->getDefaultValue() : null;
+        try {
+            $defaultValue = $allowsDefaultValue ? $reflection->getDefaultValue() : null;
+        } catch(Throwable) {
+            $defaultValue = null;
+        }
 
         return new WrappedType(
             allowsBoolean: $allowsBoolean,

@@ -35,17 +35,18 @@ class HttpInvoker {
     }
 
     /**
+     * @param Server                           $server
      * @param Router                           $router
      * @param false|SessionOperationsInterface $sessionOperations
      * @param false|Response                   $badRequestNoContentType
      * @param false|Response                   $badRequestCantConsume
      */
     private function __construct(
-        private Server $server,
-        private Router $router,
-        private false|SessionOperationsInterface $sessionOperations,
-        private false|Response $badRequestNoContentType = false,
-        private false|Response $badRequestCantConsume = false,
+        private readonly Server                           $server,
+        private readonly Router                           $router,
+        private readonly false|SessionOperationsInterface $sessionOperations,
+        private false|Response                            $badRequestNoContentType = false,
+        private false|Response                            $badRequestCantConsume = false,
     ) {
         if (!$this->badRequestNoContentType) {
             $this->badRequestNoContentType = new Response(HttpStatus::BAD_REQUEST, [], '');
@@ -55,15 +56,9 @@ class HttpInvoker {
         }
     }
 
-    
 
     /**
-     * @param  RequestInterface          $request
-     * @param  string                    $symbolicMethod
-     * @param  string                    $symbolicPath
-     * @param  array                     $requestPathParameters
-     * @throws Throwable
-     * @throws ReflectionException
+     * @param RequestContext $context
      * @return Unsafe<ResponseInterface>
      */
     public function invoke(RequestContext $context):Unsafe {
@@ -72,9 +67,7 @@ class HttpInvoker {
         $reflectionFunction = $context->route->reflectionFunction;
         $callback           = $context->route->callback;
 
-        $response = new Response();
-
-        $options = $this->createDependenciesOptionsFromRequestContextAndResponse($context, $response);
+        $options = $this->createDependenciesOptionsFromRequestContextAndResponse($context);
 
         $dependencies = Container::dependencies($reflectionFunction, $options);
 
@@ -199,7 +192,7 @@ class HttpInvoker {
     private function createDependenciesOptionsFromRequestContextAndResponse(RequestContext $context):DependenciesOptions {
         $response = $context->response;
         $key      = $context->key;
-        $options  = DependenciesOptions::create(
+        return DependenciesOptions::create(
             key: $key,
             overwrites: [
                 Server::class   => static fn () => $context->server,
@@ -268,7 +261,5 @@ class HttpInvoker {
             defaultArguments: [],
             context: $context,
         );
-
-        return $options;
     }
 }

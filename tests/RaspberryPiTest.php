@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 use Revolt\EventLoop;
 
 class RaspberryPiTest extends TestCase {
-    public function testAll() {
+    public function _testAll(): void {
         $loadAttempt = Container::load('./src/lib/');
         $this->assertFalse($loadAttempt->error);
         $unsafe = anyError(

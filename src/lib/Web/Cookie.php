@@ -5,12 +5,12 @@ namespace CatPaw\Web;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use DateTime;
-use Psr\Http\Message\ResponseInterface;
 use Stringable;
 
-readonly class Cookie implements Stringable {
+class Cookie implements Stringable {
     /**
-     * @param  Request      $request
+     * @param Request $request
+     * @param string  $cookieName
      * @return false|Cookie
      */
     public static function findFromRequestByName(Request $request, string $cookieName):false|Cookie {
@@ -19,7 +19,8 @@ readonly class Cookie implements Stringable {
     }
 
     /**
-     * @param  Response     $response
+     * @param Response $response
+     * @param string   $cookieName
      * @return false|Cookie
      */
     public static function findFromResponseByName(Response $response, string $cookieName):false|Cookie {
@@ -28,7 +29,8 @@ readonly class Cookie implements Stringable {
     }
 
     /**
-     * @param  ResponseInterface $response
+     * @param RequestContext $context
+     * @param string         $cookieName
      * @return false|Cookie
      */
     public static function findFromRequestContextByName(RequestContext $context, string $cookieName):false|Cookie {
@@ -65,20 +67,20 @@ readonly class Cookie implements Stringable {
         $this->expiration = false;
     }
 
-    public function setExpiration(DateTime $expiration) {
+    public function setExpiration(DateTime $expiration): void {
         $this->expiration = $expiration;
     }
 
-    public function setHttpOnly(bool $httpOnly) {
+    public function setHttpOnly(bool $httpOnly): void {
         $this->httpOnly = $httpOnly;
     }
 
-    public function setSecure(bool $secure) {
+    public function setSecure(bool $secure): void {
         $this->secure = $secure;
     }
 
-    public function addToResponse(ResponseInterface $response):void {
-        $response->withHeader("Set-Cookie", (string)$this);
+    public function addToResponse(Response $response):void {
+        $response->setHeader('Set-Cookie', (string)$this);
     }
 
     public function __toString(): string {
@@ -87,15 +89,15 @@ readonly class Cookie implements Stringable {
         $result = "$key=$value";
 
         if ($this->expiration) {
-            $result .= "; Expires=".$this->expiration->format("D, j m Y H:i:s e");
+            $result .= '; Expires='.$this->expiration->format('D, j m Y H:i:s e');
         }
 
         if ($this->secure) {
-            $result .= "; Secure";
+            $result .= '; Secure';
         }
 
         if ($this->httpOnly) {
-            $result .= "; HttpOnly";
+            $result .= '; HttpOnly';
         }
 
         return $result;

@@ -19,12 +19,10 @@ class Store implements OnParameterMount {
     use CoreAttributeDefinition;
     private StoreService $storeService;
     
-    public function __construct(private string $name) {
+    public function __construct(private readonly string $name) {
     }
 
-    #[Entry] public function setup(
-        StoreService $storeService
-    ) {
+    #[Entry] public function setup(StoreService $storeService): void {
         $this->storeService = $storeService;
     }
 

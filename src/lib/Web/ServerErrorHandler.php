@@ -7,7 +7,7 @@ use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use Psr\Log\LoggerInterface;
 
-class ServerErrorHandler implements ErrorHandler {
+readonly class ServerErrorHandler implements ErrorHandler {
     public static function create(LoggerInterface $logger):self {
         return new self($logger);
     }

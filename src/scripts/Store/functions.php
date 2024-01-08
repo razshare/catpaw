@@ -14,11 +14,8 @@ function writable(mixed $value): Writable {
 
 
 /**
- * @param  mixed                       $value   initial value of the store
- * @param  false|(callable():callable) $onStart a function that will be executed when the 
- *                                              first subscriber subscribes to the store.
- *                                              The function must return another function, which 
- *                                              will be executed when the last subscriber of the store unsubscribes.
+ * @param mixed         $value initial value of the store
+ * @param false|Closure $start
  * @return Readable
  */
 function readable(

@@ -20,7 +20,7 @@ class ScheduleTest extends TestCase {
         EventLoop::run();
     }
 
-    private function scheduleIn2Seconds(ScheduleService $schedule) {
+    private function scheduleIn2Seconds(ScheduleService $schedule): void {
         $due     = Signal::create();
         $checked = false;
         $start   = time();

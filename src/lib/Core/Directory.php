@@ -10,7 +10,6 @@ use function Amp\File\listFiles;
 use Amp\Future;
 
 use FilesystemIterator;
-use RecursiveRegexIterator;
 use RegexIterator;
 use Throwable;
 
@@ -21,7 +20,7 @@ class Directory {
      * @return Unsafe<void>
      */
     public static function delete(string $directoryName):Unsafe {
-        if (false === $directoryName) {
+        if (!$directoryName) {
             return error("Invalid directory $directoryName.");
         }
         
@@ -58,7 +57,8 @@ class Directory {
      */
     public static function create(string $directoryName, int $mode = 0777):Unsafe {
         try {
-            return ok(createDirectoryRecursively($directoryName, $mode));
+            createDirectoryRecursively($directoryName, $mode);
+            return ok();
         } catch (Throwable $e) {
             return error($e);
         }
@@ -67,7 +67,6 @@ class Directory {
     /**
      * List all files inside a directory recursively.
      * @param  string                $directoryName directory to scan.
-     * @param  string                $pattern       regex pattern to match while scanning.
      * @return Unsafe<array<string>>
      */
     public static function flat(string $directoryName):Unsafe {
@@ -104,7 +103,7 @@ class Directory {
             if (!str_ends_with($directoryName, DIRECTORY_SEPARATOR)) {
                 $directoryName = $directoryName.DIRECTORY_SEPARATOR;
             }
-            if (false === $directoryName) {
+            if (!$directoryName) {
                 return error("Directory $directoryName not found.");
             }
             $list   = listFiles($directoryName);
@@ -113,7 +112,7 @@ class Directory {
                 $result[] = "$directoryName$fileName";
             }
             return ok($result);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return error($e);
         }
     }
@@ -123,7 +122,7 @@ class Directory {
      * Copy a directory.
      * @param  string               $from
      * @param  string               $to
-     * @param  string               $pattern regex pattern to match while scanning.
+     * @param  false|string         $pattern regex pattern to match while scanning.
      * @return Future<Unsafe<void>>
      */
     function copy(string $from, string $to, false|string $pattern = false):Future {
@@ -142,7 +141,7 @@ class Directory {
                 $iterator = new RegexIterator(
                     $iterator,
                     $pattern,
-                    RecursiveRegexIterator::GET_MATCH
+                    RegexIterator::GET_MATCH
                 );
             }
 

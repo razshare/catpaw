@@ -36,10 +36,10 @@ class SuccessResponseModifier implements ResponseModifier {
     private false|Page $page   = false;
 
     private function __construct(
-        private mixed $data,
-        private array $headers,
-        private int $status,
-        private string $message,
+        private readonly mixed  $data,
+        private readonly array  $headers,
+        private readonly int    $status,
+        private readonly string $message,
     ) {
         if ($data instanceof ReadableStream) {
             $this->type = self::STREAM;
@@ -76,17 +76,16 @@ class SuccessResponseModifier implements ResponseModifier {
             }
 
             $data   = $shouldWrap?[$this->data]:$this->data;
-            $result = [
-                "type"                => "page",
-                "previous{$wildcard}" => $this->page->previousLink(),
-                "next{$wildcard}"     => $this->page->nextLink(),
-                "previous"            => $this->page->previous(),
-                "next"                => $this->page->next(),
-                "data"                => $data,
-                "message"             => $this->message,
-                "status"              => $this->status,
+            return [
+                "type"              => "page",
+                "previous$wildcard" => $this->page->previousLink(),
+                "next$wildcard"     => $this->page->nextLink(),
+                "previous"          => $this->page->previous(),
+                "next"              => $this->page->next(),
+                "data"              => $data,
+                "message"           => $this->message,
+                "status"            => $this->status,
             ];
-            return $result;
         }
 
         return [

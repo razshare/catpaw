@@ -56,9 +56,7 @@ class Produces implements AttributeInterface {
     ):ProducedResponse {
         return ProducedResponse::create(
             type: $contentType,
-            status: 200,
             className: $className,
-            description: '',
             example: $example,
         );
     }

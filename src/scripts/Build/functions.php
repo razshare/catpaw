@@ -16,10 +16,10 @@ use Phar;
 use Psr\Log\LoggerInterface;
 
 /**
- * 
- * @param string $config name of the build yaml file.
- * 
- * Multiple names separated by "," are allowed, only the first valid name will be used.
+ *
+ * @param false|string $buildConfig
+ * @param bool         $buildConfigInit
+ * @param bool         $buildOptimize
  * @return Unsafe<void>
  */
 function build(
@@ -34,7 +34,7 @@ function build(
     }
 
 
-    /** @var Unsafe<LoggerInterface> */
+    /** @var Unsafe<LoggerInterface> $loggerAttempt */
     $loggerAttempt = Container::create(LoggerInterface::class);
     if ($loggerAttempt->error) {
         return error($loggerAttempt->error);
@@ -76,7 +76,7 @@ function build(
 
 
 
-    $fileAttempt = File::open($buildConfig, 'r');
+    $fileAttempt = File::open($buildConfig);
     if ($fileAttempt->error) {
         return error($fileAttempt->error);
     }
@@ -132,9 +132,9 @@ function build(
     
     try {
         if (File::exists($dirnameStart)) {
-            $delteAttmpet = Directory::delete($dirnameStart);
-            if ($delteAttmpet->error) {
-                return error($delteAttmpet->error);
+            $deleteAttempt = Directory::delete($dirnameStart);
+            if ($deleteAttempt->error) {
+                return error($deleteAttempt->error);
             }
         }
 
@@ -151,7 +151,7 @@ function build(
             return error($fileAttempt->error);
         }
 
-        $writeAttempt = $fileAttempt->value->write($output = <<<PHP
+        $writeAttempt = $fileAttempt->value->write(<<<PHP
             <?php
             use CatPaw\Attributes\Option;
             use CatPaw\Bootstrap;

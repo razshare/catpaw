@@ -31,7 +31,7 @@ class StoreTest extends TestCase {
         EventLoop::run();
     }
 
-    private function basic() {
+    private function basic(): void {
         $store = readable("hello", function($set) {
             delay(.5);
             $set("hello world");
@@ -51,7 +51,7 @@ class StoreTest extends TestCase {
         $unsubscribe();
     }
 
-    private function multipleSubscribers() {
+    private function multipleSubscribers(): void {
         $unsubscribers = [];
 
         $value1 = '';
@@ -112,7 +112,7 @@ class StoreTest extends TestCase {
     }
 
 
-    private function withDelay() {
+    private function withDelay(): void {
         $store = readable("default", function($set) {
             // you can execute async code here
             $set("hello world");
@@ -171,14 +171,14 @@ class StoreTest extends TestCase {
         });
     }
 
-    private function set() {
+    private function set(): void {
         $store = writable("hello");
         $this->assertEquals("hello", $store->get());
         $store->set("hello world");
         $this->assertEquals("hello world", $store->get());
     }
 
-    private function subscribe() {
+    private function subscribe(): void {
         $startTime = time();
         delay(1);
         $store = writable(time());
@@ -186,13 +186,13 @@ class StoreTest extends TestCase {
         $store->set(time());
     }
 
-    private function update() {
+    private function update(): void {
         $store       = writable(0);
         $unsubscribe = $store->subscribe(function($value) {
             $this->assertEquals(0, $value);
         });
         $unsubscribe();
-        $store->update(fn ($value) => ++$value);
+        $store->update(fn (&$value) => ++$value);
         $unsubscribe = $store->subscribe(function($value) {
             $this->assertEquals(1, $value);
         });
@@ -204,7 +204,7 @@ class StoreTest extends TestCase {
         Writable $handler1,
         #[Store("test")]
         Writable $handler2,
-    ) {
+    ): void {
         $handler1->set("test");
         $this->assertEquals("test", $handler2->get());
     }

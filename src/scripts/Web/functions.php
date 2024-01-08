@@ -3,16 +3,12 @@
 namespace CatPaw\Web;
 
 use Amp\Http\Server\Response;
-use League\Uri\Uri;
 use Psr\Http\Message\UriInterface;
-
 
 
 /**
  * Suggest a download action to the client.
- * @param  mixed    $data
- * @param  string   $message
- * @param  int      $code
+ * @param Response $response
  * @return Response
  */
 function download(Response $response):Response {
@@ -31,10 +27,10 @@ function redirect(string $to):SuccessResponseModifier {
 
 /**
  * Success response.
- * @param  mixed                   $data
- * @param  int                     $status
- * @param  array                   $headers
- * @param  string                  $message
+ * @param mixed        $data
+ * @param int          $status
+ * @param array        $headers
+ * @param false|string $message
  * @return SuccessResponseModifier
  */
 function success(
@@ -47,10 +43,10 @@ function success(
         $message = HttpStatus::getReason($status);
     }
     return SuccessResponseModifier::create(
-        data: $data,
-        status: $status,
-        message: $message,
+        data   : $data,
         headers: $headers,
+        status : $status,
+        message: $message,
     );
 }
 
@@ -78,11 +74,11 @@ function failure(
 
 /**
  * Get a list of `key => value` pairs for each query string.
- * @param  UriInterface|Uri                    $uri
+ * @param UriInterface $uri
  * @return array<string,string|bool|int|float>
  */
 function queries(UriInterface $uri):array {
-    /** @var array<string,string|bool|int|float> */
+    /** @var array<string,string|bool|int|float> $queries */
     $queries     = [];
     $queryString = $uri->getQuery() ?? '';
     foreach (explode('&', $queryString) as $option) {
@@ -97,7 +93,7 @@ function queries(UriInterface $uri):array {
             $value = urldecode($value);
         }
         if (is_numeric($value)) {
-            if (strpos($value, '.') !== false) {
+            if (str_contains($value, '.')) {
                 $value = (float)$value;
             } else {
                 $value = (int)$value;

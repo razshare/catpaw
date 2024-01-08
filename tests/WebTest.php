@@ -14,11 +14,13 @@ use CatPaw\Container;
 use CatPaw\Signal;
 
 use const CatPaw\Web\APPLICATION_JSON;
+use const CatPaw\Web\APPLICATION_XML;
 use CatPaw\Web\Attributes\Param;
 use CatPaw\Web\Server;
-
 use const CatPaw\Web\TEXT_HTML;
+
 use const CatPaw\Web\TEXT_PLAIN;
+use function json_decode;
 use PHPUnit\Framework\TestCase;
 
 class WebTest extends TestCase {
@@ -48,8 +50,9 @@ class WebTest extends TestCase {
                 Container::run($this->makeSureParamHintsWork(...)),
                 Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...)),
             );
-            $server->stop();
             $this->assertFalse($unsafe->error);
+            $stopAttempt = $server->stop();
+            $this->assertFalse($stopAttempt->error);
         });
 
         $startAttempt = $server->start($readySignal)->await();
@@ -64,10 +67,10 @@ class WebTest extends TestCase {
      */
     private function makeSureXmlConversionWorks(HttpClient $http): void {
         $request = new Request("http://127.0.0.1:8000/api/object/user1", "GET");
-        $request->setHeader("Accept", "application/xml");
+        $request->setHeader("Accept", APPLICATION_XML);
         $response          = $http->request($request);
         $actualContentType = $response->getHeader("Content-Type");
-        $this->assertEquals("application/xml", $actualContentType);
+        $this->assertEquals(APPLICATION_XML, $actualContentType);
         $actualBody = $response->getBody()->buffer();
         $this->assertStringStartsWith("<?xml version=\"1.0\"", $actualBody);
     }
@@ -79,10 +82,10 @@ class WebTest extends TestCase {
      */
     private function makeSureJsonConversionWorks(HttpClient $http): void {
         $request = new Request("http://127.0.0.1:8000/api/object/user1", "GET");
-        $request->setHeader("Accept", "application/json");
+        $request->setHeader("Accept", APPLICATION_JSON);
         $response          = $http->request($request);
         $actualContentType = $response->getHeader("Content-Type");
-        $this->assertEquals("application/json", $actualContentType);
+        $this->assertEquals(APPLICATION_JSON, $actualContentType);
         $actualBody = $response->getBody()->buffer();
         $this->assertJson($actualBody);
     }
@@ -98,16 +101,17 @@ class WebTest extends TestCase {
     }
 
     /**
+     * @param  HttpClient      $http
+     * @throws BufferException
      * @throws HttpException
+     * @throws StreamException
      */
     private function makeSureContentNegotiationWorks(HttpClient $http): void {
-        /** @var Response $response1 */
         $response1 = $http->request(new Request("http://127.0.0.1:8000/api", "GET"));
         $actual    = $response1->getBody()->buffer();
         $this->assertEquals("hello", $actual);
         $this->assertEquals("text/plain", $response1->getHeader("Content-Type"));
 
-        /** @var Response $response2 */
         $response2 = $http->request(new Request("http://127.0.0.1:8000/api/world", "GET"));
         $actual    = $response2->getBody()->buffer();
         $this->assertEquals("hello world", $actual);
@@ -120,7 +124,7 @@ class WebTest extends TestCase {
      * @throws StreamException
      */
     private function makeSureParamHintsWork(Server $server, HttpClient $http): void {
-        $server->router->get("/get-with-params/{name}", fn (#[Param()] string $name) => "hello $name");
+        $server->router->get("/get-with-params/{name}", fn (#[Param] string $name) => "hello $name");
         $response = $http->request(new Request("http://127.0.0.1:8000/get-with-params/user1"));
         $this->assertEquals("hello user1", $response->getBody()->buffer());
         $response = $http->request(new Request("http://127.0.0.1:8000/get-with-params/user2"));
@@ -128,13 +132,15 @@ class WebTest extends TestCase {
     }
 
     /**
+     * @param  HttpClient      $http
+     * @throws BufferException
      * @throws HttpException
+     * @throws StreamException
      */
     private function makeSureOpenApiDataIsGeneratedCorrectly(HttpClient $http): void {
-        /** @var Response $response */
         $response = $http->request(new Request("http://127.0.0.1:8000/api/openapi", "GET"));
         $text     = $response->getBody()->buffer();
-        $json     = \json_decode($text, true);
+        $json     = json_decode($text, true);
         $this->assertNotEmpty($text);
         $this->assertArrayHasKey('openapi', $json);
         $this->assertArrayHasKey('info', $json);

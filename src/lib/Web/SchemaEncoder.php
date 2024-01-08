@@ -2,6 +2,9 @@
 namespace CatPaw\Web;
 
 use CatPaw\Web\Services\OpenApiService;
+use function count;
+use function explode;
+use function is_array;
 
 trait SchemaEncoder {
     private function unwrap(OpenApiService $api, array $schema):array {
@@ -15,7 +18,7 @@ trait SchemaEncoder {
         }
 
         foreach ($schema as $key => $type) {
-            if (\is_array($type)) {
+            if (is_array($type)) {
                 if (count($type) === 0) {
                     continue;
                 }
@@ -28,14 +31,14 @@ trait SchemaEncoder {
 
                 $type = $type[0];
 
-                if (\is_array($type)) {
+                if (is_array($type)) {
                     $properties[$key] = [
                         "type"  => "array",
                         "items" => $this->unwrap($api, $type),
                     ];
                 } else {
-                    $type             = \explode("\\", $type);
-                    $type             = $type[\count($type) - 1];
+                    $type             = explode("\\", $type);
+                    $type             = $type[count($type) - 1];
                     $properties[$key] = [
                         "type"  => "array",
                         "items" => [
@@ -44,8 +47,8 @@ trait SchemaEncoder {
                     ];
                 }
             } else {
-                $type             = \explode("\\", $type);
-                $type             = $type[\count($type) - 1];
+                $type             = explode("\\", $type);
+                $type             = $type[count($type) - 1];
                 $properties[$key] = [ "type" => $type ];
             }
         }

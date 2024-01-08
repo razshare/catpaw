@@ -44,7 +44,7 @@ trait CoreAttributeDefinition {
             foreach ($trueClassNames as $key => $trueClassName) {
                 $attributeArguments = $allAttributesArguments[$key];
                 $klass              = new ReflectionClass($trueClassName);
-                /** @var object */
+                /** @var object $instance */
                 $instance = $klass->newInstance(...$attributeArguments);
                 if ($error = Container::entry($instance, $klass->getMethods())->error) {
                     return error($error);
@@ -73,7 +73,7 @@ trait CoreAttributeDefinition {
         try {
             $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object */
+            /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             if ($error = Container::entry($instance, $klass->getMethods())->error) {
                 return error($error);
@@ -105,7 +105,7 @@ trait CoreAttributeDefinition {
         try {
             $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object */
+            /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             if ($error = Container::entry($instance, $klass->getMethods())->error) {
                 return error($error);
@@ -137,7 +137,7 @@ trait CoreAttributeDefinition {
         try {
             $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object */
+            /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             if ($error = Container::entry($instance, $klass->getMethods())->error) {
                 return error($error);
@@ -169,7 +169,7 @@ trait CoreAttributeDefinition {
         try {
             $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object */
+            /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             if ($error = Container::entry($instance, $klass->getMethods())->error) {
                 return error($error);
@@ -201,7 +201,7 @@ trait CoreAttributeDefinition {
         try {
             $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object */
+            /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             if ($error = Container::entry($instance, $klass->getMethods())->error) {
                 return error($error);

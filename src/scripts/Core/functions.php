@@ -38,7 +38,7 @@ function milliseconds():float {
  * @param  array $arr
  * @return bool  true if the array is associative, false otherwise.
  */
-function isAssoc(array $arr) {
+function isAssoc(array $arr): bool {
     if ([] === $arr) {
         return false;
     }
@@ -82,7 +82,7 @@ function uuid(): string {
  * Check if the current application is running inside a .phar archive or not.
  * @return bool
  */
-function isPhar() {
+function isPhar(): bool {
     return strlen(Phar::running()) > 0 ? true : false;
 }
 
@@ -167,7 +167,7 @@ function execute(
 ):Future {
     return async(static function() use ($command, $writer, $signal) {
         try {
-            /** @var Unsafe<LoggerInterface> */
+            /** @var Unsafe<LoggerInterface> $loggerAttempt */
             $loggerAttempt = Container::create(LoggerInterface::class);
             if ($loggerAttempt->error) {
                 return error($loggerAttempt->error);
@@ -189,8 +189,10 @@ function execute(
 
                 try {
                     $process->signal($code);
+                    return ok();
                 } catch (Throwable $e) {
                     $logger->error($e->getMessage());
+                    return error($e);
                 }
             });
         }

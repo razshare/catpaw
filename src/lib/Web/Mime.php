@@ -28,7 +28,6 @@ abstract class Mime {
             "wav",
             "mp4",
             "mp3",
-            "ico",
             "jpeg",
             "jpg",
             "png",

@@ -1,10 +1,12 @@
 <?php
 namespace CatPaw;
 
+use ReflectionAttribute;
 use ReflectionParameter;
 
 class DependencySearchResultItem {
     /**
+     * @param ReflectionParameter        $reflectionParameter
      * @param mixed                      $defaultArgument
      * @param bool                       $isOptional
      * @param mixed                      $defaultValue

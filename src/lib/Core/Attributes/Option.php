@@ -7,6 +7,7 @@ use CatPaw\DependenciesOptions;
 use CatPaw\Interfaces\AttributeInterface;
 use CatPaw\Interfaces\OnParameterMount;
 
+use CatPaw\Interfaces\OptionDocumentation;
 use function CatPaw\ok;
 use CatPaw\ReflectionTypeManager;
 use CatPaw\Traits\CoreAttributeDefinition;
@@ -27,13 +28,13 @@ class Option implements AttributeInterface, OnParameterMount {
     private static array $options = [];
     /** @var array<bool> */
     private static array $exists = [];
-    /** @var array<string,\CatPaw\Interfaces\OptionDocumentation> */
+    /** @var array<string,OptionDocumentation> */
     private static array $linuxManual = [];
 
     public function __construct(
-        private string $name,
-        private string $example = '',
-        private string $description = '',
+        private readonly string $name,
+        private readonly string $example = '',
+        private readonly string $description = '',
     ) {
         if (!str_starts_with($name, '-')) {
             Bootstrap::kill("Options must start with `-`, received `$name`.");
@@ -80,7 +81,7 @@ class Option implements AttributeInterface, OnParameterMount {
         return ok();
     }
 
-    public static function exists(string $option) {
+    public static function exists(string $option): bool {
         self::init();
         if (isset(self::$exists[$option])) {
             return true;
@@ -88,7 +89,7 @@ class Option implements AttributeInterface, OnParameterMount {
         return self::$exists[$option] = in_array($option, self::$options);
     }
 
-    private static function init() {
+    private static function init(): void {
         global $argv;
         $index          = 0;
         $listingOptions = false;
@@ -127,7 +128,7 @@ class Option implements AttributeInterface, OnParameterMount {
                 || str_starts_with($value, "$name=")
                 || $value === $name
                 || (
-                    substr($value, 0, 2) !== '--'
+                    !str_starts_with($value, '--')
                     && str_starts_with($value, $name)
                 )
             ) {
@@ -164,7 +165,7 @@ class Option implements AttributeInterface, OnParameterMount {
             } else {
                 if (preg_match('/^\s*=?\s*"(.*)(?<!\\\)"\s*/U', $option, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $option;
-                    $value = preg_replace('/\\\"/', '"', $value);
+                    $value = preg_replace('/"/', '"', $value);
                 } else if (preg_match('/^\s*=?\s*\'(.*)(?<!\\\)\'\s*/U', $option, $groups) && count($groups) >= 2) {
                     $value = $groups[1] ?? $option;
                     $value = preg_replace('/\\\\\'/', '\'', $value);

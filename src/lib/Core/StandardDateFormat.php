@@ -31,20 +31,16 @@ class StandardDateFormat {
         return $dateTime->format("d{$dateSeparator}m{$dateSeparator}Y");
     }
 
-    
+
     /**
-     * Covnert a DateTime to a string as YYYY, where
+     * Convert a DateTime to a string as YYYY, where
      *
      *  - Y = year
      *
-     * @param  int|DateTime $dateTime      unix timestamp or DateTime
-     * @param  string       $dateSeparator
+     * @param  int|DateTime $dateTime unix timestamp or DateTime
      * @return string
      */
-    public static function YYYY(
-        int|Datetime $dateTime,
-        string $dateSeparator = ''
-    ): string {
+    public static function YYYY(int|Datetime $dateTime): string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -52,7 +48,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as YYYYMM, where
+     * Convert a DateTime to a string as YYYYMM, where
      *
      *  - Y = year
      *  - M = month
@@ -72,7 +68,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as YYYYMMDD, where
+     * Convert a DateTime to a string as YYYYMMDD, where
      *
      *  - Y = year
      *  - M = month
@@ -93,7 +89,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as YYYYMMDDHH, where
+     * Convert a DateTime to a string as YYYYMMDDHH, where
      *
      *  - Y = year
      *  - M = month
@@ -118,7 +114,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as YYYYMMDDHHII, where
+     * Convert a DateTime to a string as YYYYMMDDHHII, where
      *
      *  - Y = year
      *  - M = month
@@ -146,7 +142,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as YYYYMMDDHHIISS, where
+     * Convert a DateTime to a string as YYYYMMDDHHIISS, where
      *
      *  - Y = year
      *  - M = month
@@ -175,7 +171,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as YYMMDD, where
+     * Convert a DateTime to a string as YYMMDD, where
      *
      *  - Y = year
      *  - M = month
@@ -196,7 +192,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as DDMMYY, where
+     * Convert a DateTime to a string as DDMMYY, where
      *  - Y = year
      *  - M = month
      *  - D = day
@@ -215,7 +211,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as HHII, where<br/>
+     * Convert a DateTime to a string as HHII, where<br/>
      * - H = hour
      * - M = minuto
      * @param  int|DateTime $dateTime      unix timestamp or DateTime
@@ -233,7 +229,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as HHII, where<br/>
+     * Convert a DateTime to a string as HHII, where<br/>
      * - H = hour
      * - M = minuto
      * - S = secondo
@@ -252,7 +248,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as MMAA, where
+     * Convert a DateTime to a string as MMAA, where
      *  - A = year
      *  - M = month
      *
@@ -271,10 +267,10 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as YYDD format (Julian Date Format), where
+     * Convert a DateTime to a string as YYDD format (Julian Date Format), where
      *
      *  - Y = year
-     *  - D = day dell'year (1-365)
+     *  - D = day of year (1-365)
      *
      * @param  int|DateTime $dateTime      unix timestamp or DateTime
      * @param  string       $dateSeparator
@@ -296,7 +292,7 @@ class StandardDateFormat {
     }
 
     /**
-     * Covnert a DateTime to a string as CCYYMMDD, where
+     * Convert a DateTime to a string as CCYYMMDD, where
      *
      *  - C = century
      *  - Y = year

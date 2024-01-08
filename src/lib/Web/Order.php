@@ -3,7 +3,7 @@ namespace CatPaw\Web;
 
 use Stringable;
 
-class Order implements Stringable {
+readonly class Order implements Stringable {
     /**
      * 
      * @param  array       $items
@@ -19,7 +19,6 @@ class Order implements Stringable {
      * @return false|Order
      */
     public static function fromFirstValidString(string ...$items):false|self {
-        /** @var string */
         foreach ($items as $value) {
             if ($page = self::fromString($value)) {
                 return $page;
@@ -36,8 +35,7 @@ class Order implements Stringable {
     public static function fromString(string $items):false|self {
         $direction = 'asc';
         if (
-            is_string($items) 
-            && preg_match('/(ASC|DESC):([A-z0-9,]+)/i', $items, $groups)
+            preg_match('/(ASC|DESC):([A-z0-9,]+)/i', $items, $groups)
             && count($groups) >= 3
         ) {
             $direction = $groups[1] ?? $direction;
@@ -87,7 +85,7 @@ class Order implements Stringable {
      */
     private function __construct(
         private string $direction,
-        private array $items,
+        private array  $items,
     ) {
     }
 

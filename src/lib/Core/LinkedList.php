@@ -12,8 +12,11 @@ use SplDoublyLinkedList;
 class LinkedList extends SplDoublyLinkedList {
     private function __construct() {
     }
-    
-    /** @return LinkedList<T>  */
+
+    /**
+     * @template T
+     * @return LinkedList<T>
+     */
     public static function create():self {
         return new self();
     }

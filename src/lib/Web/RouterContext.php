@@ -2,24 +2,25 @@
 namespace CatPaw\Web;
 
 use CatPaw\Container;
+use CatPaw\Unsafe;
 use Psr\Log\LoggerInterface;
 
 
 class RouterContext {
     /**
-     * @param array<Route> $routes,
+     * @param array<string,array<Route>> $routes,
      */
-    public static function create($routes = []):self {
+    public static function create(array $routes = []):self {
         return new self(routes: $routes);
     }
 
     private LoggerInterface $logger;
 
     /**
-     * @param array<RouteContext> $routes,
+     * @param array<string,array<Route>> $routes,
      */
     private function __construct(private array $routes) {
-        /** @var Unsafe<LoggerInterface> */
+        /** @var Unsafe<LoggerInterface> $loggerAttempt */
         $loggerAttempt = Container::create(LoggerInterface::class);
         if (!$loggerAttempt->error) {
             $this->logger = $loggerAttempt->value;

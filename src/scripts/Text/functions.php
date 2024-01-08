@@ -1,6 +1,8 @@
 <?php
 namespace CatPaw\Text;
 
+use function join;
+
 /**
  * @return string
  */
@@ -22,7 +24,7 @@ function background(
     $red   %= 256;
     $green %= 256;
     $blue  %= 256;
-    return "\033[48;2;{$red};{$green};{$blue}m";
+    return "\033[48;2;$red;$green;{$blue}m";
 }
 
 /**
@@ -39,7 +41,7 @@ function foreground(
     $red   %= 256;
     $green %= 256;
     $blue  %= 256;
-    return "\033[38;2;{$red};{$green};{$blue}m";
+    return "\033[38;2;$red;$green;{$blue}m";
 }
 
 /** 
@@ -47,7 +49,7 @@ function foreground(
  * @return string
  */
 function clear():string {
-    return \join([nocolor(),"\033c"]);
+    return join([nocolor(),"\033c"]);
 }
 
 /**

@@ -9,10 +9,12 @@ readonly class RequestContext {
     /**
      * @param string        $key
      * @param Route         $route
+     * @param Server        $server
      * @param Request       $request
      * @param Response      $response
      * @param array<string> $requestQueries
      * @param array<string> $requestPathParameters
+     * @return RequestContext
      */
     public static function create(
         string $key,

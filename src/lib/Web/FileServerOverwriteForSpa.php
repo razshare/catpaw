@@ -5,7 +5,7 @@ use function Amp\File\isDirectory;
 use CatPaw\File;
 use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 
-class FileServerOverwirteForSpa implements FileServerOverwriteInterface {
+readonly class FileServerOverwriteForSpa implements FileServerOverwriteInterface {
     public static function create(Server $server):self {
         return new self($server);
     }
@@ -16,7 +16,7 @@ class FileServerOverwirteForSpa implements FileServerOverwriteInterface {
     public function overwrite(string $fileName): string {
         // Required for Spa mode
         if (isDirectory($fileName) || !File::exists($fileName)) {
-            return "$this->server->www/index.html";
+            return "{$this->server->www}/index.html";
         }
         return $fileName;
     }

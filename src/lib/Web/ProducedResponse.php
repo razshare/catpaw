@@ -38,23 +38,22 @@ class ProducedResponse implements AttributeInterface {
 
     /**
      *
-     * @param  string               $type        http content-type
-     * @param  int                  $status      http status code
-     * @param  string               $description
-     * @param  mixed                $example     an example of the body of the response
-     * @param  bool                 $isPage      if set to true, the produced response will be wrapped in a page structure.
-     * @param  bool                 $isItem      if set to true, the produced response will be wrapped in an item structure.
-     * @param  string|array<string> $schema      a class name or an array 1 one single element, which must be a class name.
-     * @return void
+     * @param string $type http content-type
+     * @param int    $status http status code
+     * @param string $className
+     * @param string $description
+     * @param mixed  $example an example of the body of the response
+     * @param bool   $isPage if set to true, the produced response will be wrapped in a page structure.
+     * @param bool   $isItem if set to true, the produced response will be wrapped in an item structure.
      */
     private function __construct(
-        private string $type,
-        private int $status,
-        private string $className,
-        private string $description,
-        private mixed $example,
-        private bool $isPage,
-        private bool $isItem,
+        private readonly string $type,
+        private readonly int    $status,
+        private readonly string $className,
+        private readonly string $description,
+        private mixed           $example,
+        private readonly bool   $isPage,
+        private readonly bool   $isItem,
     ) {
         if ($isItem) {
             $converted     = is_array($this->example) || is_object($this->example)?(object)$this->example:$this->example;

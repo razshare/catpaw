@@ -3,7 +3,10 @@ namespace CatPaw\Web\Attributes;
 
 use Attribute;
 use CatPaw\Attributes\Entry;
+use CatPaw\Unsafe;
+use function CatPaw\error;
 use CatPaw\Interfaces\AttributeInterface;
+use function CatPaw\ok;
 use CatPaw\Traits\CoreAttributeDefinition;
 use CatPaw\Web\ProducedResponse;
 use CatPaw\Web\Services\OpenApiService;
@@ -46,18 +49,19 @@ class ProducesPage extends Produces implements AttributeInterface {
     ):ProducedResponse {
         return ProducedResponse::create(
             type: $contentType,
-            status: 200,
             className: $className,
-            description: '',
             example: $example,
             isPage: true,
         );
     }
 
-    #[Entry] public function setup(OpenApiService $oa):void {
+    #[Entry] public function setup(OpenApiService $oa): Unsafe {
         foreach ($this->response as $response) {
-            $response->setup($oa);
+            if ($error = $response->setup($oa)->error) {
+                return error($error);
+            }
         }
+        return ok();
     }
 
     /**

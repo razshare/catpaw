@@ -2,6 +2,7 @@
 namespace CatPaw\Web;
 
 use function Amp\async;
+use Amp\CompositeException;
 use Amp\DeferredFuture;
 
 use function Amp\File\isDirectory;
@@ -32,7 +33,7 @@ use Throwable;
 class Server {
     private static function findFirstValidWebDirectory(array $www):string {
         if (isPhar()) {
-            $phar = \Phar::running();
+            $phar = Phar::running();
             foreach ($www as $directory) {
                 $directory = "$phar/$directory";
                 if (File::exists($directory)) {
@@ -57,12 +58,11 @@ class Server {
             if (File::exists($directory)) {
                 if (isDirectory($directory)) {
                     return $directory;
-                    break;
                 }
             }
 
             $isPhar = isPhar();
-            $phar   = \Phar::running();
+            $phar   = Phar::running();
 
             if ($isPhar) {
                 $directory = "$phar/$directory";
@@ -101,7 +101,7 @@ class Server {
         $api = preg_replace('/\/+$/', '', $api);
         $www = preg_replace('/\/+$/', '', $www);
 
-        /** @var Unsafe<LoggerInterface> */
+        /** @var Unsafe<LoggerInterface> $loggerAttempt */
         $loggerAttempt = Container::create(LoggerInterface::class);
         if ($loggerAttempt->error) {
             return error($loggerAttempt->error);
@@ -123,13 +123,13 @@ class Server {
         }
         
         return ok(new self(
-            interface: $interface,
+            interface      : $interface,
             secureInterface: $secureInterface,
-            apiPrefix: $apiPrefix,
-            www: $www,
-            api: $api,
-            router: Router::create(),
-            logger: $logger,
+            apiPrefix      : $apiPrefix,
+            api            : $api,
+            www            : $www,
+            router         : Router::create(),
+            logger         : $logger,
         ));
     }
 
@@ -180,7 +180,7 @@ class Server {
         $this->resolver = RouteResolver::create($this);
     }
 
-    public function appendMiddleware(Middleware $middleware) {
+    public function appendMiddleware(Middleware $middleware): void {
         $this->middlewares[] = $middleware;
     }
 
@@ -201,7 +201,7 @@ class Server {
      * Start the server.
      * 
      * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
-     * @param false|Signal ready the server will trigger this signal whenever it's ready to serve requests.
+     * @param  false|Signal         $readySignal the server will trigger this signal whenever it's ready to serve requests.
      * @return Future<Unsafe<void>>
      */
     public function start(false|Signal $readySignal = false):Future {
@@ -227,7 +227,7 @@ class Server {
                 EventLoop::onSignal(SIGQUIT, $stopper);
                 EventLoop::onSignal(SIGTERM, $stopper);
     
-                /** @var Unsafe<LoggerInterface> */
+                /** @var Unsafe<LoggerInterface> $loggerAttempt */
                 $loggerAttempt = Container::create(LoggerInterface::class);
                 if ($loggerAttempt->error) {
                     return error($loggerAttempt->error);
@@ -260,14 +260,19 @@ class Server {
     }
 
     /**
-     * 
      * Stop the server.
-     * @return void
+     * @return Unsafe<void>
      */
-    public function stop(): void {
+    public function stop(): Unsafe {
         if (isset($this->server)) {
-            $this->server->stop();
+            try {
+                $this->server->stop();
+                return ok();
+            } catch(CompositeException $e) {
+                return error($e);
+            }
         }
+        return ok();
     }
 
     private static function initializeRoutes(
@@ -291,7 +296,7 @@ class Server {
                     continue;
                 }
                 $offset       = strpos($fileName, $api);
-                $offset       = $offset?$offset:0;
+                $offset       = $offset?:0;
                 $relativePath = substr($fileName, $offset + strlen($api));
                 
                 if (!str_starts_with($relativePath, '.'.DIRECTORY_SEPARATOR)) {
@@ -299,7 +304,7 @@ class Server {
                         $fileName = preg_replace('/\.php$/i', '', preg_replace('/\.\/+/', '/', '.'.DIRECTORY_SEPARATOR.$relativePath));
                         
                         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                            $fileName = preg_replace('/\\\\/i', '/', $fileName);
+                            $fileName = preg_replace('/\\\\/', '/', $fileName);
                         }
 
                         $symbolicMethod = preg_replace('/^\\//', '', strtoupper(preg_replace('/^.*(?=\/)/', '', $fileName)));

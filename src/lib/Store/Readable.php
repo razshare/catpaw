@@ -11,9 +11,9 @@ use SplDoublyLinkedList;
 
 class Readable {
     /**
-     * @param mixed            $value   initial value of the store
-     * @param Closure(Closure) $onStart a function that will be executed when the 
-     *                                  first subscriber subscribes to the store.
+     * @param mixed                 $value   initial value of the store
+     * @param Closure(Closure):void $onStart a function that will be executed when the
+     *                                       first subscriber subscribes to the store.
      * 
      *                                              The function should (but it's not required to) return another function, which 
      *                                              will be executed when the last subscriber of the store unsubscribes.
@@ -30,13 +30,13 @@ class Readable {
     private bool $firstSubscriber = true;
     /**
      * 
-     * @param  mixed            $value
-     * @param  Closure(Closure) $onStart
+     * @param  mixed                 $value
+     * @param  Closure(Closure):void $onStart
      * @return void
      */
     private function __construct(
         protected mixed $value,
-        private Closure $onStart,
+        private readonly Closure $onStart,
     ) {
         $this->callbacks = new SplDoublyLinkedList();
         $this->callbacks->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
@@ -60,7 +60,7 @@ class Readable {
     private function set(mixed $value): void {
         $this->value = $value;
         for ($this->callbacks->rewind(); $this->callbacks->valid(); $this->callbacks->next()) {
-            /** @var Closure */
+            /** @var Closure $callback */
             $callback = $this->callbacks->current();
             ($callback)($this->value);
         }
@@ -69,9 +69,9 @@ class Readable {
     
     /**
      * Subscribe to this store and get notified of every update.
-     * @param  Closure(mixed $value) $callback a function that's executed whenever there's an update,
-     *                                         it takes 1 parameter, the new value of the store.
-     * @return Closure():void        a function that cancels this subscriptions.
+     * @param  Closure(mixed $value):void $callback a function that's executed whenever there's an update,
+     *                                              it takes 1 parameter, the new value of the store.
+     * @return Closure():void             a function that cancels this subscription.
      */
     public function subscribe(Closure $callback): Closure {
         $this->callbacks->push($callback);

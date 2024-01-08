@@ -15,7 +15,7 @@ class Example implements AttributeInterface {
     private mixed $example = [];
 
     public function __construct(
-        private array|string|int|float|bool $value,
+        private readonly array|string|int|float|bool $value,
     ) {
     }
 
@@ -25,9 +25,8 @@ class Example implements AttributeInterface {
 
     #[Entry] public function setup(OpenApiService $api):void {
         $this->example = $api->createExample(
-            title: $this->value,
-            summary: '',
-            value: $this->value,
+            title  : $this->value,
+            value  : $this->value,
         );
     }
 }

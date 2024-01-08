@@ -25,9 +25,9 @@ class ErrorResponseModifier implements ResponseModifier {
     private bool $isStructured = true;
     
     private function __construct(
-        private int $status,
-        private string $message,
-        private array $headers,
+        private readonly int    $status,
+        private readonly string $message,
+        private readonly array  $headers,
     ) {
     }
 
@@ -45,9 +45,9 @@ class ErrorResponseModifier implements ResponseModifier {
 
     private function createStructuredPayload():array {
         return [
-            "type"    => 'error',
-            "message" => $this->message,
-            "status"  => $this->status,
+            'type'    => 'error',
+            'message' => $this->message,
+            'status'  => $this->status,
         ];
     }
 
@@ -91,8 +91,8 @@ class ErrorResponseModifier implements ResponseModifier {
 
     /**
      * Page the response.
-     * @param  Page                    $page
-     * @return SuccessResponseModifier
+     * @param Page $page
+     * @return ErrorResponseModifier
      */
     public function page(Page $page):self {
         return $this;

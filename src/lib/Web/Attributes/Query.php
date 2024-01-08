@@ -89,8 +89,9 @@ class Query implements AttributeInterface, OnParameterMount {
     }
 
     /**
-     * @param  RequestContext       $http
-     * @return Unsafe<false|string>
+     * @param  RequestContext $http
+     * @param  string         $key
+     * @return Unsafe<string>
      */
     public function toString(RequestContext $http, string $key):Unsafe {
         if (isset($http->requestQueries[$key])) {
@@ -101,8 +102,9 @@ class Query implements AttributeInterface, OnParameterMount {
 
 
     /**
-     * @param  RequestContext    $http
-     * @return Unsafe<false|int>
+     * @param  RequestContext $http
+     * @param  string         $key
+     * @return Unsafe<int>
      */
     private function toInteger(RequestContext $http, string $key):Unsafe {
         if (isset($http->requestQueries[$key])) {
@@ -113,12 +115,13 @@ class Query implements AttributeInterface, OnParameterMount {
                 return error("Query $key was expected to be numeric, but non numeric value has been provided instead:$value.");
             }
         }
-        return error("Could not convert $key to interger.");
+        return error("Could not convert $key to integer.");
     }
 
 
     /**
-     * @param  RequestContext $http
+     * @param RequestContext $http
+     * @param string         $key
      * @return Unsafe<bool>
      */
     private function toBool(RequestContext $http, string $key):Unsafe {
@@ -129,8 +132,9 @@ class Query implements AttributeInterface, OnParameterMount {
     }
 
     /**
-     * @param  RequestContext      $http
-     * @return Unsafe<false|float>
+     * @param RequestContext $http
+     * @param string         $key
+     * @return Unsafe<float>
      */
     private function toFloat(RequestContext $http, string $key):Unsafe {
         if (isset($http->requestQueries[$key])) {

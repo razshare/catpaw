@@ -30,11 +30,10 @@ interface StorageInterface {
      * @return void
      */
     public function set(string $key, mixed $value):void;
-    
+
     /**
      * Unset a value by key.
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
      * @return void
      */
     public function unset(string $key):void;
