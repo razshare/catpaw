@@ -2,10 +2,15 @@
 namespace CatPaw\Web;
 
 use CatPaw\Attributes\Entry;
+use function CatPaw\error;
 use CatPaw\Interfaces\AttributeInterface;
+
+use function CatPaw\ok;
 use CatPaw\ReflectionTypeManager;
 use CatPaw\Traits\CoreAttributeDefinition;
+use CatPaw\Unsafe;
 use CatPaw\Web\Services\OpenApiService;
+
 use ReflectionClass;
 
 class ConsumedRequest implements AttributeInterface {
@@ -98,10 +103,17 @@ class ConsumedRequest implements AttributeInterface {
         return $this->className;
     }
 
-    #[Entry] public function setup(OpenApiService $oa):void {
+    /**
+     * 
+     * @param  OpenApiService $oa
+     * @return Unsafe<void>
+     */
+    #[Entry] public function setup(OpenApiService $oa):Unsafe {
         $isClass = class_exists($this->className);
         if ($isClass) {
-            $oa->setComponentObject($this->className);
+            if ($error = $oa->setComponentObject($this->className)->error) {
+                return error($error);
+            }
         }
 
         if ($isClass) {
@@ -114,7 +126,7 @@ class ConsumedRequest implements AttributeInterface {
                 $schema = [
                     'type'  => 'array',
                     'items' => [
-                        'type' => 'string'
+                        'type' => 'string',
                     ],
                 ];
             } else {
@@ -134,5 +146,6 @@ class ConsumedRequest implements AttributeInterface {
             schema: $schema,
             example: $this->example,
         );
+        return ok();
     }
 }

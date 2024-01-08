@@ -11,8 +11,8 @@ class StandardDateParse {
      *  - M = month
      *  - Y = year
      *
-     * @param  string $date          date as DDMMYYYY
      * @param  string $dateSeparator
+     * @param  string $date          date as DDMMYYYY
      * @return string
      */
     public static function DDMMYYYY(
@@ -27,8 +27,8 @@ class StandardDateParse {
      *
      *  - Y = year
      *
-     * @param  string $date          date as YYYY
      * @param  string $dateSeparator
+     * @param  string $date          date as YYYY
      * @return string
      */
     public static function YYYY(
@@ -44,8 +44,8 @@ class StandardDateParse {
      *  - Y = year
      *  - M = month
      *
-     * @param  string $date          date as YYYYMM
      * @param  string $dateSeparator
+     * @param  string $date          date as YYYYMM
      * @return string
      */
     public static function YYYYMM(
@@ -62,8 +62,8 @@ class StandardDateParse {
      *  - M = month
      *  - D = day
      *
-     * @param  string $date          date as YYYYMMDD
      * @param  string $dateSeparator
+     * @param  string $date          date as YYYYMMDD
      * @return string
      */
     public static function YYYYMMDD(

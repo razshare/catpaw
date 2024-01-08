@@ -60,9 +60,9 @@ readonly class Route {
 
     /**
      * @param ReflectionFunction   $reflectionFunction,
-     * @param string               $workDirectory,
      * @param string               $symbolicMethod,
      * @param string               $symbolicPath,
+     * @param string               $workDirectory,
      * @param Closure              $callback,
      * @param Consumes             $consumes,
      * @param Produces             $produces,

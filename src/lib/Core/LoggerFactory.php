@@ -13,17 +13,17 @@ class LoggerFactory {
 
     /**
      * Create a logger.
-     * @param  string          $loggerName
+     * @param  string                  $loggerName
      * @return Unsafe<LoggerInterface>
      */
     public static function create(string $loggerName = 'Logger'): Unsafe {
-        try{
+        try {
             $handler = new StreamHandler(STDOUT);
             // $handler->setFormatter(new ConsoleFormatter());
             $logger = new Logger($loggerName);
             $logger->pushHandler($handler);
             return ok($logger);
-        }catch(Throwable $e){
+        } catch(Throwable $e) {
             return error($e);
         }
     }

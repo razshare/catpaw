@@ -3,11 +3,14 @@ namespace CatPaw\Web\Attributes;
 
 use Attribute;
 use CatPaw\Attributes\Entry;
+use function CatPaw\error;
 use CatPaw\Interfaces\AttributeInterface;
+use function CatPaw\ok;
 use CatPaw\Traits\CoreAttributeDefinition;
+use CatPaw\Unsafe;
+
 use CatPaw\Web\ConsumedRequest;
 use CatPaw\Web\Services\OpenApiService;
-
 
 /**
  * Define the type of content the route handler consumes.
@@ -54,10 +57,13 @@ class Consumes implements AttributeInterface {
         }
     }
 
-    #[Entry] public function setup(OpenApiService $oa):void {
+    #[Entry] public function setup(OpenApiService $oa):Unsafe {
         foreach ($this->request as $request) {
-            $request->setup($oa);
+            if ($error = $request->setup($oa)->error) {
+                return error($error);
+            }
         }
+        return ok();
     }
 
     /**

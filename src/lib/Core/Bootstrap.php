@@ -157,8 +157,10 @@ class Bootstrap {
             }
 
             if ($error = self::init($entry, $libraries, $info)->error) {
-                self::kill($error.PHP_EOL);
+                self::kill((string)$error);
             }
+
+            EventLoop::run();
         } catch (Throwable $e) {
             self::kill((string)$e);
         }
@@ -180,13 +182,14 @@ class Bootstrap {
         foreach (self::$onKillActions as $callback) {
             $callback();
         }
-        die($message.PHP_EOL);
+        echo $message.PHP_EOL;
+        die(CommandStatus::SUCCESS);
     }
 
     /**
      * @param  string    $binary
-     * @param  string    $start
      * @param  array     $arguments
+     * @param  string    $start
      * @throws Throwable
      * @return void
      */
@@ -224,7 +227,7 @@ class Bootstrap {
             $resources = !$resources ? [] : \preg_split('/,|;/', $resources);
 
             if (DIRECTORY_SEPARATOR === '/') {
-                EventLoop::onSignal(SIGINT, static function(string $id) use ($kill) {
+                EventLoop::onSignal(SIGINT, static function() use ($kill) {
                     $kill->send();
                     self::kill();
                 });

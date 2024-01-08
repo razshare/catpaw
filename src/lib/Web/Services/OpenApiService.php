@@ -4,7 +4,12 @@ namespace CatPaw\Web\Services;
 
 use CatPaw\Attributes\ArrayList;
 use CatPaw\Attributes\Service;
+use function CatPaw\error;
+use function CatPaw\ok;
+use CatPaw\Unsafe;
+
 use ReflectionClass;
+use Throwable;
 
 #[Service]
 class OpenApiService {
@@ -141,48 +146,69 @@ class OpenApiService {
         $this->json['components']['schemas']["{$className}Page"] = self::templateForPage($className);
     }
 
-    public function setComponentObject(string $className):void {
-        $resolvedProperties = [];
-        $reflection         = new ReflectionClass($className);
-        
-        foreach ($reflection->getProperties() as $reflectionProperty) {
-            $propertyName = $reflectionProperty->getName();
+    /**
+     * 
+     * @param  string       $className
+     * @return Unsafe<void>
+     */
+    public function setComponentObject(string $className):Unsafe {
+        try {
+            $resolvedProperties = [];
+            $reflection         = new ReflectionClass($className);
+            
+            foreach ($reflection->getProperties() as $reflectionProperty) {
+                $propertyName = $reflectionProperty->getName();
 
-            $type = \CatPaw\ReflectionTypeManager::unwrap($reflectionProperty)?->getName() ?? 'string';
+                $type = \CatPaw\ReflectionTypeManager::unwrap($reflectionProperty)?->getName() ?? 'string';
 
-            if (class_exists($type)) {
-                $this->setComponentObject($type);
-                $resolvedProperties[$propertyName] = [
-                    'type' => 'object',
-                    '$ref' => "#/components/schemas/{$type}",
-                ];
-            } else {
-                /** @var ArrayList $arrayListAttribute */
-                if ($arrayListAttribute = ArrayList::findByProperty($reflectionProperty)) {
-                    $subType = $arrayListAttribute->className;
-                    $this->setComponentObject($subType);
+                if (class_exists($type)) {
+                    if ($error = $this->setComponentObject($type)->error) {
+                        return error($error);
+                    }
                     $resolvedProperties[$propertyName] = [
-                        'type'  => 'array',
-                        'items' => [
-                            '$ref' => "#/components/schemas/{$subType}",
-                        ],
+                        'type' => 'object',
+                        '$ref' => "#/components/schemas/{$type}",
                     ];
-                    continue;
+                } else {
+                    /** @var Unsafe<false|ArrayList> */
+                    $arrayListAttributeAttempt = ArrayList::findByProperty($reflectionProperty);
+                    if ($arrayListAttributeAttempt->error) {
+                        return error($arrayListAttributeAttempt->error);
+                    }
+
+                    $arrayListAttribute = $arrayListAttributeAttempt->value;
+
+                    if ($arrayListAttribute) {
+                        $subType = $arrayListAttribute->className;
+                        if ($error = $this->setComponentObject($subType)->error) {
+                            return error($error);
+                        }
+                        $resolvedProperties[$propertyName] = [
+                            'type'  => 'array',
+                            'items' => [
+                                '$ref' => "#/components/schemas/{$subType}",
+                            ],
+                        ];
+                        continue;
+                    }
+                    $resolvedProperties[$propertyName] = [
+                        'type' => match ($type) {
+                            'int'   => 'integer',
+                            'float' => 'number',
+                            'bool'  => 'boolean',
+                            default => $type,
+                        },
+                    ];
                 }
-                $resolvedProperties[$propertyName] = [
-                    'type' => match ($type) {
-                        'int'   => 'integer',
-                        'float' => 'number',
-                        'bool'  => 'boolean',
-                        default => $type,
-                    },
-                ];
             }
+            $this->json['components']['schemas'][$className] = [
+                'type'       => 'object',
+                'properties' => (object)$resolvedProperties,
+            ];
+            return ok();
+        } catch(Throwable $e) {
+            return error($e);
         }
-        $this->json['components']['schemas'][$className] = [
-            'type'       => 'object',
-            'properties' => (object)$resolvedProperties,
-        ];
     }
 
 

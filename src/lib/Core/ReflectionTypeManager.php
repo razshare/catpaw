@@ -14,7 +14,7 @@ class ReflectionTypeManager {
 
     public static function wrap(ReflectionParameter|ReflectionProperty $reflection, string $defaultClassName = 'bool'): WrappedType {
         $reflectionType = ReflectionTypeManager::unwrap($reflection);
-        $className = $reflectionType?$reflectionType->getName(): $defaultClassName;
+        $className      = $reflectionType?$reflectionType->getName(): $defaultClassName;
 
         $rtype = $reflection->getType();
 

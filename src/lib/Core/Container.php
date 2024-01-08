@@ -10,11 +10,10 @@ use CatPaw\Attributes\Service;
 use CatPaw\Attributes\Singleton;
 use CatPaw\Interfaces\OnParameterMount;
 use CatPaw\Interfaces\StorageInterface;
-
-
+use CatPaw\Store\Readable;
+use CatPaw\Store\Writable;
 use Closure;
 use Psr\Log\LoggerInterface;
-use RecursiveDirectoryIterator;
 use ReflectionClass;
 use ReflectionException;
 
@@ -64,7 +63,7 @@ class Container {
      * Run the entry method of an instance of a class.
      * @param  object                  $instance
      * @param  array<ReflectionMethod> $methods  methods of the class.
-     * @return Unsafe<void>
+     * @return Unsafe<mixed>
      */
     public static function entry(object $instance, array $methods):Unsafe {
         try {
@@ -80,10 +79,14 @@ class Container {
                     }
     
                     if ($method->isStatic()) {
-                        $method->invoke(null, ...$arguments->value);
+                        $result = $method->invoke(null, ...$arguments->value);
                     } else {
-                        $method->invoke($instance, ...$arguments->value);
+                        $result = $method->invoke($instance, ...$arguments->value);
                     }
+                    if ($result instanceof Unsafe) {
+                        return $result;
+                    }
+                    return ok($result);
                     break;
                 }
             }
@@ -187,12 +190,14 @@ class Container {
             }
 
             if (
-                "string"  !== $type
-                & "int"   !== $type
-                & "float" !== $type
-                & "bool"  !== $type
-                & "array" !== $type
-                & ""      !== $type
+                "string"           !== $type
+                && "int"           !== $type
+                && "float"         !== $type
+                && "bool"          !== $type
+                && "array"         !== $type
+                && ""              !== $type
+                && Writable::class !== $type
+                && Readable::class !== $type
             ) {
                 $instance = Container::create($type);
                 if ($instance->error) {
@@ -265,14 +270,18 @@ class Container {
         }
 
         if (!Container::has(LoggerInterface::class)) {
-            $logger = LoggerFactory::create();
+            $loggerAttempt = LoggerFactory::create();
+            if ($loggerAttempt->error) {
+                return error($loggerAttempt->error);
+            }
+            $logger = $loggerAttempt->value;
             Container::set(LoggerInterface::class, $logger);
         } else {
-            $result = Container::create(LoggerInterface::class);
-            if ($result->error) {
-                return error($result->error);
+            $loggerAttempt = Container::create(LoggerInterface::class);
+            if ($loggerAttempt->error) {
+                return error($loggerAttempt->error);
             }
-            $logger = $result->value;
+            $logger = $loggerAttempt->value;
         }
         
         /** @var LoggerInterface $logger */
@@ -419,11 +428,6 @@ class Container {
         if (AttributeResolver::issetClassAttribute($reflection, Attribute::class)) {
             return error("Cannot instantiate $className because it's meant to be an attribute.");
         }
-
-        if (count($reflection->getAttributes()) === 0) {
-            return error("Cannot instantiate $className because it's not marked as a service or a singleton.");
-        }
-
         
         /** @var Unsafe<Singleton> */
         $singleton = Singleton::findByClass($reflection);

@@ -4,51 +4,29 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 # Table of Contents
 
-| Topic                      | Implemented  | Repository                                                                  | Read                                       |
-|----------------------------|--------------|-----------------------------------------------------------------------------|--------------------------------------------|
-| 🌐 Routes       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/1.routes.md)     |
-| 🌐 Filesystem Router   | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/17.filesystem-router.md) |
-| 🌐 Route Filters              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/9.route-filters.md)           |
-| 🌐 Path Parameters      | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/2.path-parameters.md)    |
-| 🌐 Route Not Found       | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/3.route-not-found.md)      |
-| 🌐 Open API                 | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/18.open-api.md)             |
-| 🌐 Route Session              | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/4.route-session.md)           |
-| 🌐 Byte Range Requests  | ✅           | [catpaw-web](https://github.com/tncrazvan/catpaw-web)                       | [Read](./docs/7.byte-range-requests.md) |
-| ⚡ Entry                    | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Read](./docs/5.entry.md)                |
-| ⚡ Custom Attributes        | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Read](./docs/8.custom-attributes.md)     |
-| 💡 RaspberryPI             | ✅           | [catpaw-raspberrypi](https://github.com/tncrazvan/catpaw-raspberrypi)       | [Read](./docs/11.raspberrypi.md)         |
-| ⚡ Services                 | ✅           | [catpaw-core](https://github.com/tncrazvan/catpaw-core)                     | [Read](./docs/13.services.md)            |
-| ⚡ Stores                   | ✅           | [catpaw-store](https://github.com/tncrazvan/catpaw-store)                   | [Read](./docs/12.stores.md)              |
-| ⚡ Queues                   | ✅           | [catpaw-queue](https://github.com/tncrazvan/catpaw-queue)                   | [Read](./docs/21.queues.md)      |
-| 💡 Text                   | ✅           | [catpaw-text](https://github.com/tncrazvan/catpaw-text)                   | TODO      |
-| 💡 Schedule                   | ✅           | [catpaw-schedule](https://github.com/tncrazvan/catpaw-schedule)                   | TODO      |
-
-# Starters
-
-| Type     | Implemented | Description                                 | Github Template                                                  | Read                                    |
-|----------|-------------|---------------------------------------------|------------------------------------------------------------------|-----------------------------------------|
-| Blank    | ✅          | using only the core library                 | [Template](https://github.com/tncrazvan/catpaw-starter)          | [Read](./README.md#get-started)       |
-| Web      | ✅          | create a web server                         | [Template](https://github.com/tncrazvan/catpaw-web-starter)      | [Read](./docs/16.Web.md)              |
-| Markdown | ✅          | create a web server using Markdown          | [Template](https://github.com/tncrazvan/catpaw-markdown-starter) | __TODO__                                |
+| Topic                  | Implemented | Read |
+|------------------------|-------------|------|
+| 🌐 Router              | ✅           |      |
+| 🌐 Filesystem Router   | ✅           |      |
+| 🌐 Route Filters       | ✅           |      |
+| 🌐 Path Parameters     | ✅           |      |
+| 🌐 Route Not Found     | ✅           |      |
+| 🌐 Open API            | ✅           |      |
+| 🌐 Route Session       | ✅           |      |
+| 🌐 Byte Range Requests | ✅           |      |
+| ⚡ Entry                | ✅           |      |
+| ⚡ Custom Attributes    | ✅           |      |
+| 💡 RaspberryPI         | ✅           |      |
+| ⚡ Services             | ✅           |      |
+| ⚡ Stores               | ✅           |      |
+| ⚡ Queues               | ✅           |      |
+| 💡 Text                | ✅           |      |
+| 💡 Schedule            | ✅           |      |
 
 
-
-> **Note** use with composer<br/>
->    ```bash
->    composer create-project catpaw/starter
->    ```
->    ```bash
->    composer create-project catpaw/web-starter
->    ```
->    ```bash
->    composer create-project catpaw/markdown-starter
->    ```
-<br/>
-
-# Premise
-
-This project is aimed at linux distributions, some features may or not may work on Windows or MacOS.<br/>
-Feel free to contribute fixing issues for specific platforms.
+> [!NOTE]
+> This project is aimed at linux distributions, some features may or not may work on Windows or MacOS.\
+> Feel free to contribute fixing issues for specific platforms.
 
 # Get started
 

@@ -10,16 +10,16 @@ use Amp\Http\Server\Middleware;
 
 use function Amp\Http\Server\Middleware\stackMiddleware;
 use Amp\Http\Server\SocketHttpServer;
-use CatPaw\Attributes\Option;
 
 use CatPaw\Bootstrap;
 use CatPaw\Container;
 use CatPaw\Directory;
 use function CatPaw\error;
 use CatPaw\File;
-
 use function CatPaw\isPhar;
+
 use function CatPaw\ok;
+use CatPaw\Signal;
 
 use CatPaw\Unsafe;
 use CatPaw\Web\Attributes\Session;
@@ -92,10 +92,10 @@ class Server {
         string $www = './server/www/',
         string $apiPrefix = '',
     ): Unsafe {
-        if(!str_starts_with($api, './')){
+        if (!str_starts_with($api, './')) {
             return error("The api directory must be a relative path and within the project directory.");
         }
-        if(!str_starts_with($www, './')){
+        if (!str_starts_with($www, './')) {
             return error("The web root directory must be a relative path and within the project directory.");
         }
         $api = preg_replace('/\/+$/', '', $api);
@@ -109,18 +109,16 @@ class Server {
 
         $logger = $loggerAttempt->value;
 
-        $info = (new Option("--info"))->findValue("bool") ?? false;
-
         if (!str_starts_with($apiPrefix, "/")) {
             $apiPrefix = "/$apiPrefix";
         }
 
 
-        if ((!$www = self::findFirstValidWebDirectory([$www])) && $info) {
+        if ((!$www = self::findFirstValidWebDirectory([$www]))) {
             $logger->warning("Could not find a valid web root directory.");
         }
-
-        if ((!$api = self::findFirstValidRoutesDirectory([$api])) && $info) {
+        
+        if ((!$api = self::findFirstValidRoutesDirectory([$api]))) {
             $logger->warning("Could not find a valid api directory.");
         }
         
@@ -202,12 +200,22 @@ class Server {
     /**
      * Start the server.
      * 
-     * This method will await untill one of the following signals is sent to the program `SIGHUP`, `SIGINT, `SIGQUIT`, `SIGTERM`.
+     * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
+     * @param false|Signal ready the server will trigger this signal whenever it's ready to serve requests.
      * @return Future<Unsafe<void>>
      */
-    public function start():Future {
-        return async(function() {
+    public function start(false|Signal $readySignal = false):Future {
+        return async(function() use ($readySignal) {
+            $endSignal = new DeferredFuture;
             try {
+                if (!isset($this->fileServer)) {
+                    $fileServerAttempt = FileServer::create($this);
+                    if ($fileServerAttempt->error) {
+                        return error($fileServerAttempt->error);
+                    }
+                    $this->fileServer = $fileServerAttempt->value;
+                }
+
                 $stopper = function(string $callbackId) {
                     EventLoop::cancel($callbackId);
                     $this->stop();
@@ -225,18 +233,27 @@ class Server {
                     return error($loggerAttempt->error);
                 }
     
-                $endSignal      = new DeferredFuture;
                 $logger         = $loggerAttempt->value;
                 $requestHandler = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
                 $stackedHandler = stackMiddleware($requestHandler, ...$this->middlewares);
                 $errorHandler   = ServerErrorHandler::create($logger);
                 $this->server   = SocketHttpServer::createForDirectAccess($logger);
-                $this->server->onStop(static fn () => $endSignal->complete());
+                $this->server->onStop(static function() use ($endSignal) {
+                    if (!$endSignal->isComplete()) {
+                        $endSignal->complete();
+                    }
+                });
                 $this->server->expose($this->interface);
                 $this->server->start($stackedHandler, $errorHandler);
+                if ($readySignal) {
+                    $readySignal->send();
+                }
                 $endSignal->getFuture()->await();
                 return ok();
             } catch (Throwable $e) {
+                if (!$endSignal->isComplete()) {
+                    $endSignal->complete();
+                }
                 return error($e);
             }
         });
@@ -260,7 +277,7 @@ class Server {
         string $api,
     ): Unsafe {
         if ($api) {
-            if(isPhar()){
+            if (isPhar()) {
                 $api = Phar::running()."/$api";
             }
             

@@ -2,7 +2,6 @@
 namespace CatPaw;
 
 use function Amp\async;
-use function Amp\File\createDirectory;
 use function Amp\File\createDirectoryRecursively;
 use function Amp\File\deleteDirectory;
 use function Amp\File\isDirectory;
@@ -11,17 +10,14 @@ use function Amp\File\listFiles;
 use Amp\Future;
 
 use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use RecursiveRegexIterator;
 use RegexIterator;
-use SplFileInfo;
 use Throwable;
 
 class Directory {
     /**
      * Delete a directory recursively.
-     * @param  string               $directoryName name of the directory.present.
+     * @param  string       $directoryName name of the directory.present.
      * @return Unsafe<void>
      */
     public static function delete(string $directoryName):Unsafe {
@@ -38,11 +34,11 @@ class Directory {
         foreach ($list as $fileNameLocal) {
             $fileName = "$directoryName/$fileNameLocal";
             if (isFile($fileName)) {
-                if($error = File::delete($fileName)->error){
+                if ($error = File::delete($fileName)->error) {
                     return error($error);
                 }
             } else {
-                if($error = self::delete($fileName)->error){
+                if ($error = self::delete($fileName)->error) {
                     return error($error);
                 }
             }
@@ -76,17 +72,17 @@ class Directory {
      */
     public static function flat(string $directoryName):Unsafe {
         try {
-            $result = [];
+            $result      = [];
             $listAttempt = Directory::list($directoryName);
-            if($listAttempt->error){
+            if ($listAttempt->error) {
                 return error($listAttempt->error);
             }
             foreach ($listAttempt->value as $fileName) {
-                if(isFile($fileName)){
+                if (isFile($fileName)) {
                     $result[] = $fileName;
                 } else {
                     $flatAttempt = Directory::flat($fileName);
-                    if($flatAttempt->error){
+                    if ($flatAttempt->error) {
                         return error($flatAttempt->error);
                     }
                     $result = [...$result, ...$flatAttempt->value];
@@ -105,13 +101,16 @@ class Directory {
      */
     public static function list(string $directoryName):Unsafe {
         try {
-            if(false === $directoryName){
+            if (!str_ends_with($directoryName, DIRECTORY_SEPARATOR)) {
+                $directoryName = $directoryName.DIRECTORY_SEPARATOR;
+            }
+            if (false === $directoryName) {
                 return error("Directory $directoryName not found.");
             }
-            $list = listFiles($directoryName);
+            $list   = listFiles($directoryName);
             $result = [];
             foreach ($list as $fileName) {
-                $result[] = "$directoryName/$fileName";
+                $result[] = "$directoryName$fileName";
             }
             return ok($result);
         } catch (\Throwable $e) {

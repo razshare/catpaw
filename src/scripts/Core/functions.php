@@ -2,19 +2,22 @@
 namespace CatPaw;
 
 use function Amp\async;
+use function Amp\ByteStream\buffer;
+use function Amp\ByteStream\getStdin;
+use function Amp\ByteStream\getStdout;
+use function Amp\ByteStream\pipe;
 
 use Amp\ByteStream\ReadableIterableStream;
+use Amp\ByteStream\ReadableResourceStream;
 use Amp\ByteStream\WritableIterableStream;
+use Amp\ByteStream\WritableResourceStream;
+use Amp\ByteStream\WritableStream;
+use Amp\DeferredFuture;
 use Amp\Future;
 use Amp\Process\Process;
 use Error;
-use Exception;
 use Phar;
-use React\Promise\Promise;
-use React\Stream\ReadableResourceStream;
-use React\Stream\ThroughStream;
-use React\Stream\WritableResourceStream;
-use React\Stream\WritableStreamInterface;
+use Psr\Log\LoggerInterface;
 use RecursiveArrayIterator;
 
 
@@ -119,14 +122,14 @@ function flatten(array $array, bool $completely = false):array {
  * Get the stdout as a stream.
  */
 function out():WritableResourceStream {
-    return new WritableResourceStream(STDOUT);
+    return getStdout();
 }
 
 /**
  * Get the stdin as a stream.
  */
 function in():ReadableResourceStream {
-    return new ReadableResourceStream(STDIN);
+    return getStdin();
 }
 
 /**
@@ -139,9 +142,8 @@ function ok(mixed $value = null):Unsafe {
 }
 
 /**
- * @template T
- * @param  string|Error $message
- * @return Unsafe<T>
+ * @param  string|Error  $message
+ * @return Unsafe<mixed>
  */
 function error(string|Error $message):Unsafe {
     if (is_string($message)) {
@@ -153,94 +155,62 @@ function error(string|Error $message):Unsafe {
 
 /**
  * Execute a command.
- * @param  string                        $command   instruction to run.
- * @param  false|WritableStreamInterface $writer    send the output of the process to this stream.
- * @param  false|Signal                  $signal    when this signal is triggered the process is killed.
- * @param  bool                          $autoClose automatically close the `$writer` stream when the process is over.
- * @return Future<Unsafe<void>>
+ * @param  string               $command instruction to run.
+ * @param  false|WritableStream $writer  send the output of the process to this stream.
+ * @param  false|Signal         $signal  when this signal is triggered the process is killed.
+ * @return Future<Unsafe<int>>
  */
 function execute(
     string $command,
-    false|WritableStreamInterface $writer = false,
+    false|WritableStream $writer = false,
     false|Signal $signal = false,
-    bool $autoClose = true,
 ):Future {
-    return async(static function($ok) use ($command, $writer, $signal, $autoClose) {
+    return async(static function() use ($command, $writer, $signal) {
         try {
-            $process = Process::start($command);
-        } catch(Throwable $e) {
-            if ($writer && $autoClose) {
-                $writer->close();
+            /** @var Unsafe<LoggerInterface> */
+            $loggerAttempt = Container::create(LoggerInterface::class);
+            if ($loggerAttempt->error) {
+                return error($loggerAttempt->error);
             }
+            $logger  = $loggerAttempt->value;
+            $process = Process::start($command);
+            pipe($process->getStdout(), $writer);
+            pipe($process->getStderr(), $writer);
+            $code = $process->join();
+        } catch(Throwable $e) {
             return error($e->getMessage());
         }
 
         if ($signal) {
-            $signal->listen(static function(int $code) use ($process) {
+            $signal->listen(static function(int $code) use ($process, $writer, $logger) {
                 if (!$process->isRunning()) {
-                    return;
+                    return ok();
                 }
-                $process->signal($code);
+
+                try {
+                    $process->signal($code);
+                } catch (Throwable $e) {
+                    $logger->error($e->getMessage());
+                }
             });
         }
-
         
-
-        // if ($writer) {
-        //     $process->stdout->on('data', static function($chunk) use ($writer) {
-        //         $writer->write($chunk);
-        //     });
-        // }
-        
-        // $process->stdout->on('end', static function() use ($ok, $autoClose, $writer) {
-        //     if ($autoClose) {
-        //         $writer->close();
-        //     }
-        //     $ok(ok());
-        // });
-        
-        // $process->stdout->on('error', static function(Exception $e) use ($ok, $autoClose, $writer) {
-        //     if ($autoClose) {
-        //         $writer->close();
-        //     }
-        //     $ok(error($e->getMessage()));
-        // });
-        
-        // $process->stdout->on('close', static function() use ($ok, $autoClose, $writer) {
-        //     if ($autoClose) {
-        //         $writer->close();
-        //     }
-        //     $ok(ok());
-        // });
+        return ok($code);
     });
 }
 
 /**
  * Execute a command and return its output.
- * @param  string                  $command command to run
- * @return Promise<Unsafe<string>>
+ * @param  string                 $command command to run
+ * @return Future<Unsafe<string>>
  */
-function get(string $command):Promise {
-    $through = new ThroughStream();
-    execute($command, $through);
-    $output = '';
-
-    return new Promise(static function($ok) use ($through, &$output) {
-        $through->on('data', static function($chunk) use ($through, &$output) {
-            $output .= $chunk;
-        });
-        
-        $through->on('end', static function() use ($ok, &$output) {
-            $ok(ok($output));
-        });
-        
-        $through->on('error', static function(Exception $e) use ($ok) {
-            $ok(error($e->getMessage()));
-        });
-        
-        $through->on('close', static function() use ($ok, &$output) {
-            $ok(ok($output));
-        });
+function get(string $command):Future {
+    return async(static function() use ($command) {
+        [$reader, $writer] = duplex();
+        if ($error = execute($command, $writer)->await()->error) {
+            return error($error);
+        }
+        return ok(buffer($reader));
     });
 }
 
@@ -269,4 +239,12 @@ function duplex(int $bufferSize = 8192):array {
     $writer = new WritableIterableStream($bufferSize);
     $reader = new ReadableIterableStream($writer);
     return [$reader, $writer];
+}
+
+/**
+ * Resolve on the next event loop tick.
+ * @return Future<void>
+ */
+function deferred():Future {
+    return (new DeferredFuture)->getFuture()->complete();
 }

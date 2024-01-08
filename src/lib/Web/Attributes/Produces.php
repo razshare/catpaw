@@ -3,11 +3,14 @@ namespace CatPaw\Web\Attributes;
 
 use Attribute;
 use CatPaw\Attributes\Entry;
+use function CatPaw\error;
 use CatPaw\Interfaces\AttributeInterface;
+use function CatPaw\ok;
 use CatPaw\Traits\CoreAttributeDefinition;
+use CatPaw\Unsafe;
+
 use CatPaw\Web\ProducedResponse;
 use CatPaw\Web\Services\OpenApiService;
-
 
 /**
  * Define the type of content the route handler produces.
@@ -60,10 +63,13 @@ class Produces implements AttributeInterface {
         );
     }
 
-    #[Entry] public function setup(OpenApiService $oa):void {
+    #[Entry] public function setup(OpenApiService $oa):Unsafe {
         foreach ($this->response as $response) {
-            $response->setup($oa);
+            if ($error = $response->setup($oa)->error) {
+                return error($error);
+            }
         }
+        return ok();
     }
 
     public function hasContentType():bool {

@@ -2,8 +2,12 @@
 namespace CatPaw\Web;
 
 use CatPaw\Attributes\Entry;
+use function CatPaw\error;
 use CatPaw\Interfaces\AttributeInterface;
+
+use function CatPaw\ok;
 use CatPaw\Traits\CoreAttributeDefinition;
+use CatPaw\Unsafe;
 use CatPaw\Web\Services\OpenApiService;
 
 class ProducedResponse implements AttributeInterface {
@@ -99,7 +103,12 @@ class ProducedResponse implements AttributeInterface {
         return $this->className;
     }
 
-    #[Entry] public function setup(OpenApiService $oa):void {
+    /**
+     * 
+     * @param  OpenApiService $oa
+     * @return Unsafe<void>
+     */
+    #[Entry] public function setup(OpenApiService $oa):Unsafe {
         $isClass = class_exists($this->className);
         $type    = '';
         if ($isClass) {
@@ -110,7 +119,9 @@ class ProducedResponse implements AttributeInterface {
                 $type = 'Item';
                 $oa->setComponentReferenceItem($this->className);
             }
-            $oa->setComponentObject($this->className);
+            if ($error = $oa->setComponentObject($this->className)->error) {
+                return error($error);
+            }
         }
         
         if ($isClass) {
@@ -123,7 +134,7 @@ class ProducedResponse implements AttributeInterface {
                 $schema = [
                     'type'  => 'array',
                     'items' => [
-                        'type' => 'string'
+                        'type' => 'string',
                     ],
                 ];
             } else {
@@ -152,5 +163,7 @@ class ProducedResponse implements AttributeInterface {
             schema: $schema,
             example: $this->example,
         );
+
+        return ok();
     }
 }

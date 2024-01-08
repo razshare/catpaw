@@ -8,8 +8,10 @@
     "cli",
     "server",
     "http",
-    "websocket",
-    "catpaw"
+    "catpaw",
+    "amphp",
+    "async",
+    "di"
   ],
   "authors": [
     {
@@ -19,28 +21,26 @@
   ],
   "scripts": {
     "load": "composer dump-autoload -o",
-    "prod:test": [],
-    "prod:start": "php ./bin/start --entry='./preview/server.php' --libraries='./preview/lib/'",
-    "prod:start:build": "php -dphar.readonly=0 ./bin/start --entry='./preview/build.php' --libraries='./preview/lib/'",
-    "prod:build": "php -dphar.readonly=0 ./build.phar --init-config --optimize",
+    "prod:start": "php -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
+    "prod:build": "@prod:start --build --build-config='./build.yml' --build-optimize",
+    "prod:test": [
+      "php vendor/bin/phpunit tests"
+    ],
+    "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
+    "dev:build": "@dev:start --build --build-config='./build.yml' --build-optimize",
+    "dev:test": [
+      "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests"
+    ],
     "dev:fix": [
       "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix src",
       "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix tests"
     ],
-    "dev:test": [],
-    "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --entry='./preview/server.php' --libraries='./preview/lib/' --info",
-    "dev:start:build": "php -dphar.readonly=0 -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --entry='./preview/build.php' --libraries='./preview/lib/' --info",
-    "dev:watch": "php ./bin/start --entry='./preview/main.php' --libraries='./preview/lib/' --resources='./resources/' --info --watch --php='php -dxdebug.mode=debug -dxdebug.start_with_request=yes'",
-    "dev:build": "php -dxdebug.mode=off -dxdebug.start_with_request=no -dphar.readonly=0 ./build.phar --init-config",
-    "download:build": "[ ! -f build.phar ] && wget https://github.com/tncrazvan/catpaw-build/releases/latest/download/build.phar || echo ''",
     "download:psalm": "[ ! -f psalm.phar ] && wget https://github.com/vimeo/psalm/releases/latest/download/psalm.phar || echo ''",
     "post-autoload-dump": [
-      "@download:psalm",
-      "@download:build"
+      "@download:psalm"
     ],
     "post-create-project-cmd": [
-      "@download:psalm",
-      "@download:build"
+      "@download:psalm"
     ]
   },
   "autoload": {
@@ -53,6 +53,15 @@
       ],
       "CatPaw\\Web\\": [
         "src/lib/Web"
+      ],
+      "CatPaw\\Queue\\": [
+        "src/lib/Queue"
+      ],
+      "CatPaw\\Schedule\\": [
+        "src/lib/Schedule"
+      ],
+      "CatPaw\\Store\\": [
+        "src/lib/Store"
       ]
     },
     "files": [
@@ -60,8 +69,8 @@
       "src/scripts/Core/functions.php",
       "src/scripts/Web/constants.php",
       "src/scripts/Web/functions.php",
-      "src/scripts/Build/main.php",
-      "src/scripts/Build/build.php"
+      "src/scripts/Build/functions.php",
+      "src/scripts/Store/functions.php"
     ]
   },
   "minimum-stability": "stable",
@@ -71,18 +80,16 @@
     "ext-pcntl": "*",
     "ext-openssl": "*",
     "ext-zlib": "*",
-    "erusev/parsedown": "^1.7",
     "vlucas/phpdotenv": "^5.4",
     "monolog/monolog": "^3.3",
-    "react/async": "^4.1.0",
-    "react/child-process": "^0.6.5",
-    "react/http": "^1.9.0",
-    "amphp/amp": "^3.0",
     "revolt/event-loop": "^1.0",
+    "amphp/amp": "^3.0",
     "amphp/process": "^2.0",
     "amphp/byte-stream": "^2.1",
     "amphp/file": "^3.0",
-    "amphp/http-server": "^3.3"
+    "amphp/http-server": "^3.3",
+    "amphp/http-client": "^5.0",
+    "amphp/parallel": "^2.0"
   },
   "autoload-dev": {
     "psr-4": {

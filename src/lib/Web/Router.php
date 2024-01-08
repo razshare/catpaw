@@ -68,6 +68,7 @@ class Router {
             }
 
             $consumesAttempt = Consumes::findByFunction($reflectionFunction);
+            
             if ($consumesAttempt->error) {
                 return error($consumesAttempt->error);
             }
@@ -314,8 +315,8 @@ class Router {
     /**
      * 
      * @param  ReflectionFunction  $reflectionFunction
-     * @param  OpenApiService      $oa
      * @param  string              $path
+     * @param  OpenApiService      $oa
      * @throws ReflectionException
      * @return Unsafe<array>
      */
@@ -382,8 +383,8 @@ class Router {
 
             $schema = ["type" => $type];
             
-            $summary = $summaryAttribute?$summaryAttribute->value->getValue():'';
-            $example = $exampleAttribute?$exampleAttribute->value->getValue():[];
+            $summary = $summaryAttribute->value?$summaryAttribute->value->getValue():'';
+            $example = $exampleAttribute->value?$exampleAttribute->value->getValue():[];
             
             $result = [
                 ...$result,

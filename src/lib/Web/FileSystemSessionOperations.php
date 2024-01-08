@@ -151,7 +151,7 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
      */
     public function persistSession(string $id): Unsafe {
         if (!isDirectory($this->directoryName)) {
-            if($error = Directory::create($this->directoryName)->error){
+            if ($error = Directory::create($this->directoryName)->error) {
                 return error($error);
             }
         }

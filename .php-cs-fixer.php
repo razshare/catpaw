@@ -1,7 +1,7 @@
 <?php
 /*
  * This document has been generated with
- * https://mlocati.github.io/php-cs-fixer-configurator/#version:3.11.0|configurator
+ * https://mlocati.github.io/php-cs-fixer-configurator/#version:3.22.0|configurator
  * you can change this configuration by importing this file.
  */
 $config = new PhpCsFixer\Config();
@@ -20,14 +20,22 @@ return $config
         'concat_space'                            => ['spacing' => 'none'],
         'constant_case'                           => true,
         'control_structure_continuation_position' => ['position' => 'same_line'],
+        'encoding'                                => true,
         'function_declaration'                    => ['closure_function_spacing' => 'none','trailing_comma_single_line' => true],
         'function_typehint_space'                 => true,
         'heredoc_indentation'                     => true,
         'indentation_type'                        => true,
         'list_syntax'                             => true,
+        'lowercase_keywords'                      => true,
+        'magic_constant_casing'                   => true,
+        'magic_method_casing'                     => true,
         'method_argument_space'                   => ['after_heredoc' => false,'keep_multiple_spaces_after_comma' => false,'on_multiline' => 'ensure_fully_multiline'],
         'method_chaining_indentation'             => true,
+        'native_function_casing'                  => true,
         'native_function_type_declaration_casing' => true,
+        'no_empty_statement'                      => true,
+        'no_null_property_initialization'         => true,
+        'no_short_bool_cast'                      => true,
         'no_spaces_after_function_name'           => true,
         'no_spaces_around_offset'                 => true,
         'no_unneeded_curly_braces'                => true,
@@ -36,12 +44,15 @@ return $config
         'phpdoc_align'                            => ['align' => 'vertical'],
         'phpdoc_indent'                           => true,
         'phpdoc_order'                            => true,
+        'phpdoc_param_order'                      => true,
         'phpdoc_scalar'                           => true,
+        'single_line_comment_spacing'             => true,
+        'trailing_comma_in_multiline'             => true,
         'yoda_style'                              => ['always_move_variable' => true,'equal' => true,'identical' => true,'less_and_greater' => false],
     ])
     ->setFinder(
         PhpCsFixer\Finder::create()
-            ->exclude('vendor')
+            // ->exclude('folder-to-exclude') // if you want to exclude some folders, you can do it like this!
             ->in(__DIR__)
     )
 ;

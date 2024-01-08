@@ -3,6 +3,7 @@ namespace CatPaw\Build;
 
 use function Amp\File\isDirectory;
 
+use CatPaw\Container;
 use CatPaw\Directory;
 use function CatPaw\error;
 use function CatPaw\execute;
@@ -12,6 +13,7 @@ use function CatPaw\out;
 use CatPaw\Unsafe;
 use Exception;
 use Phar;
+use Psr\Log\LoggerInterface;
 
 /**
  * 
@@ -21,10 +23,60 @@ use Phar;
  * @return Unsafe<void>
  */
 function build(
-    string $buildFile,
-    bool $optimize,
+    false|string $buildConfig = false,
+    bool $buildConfigInit = false,
+    bool $buildOptimize = false,
 ):Unsafe {
-    $fileAttempt = File::open($buildFile, 'r');
+    if (File::exists('build.yml')) {
+        $buildConfig = $buildConfig?:'build.yml';
+    } else {
+        $buildConfig = $buildConfig?:'build.yaml';
+    }
+
+
+    /** @var Unsafe<LoggerInterface> */
+    $loggerAttempt = Container::create(LoggerInterface::class);
+    if ($loggerAttempt->error) {
+        return error($loggerAttempt->error);
+    }
+    $logger = $loggerAttempt->value;
+
+    if ($buildConfigInit) {
+        $logger->info('Trying to generate build.yml file...');
+        
+        if (!File::exists('build.yml')) {
+            $file = File::open('build.yml');
+            if ($file->error) {
+                return error($file->error);
+            }
+
+            $writeAttempt = $file->value->write('build.yml', <<<YAML
+                name: app
+                entry: ./src/main.php
+                libraries: ./src/lib
+                environment: ./env.yml
+                info: false
+                match: /(^\.\/(\.build-cache|src|vendor|resources|bin)\/.*)|(\.\/env\.yml)/
+                YAML)->await();
+
+            if ($writeAttempt->error) {
+                return error($writeAttempt->error);
+            }
+            
+            $logger->info('done!');
+        } else {
+            $logger->info('A build.yml file already exists - will not overwrite.');
+        }
+    }
+
+    if (ini_get('phar.readonly')) {
+        return error('Cannot build using readonly phar, please disable the phar.readonly flag by running the builder with "php -dphar.readonly=0"'.PHP_EOL);
+    }
+
+
+
+
+    $fileAttempt = File::open($buildConfig, 'r');
     if ($fileAttempt->error) {
         return error($fileAttempt->error);
     }
@@ -74,8 +126,8 @@ function build(
         }
     }
 
-    $app   = "$name";
-    $start = '.build-cache/start.php';
+    $app          = "$name";
+    $start        = '.build-cache/start.php';
     $dirnameStart = dirname($start);
     
     try {
@@ -151,7 +203,7 @@ function build(
             }
         }
         
-        if ($optimize) {
+        if ($buildOptimize) {
             if ($error = execute("composer update --no-dev", out())->await()->error) {
                 return error($error);
             }
@@ -184,7 +236,7 @@ function build(
             return error($error);
         }
 
-        if ($optimize) {
+        if ($buildOptimize) {
             if ($error = execute("composer update", out())->await()->error) {
                 return error($error);
             }

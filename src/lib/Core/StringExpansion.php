@@ -165,7 +165,7 @@ class StringExpansion {
             return error("Too many nested groups in the condition (max 10).");
         }
 
-        //Il numero di parentesi aperte deve essere uguale al numero di parentesi chiuse
+        // Il numero di parentesi aperte deve essere uguale al numero di parentesi chiuse
         $numberOfOpenParenthesis   = preg_match_all('/\(/', $content);
         $numberOfClosedParenthesis = preg_match_all('/\)/', $content);
 
@@ -216,14 +216,14 @@ class StringExpansion {
     }
 
     /**
-     * @param  string    $content
-     * @param  array     $parameters
+     * @param  string       $content
+     * @param  array        $parameters
      * @throws Exception
      * @return Unsafe<bool>
      */
     public static function condition(string $content, array $parameters): Unsafe {
         $variable = self::variable($content, $parameters);
-        if($variable->error){
+        if ($variable->error) {
             return error($variable->error);
         }
         return self::groupCondition($variable->value);
