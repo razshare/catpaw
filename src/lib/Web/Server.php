@@ -23,7 +23,6 @@ use function CatPaw\ok;
 use CatPaw\Signal;
 
 use CatPaw\Unsafe;
-use CatPaw\Web\Attributes\Session;
 use CatPaw\Web\Interfaces\FileServerInterface;
 use Phar;
 use Psr\Log\LoggerInterface;
@@ -91,6 +90,7 @@ class Server {
         string $api = './server/api/',
         string $www = './server/www/',
         string $apiPrefix = '',
+        false|SessionOperationsInterface $sessionOperations = false,
     ): Unsafe {
         if (!str_starts_with($api, './')) {
             return error("The api directory must be a relative path and within the project directory.");
@@ -113,7 +113,6 @@ class Server {
             $apiPrefix = "/$apiPrefix";
         }
 
-
         if ((!$www = self::findFirstValidWebDirectory([$www]))) {
             $logger->warning("Could not find a valid web root directory.");
         }
@@ -121,15 +120,24 @@ class Server {
         if ((!$api = self::findFirstValidRoutesDirectory([$api]))) {
             $logger->warning("Could not find a valid api directory.");
         }
-        
+
+        if (!$sessionOperations) {
+            $sessionOperations = FileSystemSessionOperations::create(
+                ttl          : 1_440,
+                directoryName: ".sessions",
+                keepAlive    : false,
+            );
+        }
+
         return ok(new self(
-            interface      : $interface,
-            secureInterface: $secureInterface,
-            apiPrefix      : $apiPrefix,
-            api            : $api,
-            www            : $www,
-            router         : Router::create(),
-            logger         : $logger,
+            interface        : $interface,
+            secureInterface  : $secureInterface,
+            apiPrefix        : $apiPrefix,
+            api              : $api,
+            www              : $www,
+            router           : Router::create(),
+            logger           : $logger,
+            sessionOperations: $sessionOperations,
         ));
     }
 
@@ -138,7 +146,6 @@ class Server {
     private FileServerInterface $fileServer;
     /** @var array<Middleware> */
     private array $middlewares = [];
-    public SessionOperationsInterface $sessionOperations;
 
     private function __construct(
         public readonly string $interface,
@@ -148,6 +155,7 @@ class Server {
         public readonly string $www,
         public readonly Router $router,
         public readonly LoggerInterface $logger,
+        public readonly SessionOperationsInterface $sessionOperations,
     ) {
         $initialisationAttempt = self::initializeRoutes(
             logger: $this->logger,
@@ -159,19 +167,6 @@ class Server {
         if ($initialisationAttempt->error) {
             $logger->error($initialisationAttempt->error->getMessage());
         }
-
-        if (!Session::getOperations()) {
-            Session::setOperations(
-                FileSystemSessionOperations::create(
-                    ttl      : 1_440,
-                    directoryName: ".sessions",
-                    keepAlive: false,
-                )
-            );
-        }
-
-        $this->sessionOperations = Session::getOperations();
-
 
         Bootstrap::onKill(function() {
             $this->stop();

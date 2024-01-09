@@ -12,7 +12,7 @@ readonly class Unsafe {
      * @param false|Error $error
      */
     public function __construct(
-        public mixed       $value,
+        public mixed $value,
         public false|Error $error
     ) {
         if ($error && !($error instanceof Error)) {

@@ -16,11 +16,8 @@ use CatPaw\Web\Interfaces\ResponseModifier;
 use function explode;
 
 use function in_array;
-use Psr\Http\Message\RequestInterface;
 
 use Psr\Http\Message\ResponseInterface;
-use ReflectionException;
-use Throwable;
 
 class HttpInvoker {
     public static function create(
@@ -42,11 +39,11 @@ class HttpInvoker {
      * @param false|Response                   $badRequestCantConsume
      */
     private function __construct(
-        private readonly Server                           $server,
-        private readonly Router                           $router,
+        private readonly Server $server,
+        private readonly Router $router,
         private readonly false|SessionOperationsInterface $sessionOperations,
-        private false|Response                            $badRequestNoContentType = false,
-        private false|Response                            $badRequestCantConsume = false,
+        private false|Response $badRequestNoContentType = false,
+        private false|Response $badRequestCantConsume = false,
     ) {
         if (!$this->badRequestNoContentType) {
             $this->badRequestNoContentType = new Response(HttpStatus::BAD_REQUEST, [], '');
@@ -58,7 +55,7 @@ class HttpInvoker {
 
 
     /**
-     * @param RequestContext $context
+     * @param  RequestContext            $context
      * @return Unsafe<ResponseInterface>
      */
     public function invoke(RequestContext $context):Unsafe {

@@ -65,10 +65,10 @@ readonly class FileServer implements FileServerInterface {
     }
 
     private function __construct(
-        private Server                             $server,
-        private string                             $fallback,
-        private LoggerInterface                    $logger,
-        private ByteRangeService                   $byteRangeService,
+        private Server $server,
+        private string $fallback,
+        private LoggerInterface $logger,
+        private ByteRangeService $byteRangeService,
         private FileServerOverwriteInterface|false $overwrite = false,
     ) {
     }
@@ -89,9 +89,9 @@ readonly class FileServer implements FileServerInterface {
 
     /**
      * Success response.
-     * @param mixed $data
-     * @param int   $status
-     * @param array $headers
+     * @param  mixed    $data
+     * @param  int      $status
+     * @param  array    $headers
      * @return Response
      */
     private function success(

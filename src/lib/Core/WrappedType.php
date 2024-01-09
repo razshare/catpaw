@@ -3,12 +3,12 @@ namespace CatPaw;
 
 readonly class WrappedType {
     public function __construct(
-        private bool   $allowsBoolean,
-        private bool   $allowsTrue,
-        private bool   $allowsFalse,
-        private bool   $allowsNullValue,
-        private bool   $allowsDefaultValue,
-        private mixed  $defaultValue,
+        private bool $allowsBoolean,
+        private bool $allowsTrue,
+        private bool $allowsFalse,
+        private bool $allowsNullValue,
+        private bool $allowsDefaultValue,
+        private mixed $defaultValue,
         private string $className,
     ) {
     }

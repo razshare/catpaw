@@ -52,7 +52,7 @@ class PathResolver {
         $configurations = [];
 
         foreach ($reflectionParameters as $reflectionParameter) {
-            $reflectionParameterName      = $reflectionParameter->getName();
+            $reflectionParameterName = $reflectionParameter->getName();
             /** @var Unsafe<Param> $param */
             $param = Param::findByParameter($reflectionParameter);
             if ($param->error) {

@@ -272,10 +272,10 @@ class Bootstrap {
     /**
      * Start a watcher which will detect file changes.
      * Useful for development mode.
-     * @param string   $entry
-     * @param array    $libraries
-     * @param array    $resources
-     * @param callable $callback
+     * @param  string   $entry
+     * @param  array    $libraries
+     * @param  array    $resources
+     * @param  callable $callback
      * @return void
      */
     private static function onFileChange(

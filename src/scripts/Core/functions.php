@@ -142,8 +142,8 @@ function ok(mixed $value = null):Unsafe {
 }
 
 /**
- * @param  string|Error  $message
- * @return Unsafe<mixed>
+ * @param  string|Error $message
+ * @return Unsafe<void>
  */
 function error(string|Error $message):Unsafe {
     if (is_string($message)) {

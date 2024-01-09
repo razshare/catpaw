@@ -3,11 +3,11 @@ namespace CatPaw\Web\Attributes;
 
 use Attribute;
 use CatPaw\Attributes\Entry;
-use CatPaw\Unsafe;
 use function CatPaw\error;
 use CatPaw\Interfaces\AttributeInterface;
 use function CatPaw\ok;
 use CatPaw\Traits\CoreAttributeDefinition;
+use CatPaw\Unsafe;
 use CatPaw\Web\ProducedResponse;
 use CatPaw\Web\Services\OpenApiService;
 

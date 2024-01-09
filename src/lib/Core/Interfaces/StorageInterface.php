@@ -33,7 +33,7 @@ interface StorageInterface {
 
     /**
      * Unset a value by key.
-     * @param string $key
+     * @param  string $key
      * @return void
      */
     public function unset(string $key):void;

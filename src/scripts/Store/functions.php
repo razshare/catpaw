@@ -14,8 +14,8 @@ function writable(mixed $value): Writable {
 
 
 /**
- * @param mixed         $value initial value of the store
- * @param false|Closure $start
+ * @param  mixed         $value initial value of the store
+ * @param  false|Closure $start
  * @return Readable
  */
 function readable(

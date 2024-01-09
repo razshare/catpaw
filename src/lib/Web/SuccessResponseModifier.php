@@ -36,9 +36,9 @@ class SuccessResponseModifier implements ResponseModifier {
     private false|Page $page   = false;
 
     private function __construct(
-        private readonly mixed  $data,
-        private readonly array  $headers,
-        private readonly int    $status,
+        private readonly mixed $data,
+        private readonly array $headers,
+        private readonly int $status,
         private readonly string $message,
     ) {
         if ($data instanceof ReadableStream) {
@@ -75,7 +75,7 @@ class SuccessResponseModifier implements ResponseModifier {
                 $shouldWrap = true;
             }
 
-            $data   = $shouldWrap?[$this->data]:$this->data;
+            $data = $shouldWrap?[$this->data]:$this->data;
             return [
                 "type"              => "page",
                 "previous$wildcard" => $this->page->previousLink(),

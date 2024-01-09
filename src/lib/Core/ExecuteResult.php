@@ -5,7 +5,7 @@ use Stringable;
 
 readonly class ExecuteResult implements Stringable {
     public function __construct(
-        private int    $code,
+        private int $code,
         private string $output,
         private string $error,
     ) {

@@ -19,9 +19,9 @@ readonly class ServerRequestHandler implements RequestHandler {
     }
 
     private function __construct(
-        private LoggerInterface     $logger,
+        private LoggerInterface $logger,
         private FileServerInterface $fileServer,
-        private RouteResolver       $resolver,
+        private RouteResolver $resolver,
     ) {
     }
 

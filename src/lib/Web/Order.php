@@ -85,7 +85,7 @@ readonly class Order implements Stringable {
      */
     private function __construct(
         private string $direction,
-        private array  $items,
+        private array $items,
     ) {
     }
 

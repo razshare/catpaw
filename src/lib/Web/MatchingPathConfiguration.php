@@ -12,7 +12,7 @@ readonly class MatchingPathConfiguration {
      * @return bool
      */
     public static function findInArrayByName(array $configurations, MatchingPathConfiguration $configuration):bool {
-        if(in_array($configuration->name, $configurations, true)) {
+        if (in_array($configuration->name, $configurations, true)) {
             return true;
         }
         return false;

@@ -25,9 +25,9 @@ class ErrorResponseModifier implements ResponseModifier {
     private bool $isStructured = true;
     
     private function __construct(
-        private readonly int    $status,
+        private readonly int $status,
         private readonly string $message,
-        private readonly array  $headers,
+        private readonly array $headers,
     ) {
     }
 
@@ -91,7 +91,7 @@ class ErrorResponseModifier implements ResponseModifier {
 
     /**
      * Page the response.
-     * @param Page $page
+     * @param  Page                  $page
      * @return ErrorResponseModifier
      */
     public function page(Page $page):self {

@@ -5,12 +5,12 @@ use Amp\ByteStream\ReadableIterableStream;
 use Amp\ByteStream\WritableIterableStream;
 use Amp\Http\Server\Response;
 
-use CatPaw\Unsafe;
-use Throwable;
 use function CatPaw\duplex;
-use Closure;
 use function CatPaw\error;
 use function CatPaw\ok;
+use CatPaw\Unsafe;
+use Closure;
+use Throwable;
 
 class ServerSentEvent {
     private function __construct(
@@ -80,8 +80,8 @@ class ServerSentEvent {
      * Overwriting the default headers is allowed.
      *
      * Overwriting header `Content-Type` to something other than `text/event-stream` will break the SSE contract and the event will stop working as intended.
-     * @param string $name
-     * @param string $value
+     * @param  string          $name
+     * @param  string          $value
      * @return ServerSentEvent
      */
     function setHeader(string $name, string $value):self {

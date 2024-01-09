@@ -9,8 +9,8 @@ use Stringable;
 
 class Cookie implements Stringable {
     /**
-     * @param Request $request
-     * @param string  $cookieName
+     * @param  Request      $request
+     * @param  string       $cookieName
      * @return false|Cookie
      */
     public static function findFromRequestByName(Request $request, string $cookieName):false|Cookie {
@@ -19,8 +19,8 @@ class Cookie implements Stringable {
     }
 
     /**
-     * @param Response $response
-     * @param string   $cookieName
+     * @param  Response     $response
+     * @param  string       $cookieName
      * @return false|Cookie
      */
     public static function findFromResponseByName(Response $response, string $cookieName):false|Cookie {
@@ -29,8 +29,8 @@ class Cookie implements Stringable {
     }
 
     /**
-     * @param RequestContext $context
-     * @param string         $cookieName
+     * @param  RequestContext $context
+     * @param  string         $cookieName
      * @return false|Cookie
      */
     public static function findFromRequestContextByName(RequestContext $context, string $cookieName):false|Cookie {

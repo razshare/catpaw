@@ -17,9 +17,9 @@ use Psr\Log\LoggerInterface;
 
 /**
  *
- * @param false|string $buildConfig
- * @param bool         $buildConfigInit
- * @param bool         $buildOptimize
+ * @param  false|string $buildConfig
+ * @param  bool         $buildConfigInit
+ * @param  bool         $buildOptimize
  * @return Unsafe<void>
  */
 function build(

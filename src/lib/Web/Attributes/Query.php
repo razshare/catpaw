@@ -120,8 +120,8 @@ class Query implements AttributeInterface, OnParameterMount {
 
 
     /**
-     * @param RequestContext $http
-     * @param string         $key
+     * @param  RequestContext $http
+     * @param  string         $key
      * @return Unsafe<bool>
      */
     private function toBool(RequestContext $http, string $key):Unsafe {
@@ -132,8 +132,8 @@ class Query implements AttributeInterface, OnParameterMount {
     }
 
     /**
-     * @param RequestContext $http
-     * @param string         $key
+     * @param  RequestContext $http
+     * @param  string         $key
      * @return Unsafe<float>
      */
     private function toFloat(RequestContext $http, string $key):Unsafe {

@@ -8,20 +8,20 @@ use CatPaw\Web\Attributes\Session;
 interface SessionOperationsInterface {
     /**
      * Create operations for sessions.
-     * @param int    $ttl
-     * @param string $dirname
-     * @param bool   $keepAlive
+     * @param  int                        $ttl
+     * @param  string                     $directoryName
+     * @param  bool                       $keepAlive
      * @return SessionOperationsInterface
      */
     public static function create(
         int $ttl,
-        string $dirname,
+        string $directoryName,
         bool $keepAlive,
     ):self;
 
     /**
-     * Start a session or retrieve an already existing session by id.<br/>
-     * If the session id already exists, load it, otherwise create a new session.<br/>
+     * Start a session or retrieve an already existing session by id.\
+     * If the session id already exists, load it, otherwise create a new session.
      * @param  string                $id session id (if blank a new session is created).
      * @return Unsafe<Session|false>
      */
@@ -30,7 +30,7 @@ interface SessionOperationsInterface {
     /**
      * @return string a new unique session id.
      */
-    public function makeSessionID(): string;
+    public function makeSessionId(): string;
 
     /**
      * @param  string $id session id
@@ -39,7 +39,7 @@ interface SessionOperationsInterface {
     public function issetSession(string $id): bool;
 
     /**
-     * Save a session in memory.<br/>
+     * Save a session in memory.\
      * The difference "persist" and "set" is that
      * the "persist" method will save data on a permanent storage
      * like a database or even directly to the file system.
@@ -49,8 +49,8 @@ interface SessionOperationsInterface {
     public function setSession(Session $session): bool;
 
     /**
-     * Validate a session id and get a session back.<br/>
-     * If the session id does not exist (or it expired) a new session is created.<br/>
+     * Validate a session id and get a session back.\
+     * The builtin `FileSystemSessionOperations` implementation will create a new session if the session id does not exist or the session expired.\
      * This means the resulting <b>Session</b> instance could have a different <b>id</b> than
      * the one given as input.
      * @param  string                $id
@@ -59,7 +59,7 @@ interface SessionOperationsInterface {
     public function validateSession(string $id): Unsafe;
 
     /**
-     * Save a session permanently.<br/>
+     * Save a session permanently.\
      * The difference "persist" and "set" is that
      * the "persist" method will save data on a permanent storage
      * like a database or even directly to the file system.

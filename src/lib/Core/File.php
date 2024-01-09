@@ -162,7 +162,7 @@ readonly class File {
     }
 
     /**
-     * @param int $position
+     * @param  int $position
      * @return int
      */
     public function seek(int $position): int {

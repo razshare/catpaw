@@ -57,7 +57,7 @@ class FormParser {
                         }
                         $entry['attributes'] = &$attributes;
                     } elseif (preg_match('/(?<=^Content-Type:).+/', $line, $ct)) {
-                        $contentTypeLocal          = ltrim($ct[0] ?? '');
+                        $contentTypeLocal     = ltrim($ct[0] ?? '');
                         $entry['contentType'] = &$contentTypeLocal;
                     }
                 }

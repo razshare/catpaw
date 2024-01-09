@@ -9,19 +9,12 @@ use CatPaw\File;
 use function CatPaw\ok;
 use CatPaw\Unsafe;
 use CatPaw\Web\Attributes\Session;
-use Throwable;
 use function hash;
 use function rand;
+use Throwable;
 
 class FileSystemSessionOperations implements SessionOperationsInterface {
-    /**
-     * @param  int    $ttl           session time to live in seconds.
-     * @param  string $directoryName session directory name.
-     * @param  bool   $keepAlive     if true the session creation time will be
-     *                               refreshed every time the session is requested, which will not allow the session to die
-     *                               unless the session has been inactive for <b>$ttl</b> time.
-     * @return self
-     */
+    /** @inheritDoc */
     public static function create(
         int $ttl,
         string $directoryName,
@@ -35,8 +28,8 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
     }
 
     private function __construct(
-        private readonly int  $ttl,
-        private string        $directoryName,
+        private readonly int $ttl,
+        private string $directoryName,
         private readonly bool $keepAlive,
     ) {
         $this->directoryName = preg_replace('/[\\/\\\]+(?=$)/', '', $this->directoryName);
@@ -44,10 +37,7 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
 
     private array $sessions = [];
 
-    /**
-     * @inheritDoc
-     * @return Unsafe<false|Session>
-     */
+    /** @inheritDoc */
     public function startSession(string $id): Unsafe {
         $session  = Session::create();
         $filename = "$this->directoryName/$id";
@@ -76,7 +66,7 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
                 $session->setTime(time());
             }
         } else {
-            $id      = $this->makeSessionID();
+            $id      = $this->makeSessionId();
             $storage = [];
             $session->setStorage($storage);
             $session->setTime(time());
@@ -87,11 +77,7 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
         return ok($session);
     }
 
-
-    /**
-     * @inheritDoc
-     * @return Unsafe<false|Session>
-     */
+    /** @inheritDoc */
     public function validateSession(string $id): Unsafe {
         try {
             $time = time();
@@ -130,24 +116,18 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function issetSession(string $id): bool {
         return isset($this->sessions[$id]) || (File::exists("$this->directoryName/$id"));
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function setSession(Session $session): bool {
         $this->sessions[$session->getId()] = $session;
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function persistSession(string $id): Unsafe {
         if (!isDirectory($this->directoryName)) {
             if ($error = Directory::create($this->directoryName)->error) {
@@ -179,9 +159,7 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
         return ok();
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function removeSession(string $id): Unsafe {
         $filename = "$this->directoryName/$id";
         if (File::exists($filename)) {
@@ -193,10 +171,8 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
         return ok();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function makeSessionID(): string {
+    /** @inheritDoc */
+    public function makeSessionId(): string {
         $id = hash('sha3-224', (string)rand());
         $id = $id?:'';
         while ($this->issetSession($id)) {

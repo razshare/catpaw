@@ -117,11 +117,9 @@ class ByteRangeService {
         
 
         /** @var ReadableIterableStream $reader */
-        /** @var WritableIterableStream $writer */
+        /** @var WritableIterableStream $reader */
 
         [$reader,$writer] = duplex();
-
-
 
         if (1 === $count) {
             [[$start, $end]]           = $ranges;
@@ -150,6 +148,7 @@ class ByteRangeService {
                 $writer->write($dataAttempt->value);
                 $writer->close();
                 $interface->close();
+                return ok();
             });
 
             return ok($response);
@@ -157,10 +156,6 @@ class ByteRangeService {
         
         $boundary                = uuid();
         $headers['Content-Type'] = "multipart/byterange; boundary=$boundary";
-        $length                  = 0;
-        foreach ($ranges as $r) {
-            $length += $r[1] - $r[0];
-        }
         
         $interface->start();
 
@@ -202,15 +197,16 @@ class ByteRangeService {
             $writer->write("--$boundary--");
             $writer->close();
             $interface->close();
+            return ok();
         });
 
         return ok($response);
     }
 
     /**
-     * 
+     *
      * @param  string           $fileName
-     * @param  Request          $request
+     * @param  string           $rangeQuery
      * @return Unsafe<Response>
      */
     public function file(
@@ -222,8 +218,8 @@ class ByteRangeService {
                 private File $file;
 
                 public function __construct(
-                    private string $rangeQuery,
-                    private string $fileName,
+                    private readonly string $rangeQuery,
+                    private readonly string $fileName,
                 ) {
                 }
 
@@ -239,13 +235,12 @@ class ByteRangeService {
                     $size = File::getSize($this->fileName);
                     if ($size->error) {
                         return error($size->error);
-                        return -1;
                     }
                     return ok($size->value);
                 }
 
                 public function start():Unsafe {
-                    $fileAttempt = File::open($this->fileName, "r");
+                    $fileAttempt = File::open($this->fileName);
                     if ($fileAttempt->error) {
                         return error($fileAttempt->error);
                     }

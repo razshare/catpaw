@@ -8,7 +8,7 @@ use Psr\Http\Message\UriInterface;
 
 /**
  * Suggest a download action to the client.
- * @param Response $response
+ * @param  Response $response
  * @return Response
  */
 function download(Response $response):Response {
@@ -27,10 +27,10 @@ function redirect(string $to):SuccessResponseModifier {
 
 /**
  * Success response.
- * @param mixed        $data
- * @param int          $status
- * @param array        $headers
- * @param false|string $message
+ * @param  mixed                   $data
+ * @param  int                     $status
+ * @param  array                   $headers
+ * @param  false|string            $message
  * @return SuccessResponseModifier
  */
 function success(
@@ -74,7 +74,7 @@ function failure(
 
 /**
  * Get a list of `key => value` pairs for each query string.
- * @param UriInterface $uri
+ * @param  UriInterface                        $uri
  * @return array<string,string|bool|int|float>
  */
 function queries(UriInterface $uri):array {
