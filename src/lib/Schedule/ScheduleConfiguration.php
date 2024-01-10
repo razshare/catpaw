@@ -1,14 +1,14 @@
 <?php
 namespace CatPaw\Schedule;
 
-readonly class ScheduleEntry {
-    public static function create(int $value, int $multiplier): ScheduleEntry {
-        return new self(value:$value, multiplier:$multiplier);
+readonly class ScheduleConfiguration {
+    public static function create(int $value, bool $repeat): ScheduleConfiguration {
+        return new self(value:$value, repeat: $repeat);
     }
 
     private function __construct(
         public int $value,
-        public int $multiplier,
+        public bool $repeat,
     ) {
     }
 }

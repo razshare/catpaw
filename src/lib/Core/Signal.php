@@ -5,8 +5,13 @@ use SplDoublyLinkedList;
 
 class Signal {
     private bool $busy = false;
+
+    /**
+     * Create a signal.
+     * @return self
+     */
     public static function create():self {
-        return new self(LinkedList::create());
+        return new self(list: LinkedList::create());
     }
 
     /**
@@ -15,12 +20,15 @@ class Signal {
     private function __construct(private readonly LinkedList $list) {
     }
 
+    public function sigterm():self {
+        return $this->send(SIGTERM);
+    }
     /**
      * Send signal and trigger listeners.
-     * @param int $code code to send, defaults to `SIGTERM`.
+     * @param int $code code to send, defaults to <b>0</b>.
      * 
      */
-    public function send(int $code = SIGTERM):self {
+    public function send(int $code = 0):self {
         if ($this->busy) {
             return $this;
         }

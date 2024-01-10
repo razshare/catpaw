@@ -247,6 +247,10 @@ function duplex(int $bufferSize = 8192):array {
  * Resolve on the next event loop tick.
  * @return Future<void>
  */
-function deferred():Future {
+function tick():Future {
     return (new DeferredFuture)->getFuture()->complete();
+}
+
+function deferred():DeferredFuture {
+    return new DeferredFuture;
 }

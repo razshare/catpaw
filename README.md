@@ -2,26 +2,22 @@
 
 Catpaw is an opinionated group of libraries centered around `catpaw/core`, which is a dependency injection library built for [amphp](https://amphp.org/) that makes heavy use of php attributes.
 
-# Table of Contents
 
-| Topic                  | Implemented | Read |
-|------------------------|-------------|------|
-| 🌐 Router              | ✅           |      |
-| 🌐 Filesystem Router   | ✅           |      |
-| 🌐 Route Filters       | ✅           |      |
-| 🌐 Path Parameters     | ✅           |      |
-| 🌐 Route Not Found     | ✅           |      |
-| 🌐 Open API            | ✅           |      |
-| 🌐 Route Session       | ✅           |      |
-| 🌐 Byte Range Requests | ✅           |      |
-| ⚡ Entry                | ✅           |      |
-| ⚡ Custom Attributes    | ✅           |      |
-| 💡 RaspberryPI         | ✅           |      |
-| ⚡ Services             | ✅           |      |
-| ⚡ Stores               | ✅           |      |
-| ⚡ Queues               | ✅           |      |
-| 💡 Text                | ✅           |      |
-| 💡 Schedule            | ✅           |      |
+| Table of Contents                                                     |
+|-----------------------------------------------------------|
+| ⚡ [Error Management](./docs/0.error-managament.md)        |
+| 🌐 [Router](./docs/1.router.md)                           |
+| 🌐 [Path Parameters](./docs/2.path-parameters.md)         |
+| 🌐 [Open Api](./docs/18.open-api.md)                      |
+| 🌐 [Session](./docs/4.session.md)                         |
+| 🌐 [Byte Range Requests](./docs/7.byte-range-requests.md) |
+| ⚡ [Entry](./docs/5.entry.md)                              |
+| ⚡ [Custom Attributes](./docs/8.custom-attributes.md)      |
+| 💡 [RaspberryPi](./docs/11.raspberrypi.md)                |
+| ⚡ [Services](./docs/13.services.md)                       |
+| ⚡ [Stores](./docs/12.stores.md)                           |
+| ⚡ [Queues](./docs/21.queues.md)                           |
+| 💡 [Schedule](./docs/22.schedule.md)                      | 
 
 
 > [!NOTE]

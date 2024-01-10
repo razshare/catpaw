@@ -224,7 +224,7 @@ class Bootstrap {
 
             echo "Spawning $instruction".PHP_EOL;
 
-            $kill = Signal::create();
+            $signal = Signal::create();
         
             /** @var array<string> $librariesList */
             $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
@@ -233,8 +233,8 @@ class Bootstrap {
             $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
 
             if (DIRECTORY_SEPARATOR === '/') {
-                EventLoop::onSignal(SIGINT, static function() use ($kill) {
-                    $kill->send();
+                EventLoop::onSignal(SIGINT, static function() use ($signal) {
+                    $signal->sigterm();
                     self::kill();
                 });
             }

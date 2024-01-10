@@ -196,11 +196,11 @@ class Server {
      * Start the server.
      * 
      * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
-     * @param  false|Signal         $readySignal the server will trigger this signal whenever it's ready to serve requests.
+     * @param  false|Signal         $signal the server will trigger this signal whenever it's ready to serve requests.
      * @return Future<Unsafe<void>>
      */
-    public function start(false|Signal $readySignal = false):Future {
-        return async(function() use ($readySignal) {
+    public function start(false|Signal $signal = false):Future {
+        return async(function() use ($signal) {
             $endSignal = new DeferredFuture;
             try {
                 if (!isset($this->fileServer)) {
@@ -240,8 +240,8 @@ class Server {
                 });
                 $this->server->expose($this->interface);
                 $this->server->start($stackedHandler, $errorHandler);
-                if ($readySignal) {
-                    $readySignal->send();
+                if ($signal) {
+                    $signal->sigterm();
                 }
                 $endSignal->getFuture()->await();
                 return ok();

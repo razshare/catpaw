@@ -3,7 +3,7 @@
 namespace CatPaw\Store;
 
 use function Amp\async;
-use function CatPaw\deferred;
+use function CatPaw\tick;
 
 use Closure;
 
@@ -79,7 +79,7 @@ class Readable {
         if ($this->firstSubscriber) {
             $this->firstSubscriber = false;
             async($this->onStart, function($value) {
-                return deferred()->finally(fn () => $this->set($value));
+                return tick()->finally(fn () => $this->set($value));
             });
         }
         
