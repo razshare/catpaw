@@ -32,7 +32,6 @@ class Option implements AttributeInterface, OnParameterMount {
      * @param string $name
      * @param string $example
      * @param string $description
-     * @internal
      */
     public function __construct(
         private readonly string $name,

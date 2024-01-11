@@ -21,10 +21,7 @@ use Throwable;
 #[Attribute]
 class Singleton implements AttributeInterface, OnClassInstantiation {
     use CoreAttributeDefinition;
-
-    /**
-     *  @internal
-     */
+    
     public function __construct() {
     }
     

@@ -20,15 +20,13 @@ class Arguments implements AttributeInterface, OnParameterMount {
 
     private static bool $initialized = false;
     private static array $cache      = [];
-
-
+    
     public function __construct() {
         self::init();
     }
 
     /**
      * @return void
-     * @internal 
      */
     public static function init(): void {
         global $argv;
