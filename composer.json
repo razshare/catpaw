@@ -1,6 +1,6 @@
 {
   "name": "catpaw/core",
-  "description": "CatPaw core",
+  "description": "The catpaw project",
   "type": "library",
   "license": "MIT",
   "keywords": [

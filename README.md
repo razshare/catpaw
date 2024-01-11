@@ -1,9 +1,10 @@
 # What is this?
 
-Catpaw is an opinionated group of libraries centered around `catpaw/core`, which is a dependency injection library built for [amphp](https://amphp.org/) that makes heavy use of php attributes.
+Catpaw is an opinionated dependency injection library that comes with batteries included for developing asynchronous and declarative general purpose programs.\
+It leverages [php attributes](https://www.php.net/manual/en/language.attributes.overview.php) to provide declarative apis, and the [amphp](https://github.com/amphp/amp) platform to make your program asynchronous.
 
 
-| Table of Contents                                                     |
+| Table of Contents                                         |
 |-----------------------------------------------------------|
 | ⚡ [Error Management](./docs/0.error-managament.md)        |
 | 🌐 [Router](./docs/1.router.md)                           |
@@ -21,14 +22,14 @@ Catpaw is an opinionated group of libraries centered around `catpaw/core`, which
 
 
 > [!NOTE]
-> This project is aimed at linux distributions, some features may or not may work on Windows or MacOS.\
+> This project is aimed at linux distributions, some features may or not may work on Windows and/or MacOS.\
 > Feel free to contribute fixing issues for specific platforms.
 
 # Get started
 
-In order to get started you will need [php 8.2](https://www.php.net/downloads.php) or a more recent version.
+You will need [php 8.2](https://www.php.net/downloads.php) or a more recent version.
 
-All you need to do is create a new project using the starter template.
+Create a new project using the starter template.
 
 ```bash
 composer create-project catpaw/starter
@@ -41,7 +42,6 @@ Or you could also clone the template from https://github.com/tncrazvan/catpaw-st
 Every application must declare a ```main``` function in the global scope, that will be your entry point:
 
 ```php
-<?php
 // src/main.php
 function main(){
     echo "hello world\n";
