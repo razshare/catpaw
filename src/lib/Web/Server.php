@@ -77,11 +77,11 @@ class Server {
 
     /**
      * 
-     * @param  string         $interface       network interface to bind to
-     * @param  string         $secureInterface same as `$interfaces` but using secure certificates
-     * @param  string         $api             api directory
-     * @param  string         $www             static assets directory
-     * @param  string         $apiPrefix       a prefix to add to the api path
+     * @param  string         $interface       network interface to bind to.
+     * @param  string         $secureInterface same as `$interfaces` but using secure certificates.
+     * @param  string         $api             api directory, this is relative to the project directory.
+     * @param  string         $www             static assets directory, this is relative to the project directory.
+     * @param  string         $apiPrefix       a prefix to add to the api path.
      * @return Unsafe<Server>
      */
     public static function create(
@@ -93,10 +93,12 @@ class Server {
         false|SessionOperationsInterface $sessionOperations = false,
     ): Unsafe {
         if (!str_starts_with($api, './')) {
-            return error("The api directory must be a relative path and within the project directory.");
+            $api = "./$api";
+            // return error("The api directory must be a relative path and within the project directory.");
         }
         if (!str_starts_with($www, './')) {
-            return error("The web root directory must be a relative path and within the project directory.");
+            $api = "./$www";
+            // return error("The web root directory must be a relative path and within the project directory.");
         }
         $api = preg_replace('/\/+$/', '', $api);
         $www = preg_replace('/\/+$/', '', $www);
