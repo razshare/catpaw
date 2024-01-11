@@ -8,32 +8,31 @@ use CatPaw\Web\Attributes\IgnoreOpenApi;
 use CatPaw\Web\Attributes\Produces;
 use CatPaw\Web\Interfaces\OnRequest;
 use CatPaw\Web\Interfaces\OnResult;
-use Closure;
 use ReflectionFunction;
 
 readonly class Route {
     public DependenciesOptions $options;
 
     /**
-     * @param ReflectionFunction   $reflectionFunction,
-     * @param string               $workDirectory,
-     * @param string               $symbolicMethod,
-     * @param string               $symbolicPath,
-     * @param Closure              $callback,
-     * @param Consumes             $consumes,
-     * @param Produces             $produces,
-     * @param array<OnRequest>     $onRequest,
-     * @param array<OnResult>      $onResult,
-     * @param array<OnMount>       $onMount,
-     * @param false|IgnoreOpenApi  $ignoreOpenApi,
-     * @param false|IgnoreDescribe $ignoreDescribe,
+     * @param ReflectionFunction   $reflectionFunction
+     * @param string               $workDirectory
+     * @param string               $symbolicMethod
+     * @param string               $symbolicPath
+     * @param callable             $function
+     * @param Consumes             $consumes
+     * @param Produces             $produces
+     * @param array<OnRequest>     $onRequest
+     * @param array<OnResult>      $onResult
+     * @param array<OnMount>       $onMount
+     * @param false|IgnoreOpenApi  $ignoreOpenApi
+     * @param false|IgnoreDescribe $ignoreDescribe
      */
     public static function create(
         ReflectionFunction $reflectionFunction,
         string $workDirectory,
         string $symbolicMethod,
         string $symbolicPath,
-        Closure $callback,
+        mixed $function,
         Consumes $consumes,
         Produces $produces,
         array $onRequest,
@@ -47,7 +46,7 @@ readonly class Route {
             symbolicMethod: $symbolicMethod,
             symbolicPath: $symbolicPath,
             workDirectory: $workDirectory,
-            callback: $callback,
+            function: $function,
             consumes: $consumes,
             produces: $produces,
             onRequest: $onRequest,
@@ -63,7 +62,7 @@ readonly class Route {
      * @param string               $symbolicMethod,
      * @param string               $symbolicPath,
      * @param string               $workDirectory,
-     * @param Closure              $callback,
+     * @param callable             $function,
      * @param Consumes             $consumes,
      * @param Produces             $produces,
      * @param array<OnRequest>     $onRequest,
@@ -77,7 +76,7 @@ readonly class Route {
         public string $symbolicMethod,
         public string $symbolicPath,
         public string $workDirectory,
-        public Closure $callback,
+        public mixed $function,
         public Consumes $consumes,
         public Produces $produces,
         public array $onRequest,

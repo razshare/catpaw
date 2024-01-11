@@ -62,7 +62,7 @@ class HttpInvoker {
         $onRequests         = $context->route->onRequest;
         $onResults          = $context->route->onResult;
         $reflectionFunction = $context->route->reflectionFunction;
-        $callback           = $context->route->callback;
+        $function           = $context->route->function;
 
         $options = $this->createDependenciesOptionsFromRequestContextAndResponse($context);
 
@@ -76,7 +76,7 @@ class HttpInvoker {
             $onRequest->onRequest($context->request);
         }
 
-        $result = $callback(...$dependencies->value);
+        $result = $function(...$dependencies->value);
 
         foreach ($onResults as $onResult) {
             $onResult->onResult($context->request, $result);

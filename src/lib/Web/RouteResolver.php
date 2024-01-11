@@ -35,7 +35,7 @@ class RouteResolver {
 
         foreach ($routes as $symbolicPath => $route) {
             $key         = "$requestMethod:$symbolicPath";
-            $function    = $route->callback;
+            $function    = $route->function;
             $requestPath = urldecode($request->getUri()->getPath());
 
             if (isset(self::$cache[$key])) {

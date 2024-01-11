@@ -153,7 +153,7 @@ class Bootstrap {
                     entry: $entry,
                     libraries: $librariesList,
                     resources: $resourcesList,
-                    callback: static function() {
+                    function: static function() {
                         self::kill("Killing application...");
                     },
                 );
@@ -174,11 +174,11 @@ class Bootstrap {
 
     /**
      * Execute something when the application get killed through Bootstrap::kill.
-     * @param  callable():(void) $callback
+     * @param  callable():(void) $function
      * @return void
      */
-    public static function onKill(callable $callback): void {
-        self::$onKillActions[] = $callback;
+    public static function onKill(callable $function): void {
+        self::$onKillActions[] = $function;
     }
 
     /**
@@ -186,8 +186,8 @@ class Bootstrap {
      * @return never
      */
     public static function kill(string $message = ''):never {
-        foreach (self::$onKillActions as $callback) {
-            $callback();
+        foreach (self::$onKillActions as $function) {
+            $function();
         }
         echo $message.PHP_EOL;
         die(CommandStatus::SUCCESS);
@@ -267,7 +267,7 @@ class Bootstrap {
                 entry: $entry,
                 libraries: $librariesList,
                 resources: $resourcesList,
-                callback: static function() use (&$ready) {
+                function: static function() use (&$ready) {
                     if (!$ready) {
                         return;
                     }
@@ -295,20 +295,20 @@ class Bootstrap {
      * @param  string        $entry
      * @param  array<string> $libraries
      * @param  array<string> $resources
-     * @param  callable      $callback
+     * @param  callable      $function
      * @return void
      */
     private static function onFileChange(
         string $entry,
         array $libraries,
         array $resources,
-        callable $callback,
+        callable $function,
     ): void {
         async(function() use (
             $entry,
             $libraries,
             $resources,
-            $callback,
+            $function,
         ) {
             $changes   = [];
             $firstPass = true;
@@ -338,7 +338,7 @@ class Bootstrap {
 
                 $countThisPass = count($fileNames);
                 if (!$firstPass && $countLastPass !== $countThisPass) {
-                    $callback();
+                    $function();
                 }
 
                 foreach (array_keys($fileNames) as $fileName) {
@@ -360,7 +360,7 @@ class Bootstrap {
 
                     if ($changes[$fileName] !== $mtime) {
                         $changes[$fileName] = $mtime;
-                        $callback();
+                        $function();
                     }
                 }
 

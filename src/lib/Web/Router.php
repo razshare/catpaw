@@ -40,16 +40,16 @@ readonly class Router {
 
     /**
      * Initialize a new route.
-     * @param string $symbolicMethod
-     * @param string $symbolicPath
-     * @param string $workDirectory
-     * @param  callable|Closure| $callback
+     * @param  string           $symbolicMethod
+     * @param  string           $symbolicPath
+     * @param  callable|Closure $function
+     * @param  string           $workDirectory
      * @return Unsafe<void>
      */
     public function initialize(
         string $symbolicMethod,
         string $symbolicPath,
-        callable|Closure $callback,
+        callable|Closure $function,
         string $workDirectory = '',
     ):Unsafe {
         try {
@@ -57,12 +57,12 @@ readonly class Router {
                 return error("Symbolic paths must start with `/`, received `$symbolicPath`.");
             }
 
-            if (!$callback instanceof Closure) {
-                $callback = Closure::fromCallable($callback);
+            if (!$function instanceof Closure) {
+                $function = Closure::fromCallable($function);
             }
 
             try {
-                $reflectionFunction = new ReflectionFunction($callback);
+                $reflectionFunction = new ReflectionFunction($function);
             } catch(Throwable $e) {
                 return error($e);
             }
@@ -133,7 +133,7 @@ readonly class Router {
                 workDirectory     : $workDirectory,
                 symbolicMethod    : $symbolicMethod,
                 symbolicPath      : $symbolicPath,
-                callback          : $callback,
+                function          : $function,
                 consumes          : $consumes,
                 produces          : $produces,
                 onRequest         : $onRequest,
@@ -618,7 +618,7 @@ readonly class Router {
     public function alias(string $originalSymbolicMethod, string $originalSymbolicPath, string $aliasSymbolicPath):Unsafe {
         if ($this->context->routeExists($originalSymbolicMethod, $originalSymbolicPath)) {
             $originalRoute = $this->context->findRoute($originalSymbolicMethod, $originalSymbolicPath);
-            $this->custom($originalSymbolicMethod, $aliasSymbolicPath, $originalRoute->callback);
+            $this->custom($originalSymbolicMethod, $aliasSymbolicPath, $originalRoute->function);
         } else {
             return error("Trying to create alias \"$aliasSymbolicPath\" => \"$originalSymbolicPath\", but the original route \"$originalSymbolicPath\" has not been defined.\n");
         }
@@ -630,173 +630,173 @@ readonly class Router {
 
     /**
      * Define an event callback for a custom http method.
-     * @param  string                                   $method   the name of the http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $method   the name of the http method.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function custom(string $method, string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize($method, $path, $callback);
+    public function custom(string $method, string $path, callable|Closure $function):Unsafe {
+        return $this->initialize($method, $path, $function);
     }
 
     /**
      * Define an event callback for the "COPY" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function copy(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('COPY', $path, $callback);
+    public function copy(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('COPY', $path, $function);
     }
 
     /**
      * Define an event callback for the "DELETE" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function delete(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('DELETE', $path, $callback);
+    public function delete(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('DELETE', $path, $function);
     }
 
     /**
      * Define an event callback for the "GET" http method.
-     * @param  string                 $path     the path the event should listen to.
-     * @param  array|callable|Closure $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function get(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('GET', $path, $callback);
+    public function get(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('GET', $path, $function);
     }
 
     /**
      * Define an event callback for the "HEAD" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function head(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('HEAD', $path, $callback);
+    public function head(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('HEAD', $path, $function);
     }
 
     /**
      * Define an event callback for the "LINK" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function link(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('LINK', $path, $callback);
+    public function link(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('LINK', $path, $function);
     }
 
     /**
      * Define an event callback for the "LOCK" http method.
      *
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function lock(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('LOCK', $path, $callback);
+    public function lock(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('LOCK', $path, $function);
     }
 
     /**
      * Define an event callback for the "OPTIONS" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function options(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('OPTIONS', $path, $callback);
+    public function options(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('OPTIONS', $path, $function);
     }
 
     /**
      * Define an event callback for the "PATCH" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function patch(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('PATCH', $path, $callback);
+    public function patch(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('PATCH', $path, $function);
     }
 
     /**
      * Define an event callback for the "POST" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function post(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('POST', $path, $callback);
+    public function post(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('POST', $path, $function);
     }
 
     /**
      * Define an event callback for the "PROPFIND" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function propfind(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('PROPFIND', $path, $callback);
+    public function propfind(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('PROPFIND', $path, $function);
     }
 
     /**
      * Define an event callback for the "PURGE" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function purge(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('PURGE', $path, $callback);
+    public function purge(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('PURGE', $path, $function);
     }
 
     /**
      * Define an event callback for the "PUT" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function put(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('PUT', $path, $callback);
+    public function put(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('PUT', $path, $function);
     }
 
     /**
      * Define an event callback for the "UNKNOWN" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function unknown(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('UNKNOWN', $path, $callback);
+    public function unknown(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('UNKNOWN', $path, $function);
     }
 
     /**
      * Define an event callback for the "UNLINK" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function unlink(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('UNLINK', $path, $callback);
+    public function unlink(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('UNLINK', $path, $function);
     }
 
     /**
      * Define an event callback for the "UNLOCK" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function unlock(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('UNLOCK', $path, $callback);
+    public function unlock(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('UNLOCK', $path, $function);
     }
 
     /**
      * Define an event callback for the "VIEW" http method.
-     * @param  string                                   $path     the path the event should listen to.
-     * @param  callable|Closure|array<callable|Closure> $callback the callback to execute.
+     * @param  string           $path     the path the event should listen to.
+     * @param  callable|Closure $function the callback to execute.
      * @return Unsafe<void>
      */
-    public function view(string $path, array|callable|Closure $callback):Unsafe {
-        return $this->initialize('VIEW', $path, $callback);
+    public function view(string $path, callable|Closure $function):Unsafe {
+        return $this->initialize('VIEW', $path, $function);
     }
 }

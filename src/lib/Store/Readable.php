@@ -24,7 +24,7 @@ class Readable {
     }
 
     /** @var SplDoublyLinkedList<Closure> */
-    protected SplDoublyLinkedList $callbacks;
+    protected SplDoublyLinkedList $functions;
     /** @var false|Closure */
     private mixed $stop           = false;
     private bool $firstSubscriber = true;
@@ -38,8 +38,8 @@ class Readable {
         protected mixed $value,
         private readonly Closure $onStart,
     ) {
-        $this->callbacks = new SplDoublyLinkedList();
-        $this->callbacks->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
+        $this->functions = new SplDoublyLinkedList();
+        $this->functions->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
     }
 
 
@@ -59,22 +59,22 @@ class Readable {
      */
     private function set(mixed $value): void {
         $this->value = $value;
-        for ($this->callbacks->rewind(); $this->callbacks->valid(); $this->callbacks->next()) {
-            /** @var Closure $callback */
-            $callback = $this->callbacks->current();
-            ($callback)($this->value);
+        for ($this->functions->rewind(); $this->functions->valid(); $this->functions->next()) {
+            /** @var Closure $function */
+            $function = $this->functions->current();
+            ($function)($this->value);
         }
     }
 
     
     /**
      * Subscribe to this store and get notified of every update.
-     * @param  Closure(mixed $value):void $callback a function that's executed whenever there's an update,
+     * @param  Closure(mixed $value):void $function a function that's executed whenever there's an update,
      *                                              it takes 1 parameter, the new value of the store.
      * @return Closure():void             a function that cancels this subscription.
      */
-    public function subscribe(Closure $callback): Closure {
-        $this->callbacks->push($callback);
+    public function subscribe(Closure $function): Closure {
+        $this->functions->push($function);
         
         if ($this->firstSubscriber) {
             $this->firstSubscriber = false;
@@ -83,18 +83,18 @@ class Readable {
             });
         }
         
-        ($callback)($this->value);
+        ($function)($this->value);
         
-        return function() use ($callback):void {
-            $this->unsubscribe($callback);
+        return function() use ($function):void {
+            $this->unsubscribe($function);
         };
     }
 
-    private function unsubscribe(Closure $callback):void {
-        for ($this->callbacks->rewind(); $this->callbacks->valid(); $this->callbacks->next()) {
-            if ($this->callbacks->current() === $callback) {
-                $this->callbacks->offsetUnset($this->callbacks->key());
-                if (0 === $this->callbacks->count()) {
+    private function unsubscribe(Closure $function):void {
+        for ($this->functions->rewind(); $this->functions->valid(); $this->functions->next()) {
+            if ($this->functions->current() === $function) {
+                $this->functions->offsetUnset($this->functions->key());
+                if (0 === $this->functions->count()) {
                     if ($this->stop) {
                         ($this->stop)();
                     }
