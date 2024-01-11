@@ -6,18 +6,18 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 
 | Table of Contents                                         |
 |-----------------------------------------------------------|
-| ⚡ [Error Management](./docs/0.error-managament.md)        |
-| 🌐 [Router](./docs/1.router.md)                           |
-| 🌐 [Path Parameters](./docs/2.path-parameters.md)         |
-| 🌐 [Open Api](./docs/18.open-api.md)                      |
-| 🌐 [Session](./docs/4.session.md)                         |
-| 🌐 [Byte Range Requests](./docs/7.byte-range-requests.md) |
-| ⚡ [Entry](./docs/5.entry.md)                              |
-| ⚡ [Custom Attributes](./docs/8.custom-attributes.md)      |
+| ⚡ [Error Management](./docs/0.error-managament.md)       |
+| 🌐 [Router](./docs/1.router.md)                            |
+| 🌐 [Path Parameters](./docs/2.path-parameters.md)          |
+| 🌐 [Open Api](./docs/18.open-api.md)                       |
+| 🌐 [Session](./docs/4.session.md)                          |
+| 🌐 [Byte Range Requests](./docs/7.byte-range-requests.md)  |
+| ⚡ [Entry](./docs/5.entry.md)                             |
+| ⚡ [Custom Attributes](./docs/8.custom-attributes.md)     |
 | 💡 [RaspberryPi](./docs/11.raspberrypi.md)                |
-| ⚡ [Services](./docs/13.services.md)                       |
-| ⚡ [Stores](./docs/12.stores.md)                           |
-| ⚡ [Queues](./docs/21.queues.md)                           |
+| ⚡ [Services](./docs/13.services.md)                      |
+| ⚡ [Stores](./docs/12.stores.md)                          |
+| ⚡ [Queues](./docs/21.queues.md)                          |
 | 💡 [Schedule](./docs/22.schedule.md)                      | 
 
 
