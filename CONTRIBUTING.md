@@ -13,7 +13,7 @@ Install `^php8.2` and the following extenstions:
 
 Clone the repository with 
 ```sh
-git clone git@github.com:tncrazvan/catpaw-core.git
+git clone git@github.com:tncrazvan/catpaw.git
 ```
 
 Install dependencies with
@@ -30,7 +30,7 @@ This will also download [build.phar](https://github.com/tncrazvan/catpaw-build/r
 - All source code should follow the `PSR-12` rules and remove all unused 
   imports before being committed, this can be done by running `composer fix`.
 - Whenever possible, convert all methods into functions or at least 
-  all classes into [services](https://github.com/tncrazvan/catpaw-core/blob/master/docs/13.Services.md).
+  all classes into [services](https://github.com/tncrazvan/catpaw/blob/master/docs/13.Services.md).
 - Avoid exposing `__construct` to the end user.
 - Avoid returning `\Generator` to the end user.
 - Avoid returning `null` to the end user, return `false` or a proper default value instead.

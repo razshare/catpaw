@@ -12,8 +12,8 @@ use CatPaw\Core\Unsafe;
 interface OnResult extends AttributeInterface {
     /**
      * Invoked after a route is executed.
-     * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/1.RouteHandlers.md
-     * @see https://github.com/tncrazvan/catpaw-core/blob/main/docs/9.Filters.md
+     * @see https://github.com/tncrazvan/catpaw/blob/main/docs/1.RouteHandlers.md
+     * @see https://github.com/tncrazvan/catpaw/blob/main/docs/9.Filters.md
      * @param Request $request this is the incoming request.
      * @param mixed   $result  this is the result of the route.
      *
