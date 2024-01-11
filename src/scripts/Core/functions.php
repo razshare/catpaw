@@ -254,3 +254,13 @@ function tick():Future {
 function deferred():DeferredFuture {
     return new DeferredFuture;
 }
+
+/**
+ * @template T
+ * Get an environment variable.
+ * @param  string $name name of the variable.
+ * @return T      value of the environment variable.
+ */
+function env(string $name):mixed {
+    return $_ENV[$name];
+}
