@@ -97,7 +97,7 @@ class Server {
             // return error("The api directory must be a relative path and within the project directory.");
         }
         if (!str_starts_with($www, './')) {
-            $api = "./$www";
+            $www = "./$www";
             // return error("The web root directory must be a relative path and within the project directory.");
         }
         $api = preg_replace('/\/+$/', '', $api);
