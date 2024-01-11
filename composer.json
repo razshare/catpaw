@@ -23,22 +23,12 @@
     "load": "composer dump-autoload -o",
     "prod:start": "php -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
     "prod:build": "@prod:start --build --build-config='./build.yml' --build-optimize",
-    "prod:test": [
-      "php vendor/bin/phpunit tests"
-    ],
-    "prod:fix": [
-      "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix src",
-      "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix tests"
-    ],
+    "prod:test": "php vendor/bin/phpunit tests",
+    "prod:fix": "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix .",
     "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
     "dev:build": "@dev:start --build --build-config='./build.yml' --build-optimize",
-    "dev:test": [
-      "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests"
-    ],
-    "dev:fix": [
-      "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix src",
-      "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix tests"
-    ],
+    "dev:test": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests",
+    "dev:fix": "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix .",
     "download:psalm": "[ ! -f psalm.phar ] && wget https://github.com/vimeo/psalm/releases/latest/download/psalm.phar || echo ''",
     "post-autoload-dump": [
       "@download:psalm"

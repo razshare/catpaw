@@ -230,8 +230,15 @@ readonly class File {
     public function readAll(int $chunkSize = 8192):Future {
         $fileName = $this->fileName;
         return async(function() use ($fileName, $chunkSize) {
-            $fileSize = async(static fn () => getSize($fileName))->await();
-            return $this->read($fileSize, $chunkSize)->await();
+            try {
+                $fileSize = getSize($fileName);
+                if (0 == $fileSize) {
+                    return ok('');
+                }
+                return $this->read($fileSize, $chunkSize)->await();
+            } catch (Throwable $e) {
+                return error($e);
+            }
         });
     }
 
