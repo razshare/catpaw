@@ -224,6 +224,21 @@ class Bootstrap {
             $libraries,
             $resources,
         ) {
+            if (!Container::has(LoggerInterface::class)) {
+                $loggerAttempt = LoggerFactory::create();
+                if ($loggerAttempt->error) {
+                    return error($loggerAttempt->error);
+                }
+                $logger = $loggerAttempt->value;
+                Container::set(LoggerInterface::class, $logger);
+            } else {
+                $loggerAttempt = Container::create(LoggerInterface::class);
+                if ($loggerAttempt->error) {
+                    return error($loggerAttempt->error);
+                }
+                $logger = $loggerAttempt->value;
+            }
+
             $argumentsStringified = join(' ', $arguments);
             $instruction          = "$binary $fileName $argumentsStringified";
 
