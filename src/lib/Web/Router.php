@@ -1,14 +1,14 @@
 <?php
 namespace CatPaw\Web;
 
-use CatPaw\Container;
-use CatPaw\DependenciesOptions;
-use function CatPaw\error;
-use CatPaw\Interfaces\AttributeInterface;
+use CatPaw\Core\Container;
+use CatPaw\Core\DependenciesOptions;
+use function CatPaw\Core\error;
+use CatPaw\Core\Interfaces\AttributeInterface;
 
-use function CatPaw\ok;
-use CatPaw\ReflectionTypeManager;
-use CatPaw\Unsafe;
+use function CatPaw\Core\ok;
+use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Attributes\Consumes;
 use CatPaw\Web\Attributes\Example;
 use CatPaw\Web\Attributes\Header;

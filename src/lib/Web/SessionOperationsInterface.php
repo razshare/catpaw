@@ -2,7 +2,7 @@
 
 namespace CatPaw\Web;
 
-use CatPaw\Unsafe;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Attributes\Session;
 
 interface SessionOperationsInterface {

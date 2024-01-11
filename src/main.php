@@ -1,9 +1,9 @@
 <?php
-use function CatPaw\anyError;
-use CatPaw\Attributes\Option;
+use function CatPaw\Core\anyError;
+use CatPaw\Core\Attributes\Option;
 
-use function CatPaw\Build\build;
-use CatPaw\Unsafe;
+use function CatPaw\Core\Build\build;
+use CatPaw\Core\Unsafe;
 
 /**
  * @return Unsafe<void>

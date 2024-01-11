@@ -2,14 +2,14 @@
 
 namespace CatPaw\Schedule\Services;
 
-use CatPaw\Attributes\Entry;
-use CatPaw\Attributes\Service;
-use function CatPaw\deferred;
-use function CatPaw\error;
-use function CatPaw\ok;
+use CatPaw\Core\Attributes\Entry;
+use CatPaw\Core\Attributes\Service;
+use function CatPaw\Core\deferred;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
 use CatPaw\Schedule\ScheduleConfiguration;
 use CatPaw\Schedule\ScheduleEntry;
-use CatPaw\Unsafe;
 use DateTime;
 use DateTimeZone;
 use Revolt\EventLoop;

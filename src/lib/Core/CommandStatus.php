@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw;
+namespace CatPaw\Core;
 
 readonly class CommandStatus {
     /** Success */
@@ -265,6 +265,10 @@ readonly class CommandStatus {
     /** Memory page has hardware error */
     public const MEMORY_PAGE_HAS_HARDWARE_ERROR = 133;
 
+    /**
+     * @param  int    $code
+     * @return string
+     */
     public static function getReason(int $code): string {
         static $reasons = [
             0   => 'Success',

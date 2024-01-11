@@ -2,7 +2,7 @@
 
 namespace CatPaw\RaspberryPi\Interfaces;
 
-use CatPaw\Unsafe;
+use CatPaw\Core\Unsafe;
 
 interface GpioReader {
     /**

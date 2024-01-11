@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use function Amp\async;
 use Amp\ByteStream\ReadableStream;
@@ -63,6 +63,7 @@ readonly class File {
 
 
     /**
+     * @param  string        $fileName
      * @return Unsafe<array>
      */
     public static function getStatus(string $fileName):Unsafe {
@@ -74,6 +75,7 @@ readonly class File {
     }
 
     /**
+     * @param  string      $fileName
      * @return Unsafe<int>
      */
     public static function getModificationTime(string $fileName):Unsafe {
@@ -85,10 +87,18 @@ readonly class File {
         }
     }
 
+    /**
+     * @param  string $fileName
+     * @return bool
+     */
     public static function exists(string $fileName):bool {
         return exists($fileName);
     }
 
+    /**
+     * @param  string       $fileName
+     * @return Unsafe<void>
+     */
     public static function delete(string $fileName):Unsafe {
         try {
             deleteFile($fileName);
@@ -99,6 +109,8 @@ readonly class File {
     }
 
     /**
+     * @param  string       $fileName
+     * @param  string       $mode
      * @return Unsafe<File>
      */
     public static function open(string $fileName, string $mode = 'r'):Unsafe {
@@ -110,6 +122,11 @@ readonly class File {
         return ok(new self($file, $mode, $fileName));
     }
 
+    /**
+     * @param AmpFile $ampFile
+     * @param string  $mode
+     * @param string  $fileName
+     */
     private function __construct(
         private AmpFile $ampFile,
         private string $mode,
@@ -118,6 +135,8 @@ readonly class File {
     }
     
     /**
+     * @param  string               $content
+     * @param  int                  $chunkSize
      * @return Future<Unsafe<void>>
      */
     public function write(string $content, int $chunkSize = 8192):Future {
@@ -142,6 +161,8 @@ readonly class File {
     }
 
     /**
+     * @param  ReadableStream       $readableStream
+     * @param  int                  $chunkSize
      * @return Future<Unsafe<void>>
      */
     public function writeStream(ReadableStream $readableStream, int $chunkSize = 8192):Future {
@@ -170,6 +191,8 @@ readonly class File {
     }
 
     /**
+     * @param  int                    $length
+     * @param  int                    $chunkSize
      * @return Future<Unsafe<string>>
      */
     public function read(int $length = 8192, int $chunkSize = 8192):Future {
@@ -201,6 +224,7 @@ readonly class File {
     }
     
     /**
+     * @param  int                    $chunkSize
      * @return Future<Unsafe<string>>
      */
     public function readAll(int $chunkSize = 8192):Future {
@@ -219,6 +243,9 @@ readonly class File {
     }
 
 
+    /**
+     * @return void
+     */
     public function close(): void {
         if ($this->ampFile->isClosed()) {
             return;

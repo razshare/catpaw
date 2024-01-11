@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use ReflectionAttribute;
 use ReflectionParameter;

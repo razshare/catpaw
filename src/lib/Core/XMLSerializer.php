@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use function get_object_vars;
 use stdClass;
@@ -11,15 +11,21 @@ class XMLSerializer {
 
     /**
      * Generate xml string from object.
-     * @return string xml string.
+     * @param  stdClass $obj
+     * @param  string   $node_block
+     * @param  string   $node_name
+     * @return string   xml string.
      */
     public static function generateValidXmlFromObj(stdClass $obj, string $node_block = 'nodes', string $node_name = 'node'): string {
         $arr = get_object_vars($obj);
         return self::generateValidXmlFromArray($arr, $node_block, $node_name);
     }
-
+    
     /**
      * Generate an xml string from array.
+     * @param  mixed  $array
+     * @param  string $node_block
+     * @param  string $node_name
      * @return string xml string.
      */
     public static function generateValidXmlFromArray(mixed $array, string $node_block = 'nodes', string $node_name = 'node'): string {
@@ -32,6 +38,11 @@ class XMLSerializer {
         return $xml;
     }
     
+    /**
+     * @param  mixed  $array
+     * @param  string $node_name
+     * @return string
+     */
     private static function generateXmlFromArray(mixed $array, string $node_name): string {
         $xml = '';
 

@@ -3,15 +3,15 @@
 namespace CatPaw\Web\Attributes;
 
 use Attribute;
-use CatPaw\DependenciesOptions;
-use function CatPaw\error;
-use CatPaw\Interfaces\AttributeInterface;
-use CatPaw\Interfaces\OnParameterMount;
-use CatPaw\Interfaces\StorageInterface;
+use CatPaw\Core\DependenciesOptions;
+use function CatPaw\Core\error;
+use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\Interfaces\OnParameterMount;
+use CatPaw\Core\Interfaces\StorageInterface;
 
-use function CatPaw\ok;
-use CatPaw\Traits\CoreAttributeDefinition;
-use CatPaw\Unsafe;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Traits\CoreAttributeDefinition;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Cookie;
 use CatPaw\Web\RequestContext;
 

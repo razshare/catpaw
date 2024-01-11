@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw;
+namespace CatPaw\Core;
 
 abstract class IntConverter {
     private function __construct() {

@@ -1,10 +1,13 @@
 <?php
 
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use SplDoublyLinkedList;
 
 readonly class StringStack {
+    /**
+     * @param string $contents
+     */
     private function __construct(private string $contents = '') {
     }
 

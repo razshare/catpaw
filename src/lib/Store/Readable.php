@@ -3,7 +3,7 @@
 namespace CatPaw\Store;
 
 use function Amp\async;
-use function CatPaw\tick;
+use function CatPaw\Core\tick;
 
 use Closure;
 

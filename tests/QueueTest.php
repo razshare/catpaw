@@ -2,9 +2,9 @@
 namespace Tests;
 
 use function Amp\delay;
-use function CatPaw\anyError;
+use function CatPaw\Core\anyError;
 
-use CatPaw\Container;
+use CatPaw\Core\Container;
 use CatPaw\Queue\Services\QueueService;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

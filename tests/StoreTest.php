@@ -3,8 +3,8 @@ namespace Tests;
 
 use function Amp\async;
 use function Amp\delay;
-use function CatPaw\anyError;
-use CatPaw\Container;
+use function CatPaw\Core\anyError;
+use CatPaw\Core\Container;
 use CatPaw\Store\Attributes\Store;
 use function CatPaw\Store\readable;
 

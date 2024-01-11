@@ -4,15 +4,15 @@ namespace CatPaw\Web\Attributes;
 
 use Amp\Http\Server\RequestBody;
 use Attribute;
-use CatPaw\DependenciesOptions;
-use function CatPaw\error;
-use CatPaw\Interfaces\AttributeInterface;
-use CatPaw\Interfaces\OnParameterMount;
-use function CatPaw\ok;
+use CatPaw\Core\DependenciesOptions;
+use function CatPaw\Core\error;
+use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\Interfaces\OnParameterMount;
+use function CatPaw\Core\ok;
 
-use CatPaw\ReflectionTypeManager;
-use CatPaw\Traits\CoreAttributeDefinition;
-use CatPaw\Unsafe;
+use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Traits\CoreAttributeDefinition;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\BodyParser;
 use CatPaw\Web\RequestContext;
 use ReflectionParameter;

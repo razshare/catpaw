@@ -1,7 +1,7 @@
 <?php
 namespace CatPaw\Store\Services;
 
-use CatPaw\Attributes\Service;
+use CatPaw\Core\Attributes\Service;
 use CatPaw\Store\Writable;
 
 use function CatPaw\Store\writable;

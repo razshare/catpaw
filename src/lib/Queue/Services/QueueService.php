@@ -5,7 +5,7 @@ namespace CatPaw\Queue\Services;
 use function Amp\async;
 use Amp\Future;
 use function Amp\Future\awaitAll;
-use CatPaw\Attributes\Service;
+use CatPaw\Core\Attributes\Service;
 use Closure;
 use InvalidArgumentException;
 

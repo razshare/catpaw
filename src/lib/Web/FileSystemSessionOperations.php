@@ -3,11 +3,11 @@
 namespace CatPaw\Web;
 
 use function Amp\File\isDirectory;
-use CatPaw\Directory;
-use function CatPaw\error;
-use CatPaw\File;
-use function CatPaw\ok;
-use CatPaw\Unsafe;
+use CatPaw\Core\Directory;
+use function CatPaw\Core\error;
+use CatPaw\Core\File;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Attributes\Session;
 use function hash;
 use function rand;

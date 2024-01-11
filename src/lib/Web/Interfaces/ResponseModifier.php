@@ -2,7 +2,7 @@
 namespace CatPaw\Web\Interfaces;
 
 use Amp\Http\Server\Response;
-use CatPaw\Unsafe;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Page;
 
 /**

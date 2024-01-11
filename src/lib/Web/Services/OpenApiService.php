@@ -2,11 +2,11 @@
 
 namespace CatPaw\Web\Services;
 
-use CatPaw\Attributes\ArrayList;
-use CatPaw\Attributes\Service;
-use function CatPaw\error;
-use function CatPaw\ok;
-use CatPaw\Unsafe;
+use CatPaw\Core\Attributes\ArrayList;
+use CatPaw\Core\Attributes\Service;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
 
 use ReflectionClass;
 use Throwable;
@@ -159,7 +159,7 @@ class OpenApiService {
             foreach ($reflection->getProperties() as $reflectionProperty) {
                 $propertyName = $reflectionProperty->getName();
 
-                $type = \CatPaw\ReflectionTypeManager::unwrap($reflectionProperty)?->getName() ?? 'string';
+                $type = \CatPaw\Core\ReflectionTypeManager::unwrap($reflectionProperty)?->getName() ?? 'string';
 
                 if (class_exists($type)) {
                     if ($error = $this->setComponentObject($type)->error) {

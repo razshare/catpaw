@@ -2,7 +2,7 @@
 namespace CatPaw\Web;
 
 use function Amp\File\isDirectory;
-use CatPaw\File;
+use CatPaw\Core\File;
 use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 
 readonly class FileServerOverwriteForSpa implements FileServerOverwriteInterface {

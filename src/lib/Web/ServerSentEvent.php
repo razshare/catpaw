@@ -5,10 +5,10 @@ use Amp\ByteStream\ReadableIterableStream;
 use Amp\ByteStream\WritableIterableStream;
 use Amp\Http\Server\Response;
 
-use function CatPaw\duplex;
-use function CatPaw\error;
-use function CatPaw\ok;
-use CatPaw\Unsafe;
+use function CatPaw\Core\duplex;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
 use Closure;
 use Throwable;
 

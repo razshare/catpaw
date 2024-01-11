@@ -12,17 +12,17 @@ use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
 use Amp\Http\Server\SocketHttpServer;
 
-use CatPaw\Bootstrap;
-use CatPaw\Container;
-use CatPaw\Directory;
-use function CatPaw\error;
-use CatPaw\File;
-use function CatPaw\isPhar;
+use CatPaw\Core\Bootstrap;
+use CatPaw\Core\Container;
+use CatPaw\Core\Directory;
+use function CatPaw\Core\error;
+use CatPaw\Core\File;
+use function CatPaw\Core\isPhar;
 
-use function CatPaw\ok;
-use CatPaw\Signal;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Signal;
 
-use CatPaw\Unsafe;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\FileServerInterface;
 use Phar;
 use Psr\Log\LoggerInterface;

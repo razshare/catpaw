@@ -1,11 +1,11 @@
 <?php
 namespace Tests;
 
-use function CatPaw\anyError;
-use CatPaw\Container;
+use function CatPaw\Core\anyError;
+use CatPaw\Core\Container;
 
+use CatPaw\Core\Signal;
 use CatPaw\Schedule\Services\ScheduleService;
-use CatPaw\Signal;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;

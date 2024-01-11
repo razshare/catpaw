@@ -1,21 +1,18 @@
 <?php
-namespace CatPaw\Attributes;
+namespace CatPaw\Core\Attributes;
 
 use Attribute;
-use CatPaw\DependenciesOptions;
-use function CatPaw\error;
-use CatPaw\Interfaces\AttributeInterface;
-use CatPaw\Interfaces\OnParameterMount;
+use CatPaw\Core\DependenciesOptions;
+use function CatPaw\Core\error;
+use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\Interfaces\OnParameterMount;
 
-use function CatPaw\ok;
-use CatPaw\ReflectionTypeManager;
-use CatPaw\Traits\CoreAttributeDefinition;
-use CatPaw\Unsafe;
-use ReflectionClass;
-use ReflectionMethod;
+use function CatPaw\Core\ok;
+use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Traits\CoreAttributeDefinition;
+use CatPaw\Core\Unsafe;
 
 use ReflectionParameter;
-use ReflectionProperty;
 
 #[Attribute]
 class Arguments implements AttributeInterface, OnParameterMount {
@@ -29,18 +26,10 @@ class Arguments implements AttributeInterface, OnParameterMount {
         self::init();
     }
 
-    public static function findByMethod(ReflectionMethod $reflectionMethod):Unsafe {
-        return ok(false);
-    }
-
-    public static function findByClass(ReflectionClass $reflectionClass):Unsafe {
-        return ok(false);
-    }
-
-    public static function findByProperty(ReflectionProperty $reflectionProperty):Unsafe {
-        return ok(false);
-    }
-
+    /**
+     * @return void
+     * @internal 
+     */
     public static function init(): void {
         global $argv;
         if (!self::$initialized) {
@@ -57,6 +46,10 @@ class Arguments implements AttributeInterface, OnParameterMount {
         }
     }
 
+    /**
+     * @inheritDoc
+     * @internal 
+     */
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
         /** @var array<string|int|bool|float> $value */
         /** @var false $context */

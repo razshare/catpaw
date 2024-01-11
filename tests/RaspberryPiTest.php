@@ -2,12 +2,12 @@
 namespace Tests;
 
 use function Amp\delay;
-use function CatPaw\anyError;
-use CatPaw\Container;
-use function CatPaw\error;
-use CatPaw\RaspberryPI\Services\GpioService;
+use function CatPaw\Core\anyError;
+use CatPaw\Core\Container;
+use function CatPaw\Core\error;
+use CatPaw\Core\RaspberryPI\Services\GpioService;
 
-use CatPaw\Unsafe;
+use CatPaw\Core\Unsafe;
 use PHPUnit\Framework\TestCase;
 use Revolt\EventLoop;
 

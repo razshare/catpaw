@@ -2,9 +2,9 @@
 namespace CatPaw\Web\Attributes;
 
 use Attribute;
-use CatPaw\Attributes\Entry;
-use CatPaw\Interfaces\AttributeInterface;
-use CatPaw\Traits\CoreAttributeDefinition;
+use CatPaw\Core\Attributes\Entry;
+use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Web\Services\OpenApiService;
 
 

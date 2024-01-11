@@ -1,8 +1,8 @@
 <?php
 namespace CatPaw\Web;
 
-use CatPaw\Container;
-use CatPaw\Unsafe;
+use CatPaw\Core\Container;
+use CatPaw\Core\Unsafe;
 use Psr\Log\LoggerInterface;
 
 

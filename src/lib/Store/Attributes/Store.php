@@ -2,14 +2,14 @@
 namespace CatPaw\Store\Attributes;
 
 use Attribute;
-use CatPaw\Attributes\Entry;
-use CatPaw\Attributes\Singleton;
-use CatPaw\DependenciesOptions;
-use CatPaw\Interfaces\OnParameterMount;
-use function CatPaw\ok;
+use CatPaw\Core\Attributes\Entry;
+use CatPaw\Core\Attributes\Singleton;
+use CatPaw\Core\DependenciesOptions;
+use CatPaw\Core\Interfaces\OnParameterMount;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Traits\CoreAttributeDefinition;
+use CatPaw\Core\Unsafe;
 use CatPaw\Store\Services\StoreService;
-use CatPaw\Traits\CoreAttributeDefinition;
-use CatPaw\Unsafe;
 
 use ReflectionParameter;
 

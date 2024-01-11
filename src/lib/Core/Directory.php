@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use function Amp\async;
 use function Amp\File\createDirectoryRecursively;
@@ -53,6 +53,8 @@ class Directory {
     }
 
     /**
+     * @param  string       $directoryName
+     * @param  int          $mode
      * @return Unsafe<void>
      */
     public static function create(string $directoryName, int $mode = 0777):Unsafe {

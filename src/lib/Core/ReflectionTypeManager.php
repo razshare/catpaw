@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use ReflectionIntersectionType;
 use ReflectionNamedType;
@@ -13,6 +13,11 @@ class ReflectionTypeManager {
     private function __construct() {
     }
 
+    /**
+     * @param  ReflectionParameter|ReflectionProperty $reflection
+     * @param  string                                 $defaultClassName
+     * @return WrappedType
+     */
     public static function wrap(ReflectionParameter|ReflectionProperty $reflection, string $defaultClassName = 'bool'): WrappedType {
         $reflectionType = ReflectionTypeManager::unwrap($reflection);
         $className      = $reflectionType?$reflectionType->getName(): $defaultClassName;
@@ -53,6 +58,10 @@ class ReflectionTypeManager {
         );
     }
 
+    /**
+     * @param  ReflectionParameter|ReflectionProperty $parameter
+     * @return ReflectionNamedType|false
+     */
     public static function unwrap(ReflectionParameter|ReflectionProperty $parameter): ReflectionNamedType|false {
         $type = $parameter->getType() ?? false;
         if (false === $type) {

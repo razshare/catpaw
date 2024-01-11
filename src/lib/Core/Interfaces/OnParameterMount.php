@@ -1,9 +1,9 @@
 <?php
 
-namespace CatPaw\Interfaces;
+namespace CatPaw\Core\Interfaces;
 
-use CatPaw\DependenciesOptions;
-use CatPaw\Unsafe;
+use CatPaw\Core\DependenciesOptions;
+use CatPaw\Core\Unsafe;
 use ReflectionParameter;
 
 interface OnParameterMount {

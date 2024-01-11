@@ -1,7 +1,7 @@
 <?php
 namespace CatPaw\Web;
 
-use CatPaw\DependenciesOptions;
+use CatPaw\Core\DependenciesOptions;
 use CatPaw\Web\Attributes\Consumes;
 use CatPaw\Web\Attributes\IgnoreDescribe;
 use CatPaw\Web\Attributes\IgnoreOpenApi;

@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use Exception;
 
@@ -8,6 +8,8 @@ use function filter_var;
 
 class StringExpansion {
     /**
+     * @param  string         $content
+     * @param  array          $parameters
      * @return Unsafe<string>
      */
     public static function variable(string $content, array $parameters): Unsafe {
@@ -59,6 +61,10 @@ class StringExpansion {
     private const OP_BINARY_XOR         = 15;
     private const OP_BINARY_NOT         = 16;
 
+    /**
+     * @param  string $content
+     * @return bool
+     */
     public static function linearCondition(string $content): bool {
         $previousValue = false;
 
@@ -158,6 +164,8 @@ class StringExpansion {
     }
 
     /**
+     * @param  string       $content
+     * @param  int          $depth
      * @return Unsafe<bool>
      */
     public static function groupCondition(string $content, int $depth = 0): Unsafe {

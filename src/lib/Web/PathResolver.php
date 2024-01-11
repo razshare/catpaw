@@ -2,11 +2,11 @@
 
 namespace CatPaw\Web;
 
-use function CatPaw\error;
-use function CatPaw\ok;
-use CatPaw\ReflectionTypeManager;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
+use CatPaw\Core\ReflectionTypeManager;
 
-use CatPaw\Unsafe;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Attributes\Param;
 
 class PathResolver {

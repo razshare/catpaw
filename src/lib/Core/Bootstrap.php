@@ -1,15 +1,16 @@
 <?php
 
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use function Amp\async;
 use Amp\DeferredFuture;
 use function Amp\delay;
-use CatPaw\Services\EnvironmentService;
+use CatPaw\Core\Services\EnvironmentService;
 
 use Phar;
 use function preg_split;
 use Psr\Log\LoggerInterface;
+use function realpath;
 use ReflectionFunction;
 use Revolt\EventLoop;
 use Revolt\EventLoop\UnsupportedFeatureException;
@@ -180,6 +181,10 @@ class Bootstrap {
         self::$onKillActions[] = $callback;
     }
 
+    /**
+     * @param  string $message
+     * @return never
+     */
     public static function kill(string $message = ''):never {
         foreach (self::$onKillActions as $callback) {
             $callback();
@@ -259,7 +264,7 @@ class Bootstrap {
                 if ($ready) {
                     $ready->getFuture()->await();
                 }
-                if ($error = execute($instruction, out(), $kill)->await()->error) {
+                if ($error = execute($instruction, out())->await()->error) {
                     echo $error.PHP_EOL;
                     $ready = new DeferredFuture;
                 }
@@ -272,10 +277,10 @@ class Bootstrap {
     /**
      * Start a watcher which will detect file changes.
      * Useful for development mode.
-     * @param  string   $entry
-     * @param  array    $libraries
-     * @param  array    $resources
-     * @param  callable $callback
+     * @param  string        $entry
+     * @param  array<string> $libraries
+     * @param  array<string> $resources
+     * @param  callable      $callback
      * @return void
      */
     private static function onFileChange(
@@ -297,13 +302,14 @@ class Bootstrap {
                 clearstatcache();
                 $countLastPass = count($changes);
 
-                $fileNames   = [$entry => false];
+                $fileNames = [$entry => false];
+                /** @var array<string> $directories */
                 $directories = [...$libraries, ...$resources];
                 foreach ($directories as $directory) {
                     if (!File::exists($directory)) {
                         continue;
                     }
-                    $listAttempt = Directory::flat(\realpath($directory));
+                    $listAttempt = Directory::flat(realpath($directory));
 
                     if ($listAttempt->error) {
                         return error($listAttempt->error);

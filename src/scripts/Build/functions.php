@@ -1,16 +1,16 @@
 <?php
-namespace CatPaw\Build;
+namespace CatPaw\Core\Build;
 
 use function Amp\File\isDirectory;
 
-use CatPaw\Container;
-use CatPaw\Directory;
-use function CatPaw\error;
-use function CatPaw\execute;
-use CatPaw\File;
-use function CatPaw\ok;
-use function CatPaw\out;
-use CatPaw\Unsafe;
+use CatPaw\Core\Container;
+use CatPaw\Core\Directory;
+use function CatPaw\Core\error;
+use function CatPaw\Core\execute;
+use CatPaw\Core\File;
+use function CatPaw\Core\ok;
+use function CatPaw\Core\out;
+use CatPaw\Core\Unsafe;
 use Exception;
 use Phar;
 use Psr\Log\LoggerInterface;
@@ -153,8 +153,8 @@ function build(
 
         $writeAttempt = $fileAttempt->value->write(<<<PHP
             <?php
-            use CatPaw\Attributes\Option;
-            use CatPaw\Bootstrap;
+            use CatPaw\Core\Attributes\Option;
+            use CatPaw\Core\Bootstrap;
             \$_ENV = [
                 ...\$_ENV,
                 ...getenv(),

@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw;
+namespace CatPaw\Core;
 
 const KB = 1024;
 const MB = 1024 * 1024;

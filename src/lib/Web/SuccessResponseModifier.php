@@ -4,11 +4,11 @@ namespace CatPaw\Web;
 use Amp\ByteStream\ReadableStream;
 use Amp\Http\Server\Response;
 
-use function CatPaw\error;
-use function CatPaw\ok;
-use CatPaw\Unsafe;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
+use CatPaw\Core\XMLSerializer;
 use CatPaw\Web\Interfaces\ResponseModifier;
-use CatPaw\XMLSerializer;
 use Throwable;
 
 class SuccessResponseModifier implements ResponseModifier {

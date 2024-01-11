@@ -1,13 +1,13 @@
 <?php
 namespace CatPaw\Web;
 
-use CatPaw\Attributes\Entry;
-use function CatPaw\error;
-use CatPaw\Interfaces\AttributeInterface;
+use CatPaw\Core\Attributes\Entry;
+use function CatPaw\Core\error;
+use CatPaw\Core\Interfaces\AttributeInterface;
 
-use function CatPaw\ok;
-use CatPaw\Traits\CoreAttributeDefinition;
-use CatPaw\Unsafe;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Traits\CoreAttributeDefinition;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Services\OpenApiService;
 
 class ProducedResponse implements AttributeInterface {

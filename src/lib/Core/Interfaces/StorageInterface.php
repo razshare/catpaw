@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Interfaces;
+namespace CatPaw\Core\Interfaces;
 
 interface StorageInterface {
     /**

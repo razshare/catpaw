@@ -4,12 +4,12 @@ namespace CatPaw\Web;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
-use CatPaw\Container;
-use CatPaw\DependenciesOptions;
-use CatPaw\DependencySearchResultItem;
-use function CatPaw\error;
-use function CatPaw\ok;
-use CatPaw\Unsafe;
+use CatPaw\Core\Container;
+use CatPaw\Core\DependenciesOptions;
+use CatPaw\Core\DependencySearchResultItem;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\ResponseModifier;
 
 

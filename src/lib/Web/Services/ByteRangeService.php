@@ -5,15 +5,15 @@ namespace CatPaw\Web\Services;
 use Amp\ByteStream\ReadableIterableStream;
 use Amp\ByteStream\WritableIterableStream;
 use Amp\Http\Server\Response;
-use CatPaw\Attributes\Service;
+use CatPaw\Core\Attributes\Service;
 
-use function CatPaw\duplex;
-use function CatPaw\error;
-use CatPaw\File;
-use function CatPaw\ok;
-use CatPaw\Unsafe;
+use function CatPaw\Core\duplex;
+use function CatPaw\Core\error;
+use CatPaw\Core\File;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
 
-use function CatPaw\uuid;
+use function CatPaw\Core\uuid;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\ByteRangeWriterInterface;
 use CatPaw\Web\Mime;

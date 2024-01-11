@@ -1,22 +1,19 @@
 <?php
-namespace CatPaw\Attributes;
+namespace CatPaw\Core\Attributes;
 
 use Attribute;
-use CatPaw\Bootstrap;
-use CatPaw\DependenciesOptions;
-use CatPaw\Interfaces\AttributeInterface;
-use CatPaw\Interfaces\OnParameterMount;
+use CatPaw\Core\Bootstrap;
+use CatPaw\Core\DependenciesOptions;
+use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\Interfaces\OnParameterMount;
 
-use CatPaw\Interfaces\OptionDocumentation;
-use function CatPaw\ok;
-use CatPaw\ReflectionTypeManager;
-use CatPaw\Traits\CoreAttributeDefinition;
-use CatPaw\Unsafe;
-use ReflectionClass;
-use ReflectionMethod;
+use CatPaw\Core\Interfaces\OptionDocumentation;
+use function CatPaw\Core\ok;
+use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Traits\CoreAttributeDefinition;
+use CatPaw\Core\Unsafe;
 use ReflectionParameter;
 
-use ReflectionProperty;
 
 #[Attribute]
 class Option implements AttributeInterface, OnParameterMount {
@@ -31,6 +28,12 @@ class Option implements AttributeInterface, OnParameterMount {
     /** @var array<string,OptionDocumentation> */
     private static array $linuxManual = [];
 
+    /**
+     * @param string $name
+     * @param string $example
+     * @param string $description
+     * @internal
+     */
     public function __construct(
         private readonly string $name,
         private readonly string $example = '',
@@ -39,25 +42,13 @@ class Option implements AttributeInterface, OnParameterMount {
         if (!str_starts_with($name, '-')) {
             Bootstrap::kill("Options must start with `-`, received `$name`.");
         }
-        // self::$linuxManual[$name] = (object)[
-        //     "example"     => $example,
-        //     "description" => $description,
-        // ];
         self::init();
     }
 
-    public static function findByMethod(ReflectionMethod $reflectionMethod):Unsafe {
-        return ok(false);
-    }
-
-    public static function findByClass(ReflectionClass $reflectionClass):Unsafe {
-        return ok(false);
-    }
-
-    public static function findByProperty(ReflectionProperty $reflectionProperty):Unsafe {
-        return ok(false);
-    }
-
+    /**
+     * @inheritDoc
+     * @internal 
+     */
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
         if (isset(self::$cache[$this->name])) {
             $value = self::$cache[$this->name];
@@ -81,6 +72,11 @@ class Option implements AttributeInterface, OnParameterMount {
         return ok();
     }
 
+    /**
+     * Check if a cli option exists.
+     * @param  string $option
+     * @return bool
+     */
     public static function exists(string $option): bool {
         self::init();
         if (isset(self::$exists[$option])) {
@@ -118,6 +114,9 @@ class Option implements AttributeInterface, OnParameterMount {
         }
     }
 
+    /**
+     * @return string|null
+     */
     private function extract():?string {
         $name = $this->name;
         foreach (self::$options as $value) {
@@ -138,6 +137,17 @@ class Option implements AttributeInterface, OnParameterMount {
         return null;
     }
 
+    /**
+     * Find the value of the option.
+     * @param  string     $className
+     * @param  bool       $allowsNullValue
+     * @param  bool       $allowsDefaultValue
+     * @param  mixed|null $defaultValue
+     * @param  bool       $allowsBoolean
+     * @param  bool       $allowsTrue
+     * @param  bool       $allowsFalse
+     * @return mixed
+     */
     public function findValue(
         string $className = 'string',
         bool $allowsNullValue = false,

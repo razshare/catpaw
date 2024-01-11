@@ -2,7 +2,7 @@
 
 namespace CatPaw\Web\Interfaces;
 
-use CatPaw\Unsafe;
+use CatPaw\Core\Unsafe;
 
 interface ByteRangeWriterInterface {
     /**

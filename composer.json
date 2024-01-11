@@ -1,5 +1,5 @@
 {
-  "name": "catpaw/core",
+  "name": "catpaw/catpaw",
   "description": "The catpaw project",
   "type": "library",
   "license": "MIT",
@@ -26,6 +26,10 @@
     "prod:test": [
       "php vendor/bin/phpunit tests"
     ],
+    "prod:fix": [
+      "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix src",
+      "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix tests"
+    ],
     "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
     "dev:build": "@dev:start --build --build-config='./build.yml' --build-optimize",
     "dev:test": [
@@ -45,7 +49,7 @@
   },
   "autoload": {
     "psr-4": {
-      "CatPaw\\": [
+      "CatPaw\\Core\\": [
         "src/lib/Core"
       ],
       "CatPaw\\Build\\": [

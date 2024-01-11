@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use function Amp\async;
 use function Amp\ByteStream\buffer;

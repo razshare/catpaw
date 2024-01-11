@@ -2,8 +2,8 @@
 namespace CatPaw\Web\Interfaces;
 
 use Amp\Http\Server\Request;
-use CatPaw\Interfaces\AttributeInterface;
-use CatPaw\Unsafe;
+use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\Unsafe;
 
 /**
  * Attach this to route handlers in order intercept their events.

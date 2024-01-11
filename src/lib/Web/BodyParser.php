@@ -2,10 +2,10 @@
 
 namespace CatPaw\Web;
 
-use function CatPaw\error;
-use function CatPaw\ok;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
 
-use CatPaw\Unsafe;
+use CatPaw\Core\Unsafe;
 use Exception;
 use function json_decode;
 use function mb_parse_str;

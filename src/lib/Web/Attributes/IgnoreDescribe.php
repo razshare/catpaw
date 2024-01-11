@@ -2,8 +2,8 @@
 namespace CatPaw\Web\Attributes;
 
 use Attribute;
-use CatPaw\Interfaces\AttributeInterface;
-use CatPaw\Traits\CoreAttributeDefinition;
+use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\Traits\CoreAttributeDefinition;
 
 
 #[Attribute]

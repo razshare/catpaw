@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;

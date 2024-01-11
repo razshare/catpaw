@@ -4,21 +4,17 @@ namespace Tests;
 use Amp\ByteStream\BufferException;
 use Amp\ByteStream\StreamException;
 use Amp\Http\Client\HttpClient;
-
 use Amp\Http\Client\HttpClientBuilder;
-
 use Amp\Http\Client\HttpException;
 use Amp\Http\Client\Request;
-use function CatPaw\anyError;
-use CatPaw\Container;
-use CatPaw\Signal;
-
+use function CatPaw\Core\anyError;
+use CatPaw\Core\Container;
+use CatPaw\Core\Signal;
 use const CatPaw\Web\APPLICATION_JSON;
 use const CatPaw\Web\APPLICATION_XML;
 use CatPaw\Web\Attributes\Param;
 use CatPaw\Web\Server;
 use const CatPaw\Web\TEXT_HTML;
-
 use const CatPaw\Web\TEXT_PLAIN;
 use function json_decode;
 use PHPUnit\Framework\TestCase;

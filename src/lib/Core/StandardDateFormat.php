@@ -1,9 +1,13 @@
 <?php
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use DateTime;
 
 class StandardDateFormat {
+    /**
+     * @param  int      $timestamp
+     * @return DateTime
+     */
     public static function unix(int $timestamp):DateTime {
         $dateTime = new DateTime();
         $dateTime->setTimestamp($timestamp);

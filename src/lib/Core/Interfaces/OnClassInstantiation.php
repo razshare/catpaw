@@ -1,7 +1,7 @@
 <?php
-namespace CatPaw\Interfaces;
+namespace CatPaw\Core\Interfaces;
 
-use CatPaw\Unsafe;
+use CatPaw\Core\Unsafe;
 use ReflectionClass;
 
 interface OnClassInstantiation {

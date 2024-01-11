@@ -1,16 +1,16 @@
 <?php
 
-namespace CatPaw;
+namespace CatPaw\Core;
 
 use function Amp\File\isDirectory;
 use function Amp\File\isFile;
 use Attribute;
-use CatPaw\Attributes\Entry;
-use CatPaw\Attributes\Service;
-use CatPaw\Attributes\Singleton;
-use CatPaw\Interfaces\AttributeInterface;
-use CatPaw\Interfaces\OnParameterMount;
-use CatPaw\Interfaces\StorageInterface;
+use CatPaw\Core\Attributes\Entry;
+use CatPaw\Core\Attributes\Service;
+use CatPaw\Core\Attributes\Singleton;
+use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\Interfaces\OnParameterMount;
+use CatPaw\Core\Interfaces\StorageInterface;
 use CatPaw\Store\Readable;
 use CatPaw\Store\Writable;
 use Closure;
@@ -98,6 +98,8 @@ class Container {
     }
 
     /**
+     * @param  ReflectionFunction|ReflectionMethod $reflection
+     * @param  DependenciesOptions                 $options
      * @return Unsafe<array>
      */
     private static function findFunctionDependencies(
@@ -148,6 +150,8 @@ class Container {
     }
 
     /**
+     * @param  ReflectionFunction|ReflectionMethod $reflection
+     * @param  false|DependenciesOptions           $options
      * @return Unsafe<array>
      */
     public static function dependencies(
@@ -325,7 +329,7 @@ class Container {
      * 
      * Will not execute the function itself and parameter attributes will not be instantiated at all.
      * @param  Closure|ReflectionFunction $function
-     * @return Unsafe
+     * @return Unsafe<void>
      */
     public static function touch(Closure|ReflectionFunction $function): Unsafe {
         try {
@@ -403,11 +407,11 @@ class Container {
 
     /**
      * 
-     * @param  ReflectionClass        $klass
+     * @param  ReflectionClass        $reflectionClass
      * @return ReflectionMethod|false
      */
-    private static function findEntryMethod(ReflectionClass $klass): ReflectionMethod|false {
-        foreach ($klass->getMethods() as $method) {
+    private static function findEntryMethod(ReflectionClass $reflectionClass): ReflectionMethod|false {
+        foreach ($reflectionClass->getMethods() as $method) {
             if (($attributes = $method->getAttributes(Entry::class))) {
                 /**
                  * @psalm-suppress RedundantConditionGivenDocblockType

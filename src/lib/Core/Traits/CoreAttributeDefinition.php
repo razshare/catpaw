@@ -1,12 +1,12 @@
 <?php
 
-namespace CatPaw\Traits;
+namespace CatPaw\Core\Traits;
 
-use CatPaw\AttributeResolver;
-use CatPaw\Container;
-use function CatPaw\error;
-use function CatPaw\ok;
-use CatPaw\Unsafe;
+use CatPaw\Core\AttributeResolver;
+use CatPaw\Core\Container;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -18,6 +18,9 @@ use Throwable;
 
 trait CoreAttributeDefinition {
     private static SplObjectStorage|false $coreDefinitionCache = false;
+    /**
+     * @return void
+     */
     private static function initializeCache():void {
         if (!self::$coreDefinitionCache) {
             self::$coreDefinitionCache = new SplObjectStorage();

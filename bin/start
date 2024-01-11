@@ -1,8 +1,8 @@
 #!/usr/bin/env php
 <?php
 
-use CatPaw\Attributes\Option;
-use CatPaw\Bootstrap;
+use CatPaw\Core\Attributes\Option;
+use CatPaw\Core\Bootstrap;
 $_ENV = [
     ...$_ENV,
     ...getenv(),

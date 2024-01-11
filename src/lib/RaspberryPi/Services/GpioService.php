@@ -2,14 +2,14 @@
 
 namespace CatPaw\RaspberryPi\Services;
 
-use CatPaw\Attributes\Service;
+use CatPaw\Core\Attributes\Service;
 
-use CatPaw\Directory;
-use function CatPaw\error;
-use CatPaw\File;
-use CatPaw\RaspberryPI\Interfaces\GpioReader;
-use CatPaw\RaspberryPI\Interfaces\GpioWriter;
-use CatPaw\Unsafe;
+use CatPaw\Core\Directory;
+use function CatPaw\Core\error;
+use CatPaw\Core\File;
+use CatPaw\Core\RaspberryPI\Interfaces\GpioReader;
+use CatPaw\Core\RaspberryPI\Interfaces\GpioWriter;
+use CatPaw\Core\Unsafe;
 
 #[Service]
 class GpioService {

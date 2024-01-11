@@ -1,7 +1,7 @@
 <?php
 
+use CatPaw\Core\Unsafe;
 use CatPaw\Schedule\Services\ScheduleService;
-use CatPaw\Unsafe;
 
 function sayHi():void {
     echo "Hi.";
