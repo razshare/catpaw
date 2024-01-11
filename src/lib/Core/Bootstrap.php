@@ -216,7 +216,7 @@ class Bootstrap {
         EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
         EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
 
-        async( static function() use (
+        async(static function() use (
             $binary,
             $fileName,
             $arguments,
@@ -347,13 +347,11 @@ class Bootstrap {
                         continue;
                     }
 
-                    $mtimeAttempt = File::getModificationTime($fileName);
+                    $mtime = filemtime($fileName);
 
-                    if ($mtimeAttempt->error) {
-                        return error($mtimeAttempt->error);
+                    if (false === $mtime) {
+                        return error("Could not read file $fileName modification time.");
                     }
-
-                    $mtime = $mtimeAttempt->value;
 
                     if (!isset($changes[$fileName])) {
                         $changes[$fileName] = $mtime;
@@ -367,7 +365,7 @@ class Bootstrap {
                 }
 
                 $firstPass = false;
-                delay(1);
+                delay(0.1);
             }
         });
     }
