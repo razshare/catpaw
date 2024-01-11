@@ -264,3 +264,13 @@ function deferred():DeferredFuture {
 function env(string $name):mixed {
     return $_ENV[$name];
 }
+
+
+/**
+ * Stop the program with an error.
+ * @param  Error $error
+ * @return never
+ */
+function stop(Error $error) {
+    Bootstrap::kill($error->getMessage());
+}
