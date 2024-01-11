@@ -185,14 +185,6 @@ class Server {
     }
 
     /**
-     * Get the current router used by the user.
-     * @return Router
-     */
-    public function getRouter():Router {
-        return $this->router;
-    }
-
-    /**
      * Start the server.
      * 
      * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
