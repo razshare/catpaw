@@ -14,11 +14,11 @@ class ScheduleTest extends TestCase {
     public function testAll() {
         $loadAttempt = Container::load('./src/lib/');
         $this->assertFalse($loadAttempt->error);
-        $unsafe = anyError(
-            Container::run($this->scheduleDaily(...)),
-            Container::run($this->scheduleAfter1Second(...)),
-            Container::run($this->scheduleEvery1Second3Times(...)),
-        );
+        $unsafe = anyError(function() {
+            yield Container::run($this->scheduleDaily(...));
+            yield Container::run($this->scheduleAfter1Second(...));
+            yield Container::run($this->scheduleEvery1Second3Times(...));
+        });
         $this->assertFalse($unsafe->error);
         EventLoop::run();
     }

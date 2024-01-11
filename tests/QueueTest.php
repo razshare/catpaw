@@ -13,12 +13,12 @@ class QueueTest extends TestCase {
     public function testAll() {
         $loadAttempt = Container::load('./src/lib/');
         $this->assertFalse($loadAttempt->error);
-        $unsafe = anyError(
-            Container::run($this->execution(...)),
-            Container::run($this->tag(...)),
-            Container::run($this->order(...)),
-            Container::run($this->timedQueue(...)),
-        );
+        $unsafe = anyError(function() {
+            yield Container::run($this->execution(...));
+            yield Container::run($this->tag(...));
+            yield Container::run($this->order(...));
+            yield Container::run($this->timedQueue(...));
+        });
         $this->assertFalse($unsafe->error);
     }
 

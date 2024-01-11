@@ -18,15 +18,15 @@ class StoreTest extends TestCase {
     public function testAll() {
         $loadAttempt = Container::load('./src/lib/');
         $this->assertFalse($loadAttempt->error);
-        $unsafe = anyError(
-            Container::run($this->basic(...)),
-            Container::run($this->multipleSubscribers(...)),
-            Container::run($this->withDelay(...)),
-            Container::run($this->set(...)),
-            Container::run($this->subscribe(...)),
-            Container::run($this->update(...)),
-            Container::run($this->attribute(...)),
-        );
+        $unsafe = anyError(function() {
+            yield Container::run($this->basic(...));
+            yield Container::run($this->multipleSubscribers(...));
+            yield Container::run($this->withDelay(...));
+            yield Container::run($this->set(...));
+            yield Container::run($this->subscribe(...));
+            yield Container::run($this->update(...));
+            yield Container::run($this->attribute(...));
+        });
         $this->assertFalse($unsafe->error);
         EventLoop::run();
     }

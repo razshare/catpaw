@@ -38,14 +38,14 @@ class WebTest extends TestCase {
         $readySignal = Signal::create();
 
         $readySignal->listen(function() use ($server) {
-            $unsafe = anyError(
-                Container::run($this->makeSureXmlConversionWorks(...)),
-                Container::run($this->makeSureJsonConversionWorks(...)),
-                Container::run($this->makeSureProducesHintsWork(...)),
-                Container::run($this->makeSureContentNegotiationWorks(...)),
-                Container::run($this->makeSureParamHintsWork(...)),
-                Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...)),
-            );
+            $unsafe = anyError(function() {
+                yield Container::run($this->makeSureXmlConversionWorks(...));
+                yield Container::run($this->makeSureJsonConversionWorks(...));
+                yield Container::run($this->makeSureProducesHintsWork(...));
+                yield Container::run($this->makeSureContentNegotiationWorks(...));
+                yield Container::run($this->makeSureParamHintsWork(...));
+                yield Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...));
+            });
             $this->assertFalse($unsafe->error);
             $stopAttempt = $server->stop();
             $this->assertFalse($stopAttempt->error);

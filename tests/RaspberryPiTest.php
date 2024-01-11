@@ -5,23 +5,23 @@ use function Amp\delay;
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Container;
 use function CatPaw\Core\error;
-use CatPaw\Core\RaspberryPI\Services\GpioService;
 
 use CatPaw\Core\Unsafe;
+use CatPaw\RaspberryPi\Services\GpioService;
 use PHPUnit\Framework\TestCase;
 use Revolt\EventLoop;
 
 class RaspberryPiTest extends TestCase {
-    public function testAll(): void {
-        $this->assertTrue(true);
-//        $loadAttempt = Container::load('./src/lib/');
-//        $this->assertFalse($loadAttempt->error);
-//        $unsafe = anyError(
-//            Container::run($this->blink(...)),
-//        );
-//        $this->assertFalse($unsafe->error);
-//        EventLoop::run();
-    }
+    // public function testAll(): void {
+    //     $this->assertTrue(true);
+    //     $loadAttempt = Container::load('./src/lib/');
+    //     $this->assertFalse($loadAttempt->error);
+    //     $unsafe = anyError(function() {
+    //         yield Container::run($this->blink(...));
+    //     });
+    //     $this->assertFalse($unsafe->error);
+    //     EventLoop::run();
+    // }
     
     public function blink(GpioService $gpio): Unsafe {
         $writer = $gpio->createWriter('12');

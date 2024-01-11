@@ -16,6 +16,7 @@ use Amp\DeferredFuture;
 use Amp\Future;
 use Amp\Process\Process;
 use Error;
+use Generator;
 use Phar;
 use Psr\Log\LoggerInterface;
 use RecursiveArrayIterator;
@@ -29,7 +30,8 @@ use Throwable;
  * Get current time in milliseconds.
  * @return float
  */
-function milliseconds():float {
+function milliseconds():float
+{
     return floor(microtime(true) * 1000);
 }
 
@@ -38,7 +40,8 @@ function milliseconds():float {
  * @param  array $arr
  * @return bool  true if the array is associative, false otherwise.
  */
-function isAssoc(array $arr): bool {
+function isAssoc(array $arr): bool
+{
     if ([] === $arr) {
         return false;
     }
@@ -48,11 +51,12 @@ function isAssoc(array $arr): bool {
 
 /**
  * Generate a universally unique identifier
- * 
+ *
  * *Caution*: this function does not generate cryptographically secure values, and must not be used for cryptographic purposes, or purposes that require returned values to be unguessable.
  * @return string the uuid
  */
-function uuid(): string {
+function uuid(): string
+{
     return sprintf(
         '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
         // 32 bits for "time_low"
@@ -82,7 +86,8 @@ function uuid(): string {
  * Check if the current application is running inside a .phar archive or not.
  * @return bool
  */
-function isPhar(): bool {
+function isPhar(): bool
+{
     return strlen(Phar::running()) > 0 ? true : false;
 }
 
@@ -91,7 +96,8 @@ function isPhar(): bool {
  * @param  string         $prompt message to display along with the input request.
  * @return Unsafe<string>
  */
-function readLineSilent(string $prompt):Unsafe {
+function readLineSilent(string $prompt):Unsafe
+{
     $command = "/usr/bin/env bash -c 'echo OK'";
     if (rtrim(shell_exec($command)) !== 'OK') {
         return error("Can't invoke bash");
@@ -110,7 +116,8 @@ function readLineSilent(string $prompt):Unsafe {
  * @param  bool  $completely if true, flatten the array completely
  * @return array
  */
-function flatten(array $array, bool $completely = false):array {
+function flatten(array $array, bool $completely = false):array
+{
     if ($completely) {
         return iterator_to_array(new RecursiveIteratorIterator(new RecursiveArrayIterator($array)), false);
     }
@@ -121,14 +128,16 @@ function flatten(array $array, bool $completely = false):array {
 /**
  * Get the stdout as a stream.
  */
-function out():WritableResourceStream {
+function out():WritableResourceStream
+{
     return getStdout();
 }
 
 /**
  * Get the stdin as a stream.
  */
-function in():ReadableResourceStream {
+function in():ReadableResourceStream
+{
     return getStdin();
 }
 
@@ -137,7 +146,8 @@ function in():ReadableResourceStream {
  * @param  T         $value
  * @return Unsafe<T>
  */
-function ok(mixed $value = null):Unsafe {
+function ok(mixed $value = null):Unsafe
+{
     return new Unsafe($value, false);
 }
 
@@ -145,7 +155,8 @@ function ok(mixed $value = null):Unsafe {
  * @param  string|Error $message
  * @return Unsafe<void>
  */
-function error(string|Error $message):Unsafe {
+function error(string|Error $message):Unsafe
+{
     if (is_string($message)) {
         return new Unsafe(null, new Error($message));
     }
@@ -165,7 +176,7 @@ function execute(
     false|WritableStream $writer = false,
     false|Signal $signal = false,
 ):Future {
-    return async(static function() use ($command, $writer, $signal) {
+    return async(static function () use ($command, $writer, $signal) {
         try {
             /** @var Unsafe<LoggerInterface> $loggerAttempt */
             $loggerAttempt = Container::create(LoggerInterface::class);
@@ -182,7 +193,7 @@ function execute(
         }
 
         if ($signal) {
-            $signal->listen(static function(int $code) use ($process, $writer, $logger) {
+            $signal->listen(static function (int $code) use ($process, $writer, $logger) {
                 if (!$process->isRunning()) {
                     return ok();
                 }
@@ -206,8 +217,9 @@ function execute(
  * @param  string                 $command command to run
  * @return Future<Unsafe<string>>
  */
-function get(string $command):Future {
-    return async(static function() use ($command) {
+function get(string $command):Future
+{
+    return async(static function () use ($command) {
         [$reader, $writer] = duplex();
         if ($error = execute($command, $writer)->await()->error) {
             return error($error);
@@ -216,15 +228,31 @@ function get(string $command):Future {
     });
 }
 
-
 /**
- * If any unsafe error is found among the parameters, return it.
+ * Invoke a generator function and immediately return any `Error`
+ * or `Unsafe` containing an error generated as `Unsafe`.
+ * @param  callable():Generator<Unsafe|Error> $function
  * @return Unsafe<void>
  */
-function anyError(Unsafe ...$unsafes):Unsafe {
-    foreach ($unsafes as $unsafe) {
-        if ($unsafe->error) {
-            return error($unsafe->error);
+function anyError(callable $function):Unsafe
+{
+    /** @var Generator<Unsafe<mixed>> $result */
+    $result = $function();
+
+    if (!($result instanceof Generator)) {
+        if ($result instanceof Unsafe) {
+            return $result;
+        }
+        return ok($result);
+    }
+
+    for ($result->rewind(); $result->valid(); $result->next()) {
+        /** @var Unsafe<Error|Unsafe> $value */
+        $value = $result->current();
+        if ($value instanceof Error) {
+            return error($value);
+        } elseif ($value instanceof Unsafe && $value->error) {
+            return error($value->error);
         }
     }
     return ok();
@@ -232,12 +260,13 @@ function anyError(Unsafe ...$unsafes):Unsafe {
 
 /**
  * Return two new streams, a readable stream and a writable one which will be writing to the first stream.
- * 
+ *
  * The writer stream will automatically be disposed of when the readable stream is disposed of.
  * @param  int                                                      $bufferSize
  * @return array{0:ReadableIterableStream,1:WritableIterableStream}
  */
-function duplex(int $bufferSize = 8192):array {
+function duplex(int $bufferSize = 8192):array
+{
     $writer = new WritableIterableStream($bufferSize);
     $reader = new ReadableIterableStream($writer);
     return [$reader, $writer];
@@ -247,11 +276,13 @@ function duplex(int $bufferSize = 8192):array {
  * Resolve on the next event loop tick.
  * @return Future<void>
  */
-function tick():Future {
+function tick():Future
+{
     return (new DeferredFuture)->getFuture()->complete();
 }
 
-function deferred():DeferredFuture {
+function deferred():DeferredFuture
+{
     return new DeferredFuture;
 }
 
@@ -261,7 +292,8 @@ function deferred():DeferredFuture {
  * @param  string $name name of the variable.
  * @return T      value of the variable.
  */
-function env(string $name):mixed {
+function env(string $name):mixed
+{
     return $_ENV[$name];
 }
 
