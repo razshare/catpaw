@@ -259,7 +259,7 @@ function deferred():DeferredFuture {
  * Get an environment variable.
  * @template T
  * @param  string $name name of the variable.
- * @return T      value of the environment variable.
+ * @return T      value of the variable.
  */
 function env(string $name):mixed {
     return $_ENV[$name];
