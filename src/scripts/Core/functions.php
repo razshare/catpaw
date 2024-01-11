@@ -256,8 +256,8 @@ function deferred():DeferredFuture {
 }
 
 /**
- * @template T
  * Get an environment variable.
+ * @template T
  * @param  string $name name of the variable.
  * @return T      value of the environment variable.
  */
