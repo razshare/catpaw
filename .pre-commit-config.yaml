@@ -1,6 +1,17 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+# You can also install pre-commit with `apt install pre-commit`
+# You can setup pre-commit in your repository by running `pre-commit install` or `composer dev:precommit`
 repos:
+-   repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.4
+    hooks:
+    -   id: remove-tabs
+-   repo: https://github.com/digitalpulp/pre-commit-php
+    rev: 1.4.0
+    hooks:
+    -   id: php-cs-fixer
+    -   id: php-lint-all
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
@@ -8,12 +19,3 @@ repos:
     -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: check-added-large-files
--   repo: https://github.com/digitalpulp/pre-commit-php
-    rev: 1.4.0
-    hooks:
-    -   id: php-cs-fixer
-    -   id: php-lint-all
--   repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.4
-    hooks:
-    -   id: remove-tabs
