@@ -136,7 +136,7 @@ function in(): ReadableResourceStream {
  * @param  T         $value
  * @return Unsafe<T>
  */
-function ok(mixed $value = null): Unsafe {
+function ok(mixed $value = true): Unsafe {
     return new Unsafe($value, false);
 }
 
@@ -260,7 +260,7 @@ function anyError(callable $function): Unsafe {
     }
 
     try {
-        return ok($result->getReturn());
+        return ok($result->getReturn() ?? true);
     } catch (Throwable $error) {
         return error($error);
     }
