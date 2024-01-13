@@ -14,23 +14,24 @@ readonly class Unsafe {
      * @param false|Error $error
      */
     public function __construct(
-        public mixed       $value,
+        public mixed $value,
         public false|Error $error
     ) {
-        if($error && !($error instanceof Error)) {
+        if ($error && !($error instanceof Error)) {
             $this->error = new Error($error);
         }
     }
 
     /**
-     * @param Error $error
+     * @param  Error $error
      * @return T
      */
-    public function try(&$error) {
-        if($this->error) {
+    public function try(&$error = false) {
+        if ($this->error) {
             $error = $this->error;
             return;
         }
+        $error = false;
         return $this->value;
     }
 }

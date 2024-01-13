@@ -230,10 +230,10 @@ class StringExpansion {
      * @return Unsafe<bool>
      */
     public static function condition(string $content, array $parameters): Unsafe {
-        $variable = self::variable($content, $parameters);
-        if ($variable->error) {
-            return error($variable->error);
+        $variable = self::variable($content, $parameters)->try($error);
+        if ($error) {
+            return error($error);
         }
-        return self::groupCondition($variable->value);
+        return self::groupCondition($variable);
     }
 }

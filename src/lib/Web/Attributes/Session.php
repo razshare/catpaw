@@ -104,13 +104,11 @@ class Session implements AttributeInterface, StorageInterface, OnParameterMount 
         /** @var Session $session */
         $sessionIdCookie = $cookies["session-id"]  ?? false;
         $sessionId       = $sessionIdCookie->value ?? '';
-        $sessionAttempt  = $context->server->sessionOperations->validateSession(id: $sessionId);
-        if ($sessionAttempt->error) {
-            return error($sessionAttempt->error);
+        $session         = $context->server->sessionOperations->validateSession(id: $sessionId)->try($error);
+        if ($error) {
+            return error($error);
         }
         
-        $session = $sessionAttempt->value;
-
         if (!$session) {
             $session = $context->server->sessionOperations->startSession($sessionId);
         }

@@ -38,11 +38,10 @@ class ScheduleService {
      * @return Unsafe<ScheduleEntry>
      */
     public function after(string $due, callable $function):Unsafe {
-        $scheduleConfigurationAttempt = $this->configure(format: "after $due", repeat: false);
-        if ($scheduleConfigurationAttempt->error) {
-            return error($scheduleConfigurationAttempt->error);
+        $scheduleConfiguration = $this->configure(format: "after $due", repeat: false)->try($error);
+        if ($error) {
+            return error($error);
         }
-        $scheduleConfiguration = $scheduleConfigurationAttempt->value;
         
         return $this->schedule(
             function: $function,
@@ -56,11 +55,10 @@ class ScheduleService {
      * @return Unsafe<ScheduleEntry>
      */
     public function every(string $due, callable $function):Unsafe {
-        $scheduleConfigurationAttempt = $this->configure(format: "after $due", repeat: true);
-        if ($scheduleConfigurationAttempt->error) {
-            return error($scheduleConfigurationAttempt->error);
+        $scheduleConfiguration = $this->configure(format: "after $due", repeat: true)->try($error);
+        if ($error) {
+            return error($error);
         }
-        $scheduleConfiguration = $scheduleConfigurationAttempt->value;
         
         return $this->schedule(
             function: $function,
@@ -72,11 +70,10 @@ class ScheduleService {
      * @return Unsafe<ScheduleEntry>
      */
     public function daily(string $due, callable $function):Unsafe {
-        $scheduleConfigurationAttempt = $this->configure(format: "daily $due", repeat: true);
-        if ($scheduleConfigurationAttempt->error) {
-            return error($scheduleConfigurationAttempt->error);
+        $scheduleConfiguration = $this->configure(format: "daily $due", repeat: true)->try($error);
+        if ($error) {
+            return error($error);
         }
-        $scheduleConfiguration = $scheduleConfigurationAttempt->value;
         
         return $this->schedule(
             function: $function,

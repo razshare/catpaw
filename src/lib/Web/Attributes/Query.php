@@ -73,8 +73,6 @@ class Query implements AttributeInterface, OnParameterMount {
             return error($result->error);
         }
 
-
-
         if ($result->value) {
             $value = $result->value;
         } elseif (!$reflection->allowsNull()) {

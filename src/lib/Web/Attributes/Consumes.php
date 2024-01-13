@@ -58,7 +58,8 @@ class Consumes implements AttributeInterface {
 
     #[Entry] public function setup(OpenApiService $oa):Unsafe {
         foreach ($this->request as $request) {
-            if ($error = $request->setup($oa)->error) {
+            $request->setup($oa)->try($error);
+            if ($error) {
                 return error($error);
             }
         }

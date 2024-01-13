@@ -118,7 +118,8 @@ class ProducedResponse implements AttributeInterface {
                 $type = 'Item';
                 $oa->setComponentReferenceItem($this->className);
             }
-            if ($error = $oa->setComponentObject($this->className)->error) {
+            $oa->setComponentObject($this->className)->try($error);
+            if ($error) {
                 return error($error);
             }
         }

@@ -11,15 +11,15 @@ use Psr\Log\LoggerInterface;
 
 class QueueTest extends TestCase {
     public function testAll() {
-        $loadAttempt = Container::load('./src/lib/');
-        $this->assertFalse($loadAttempt->error);
-        $unsafe = anyError(function() {
+        Container::load('./src/lib/')->try($error);
+        $this->assertFalse($error);
+        anyError(function() {
             yield Container::run($this->execution(...));
             yield Container::run($this->tag(...));
             yield Container::run($this->order(...));
             yield Container::run($this->timedQueue(...));
-        });
-        $this->assertFalse($unsafe->error);
+        })->try($error);
+        $this->assertFalse($error);
     }
 
     private function execution(QueueService $queue): void {

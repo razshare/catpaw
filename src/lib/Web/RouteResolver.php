@@ -57,16 +57,16 @@ class RouteResolver {
 
             $reflectionParameters = $reflectionFunction->getParameters();
 
-            /** @var Unsafe<PathResolver> $pathResolverAttempt */
-            $pathResolverAttempt = PathResolver::findResolver(
+            /** @var PathResolver $pathResolver */
+            $pathResolver = PathResolver::findResolver(
                 symbolicMethod: $symbolicMethod,
                 symbolicPath: $symbolicPath,
                 parameters: $reflectionParameters,
-            );
-            if ($pathResolverAttempt->error) {
-                return error($pathResolverAttempt->error);
+            )->try($error);
+            if ($error) {
+                return error($error);
             }
-            $pathResolver      = $pathResolverAttempt->value;
+            
             self::$cache[$key] = $pathResolver;
 
 
@@ -98,15 +98,15 @@ class RouteResolver {
         );
 
         try {
-            $resultAttempt = $this->invoker->invoke($context);
+            $result = $this->invoker->invoke($context)->try($error);
         } catch(Throwable $e) {
             return error($e);
         }
-        if ($resultAttempt->error) {
-            return error($resultAttempt->error);
+        if ($error) {
+            return error($error);
         }
 
-        return ok($resultAttempt->value);
+        return ok($result);
     }
 
     private function findQueriesFromRequest(Request $request):array {

@@ -21,38 +21,37 @@ use PHPUnit\Framework\TestCase;
 
 class WebTest extends TestCase {
     public function testAll() {
-        $loadAttempt = Container::load('./src/lib/');
-        $this->assertFalse($loadAttempt->error);
+        Container::load('./src/lib/')->try($error);
+        $this->assertFalse($error);
         Container::set(HttpClient::class, HttpClientBuilder::buildDefault());
-        $serverAttempt = Server::create(
+        $server = Server::create(
             interface: '127.0.0.1:8000',
             api      : './tests/api',
             www      : './tests/www',
             apiPrefix: '/api'
-        );
-        $server = $serverAttempt->value;
-        $this->assertFalse($serverAttempt->error);
+        )->try($error);
+        $this->assertFalse($error);
 
         Container::set(Server::class, $server);
 
         $readySignal = Signal::create();
 
         $readySignal->listen(function() use ($server) {
-            $unsafe = anyError(function() {
+            anyError(function() {
                 yield Container::run($this->makeSureXmlConversionWorks(...));
                 yield Container::run($this->makeSureJsonConversionWorks(...));
                 yield Container::run($this->makeSureProducesHintsWork(...));
                 yield Container::run($this->makeSureContentNegotiationWorks(...));
                 yield Container::run($this->makeSureParamHintsWork(...));
                 yield Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...));
-            });
-            $this->assertFalse($unsafe->error);
-            $stopAttempt = $server->stop();
-            $this->assertFalse($stopAttempt->error);
+            })->try($error);
+            $this->assertFalse($error);
+            $server->stop()->try($error);
+            $this->assertFalse($error);
         });
 
-        $startAttempt = $server->start($readySignal)->await();
-        $this->assertFalse($startAttempt->error);
+        $server->start($readySignal)->await()->try($error);
+        $this->assertFalse($error);
     }
 
 

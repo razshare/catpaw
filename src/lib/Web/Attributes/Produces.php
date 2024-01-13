@@ -63,7 +63,8 @@ class Produces implements AttributeInterface {
 
     #[Entry] public function setup(OpenApiService $oa):Unsafe {
         foreach ($this->response as $response) {
-            if ($error = $response->setup($oa)->error) {
+            $response->setup($oa)->try($error);
+            if ($error) {
                 return error($error);
             }
         }

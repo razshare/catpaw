@@ -103,13 +103,11 @@ class Server {
         $api = preg_replace('/\/+$/', '', $api);
         $www = preg_replace('/\/+$/', '', $www);
 
-        /** @var Unsafe<LoggerInterface> $loggerAttempt */
-        $loggerAttempt = Container::create(LoggerInterface::class);
-        if ($loggerAttempt->error) {
-            return error($loggerAttempt->error);
+        
+        $logger = Container::create(LoggerInterface::class)->try($error);
+        if ($error) {
+            return error($error);
         }
-
-        $logger = $loggerAttempt->value;
 
         if (!str_starts_with($apiPrefix, "/")) {
             $apiPrefix = "/$apiPrefix";
@@ -159,15 +157,15 @@ class Server {
         public readonly LoggerInterface $logger,
         public readonly SessionOperationsInterface $sessionOperations,
     ) {
-        $initialisationAttempt = self::initializeRoutes(
+        self::initializeRoutes(
             logger: $this->logger,
             router: $router,
             apiPrefix: $this->apiPrefix,
             api: $this->api,
-        );
+        )->try($error);
 
-        if ($initialisationAttempt->error) {
-            $logger->error($initialisationAttempt->error->getMessage());
+        if ($error) {
+            $logger->error($error->getMessage());
         }
 
         Bootstrap::onKill(function() {
@@ -198,11 +196,11 @@ class Server {
             $endSignal = new DeferredFuture;
             try {
                 if (!isset($this->fileServer)) {
-                    $fileServerAttempt = FileServer::create($this);
-                    if ($fileServerAttempt->error) {
-                        return error($fileServerAttempt->error);
+                    $fileServer = FileServer::create($this)->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-                    $this->fileServer = $fileServerAttempt->value;
+                    $this->fileServer = $fileServer;
                 }
 
                 $stopper = function(string $callbackId) {
@@ -216,13 +214,11 @@ class Server {
                 EventLoop::onSignal(SIGQUIT, $stopper);
                 EventLoop::onSignal(SIGTERM, $stopper);
     
-                /** @var Unsafe<LoggerInterface> $loggerAttempt */
-                $loggerAttempt = Container::create(LoggerInterface::class);
-                if ($loggerAttempt->error) {
-                    return error($loggerAttempt->error);
+                $logger = Container::create(LoggerInterface::class)->try($error);
+                if ($error) {
+                    return error($error);
                 }
-    
-                $logger         = $loggerAttempt->value;
+                
                 $requestHandler = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
                 $stackedHandler = stackMiddleware($requestHandler, ...$this->middlewares);
                 $errorHandler   = ServerErrorHandler::create($logger);
@@ -264,6 +260,14 @@ class Server {
         return ok();
     }
 
+    /**
+     * ù
+     * @param  LoggerInterface $logger
+     * @param  Router          $router
+     * @param  string          $apiPrefix
+     * @param  string          $api
+     * @return Unsafe<void>
+     */
     private static function initializeRoutes(
         LoggerInterface $logger,
         Router $router,
@@ -275,12 +279,12 @@ class Server {
                 $api = Phar::running()."/$api";
             }
             
-            $flatListAttempt = Directory::flat($api);
-            if ($flatListAttempt->error) {
-                return error($flatListAttempt->error);
+            $flatList = Directory::flat($api)->try($error);
+            if ($error) {
+                return error($error);
             }
 
-            foreach ($flatListAttempt->value as $fileName) {
+            foreach ($flatList as $fileName) {
                 if (!str_ends_with(strtolower($fileName), '.php')) {
                     continue;
                 }

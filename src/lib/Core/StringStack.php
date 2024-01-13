@@ -6,18 +6,18 @@ use SplDoublyLinkedList;
 
 readonly class StringStack {
     /**
-     * @param string $contents
+     * @param string $content
      */
-    private function __construct(private string $contents = '') {
+    private function __construct(private string $content = '') {
     }
 
     /**
      * Create a string stack from a string.
-     * @param  string      $contents
+     * @param  string      $content
      * @return StringStack
      */
-    public static function of(string $contents): StringStack {
-        return new self($contents);
+    public static function of(string $content): StringStack {
+        return new self($content);
     }
 
     /**
@@ -27,7 +27,7 @@ readonly class StringStack {
      * @return SplDoublyLinkedList
      */
     public function expect(string ...$tokens): SplDoublyLinkedList {
-        $name  = $this->contents;
+        $name  = $this->content;
         $len   = strlen($name);
         $stack = '';
         $list  = new SplDoublyLinkedList();

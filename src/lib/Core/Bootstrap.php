@@ -49,7 +49,8 @@ class Bootstrap {
         Container::touch($main);
 
         foreach ($libraries as $path) {
-            if ($error = Container::load(path:$path, append:true)->error) {
+            Container::load(path:$path, append:true)->try($error);
+            if ($error) {
                 return error($error);
             }
         }
@@ -93,19 +94,20 @@ class Bootstrap {
                 }
             }
     
-            $loggerAttempt = LoggerFactory::create($name);
-            if ($loggerAttempt->error) {
-                self::kill($loggerAttempt->error->getMessage());
+            /** @var LoggerInterface $logger */
+            $logger = LoggerFactory::create($name)->try($error);
+            if ($error) {
+                self::kill($error->getMessage());
             }
-
-            $logger = $loggerAttempt->value;
+            
             Container::set(LoggerInterface::class, $logger);
             $environmentService = new EnvironmentService($logger);
 
             if ($environment) {
                 if (File::exists($environment)) {
                     $environmentService->setFileName($environment);
-                    if ($error = $environmentService->load($info)->error) {
+                    $environmentService->load($info)->try($error);
+                    if ($error) {
                         self::kill($error->getMessage());
                     }
                 }
@@ -159,7 +161,9 @@ class Bootstrap {
                 );
             }
 
-            if ($error = self::init($entry, $librariesList)->error) {
+            self::init($entry, $librariesList)->try($error);
+
+            if ($error) {
                 self::kill((string)$error);
             }
 
@@ -225,18 +229,16 @@ class Bootstrap {
             $resources,
         ) {
             if (!Container::has(LoggerInterface::class)) {
-                $loggerAttempt = LoggerFactory::create();
-                if ($loggerAttempt->error) {
-                    return error($loggerAttempt->error);
+                $logger = LoggerFactory::create()->try($error);
+                if ($error) {
+                    return error($error);
                 }
-                $logger = $loggerAttempt->value;
                 Container::set(LoggerInterface::class, $logger);
             } else {
-                $loggerAttempt = Container::create(LoggerInterface::class);
-                if ($loggerAttempt->error) {
-                    return error($loggerAttempt->error);
+                $logger = Container::create(LoggerInterface::class)->try($error);
+                if ($error) {
+                    return error($error);
                 }
-                $logger = $loggerAttempt->value;
             }
 
             $argumentsStringified = join(' ', $arguments);
@@ -279,7 +281,8 @@ class Bootstrap {
                 if ($ready) {
                     $ready->getFuture()->await();
                 }
-                if ($error = execute($instruction, out())->await()->error) {
+                execute($instruction, out())->await()->try($error);
+                if ($error) {
                     echo $error.PHP_EOL;
                     $ready = new DeferredFuture;
                 }
@@ -324,13 +327,13 @@ class Bootstrap {
                     if (!File::exists($directory)) {
                         continue;
                     }
-                    $listAttempt = Directory::flat(realpath($directory));
+                    $flatList = Directory::flat(realpath($directory))->try($error);
 
-                    if ($listAttempt->error) {
-                        return error($listAttempt->error);
+                    if ($error) {
+                        return error($error);
                     }
 
-                    foreach ($listAttempt->value as $fileName) {
+                    foreach ($flatList as $fileName) {
                         $fileNames[$fileName] = false;
                     }
                 }

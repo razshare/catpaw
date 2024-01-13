@@ -6,6 +6,7 @@ use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\Response;
 use CatPaw\Web\Interfaces\FileServerInterface;
+use Error;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -25,26 +26,30 @@ readonly class ServerRequestHandler implements RequestHandler {
     ) {
     }
 
+    private function createResponseFromError(Error $error):Response {
+        $message    = $error->getMessage();
+        $fileName   = $error->getFile();
+        $lineNumber = $error->getLine();
+        $this->logger->error("$message", [
+            "file" => $fileName,
+            "line" => $lineNumber,
+        ]);
+        return new Response(HttpStatus::INTERNAL_SERVER_ERROR, [], HttpStatus::getReason(HttpStatus::INTERNAL_SERVER_ERROR));
+    }
+
     public function handleRequest(Request $request): Response {
         try {
             $responseFromFileServer = $this->fileServer->serve($request);
             if (HttpStatus::NOT_FOUND === $responseFromFileServer->getStatus()) {
-                $responseAttempt = $this->resolver->resolve($request);
-                if ($responseAttempt->error) {
-                    throw $responseAttempt->error;
+                $response = $this->resolver->resolve($request)->try($error);
+                if ($error) {
+                    return $this->createResponseFromError($error);
                 }
-                return $responseAttempt->value;
+                return $response;
             }
             return $responseFromFileServer;
-        } catch (Throwable $e) {
-            $message    = $e->getMessage();
-            $fileName   = $e->getFile();
-            $lineNumber = $e->getLine();
-            $this->logger->error("$message", [
-                "file" => $fileName,
-                "line" => $lineNumber,
-            ]);
-            return new Response(HttpStatus::INTERNAL_SERVER_ERROR, [], HttpStatus::getReason(HttpStatus::INTERNAL_SERVER_ERROR));
+        } catch (Throwable $error) {
+            return $this->createResponseFromError($error);
         }
     }
 }

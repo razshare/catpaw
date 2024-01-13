@@ -2,6 +2,11 @@
 
 namespace CatPaw\Core;
 
+use function Amp\async;
+use function Amp\ByteStream\buffer;
+use function Amp\ByteStream\getStdin;
+use function Amp\ByteStream\getStdout;
+use function Amp\ByteStream\pipe;
 use Amp\ByteStream\ReadableIterableStream;
 use Amp\ByteStream\ReadableResourceStream;
 use Amp\ByteStream\WritableIterableStream;
@@ -17,11 +22,6 @@ use Psr\Log\LoggerInterface;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use Throwable;
-use function Amp\async;
-use function Amp\ByteStream\buffer;
-use function Amp\ByteStream\getStdin;
-use function Amp\ByteStream\getStdout;
-use function Amp\ByteStream\pipe;
 
 
 /**
@@ -34,11 +34,11 @@ function milliseconds(): float {
 
 /**
  * Check if an array is associative.
- * @param array $arr
+ * @param  array $arr
  * @return bool  true if the array is associative, false otherwise.
  */
 function isAssoc(array $arr): bool {
-    if([] === $arr) {
+    if ([] === $arr) {
         return false;
     }
     return array_keys($arr) !== range(0, count($arr) - 1);
@@ -87,12 +87,12 @@ function isPhar(): bool {
 
 /**
  * Request an input from the terminal without feeding back to the display whatever it's been typed.
- * @param string $prompt message to display along with the input request.
+ * @param  string         $prompt message to display along with the input request.
  * @return Unsafe<string>
  */
 function readLineSilent(string $prompt): Unsafe {
     $command = "/usr/bin/env bash -c 'echo OK'";
-    if(rtrim(shell_exec($command)) !== 'OK') {
+    if (rtrim(shell_exec($command)) !== 'OK') {
         return error("Can't invoke bash");
     }
     $command = "/usr/bin/env bash -c 'read -s -p \""
@@ -105,12 +105,12 @@ function readLineSilent(string $prompt): Unsafe {
 
 
 /**
- * @param array $array
- * @param bool  $completely if true, flatten the array completely
+ * @param  array $array
+ * @param  bool  $completely if true, flatten the array completely
  * @return array
  */
 function flatten(array $array, bool $completely = false): array {
-    if($completely) {
+    if ($completely) {
         return iterator_to_array(new RecursiveIteratorIterator(new RecursiveArrayIterator($array)), false);
     }
 
@@ -133,7 +133,7 @@ function in(): ReadableResourceStream {
 
 /**
  * @template T
- * @param T $value
+ * @param  T         $value
  * @return Unsafe<T>
  */
 function ok(mixed $value = null): Unsafe {
@@ -141,11 +141,11 @@ function ok(mixed $value = null): Unsafe {
 }
 
 /**
- * @param string|Error $message
+ * @param  string|Error $message
  * @return Unsafe<void>
  */
 function error(string|Error $message): Unsafe {
-    if(is_string($message)) {
+    if (is_string($message)) {
         return new Unsafe(null, new Error($message));
     }
 
@@ -154,24 +154,22 @@ function error(string|Error $message): Unsafe {
 
 /**
  * Execute a command.
- * @param string               $command instruction to run.
- * @param false|WritableStream $writer send the output of the process to this stream.
- * @param false|Signal         $signal when this signal is triggered the process is killed.
+ * @param  string               $command instruction to run.
+ * @param  false|WritableStream $writer  send the output of the process to this stream.
+ * @param  false|Signal         $signal  when this signal is triggered the process is killed.
  * @return Future<Unsafe<int>>
  */
 function execute(
-    string               $command,
+    string $command,
     false|WritableStream $writer = false,
-    false|Signal         $signal = false,
+    false|Signal $signal = false,
 ): Future {
     return async(static function() use ($command, $writer, $signal) {
         try {
-            /** @var Unsafe<LoggerInterface> $loggerAttempt */
-            $loggerAttempt = Container::create(LoggerInterface::class);
-            if($loggerAttempt->error) {
-                return error($loggerAttempt->error);
+            $logger = Container::create(LoggerInterface::class)->try($error);
+            if ($error) {
+                return error($error);
             }
-            $logger = $loggerAttempt->value;
             $process = Process::start($command);
             pipe($process->getStdout(), $writer);
             pipe($process->getStderr(), $writer);
@@ -180,9 +178,9 @@ function execute(
             return error($e->getMessage());
         }
 
-        if($signal) {
+        if ($signal) {
             $signal->listen(static function(int $code) use ($process, $writer, $logger) {
-                if(!$process->isRunning()) {
+                if (!$process->isRunning()) {
                     return ok();
                 }
 
@@ -202,13 +200,14 @@ function execute(
 
 /**
  * Execute a command and return its output.
- * @param string $command command to run
+ * @param  string                 $command command to run
  * @return Future<Unsafe<string>>
  */
 function get(string $command): Future {
     return async(static function() use ($command) {
         [$reader, $writer] = duplex();
-        if($error = execute($command, $writer)->await()->error) {
+        execute($command, $writer)->await()->try($error);
+        if ($error) {
             return error($error);
         }
         return ok(buffer($reader));
@@ -217,38 +216,61 @@ function get(string $command): Future {
 
 /**
  * Invoke a generator function and immediately return any `Error`
- * or `Unsafe` containing an error generated as `Unsafe`.
- * @param callable():Generator<Unsafe|Error> $function
- * @return Unsafe<void>
+ * or `Unsafe` that contains an error.\
+ * In both cases the result is always an `Unsafe<T>` object.
+ * 
+ * - If you generate an `Unsafe<T>` the error within the object is transfered to a new `Unsafe<T>` for the sake of consistency.
+ * - If you generate an `Error` instead, then the `Error` is wrapped in `Unsafe<T>`.
+ * 
+ * The generator is consumed and if no error is detected then the function produces the returned value of the generator.
+ * 
+ * ## Example
+ * ```php
+ * $content = anyError(function(){
+ *  $file = File::open('file.txt')->try($error) or yield $error; // <=== yield error if detected
+ *  $content = $file->readAll()->await()->try($error) or yield $error; // <=== same thing
+ *  return $content; // <=== return the content of the file
+ * })->try($error) or stop($error); // <=== stop the application if any error is detected.
+ * 
+ * // Otherwise print the content of the file
+ * print($content);
+ * ```
+ * @param  callable():Generator<Unsafe|Error> $function
+ * @return Unsafe<T>
  */
 function anyError(callable $function): Unsafe {
     /** @var Generator<Unsafe<mixed>> $result */
     $result = $function();
 
-    if(!($result instanceof Generator)) {
-        if($result instanceof Unsafe) {
+    if (!($result instanceof Generator)) {
+        if ($result instanceof Unsafe) {
             return $result;
         }
         return ok($result);
     }
 
-    for($result->rewind(); $result->valid(); $result->next()) {
+    for ($result->rewind(); $result->valid(); $result->next()) {
         /** @var Unsafe<Error|Unsafe> $value */
         $value = $result->current();
-        if($value instanceof Error) {
+        if ($value instanceof Error) {
             return error($value);
-        } elseif($value instanceof Unsafe && $value->error) {
+        } elseif ($value instanceof Unsafe && $value->error) {
             return error($value->error);
         }
     }
-    return ok();
+
+    try {
+        return ok($result->getReturn());
+    } catch (Throwable $error) {
+        return error($error);
+    }
 }
 
 /**
  * Return two new streams, a readable stream and a writable one which will be writing to the first stream.
  *
  * The writer stream will automatically be disposed of when the readable stream is disposed of.
- * @param int $bufferSize
+ * @param  int                                                      $bufferSize
  * @return array{0:ReadableIterableStream,1:WritableIterableStream}
  */
 function duplex(int $bufferSize = 8192): array {
@@ -272,7 +294,7 @@ function deferred(): DeferredFuture {
 /**
  * Get an environment variable.
  * @template T
- * @param string $name name of the variable.
+ * @param  string $name name of the variable.
  * @return T      value of the variable.
  */
 function env(string $name): mixed {
@@ -282,11 +304,11 @@ function env(string $name): mixed {
 
 /**
  * Stop the program with an error.
- * @param string|Error $error
+ * @param  string|Error $error
  * @return never
  */
 function stop(string|Error $error) {
-    if(is_string($error)) {
+    if (is_string($error)) {
         $error = new Error($error);
     }
     Bootstrap::kill($error->getMessage());

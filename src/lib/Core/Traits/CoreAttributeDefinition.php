@@ -49,7 +49,8 @@ trait CoreAttributeDefinition {
                 $klass              = new ReflectionClass($trueClassName);
                 /** @var object $instance */
                 $instance = $klass->newInstance(...$attributeArguments);
-                if ($error = Container::entry($instance, $klass->getMethods())->error) {
+                Container::entry($instance, $klass->getMethods())->try($error);
+                if ($error) {
                     return error($error);
                 }
                 $instances[] = $instance;
@@ -78,7 +79,8 @@ trait CoreAttributeDefinition {
             $klass              = new ReflectionClass($trueClassName);
             /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
-            if ($error = Container::entry($instance, $klass->getMethods())->error) {
+            Container::entry($instance, $klass->getMethods())->try($error);
+            if ($error) {
                 return error($error);
             }
             self::$coreDefinitionCache->attach(
@@ -110,7 +112,8 @@ trait CoreAttributeDefinition {
             $klass              = new ReflectionClass($trueClassName);
             /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
-            if ($error = Container::entry($instance, $klass->getMethods())->error) {
+            Container::entry($instance, $klass->getMethods())->try($error);
+            if ($error) {
                 return error($error);
             }
             self::$coreDefinitionCache->attach(
@@ -142,7 +145,8 @@ trait CoreAttributeDefinition {
             $klass              = new ReflectionClass($trueClassName);
             /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
-            if ($error = Container::entry($instance, $klass->getMethods())->error) {
+            Container::entry($instance, $klass->getMethods())->try($error);
+            if ($error) {
                 return error($error);
             }
             self::$coreDefinitionCache->attach(
@@ -174,7 +178,8 @@ trait CoreAttributeDefinition {
             $klass              = new ReflectionClass($trueClassName);
             /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
-            if ($error = Container::entry($instance, $klass->getMethods())->error) {
+            Container::entry($instance, $klass->getMethods())->try($error);
+            if ($error) {
                 return error($error);
             }
             self::$coreDefinitionCache->attach(
@@ -206,7 +211,8 @@ trait CoreAttributeDefinition {
             $klass              = new ReflectionClass($trueClassName);
             /** @var object $instance */
             $instance = $klass->newInstance(...$attributeArguments);
-            if ($error = Container::entry($instance, $klass->getMethods())->error) {
+            Container::entry($instance, $klass->getMethods())->try($error);
+            if ($error) {
                 return error($error);
             }
             self::$coreDefinitionCache->attach(

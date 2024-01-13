@@ -66,17 +66,17 @@ class HttpInvoker {
 
         $options = $this->createDependenciesOptionsFromRequestContextAndResponse($context);
 
-        $dependencies = Container::dependencies($reflectionFunction, $options);
+        $dependencies = Container::dependencies($reflectionFunction, $options)->try($error);
 
-        if ($dependencies->error) {
-            return error($dependencies->error);
+        if ($error) {
+            return error($error);
         }
 
         foreach ($onRequests as $onRequest) {
             $onRequest->onRequest($context->request);
         }
 
-        $result = $function(...$dependencies->value);
+        $result = $function(...$dependencies);
 
         foreach ($onResults as $onResult) {
             $onResult->onResult($context->request, $result);

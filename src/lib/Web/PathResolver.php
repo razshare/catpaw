@@ -17,7 +17,8 @@ class PathResolver {
      * @return Unsafe<void>
      */
     public static function cacheResolver(string $symbolicMethod, string $symbolicPath, array $parameters):Unsafe {
-        if ($error = self::findResolver($symbolicMethod, $symbolicPath, $parameters)->error) {
+        self::findResolver($symbolicMethod, $symbolicPath, $parameters)->try($error);
+        if ($error) {
             return error($error);
         }
 
@@ -33,11 +34,10 @@ class PathResolver {
             return ok(self::$cache[$key]);
         }
 
-        $configurationsAttempt = self::findMatchingPathConfigurations($symbolicPath, $parameters);
-        if ($configurationsAttempt->error) {
-            return error($configurationsAttempt->error);
+        $configurations = self::findMatchingPathConfigurations($symbolicPath, $parameters)->try($error);
+        if ($error) {
+            return error($error);
         }
-        $configurations = $configurationsAttempt->value;
 
         return ok(self::$cache[$key] = new PathResolver($configurations));
     }
@@ -53,36 +53,36 @@ class PathResolver {
 
         foreach ($reflectionParameters as $reflectionParameter) {
             $reflectionParameterName = $reflectionParameter->getName();
-            /** @var Unsafe<Param> $param */
-            $param = Param::findByParameter($reflectionParameter);
-            if ($param->error) {
-                return error($param->error);
+            /** @var Param $param */
+            $param = Param::findByParameter($reflectionParameter)->try($error);
+            if ($error) {
+                return error($error);
             }
-            if (!$param->value) {
+            if (!$param) {
                 continue;
             }
 
             $typeName = ReflectionTypeManager::unwrap($reflectionParameter) ?? 'string';
 
-            if ('' === $param->value->getRegex()) {
+            if ('' === $param->getRegex()) {
                 switch ($typeName) {
                     case 'int':
-                        $param->value->setRegex('[-+]?[0-9]+');
+                        $param->setRegex('[-+]?[0-9]+');
                         break;
                     case 'float':
-                        $param->value->setRegex('[-+]?[0-9]+\.[0-9]+');
+                        $param->setRegex('[-+]?[0-9]+\.[0-9]+');
                         break;
                     case 'string':
-                        $param->value->setRegex('[^\/]*');
+                        $param->setRegex('[^\/]*');
                         break;
                     case 'bool':
-                        $param->value->setRegex('(0|1|no?|y(es)?|false|true)');
+                        $param->setRegex('(0|1|no?|y(es)?|false|true)');
                         break;
                 }
             }
 
             $configurations[] = new MatchingPathConfiguration(
-                param: $param->value,
+                param: $param,
                 name: $reflectionParameterName,
                 namePattern: '\{'.$reflectionParameterName.'\}',
                 isStatic: false,

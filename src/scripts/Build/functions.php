@@ -34,33 +34,31 @@ function build(
     }
 
 
-    /** @var Unsafe<LoggerInterface> $loggerAttempt */
-    $loggerAttempt = Container::create(LoggerInterface::class);
-    if ($loggerAttempt->error) {
-        return error($loggerAttempt->error);
+    $logger = Container::create(LoggerInterface::class)->try($error);
+    if ($error) {
+        return error($error);
     }
-    $logger = $loggerAttempt->value;
 
     if ($buildConfigInit) {
         $logger->info('Trying to generate build.yml file...');
         
         if (!File::exists('build.yml')) {
-            $file = File::open('build.yml');
-            if ($file->error) {
-                return error($file->error);
+            $file = File::open('build.yml')->try($error);
+            if ($error) {
+                return error($error);
             }
 
-            $writeAttempt = $file->value->write('build.yml', <<<YAML
+            $file->write('build.yml', <<<YAML
                 name: app
                 entry: ./src/main.php
                 libraries: ./src/lib
                 environment: ./env.yml
                 info: false
                 match: /(^\.\/(\.build-cache|src|vendor|resources|bin)\/.*)|(\.\/env\.yml)/
-                YAML)->await();
+                YAML)->await()->try($error);
 
-            if ($writeAttempt->error) {
-                return error($writeAttempt->error);
+            if ($error) {
+                return error($error);
             }
             
             $logger->info('done!');
@@ -76,17 +74,17 @@ function build(
 
 
 
-    $fileAttempt = File::open($buildConfig);
-    if ($fileAttempt->error) {
-        return error($fileAttempt->error);
+    $file = File::open($buildConfig)->try($error);
+    if ($error) {
+        return error($error);
     }
     
-    $readAttempt = $fileAttempt->value->readAll()->await();
-    if ($readAttempt->error) {
-        return error($readAttempt->error);
+    $content = $file->readAll()->await()->try($error);
+    if ($error) {
+        return error($error);
     }
 
-    $config = yaml_parse($readAttempt->value);
+    $config = yaml_parse($content);
 
     /**
      * @var string      $name
@@ -132,13 +130,14 @@ function build(
     
     try {
         if (File::exists($dirnameStart)) {
-            $deleteAttempt = Directory::delete($dirnameStart);
-            if ($deleteAttempt->error) {
-                return error($deleteAttempt->error);
+            Directory::delete($dirnameStart)->try($error);
+            if ($error) {
+                return error($error);
             }
         }
 
-        if ($error = Directory::create($dirnameStart)->error) {
+        Directory::create($dirnameStart)->try($error);
+        if ($error) {
             return error($error);
         }
 
@@ -146,12 +145,12 @@ function build(
 
         $infoFallbackStringified = $info ? 'true':'false';
         
-        $fileAttempt = File::open($start, 'w+');
-        if ($fileAttempt->error) {
-            return error($fileAttempt->error);
+        $file = File::open($start, 'w+')->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        $writeAttempt = $fileAttempt->value->write(<<<PHP
+        $writeAttempt = $file->write(<<<PHP
             <?php
             use CatPaw\Core\Attributes\Option;
             use CatPaw\Core\Bootstrap;
@@ -180,37 +179,41 @@ function build(
                 info: \$info,
                 dieOnChange: false,
             );
-            PHP)->await();
+            PHP)->await()->try($error);
         
-        $fileAttempt->value->close();
+        $file->close();
 
-        if ($writeAttempt->error) {
-            return error($writeAttempt->error);
+        if ($error) {
+            return error($error);
         }
 
 
         // die($output.PHP_EOL);
         
         if (File::exists($app)) {
-            if ($error = File::delete($app)->error) {
+            File::delete($app)->try($error);
+            if ($error) {
                 return error($error);
             }
         }
 
         if (File::exists($app.'.gz')) {
-            if ($error = File::delete($app.'.gz')->error) {
+            File::delete($app.'.gz')->try($error);
+            if ($error) {
                 return error($error);
             }
         }
         
         if ($buildOptimize) {
-            if ($error = execute("composer update --no-dev", out())->await()->error) {
+            execute("composer update --no-dev", out())->await()->try($error);
+            if ($error) {
                 return error($error);
             }
         }
         
         if (isDirectory("./vendor/bin")) {
-            if ($error = Directory::delete("./vendor/bin")->error) {
+            Directory::delete("./vendor/bin")->try($error);
+            if ($error) {
                 return error($error);
             }
         }
@@ -232,12 +235,14 @@ function build(
         # Make the file executable
         chmod($app, 0770);
 
-        if ($error = Directory::delete($dirnameStart)->error) {
+        Directory::delete($dirnameStart)->try($error);
+        if ($error) {
             return error($error);
         }
 
         if ($buildOptimize) {
-            if ($error = execute("composer update", out())->await()->error) {
+            execute("composer update", out())->await()->try($error);
+            if ($error) {
                 return error($error);
             }
         }

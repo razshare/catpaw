@@ -42,19 +42,19 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
         $session  = Session::create();
         $filename = "$this->directoryName/$id";
         if ((File::exists($filename))) {
-            $file = File::open($filename);
+            $file = File::open($filename)->try($error);
 
-            if ($file->error) {
-                return error($file->error);
+            if ($error) {
+                return error($error);
             }
 
-            $readingAttempt = $file->value->readAll()->await();
+            $content = $file->readAll()->await()->try($error);
 
-            if ($readingAttempt->error) {
-                return error($readingAttempt->error);
+            if ($error) {
+                return error($error);
             }
 
-            $data = json_decode($readingAttempt->value, true) ?? false;
+            $data = json_decode($content, true) ?? false;
 
             if ($data) {
                 $storage = $data["STORAGE"] ?? [];
@@ -83,11 +83,11 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
             $time = time();
             if ($id) {
                 if (!isset($this->sessions[$id])) {
-                    $sessionAttempt = $this->startSession($id);
-                    if ($sessionAttempt->error) {
-                        return error($sessionAttempt->error);
+                    $session = $this->startSession($id)->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-                    $session = $sessionAttempt->value;
+
                     if (!$session) {
                         return ok(false);
                     }
@@ -130,32 +130,33 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
     /** @inheritDoc */
     public function persistSession(string $id): Unsafe {
         if (!isDirectory($this->directoryName)) {
-            if ($error = Directory::create($this->directoryName)->error) {
+            Directory::create($this->directoryName)->try($error);
+            if ($error) {
                 return error($error);
             }
         }
 
         $filename = "$this->directoryName/$id";
 
-        $session = $this->validateSession($id);
-        if ($session->error) {
-            return error($session->error);
+        $session = $this->validateSession($id)->try($error);
+        if ($error) {
+            return error($error);
         }
             
-        $file = File::open($filename, 'w+');
-        if ($file->error) {
-            return error($file->error);
+        $file = File::open($filename, 'w+')->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        $writingAttempt = $file->value->write(json_encode([
-            "STORAGE" => $session->value->getStorage(),
-            "TIME"    => $session->value->getTime(),
-        ]))->await();
-        if ($writingAttempt->error) {
-            return error($writingAttempt->error);
+        $file->write(json_encode([
+            "STORAGE" => $session->getStorage(),
+            "TIME"    => $session->getTime(),
+        ]))->await()->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        $file->value->close();
+        $file->close();
         return ok();
     }
 
@@ -163,7 +164,8 @@ class FileSystemSessionOperations implements SessionOperationsInterface {
     public function removeSession(string $id): Unsafe {
         $filename = "$this->directoryName/$id";
         if (File::exists($filename)) {
-            if ($error = File::delete($filename)->error) {
+            File::delete($filename)->try($error);
+            if ($error) {
                 return error($error);
             }
         }

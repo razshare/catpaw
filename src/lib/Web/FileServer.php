@@ -22,21 +22,21 @@ readonly class FileServer implements FileServerInterface {
      * @return Unsafe<self>
      */
     public static function create(Server $server):Unsafe {
-        $loggerAttempt = Container::create(LoggerInterface::class);
-        if ($loggerAttempt->error) {
-            return error($loggerAttempt->error);
+        $logger = Container::create(LoggerInterface::class)->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        $rangeAttempt = Container::create(ByteRangeService::class);
-        if ($rangeAttempt->error) {
-            return error($rangeAttempt->error);
+        $byteRangeService = Container::create(ByteRangeService::class)->try($error);
+        if ($error) {
+            return error($error);
         }
 
         return ok(new self(
             server: $server,
             fallback: 'index.html',
-            logger: $loggerAttempt->value,
-            byteRangeService: $rangeAttempt->value,
+            logger: $logger,
+            byteRangeService: $byteRangeService,
         ));
     }
 
@@ -45,21 +45,21 @@ readonly class FileServer implements FileServerInterface {
      * @return Unsafe<self>
      */
     public static function createForSpa(Server $server):Unsafe {
-        $loggerAttempt = Container::create(LoggerInterface::class);
-        if ($loggerAttempt->error) {
-            return error($loggerAttempt->error);
+        $logger = Container::create(LoggerInterface::class)->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        $rangeAttempt = Container::create(ByteRangeService::class);
-        if ($rangeAttempt->error) {
-            return error($rangeAttempt->error);
+        $byteRangeService = Container::create(ByteRangeService::class)->try($error);
+        if ($error) {
+            return error($error);
         }
 
         return ok(new self(
             server:           $server,
             fallback:         'index.html',
-            logger:           $loggerAttempt->value,
-            byteRangeService: $rangeAttempt->value,
+            logger:           $logger,
+            byteRangeService: $byteRangeService,
             overwrite:        FileServerOverwriteForSpa::create($server),
         ));
     }
@@ -171,30 +171,28 @@ readonly class FileServer implements FileServerInterface {
             ];
         }
 
-        $rangedResponseAttempt = $byteRangeService->file(
+        $rangedResponse = $byteRangeService->file(
             fileName  : $fileName,
             rangeQuery: $request->getHeader("Range") ?? '',
-        );
+        )->try($error);
 
-        if (!$rangedResponseAttempt->error) {
-            return $rangedResponseAttempt->value;
+        if (!$error) {
+            return $rangedResponse;
         }
 
-        $fileAttempt = File::open($fileName, 'r');
-        if ($fileAttempt->error) {
-            $logger->error($fileAttempt->error);
+        $file = File::open($fileName, 'r')->try($error);
+        if ($error) {
+            $logger->error($error);
             return $this->failure();
         }
 
-        $file   = $fileAttempt->value;
         $stream = $file->getAmpFile();
 
-        $fileSizeAttempt = File::getSize($fileName);
-        if ($fileSizeAttempt->error) {
-            $logger->error($fileSizeAttempt->error);
+        $fileSize = File::getSize($fileName)->try($error);
+        if ($error) {
+            $logger->error($error);
             return $this->failure();
         }
-        $fileSize = $fileSizeAttempt->value;
 
         $mimeType = Mime::findContentType($fileName);
         return $this->success(

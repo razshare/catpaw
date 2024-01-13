@@ -2,8 +2,6 @@
 
 namespace CatPaw\Web\Services;
 
-use Amp\ByteStream\ReadableIterableStream;
-use Amp\ByteStream\WritableIterableStream;
 use Amp\Http\Server\Response;
 use CatPaw\Core\Attributes\Service;
 
@@ -85,39 +83,34 @@ class ByteRangeService {
     public function response(
         ByteRangeWriterInterface $interface
     ): Unsafe {
-        $headers           = [];
-        $rangeQueryAttempt = $interface->getRangeQuery();
-        if ($rangeQueryAttempt->error) {
-            return error($rangeQueryAttempt->error);
-        }
-        $rangeQuery    = $rangeQueryAttempt->value;
-        $rangesAttempt = $this->parse($rangeQuery);
-
-        if ($rangesAttempt->error) {
-            return error($rangesAttempt->error);
+        $headers    = [];
+        $rangeQuery = $interface->getRangeQuery()->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        $contentLengthAttempt = $interface->getContentLength();
-        if ($contentLengthAttempt->error) {
-            return error($contentLengthAttempt->error);
+        $ranges = $this->parse($rangeQuery)->try($error);
+
+        if ($error) {
+            return error($error);
         }
-        $contentLength = $contentLengthAttempt->value;
+
+        $contentLength = $interface->getContentLength()->try($error);
+        if ($error) {
+            return error($error);
+        }
 
         if ($contentLength < 0) {
             return error("Could not retrieve file size.");
         }
         
-        $contentTypeAttempt = $interface->getContentType();
-        if ($contentTypeAttempt->error) {
-            return error($contentTypeAttempt->error);
+        $contentType = $interface->getContentType()->try($error);
+        if ($error) {
+            return error($error);
         }
-        $contentType = $contentTypeAttempt->value;
-        $ranges      = $rangesAttempt->value;
-        $count       = $ranges->count();
-        
 
-        /** @var ReadableIterableStream $reader */
-        /** @var WritableIterableStream $reader */
+        $count = $ranges->count();
+        
 
         [$reader,$writer] = duplex();
 
@@ -141,11 +134,11 @@ class ByteRangeService {
             }
 
             EventLoop::defer(static function() use ($writer, $start, $end, $interface) {
-                $dataAttempt = $interface->send($start, $end - $start + 1);
-                if ($dataAttempt->error) {
-                    return error($dataAttempt->error);
+                $data = $interface->send($start, $end - $start + 1)->try($error);
+                if ($error) {
+                    return error($error);
                 }
-                $writer->write($dataAttempt->value);
+                $writer->write($data);
                 $writer->close();
                 $interface->close();
                 return ok();
@@ -187,11 +180,11 @@ class ByteRangeService {
                 if ($end < 0) {
                     $end = $contentLength - 1;
                 }
-                $dataAttempt = $interface->send($start, $end - $start + 1);
-                if ($dataAttempt->error) {
-                    return error($dataAttempt->error);
+                $data = $interface->send($start, $end - $start + 1)->try($error);
+                if ($error) {
+                    return error($error);
                 }
-                $writer->write($dataAttempt->value);
+                $writer->write($data);
                 $writer->write("\r\n");
             }
             $writer->write("--$boundary--");
@@ -232,19 +225,19 @@ class ByteRangeService {
                 }
 
                 public function getContentLength():Unsafe {
-                    $size = File::getSize($this->fileName);
-                    if ($size->error) {
-                        return error($size->error);
+                    $size = File::getSize($this->fileName)->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-                    return ok($size->value);
+                    return ok($size);
                 }
 
                 public function start():Unsafe {
-                    $fileAttempt = File::open($this->fileName);
-                    if ($fileAttempt->error) {
-                        return error($fileAttempt->error);
+                    $file = File::open($this->fileName)->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-                    $this->file = $fileAttempt->value;
+                    $this->file = $file;
                     return ok();
                 }
 

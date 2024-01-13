@@ -12,29 +12,29 @@ use Revolt\EventLoop;
 
 class ScheduleTest extends TestCase {
     public function testAll() {
-        $loadAttempt = Container::load('./src/lib/');
-        $this->assertFalse($loadAttempt->error);
-        $unsafe = anyError(function() {
+        Container::load('./src/lib/')->try($error);
+        $this->assertFalse($error);
+        anyError(function() {
             yield Container::run($this->scheduleDaily(...));
             yield Container::run($this->scheduleAfter1Second(...));
             yield Container::run($this->scheduleEvery1Second3Times(...));
-        });
-        $this->assertFalse($unsafe->error);
+        })->try($error);
+        $this->assertFalse($error);
         EventLoop::run();
     }
 
-    private function scheduleDaily(ScheduleService $schedule): void {
-        $hour            = date('H');
-        $value           = false;
-        $scheduleAttempt = $schedule->daily(
+    private function scheduleDaily(ScheduleService $scheduler): void {
+        $hour     = date('H');
+        $value    = false;
+        $schedule = $scheduler->daily(
             due:"at $hour:00",
             function: function(callable $cancel) use (&$value) {
                 $value = true;
                 $cancel();
             }
-        );
-        $this->assertFalse($scheduleAttempt->error);
-        $scheduleAttempt->value->future->await();
+        )->try($error);
+        $this->assertFalse($error);
+        $schedule->future->await();
         $this->assertTrue($value);
     }
     
@@ -51,29 +51,29 @@ class ScheduleTest extends TestCase {
             $checked = true;
             $this->assertTrue($ok);
         });
-        $error = $schedule->after('1 second', static function() use ($signal, $logger) {
+        $schedule->after('1 second', static function() use ($signal, $logger) {
             $logger->info("Function executed after 1 second.");
             $signal->sigterm();
-        })->error;
+        })->try($error);
         $this->assertFalse($error);
         EventLoop::delay(1.1, function() use (&$checked) {
             $this->assertTrue($checked);
         });
     }
     
-    public function scheduleEvery1Second3Times(ScheduleService $schedule, LoggerInterface $logger): void {
+    public function scheduleEvery1Second3Times(ScheduleService $scheduler, LoggerInterface $logger): void {
         $value = 0;
         $logger->info("Executing function every 1 second 3 times...");
-        $entry = $schedule->every("1 seconds", static function(callable $cancel) use (&$value, $logger) {
+        $schedule = $scheduler->every("1 seconds", static function(callable $cancel) use (&$value, $logger) {
             $iteration = $value + 1;
             $logger->info("Scheduled execution number $iteration");
             $value++;
             if (3 === $value) {
                 $cancel();
             }
-        });
-        $this->assertFalse($entry->error);
-        $entry->value->future->await();
+        })->try($error);
+        $this->assertFalse($error);
+        $schedule->future->await();
         $logger->info("Done executing.");
         $this->assertEquals(3, $value);
     }

@@ -67,18 +67,18 @@ readonly class Router {
                 return error($e);
             }
 
-            $consumesAttempt = Consumes::findByFunction($reflectionFunction);
+            $consumes = Consumes::findByFunction($reflectionFunction)->try($error);
             
-            if ($consumesAttempt->error) {
-                return error($consumesAttempt->error);
+            if ($error) {
+                return error($error);
             }
-            $consumes = $consumesAttempt->value?:new Consumes();
+            $consumes = $consumes?:new Consumes();
 
-            $producesAttempt = Produces::findByFunction($reflectionFunction);
-            if ($producesAttempt->error) {
-                return error($producesAttempt->error);
+            $produces = Produces::findByFunction($reflectionFunction)->try($error);
+            if ($error) {
+                return error($error);
             }
-            $produces = $producesAttempt->value?:new Produces();
+            $produces = $produces?:new Produces();
 
             $onRequest = [];
             $onResult  = [];
@@ -87,7 +87,8 @@ readonly class Router {
             $parameters = $reflectionFunction->getParameters();
 
             // This will cache the path resolver so that it will be ready for the first request.
-            if ($error = PathResolver::findResolver($symbolicMethod, $symbolicPath, $parameters)->error) {
+            PathResolver::findResolver($symbolicMethod, $symbolicPath, $parameters)->try($error);
+            if ($error) {
                 return error($error);
             }
             
@@ -97,11 +98,11 @@ readonly class Router {
                     continue;
                 }
 
-                /** @var Unsafe<false|self> $attributeInstance */
-                $attributeInstance = $aname::findByFunction($reflectionFunction);
+                /** @var false|AttributeInterface $attributeInstance */
+                $attributeInstance = $aname::findByFunction($reflectionFunction)->try($error);
 
-                if ($attributeInstance->error) {
-                    return error($attributeInstance->error);
+                if ($error) {
+                    return error($error);
                 }
      
                 if ($attributeInstance instanceof OnRequest) {
@@ -113,20 +114,16 @@ readonly class Router {
                 }
             }
 
-            $ignoreOpenApiAttempt = IgnoreOpenApi::findByFunction($reflectionFunction);
+            $ignoreOpenApi = IgnoreOpenApi::findByFunction($reflectionFunction)->try($error);
             
-            if ($ignoreOpenApiAttempt->error) {
-                return error($ignoreOpenApiAttempt->error);
+            if ($error) {
+                return error($error);
             }
 
-            $ignoreOpenApi = $ignoreOpenApiAttempt->value;
-
-            $ignoreDescribeAttempt = IgnoreDescribe::findByFunction($reflectionFunction);
-            if ($ignoreDescribeAttempt->error) {
-                return error($ignoreDescribeAttempt->error);
+            $ignoreDescribe = IgnoreDescribe::findByFunction($reflectionFunction)->try($error);
+            if ($error) {
+                return error($error);
             }
-
-            $ignoreDescribe = $ignoreDescribeAttempt->value;
 
             $route = Route::create(
                 reflectionFunction: $reflectionFunction,
@@ -157,7 +154,8 @@ readonly class Router {
             $route->setOptions($options);
 
             if (!$ignoreOpenApi) {
-                if ($error = $this->registerRouteForOpenApi($route)->error) {
+                $this->registerRouteForOpenApi($route)->try($error);
+                if ($error) {
                     return error($error);
                 }
             }
@@ -177,27 +175,27 @@ readonly class Router {
     ):Unsafe {
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
-            /** @var Unsafe<Query> $queryAttribute */
-            $queryAttribute = Query::findByParameter($paramReflection);
+            /** @var false|Query $queryAttribute */
+            $queryAttribute = Query::findByParameter($paramReflection)->try($error);
 
-            if ($queryAttribute->error) {
-                return error($queryAttribute->error);
+            if ($error) {
+                return error($error);
             }
 
-            if (!$queryAttribute->value) {
+            if (!$queryAttribute) {
                 continue;
             }
 
-            /** @var Unsafe<Summary> $summaryAttribute */
-            $summaryAttribute = Summary::findByParameter($paramReflection);
-            if ($summaryAttribute->error) {
-                return error($summaryAttribute->error);
+            /** @var false|Summary $summaryAttribute */
+            $summaryAttribute = Summary::findByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
             }
 
-            /** @var Unsafe<Example> $exampleAttribute */
-            $exampleAttribute = Example::findByParameter($paramReflection);
-            if ($exampleAttribute->error) {
-                return error($exampleAttribute->error);
+            /** @var false|Example $exampleAttribute */
+            $exampleAttribute = Example::findByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
             }
 
 
@@ -216,9 +214,9 @@ readonly class Router {
             $schema = ["type" => $type];
             
 
-            $name    = $queryAttribute->value->getName();
-            $summary = $summaryAttribute->value?$summaryAttribute->value->getValue():'';
-            $example = $exampleAttribute->value?$exampleAttribute->value->getValue():[];
+            $name    = $queryAttribute->getName();
+            $summary = $summaryAttribute?$summaryAttribute->getValue():'';
+            $example = $exampleAttribute?$exampleAttribute->getValue():[];
             
             
             if ('' === $name) {
@@ -250,25 +248,25 @@ readonly class Router {
     ):Unsafe {
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
-            /** @var Unsafe<Header> $headerAttribute */
-            $headerAttribute = Header::findByParameter($paramReflection);
-            if ($headerAttribute->error) {
-                return error($headerAttribute->error);
+            /** @var false|Header $headerAttribute */
+            $headerAttribute = Header::findByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
             }
-            if (!$headerAttribute->value) {
+            if (!$headerAttribute) {
                 continue;
             }
 
-            /** @var Unsafe<false|Summary> $summaryAttribute */
-            $summaryAttribute = Summary::findByParameter($paramReflection);
-            if ($summaryAttribute->error) {
-                return error($summaryAttribute->error);
+            /** @var false|Summary $summaryAttribute */
+            $summaryAttribute = Summary::findByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
             }
 
-            /** @var Unsafe<false|Example> $exampleAttribute */
-            $exampleAttribute = Example::findByParameter($paramReflection);
-            if ($exampleAttribute->error) {
-                return error($exampleAttribute->error);
+            /** @var false|Example $exampleAttribute */
+            $exampleAttribute = Example::findByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
             }
 
             $reflectionType = ReflectionTypeManager::unwrap($paramReflection);
@@ -284,9 +282,9 @@ readonly class Router {
             $schema = ["type" => $type];
             
 
-            $name    = $headerAttribute->value->getKey();
-            $summary = $summaryAttribute->value?$summaryAttribute->value->getValue():'';
-            $example = $exampleAttribute->value?$exampleAttribute->value->getValue():[];
+            $name    = $headerAttribute->getKey();
+            $summary = $summaryAttribute?$summaryAttribute->getValue():'';
+            $example = $exampleAttribute?$exampleAttribute->getValue():[];
             
             
             if ('' === $name) {
@@ -322,16 +320,16 @@ readonly class Router {
         OpenApiService $oa,
     ):Unsafe {
         $parametersReflections = $reflectionFunction->getParameters();
-        /** @var Unsafe<PathResolver> $configurations */
-        $configurations = PathResolver::findMatchingPathConfigurations($path, $parametersReflections);
-        if ($configurations->error) {
-            return error($configurations->error);
+        /** @var PathResolver $configurations */
+        $configurations = PathResolver::findMatchingPathConfigurations($path, $parametersReflections)->try($error);
+        if ($error) {
+            return error($error);
         }
 
         $result = [];
 
 
-        foreach ($configurations->value as $configuration) {
+        foreach ($configurations as $configuration) {
             $paramReflection = false;
             
             $name = $configuration->name;
@@ -350,17 +348,17 @@ readonly class Router {
 
             $reflectionType = ReflectionTypeManager::unwrap($paramReflection);
 
-            /** @var Unsafe<Summary> $summaryAttribute */
-            $summaryAttribute = Summary::findByParameter($paramReflection);
-            if ($summaryAttribute->error) {
-                return error($summaryAttribute->error);
+            /** @var false|Summary $summaryAttribute */
+            $summaryAttribute = Summary::findByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
             }
 
 
-            /** @var Unsafe<Example> $exampleAttribute */
-            $exampleAttribute = Example::findByParameter($paramReflection);
-            if ($exampleAttribute->error) {
-                return error($exampleAttribute->error);
+            /** @var false|Example $exampleAttribute */
+            $exampleAttribute = Example::findByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
             }
 
             $type = $reflectionType?$reflectionType->getName():'string';
@@ -374,8 +372,8 @@ readonly class Router {
 
             $schema = ["type" => $type];
             
-            $summary = $summaryAttribute->value?$summaryAttribute->value->getValue():'';
-            $example = $exampleAttribute->value?$exampleAttribute->value->getValue():[];
+            $summary = $summaryAttribute?$summaryAttribute->getValue():'';
+            $example = $exampleAttribute?$exampleAttribute->getValue():[];
             
             $result = [
                 ...$result,
@@ -482,49 +480,46 @@ readonly class Router {
                 }
             }
         }
-        /** @var Unsafe<OpenApiService> $openApiAttempt */
-        $openApiAttempt = Container::create(OpenApiService::class);
-        if ($openApiAttempt->error) {
-            return error($openApiAttempt->error);
+        $openApi = Container::create(OpenApiService::class)->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        $openApi = $openApiAttempt->value;
-
-        $headers = $this->findRouteOpenApiHeaders($reflectionFunction, $openApi);
-        if ($headers->error) {
-            return error($headers->error);
+        $headers = $this->findRouteOpenApiHeaders($reflectionFunction, $openApi)->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        $queries = $this->findRouteOpenApiQueries($reflectionFunction, $openApi);
-        if ($queries->error) {
-            return error($queries->error);
+        $queries = $this->findRouteOpenApiQueries($reflectionFunction, $openApi)->try($error);
+        if ($error) {
+            return error($error);
         }
 
         try {
-            $parameters = $this->findRouteOpenApiPathParameters($reflectionFunction, $symbolicPath, $openApi);
+            $parameters = $this->findRouteOpenApiPathParameters($reflectionFunction, $symbolicPath, $openApi)->try($error);
         } catch(Throwable $e) {
             return error($e);
         }
 
-        if ($parameters->error) {
-            return error($parameters->error);
+        if ($error) {
+            return error($error);
         }
 
 
         $parameters = [
-            ... $headers->value,
-            ...$queries->value,
-            ...$parameters->value,
+            ... $headers,
+            ...$queries,
+            ...$parameters,
             ...$this->findRouteOpenApiPageQueries($reflectionFunction, $openApi),
         ];
 
 
-        /** @var Unsafe<false|Summary> $summaryAttempt */
-        $summaryAttempt = Summary::findByFunction($reflectionFunction);
-        if ($summaryAttempt->error) {
-            return error($summaryAttempt->error);
+        /** @var false|Summary $summary */
+        $summary = Summary::findByFunction($reflectionFunction)->try($error);
+        if ($error) {
+            return error($error);
         }
-        $summary = $summaryAttempt->value?: new Summary('');
+        $summary = $summary?:new Summary('');
 
         $crequests = count($requests);
 

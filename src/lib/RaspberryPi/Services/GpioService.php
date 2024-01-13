@@ -7,9 +7,9 @@ use CatPaw\Core\Attributes\Service;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
-use CatPaw\Core\RaspberryPI\Interfaces\GpioReader;
-use CatPaw\Core\RaspberryPI\Interfaces\GpioWriter;
 use CatPaw\Core\Unsafe;
+use CatPaw\RaspberryPi\Interfaces\GpioReader;
+use CatPaw\RaspberryPi\Interfaces\GpioWriter;
 
 #[Service]
 class GpioService {
@@ -52,48 +52,49 @@ class GpioService {
         }
 
         // execute('echo "'.$pin.'" > /sys/class/gpio/export');
-        $exportFileAttempt = File::open('/sys/class/gpio/export', 'a');
-        if ($exportFileAttempt->error) {
-            return error($exportFileAttempt->error);
+        $exportFile = File::open('/sys/class/gpio/export', 'a')->try($error);
+        if ($error) {
+            return error($error);
         }
-        $exportFile = $exportFileAttempt->value;
+        
         $exportFile->write($pin);
         $exportFile->close();
 
         if (!File::exists("/sys/class/gpio/gpio$pin/direction")) {
-            if ($error = Directory::create("/sys/class/gpio/gpio$pin")->error) {
+            Directory::create("/sys/class/gpio/gpio$pin")->try($error);
+            if ($error) {
                 return error($error);
             }
-            $directionFileAttempt = File::open("/sys/class/gpio/gpio$pin/direction", 'w');
-            if ($directionFileAttempt->error) {
-                return error($directionFileAttempt->error);
+            $directionFile = File::open("/sys/class/gpio/gpio$pin/direction", 'w')->try($error);
+            if ($error) {
+                return error($error);
             }
-            $directionFile = $directionFileAttempt->value;
-            if ($error = $directionFile->write('')->await()->error) {
+            $directionFile->write('')->await()->try($error);
+            if ($error) {
                 return error($error);
             }
             $directionFile->close();
         }
 
-        $directionFileAttempt = File::open("/sys/class/gpio/gpio$pin/direction", 'a');
-        if ($directionFileAttempt->error) {
-            return error($directionFileAttempt->error);
+        $directionFile = File::open("/sys/class/gpio/gpio$pin/direction", 'a')->try($error);
+        if ($error) {
+            return error($error);
         }
-        $directionFile = $directionFileAttempt->value;
         $directionFile->write($direction > 0 ? 'out' : 'in');
         $directionFile->close();
 
 
         if (!File::exists("/sys/class/gpio/gpio$pin/value")) {
-            if ($error = Directory::create("/sys/class/gpio/gpio$pin")->error) {
+            Directory::create("/sys/class/gpio/gpio$pin")->try($error);
+            if ($error) {
                 return error($error);
             }
-            $valueFileAttempt = File::open("/sys/class/gpio/gpio$pin/value", 'w');
-            if ($valueFileAttempt->error) {
-                return error($valueFileAttempt->error);
+            $valueFile = File::open("/sys/class/gpio/gpio$pin/value", 'w')->try($error);
+            if ($error) {
+                return error($error);
             }
-            $valueFile = $valueFileAttempt->value;
-            if ($error = $valueFile->write('')->await()->error) {
+            $valueFile->write('')->await()->try($error);
+            if ($error) {
                 return error($error);
             }
             $valueFile->close();
@@ -121,12 +122,12 @@ class GpioService {
             
             public function read():Unsafe {
                 if (!$this->file) {
-                    $export      = $this->export;
-                    $fileAttempt = $export();
-                    if ($fileAttempt->error) {
-                        return error($fileAttempt->error);
+                    $export = $this->export;
+                    $file   = $export()->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-                    $this->file = $fileAttempt->value;
+                    $this->file = $file;
                 }
                 return $this->file->read()->await();
             }
@@ -156,12 +157,12 @@ class GpioService {
             
             public function write(string $data):Unsafe {
                 if (!$this->file) {
-                    $export      = $this->export;
-                    $fileAttempt = $export();
-                    if ($fileAttempt->error) {
-                        return error($fileAttempt->error);
+                    $export = $this->export;
+                    $file   = $export()->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-                    $this->file = $fileAttempt->value;
+                    $this->file = $file;
                 }
                 return $this->file->write($data)->await();
             }

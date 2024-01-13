@@ -16,9 +16,9 @@ use Revolt\EventLoop;
 
 class StoreTest extends TestCase {
     public function testAll() {
-        $loadAttempt = Container::load('./src/lib/');
-        $this->assertFalse($loadAttempt->error);
-        $unsafe = anyError(function() {
+        Container::load('./src/lib/')->try($error);
+        $this->assertFalse($error);
+        anyError(function() {
             yield Container::run($this->basic(...));
             yield Container::run($this->multipleSubscribers(...));
             yield Container::run($this->withDelay(...));
@@ -26,8 +26,8 @@ class StoreTest extends TestCase {
             yield Container::run($this->subscribe(...));
             yield Container::run($this->update(...));
             yield Container::run($this->attribute(...));
-        });
-        $this->assertFalse($unsafe->error);
+        })->try($error);
+        $this->assertFalse($error);
         EventLoop::run();
     }
 

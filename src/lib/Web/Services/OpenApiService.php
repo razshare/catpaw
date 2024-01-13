@@ -162,7 +162,8 @@ class OpenApiService {
                 $type = \CatPaw\Core\ReflectionTypeManager::unwrap($reflectionProperty)?->getName() ?? 'string';
 
                 if (class_exists($type)) {
-                    if ($error = $this->setComponentObject($type)->error) {
+                    $this->setComponentObject($type)->try($error);
+                    if ($error) {
                         return error($error);
                     }
                     $resolvedProperties[$propertyName] = [
@@ -170,17 +171,16 @@ class OpenApiService {
                         '$ref' => "#/components/schemas/{$type}",
                     ];
                 } else {
-                    /** @var Unsafe<false|ArrayList> */
-                    $arrayListAttributeAttempt = ArrayList::findByProperty($reflectionProperty);
-                    if ($arrayListAttributeAttempt->error) {
-                        return error($arrayListAttributeAttempt->error);
+                    /** @var false|ArrayList $arrayListAttribute */
+                    $arrayListAttribute = ArrayList::findByProperty($reflectionProperty)->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-
-                    $arrayListAttribute = $arrayListAttributeAttempt->value;
 
                     if ($arrayListAttribute) {
                         $subType = $arrayListAttribute->className;
-                        if ($error = $this->setComponentObject($subType)->error) {
+                        $this->setComponentObject($subType)->try($error);
+                        if ($error) {
                             return error($error);
                         }
                         $resolvedProperties[$propertyName] = [

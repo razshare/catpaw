@@ -8,21 +8,21 @@ class Filler {
 
     /**
      * @param  int              $length
-     * @param  string|int|float $contents
+     * @param  string|int|float $content
      * @param  int              $fillDirection
      * @param  string           $filler
      * @return string
      */
-    public static function fill(int $length, string|int|float $contents, int $fillDirection = 1, string $filler = ' '): string {
-        if (is_float($contents)) {
-            $contents = (int)$contents * 100;
+    public static function fill(int $length, string|int|float $content, int $fillDirection = 1, string $filler = ' '): string {
+        if (is_float($content)) {
+            $content = (int)$content * 100;
         }
 
-        $contents   = substr("$contents", 0, $length);
-        $filler_str = str_repeat($filler, $length - strlen($contents));
+        $content    = substr("$content", 0, $length);
+        $filler_str = str_repeat($filler, $length - strlen($content));
         if ($fillDirection === static::FILL_LEFT) {
-            return "$filler_str$contents";
+            return "$filler_str$content";
         }
-        return "$contents$filler_str";
+        return "$content$filler_str";
     }
 }

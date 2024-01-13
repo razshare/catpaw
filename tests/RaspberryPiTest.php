@@ -2,24 +2,24 @@
 namespace Tests;
 
 use function Amp\delay;
-use function CatPaw\Core\anyError;
-use CatPaw\Core\Container;
+// use function CatPaw\Core\anyError;
+// use CatPaw\Core\Container;
 use function CatPaw\Core\error;
 
 use CatPaw\Core\Unsafe;
 use CatPaw\RaspberryPi\Services\GpioService;
 use PHPUnit\Framework\TestCase;
-use Revolt\EventLoop;
+// use Revolt\EventLoop;
 
 class RaspberryPiTest extends TestCase {
     // public function testAll(): void {
     //     $this->assertTrue(true);
-    //     $loadAttempt = Container::load('./src/lib/');
-    //     $this->assertFalse($loadAttempt->error);
-    //     $unsafe = anyError(function() {
+    //     Container::load('./src/lib/')->try($error);
+    //     $this->assertFalse($error);
+    //     anyError(function() {
     //         yield Container::run($this->blink(...));
-    //     });
-    //     $this->assertFalse($unsafe->error);
+    //     })->try($error);
+    //     $this->assertFalse($error);
     //     EventLoop::run();
     // }
     
@@ -29,7 +29,8 @@ class RaspberryPiTest extends TestCase {
         while (true) {
             delay(1);
             $active = !$active;
-            if ($error = $writer->write($active?'1':'0')->error) {
+            $writer->write($active?'1':'0')->try($error);
+            if ($error) {
                 return error($error);
             }
         }

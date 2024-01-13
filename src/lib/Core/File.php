@@ -36,28 +36,41 @@ readonly class File {
      */
     public static function copy(string $from, string $to):Future {
         return async(static function() use ($from, $to) {
-            $source = File::open($from);
-            if ($source->error) {
-                return error($source->error);
+            $source = File::open($from)->try($error);
+            if ($error) {
+                return error($error);
             }
 
             $toDirectory = dirname($to);
 
             if (!File::exists($toDirectory)) {
-                if ($error = Directory::create($toDirectory)->error) {
+                Directory::create($toDirectory)->try($error);
+                if ($error) {
                     return error($error);
                 }
             }
 
-            $destination = File::open($to, 'x');
+            $dirname = dirname($to);
 
-            if ($destination->error) {
-                return error($destination->error);
+            if (false === $dirname) {
+                Directory::create($dirname)->try($error);
+                if ($error) {
+                    return $error;
+                }
             }
 
-            $stream = $source->value->getAmpFile();
+            if (!File::exists($dirname)) {
+            }
 
-            return $destination->value->writeStream($stream)->await();
+            $destination = File::open($to, 'x')->try($error);
+
+            if ($error) {
+                return error($error);
+            }
+
+            $stream = $source->getAmpFile();
+
+            return $destination->writeStream($stream)->await();
         });
     }
 
@@ -109,8 +122,24 @@ readonly class File {
     }
 
     /**
-     * @param  string       $fileName
-     * @param  string       $mode
+     * Open a file.
+     * @param string $fileName name of the file to open.
+     * @param string $mode     specifies the type of access you require to the stream. It may be any of the following:
+     *                         - `r` - Open for reading only; place the file pointer at the beginning of the file. 
+     *                         - `r+` - Open for reading and writing; place the file pointer at the beginning of the file. 
+     *                         - `w` - Open for writing only; place the file pointer at the beginning of the file and truncate the file to zero length. If the file does not exist, attempt to create it. 
+     *                         - `w+` - Open for reading and writing; otherwise it has the same behavior as 'w'. 
+     *                         - `a` - Open for writing only; place the file pointer at the end of the file. If the file does not exist, attempt to create it. In this mode, [fseek()](https://www.php.net/manual/en/function.fseek.php) has no effect, writes are always appended. 
+     *                         - `a+` - Open for reading and writing; place the file pointer at the end of the file. If the file does not exist, attempt to create it. In this mode, [fseek()](https://www.php.net/manual/en/function.fseek.php) only affects the reading position, writes are always appended. 
+     *                         - `x` - Create and open for writing only; place the file pointer at the beginning of the file. If the file already exists, the fopen() call will fail by returning false and generating an error of level E_WARNING. If the file does not exist, attempt to create it. This is equivalent to specifying O_EXCL|O_CREAT flags for the underlying open(2) system call. 
+     *                         - `x+` - Create and open for reading and writing; otherwise it has the same behavior as 'x'. 
+     *                         - `c` - Open the file for writing only. If the file does not exist, it is created. If it exists, it is neither truncated (as opposed to 'w'), nor the call to this function fails (as is the case with 'x'). The file pointer is positioned on the beginning of the file. This may be useful if it's desired to get an advisory lock (see [flock()](https://www.php.net/manual/en/function.flock.php)) before attempting to modify the file, as using 'w' could truncate the file before the lock was obtained (if truncation is desired, [ftruncate()](https://www.php.net/manual/en/function.ftruncate.php) can be used after the lock is requested). 
+     *                         - `c+` - Open the file for reading and writing; otherwise it has the same behavior as 'c'. 
+     *                         - `e` - Set close-on-exec flag on the opened file descriptor. Only available in PHP compiled on POSIX.1-2008 conform systems. 
+     * 
+     * > **Note**\
+     * > The `mode` is ignored for `php://output`, `php://input`, `php://stdin`, `php://stdout`, `php://stderr` and `php://fd` stream wrappers. 
+     * @see https://www.php.net/manual/en/function.fopen.php
      * @return Unsafe<File>
      */
     public static function open(string $fileName, string $mode = 'r'):Unsafe {
@@ -132,6 +161,10 @@ readonly class File {
         private string $mode,
         private string $fileName,
     ) {
+    }
+
+    public function truncate(int $size) {
+        $this->ampFile->truncate($size);
     }
     
     /**
@@ -183,6 +216,7 @@ readonly class File {
     }
 
     /**
+     * Set the internal pointer position.
      * @param  int $position
      * @return int
      */
@@ -191,8 +225,9 @@ readonly class File {
     }
 
     /**
-     * @param  int                    $length
-     * @param  int                    $chunkSize
+     * Read content from the file in chunks.
+     * @param  int                    $length    how much content to read.
+     * @param  int                    $chunkSize size of each chunk.
      * @return Future<Unsafe<string>>
      */
     public function read(int $length = 8192, int $chunkSize = 8192):Future {
@@ -224,7 +259,8 @@ readonly class File {
     }
     
     /**
-     * @param  int                    $chunkSize
+     * Read the whole file in chunks.
+     * @param  int                    $chunkSize size of each chunk.
      * @return Future<Unsafe<string>>
      */
     public function readAll(int $chunkSize = 8192):Future {

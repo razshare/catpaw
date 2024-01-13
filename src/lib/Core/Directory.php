@@ -16,7 +16,7 @@ use Throwable;
 class Directory {
     /**
      * Delete a directory recursively.
-     * @param  string       $directoryName name of the directory.present.
+     * @param  string       $directoryName name of the directory to delete.
      * @return Unsafe<void>
      */
     public static function delete(string $directoryName):Unsafe {
@@ -33,11 +33,13 @@ class Directory {
         foreach ($list as $fileNameLocal) {
             $fileName = "$directoryName/$fileNameLocal";
             if (isFile($fileName)) {
-                if ($error = File::delete($fileName)->error) {
+                File::delete($fileName)->try($error);
+                if ($error) {
                     return error($error);
                 }
             } else {
-                if ($error = self::delete($fileName)->error) {
+                self::delete($fileName)->try($error);
+                if ($error) {
                     return error($error);
                 }
             }
@@ -53,8 +55,9 @@ class Directory {
     }
 
     /**
-     * @param  string       $directoryName
-     * @param  int          $mode
+     * Create a directory recursively.
+     * @param  string       $directoryName the directory path.
+     * @param  int          $mode          the permissions are 0777 by default, which means the widest possible access. For more information on permissions, read the details on the [chmod()](https://www.php.net/manual/en/function.chmod.php) page. 
      * @return Unsafe<void>
      */
     public static function create(string $directoryName, int $mode = 0777):Unsafe {
@@ -68,25 +71,25 @@ class Directory {
 
     /**
      * List all files inside a directory recursively.
-     * @param  string                $directoryName directory to scan.
+     * @param  string                $directoryName the directory path.
      * @return Unsafe<array<string>>
      */
     public static function flat(string $directoryName):Unsafe {
         try {
-            $result      = [];
-            $listAttempt = Directory::list($directoryName);
-            if ($listAttempt->error) {
-                return error($listAttempt->error);
+            $result = [];
+            $list   = Directory::list($directoryName)->try($error);
+            if ($error) {
+                return error($error);
             }
-            foreach ($listAttempt->value as $fileName) {
+            foreach ($list as $fileName) {
                 if (isFile($fileName)) {
                     $result[] = $fileName;
                 } else {
-                    $flatAttempt = Directory::flat($fileName);
-                    if ($flatAttempt->error) {
-                        return error($flatAttempt->error);
+                    $flatList = Directory::flat($fileName)->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-                    $result = [...$result, ...$flatAttempt->value];
+                    $result = [...$result, ...$flatList];
                 }
             }
             return ok($result);
@@ -97,7 +100,7 @@ class Directory {
 
     /**
      * List files and directories in a directory.
-     * @param  string                $directoryName directory to scan.
+     * @param  string                $directoryName the directory path.
      * @return Unsafe<array<string>>
      */
     public static function list(string $directoryName):Unsafe {
@@ -153,7 +156,8 @@ class Directory {
                 foreach ($iterator->current() as $fileName) {
                     $parts            = explode($key, $fileName, 2);
                     $relativeFileName = end($parts);
-                    if ($error = File::copy($fileName, "$to/$relativeFileName")->await()->error) {
+                    File::copy($fileName, "$to/$relativeFileName")->await()->try($error);
+                    if ($error) {
                         return error($error);
                     }
                 }

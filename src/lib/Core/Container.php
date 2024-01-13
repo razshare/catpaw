@@ -70,20 +70,20 @@ class Container {
     public static function entry(object $instance, array $methods):Unsafe {
         try {
             foreach ($methods as $method) {
-                $entry = Entry::findByMethod($method);
-                if ($entry->error) {
-                    return error($entry->error);
+                $entry = Entry::findByMethod($method)->try($error);
+                if ($error) {
+                    return error($error);
                 }
-                if ($entry->value) {
-                    $arguments = Container::dependencies($method);
-                    if ($arguments->error) {
-                        return error($arguments->error);
+                if ($entry) {
+                    $arguments = Container::dependencies($method)->try($error);
+                    if ($error) {
+                        return error($error);
                     }
     
                     if ($method->isStatic()) {
-                        $result = $method->invoke(null, ...$arguments->value);
+                        $result = $method->invoke(null, ...$arguments);
                     } else {
-                        $result = $method->invoke($instance, ...$arguments->value);
+                        $result = $method->invoke($instance, ...$arguments);
                     }
                     if ($result instanceof Unsafe) {
                         return $result;
@@ -169,12 +169,12 @@ class Container {
             );
         }
         $parameters = [];
-        $results    = self::findFunctionDependencies($reflection, $options);
-        if ($results->error) {
-            return error($results->error);
+        $results    = self::findFunctionDependencies($reflection, $options)->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        foreach ($results->value as $key => $result) {
+        foreach ($results as $key => $result) {
             $reflectionParameter = $result->reflectionParameter;
             $type                = $result->type;
             $name                = $result->name;
@@ -204,11 +204,11 @@ class Container {
                 && Writable::class !== $type
                 && Readable::class !== $type
             ) {
-                $instance = Container::create($type);
-                if ($instance->error) {
-                    return error($instance->error);
+                $instance = Container::create($type)->try($error);
+                if ($error) {
+                    return error($error);
                 }
-                $parameters[$key] = $instance->value;
+                $parameters[$key] = $instance;
             }
 
             if (0 === $numberOfAttributes) {
@@ -221,14 +221,12 @@ class Container {
                 foreach ($attributes as $attribute) {
                     $attributeReflectionClass = new ReflectionClass($attribute->getName());
                     $findByParameter          = $attributeReflectionClass->getMethod('findByParameter')->getClosure();
-                    /** @var Unsafe<AttributeInterface> $attributeInstanceAttempt */
-                    $attributeInstanceAttempt = $findByParameter($reflectionParameter);
+                    /** @var AttributeInterface $attributeInstanceAttempt */
+                    $attributeInstance = $findByParameter($reflectionParameter)->try($error);
                     
-                    if ($attributeInstanceAttempt->error) {
-                        return error($attributeInstanceAttempt->error);
+                    if ($error) {
+                        return error($error);
                     }
-
-                    $attributeInstance = $attributeInstanceAttempt->value;
 
                     if (!$attributeInstance) {
                         if ($fallback) {
@@ -238,13 +236,9 @@ class Container {
                     }
 
                     if ($attributeInstance instanceof OnParameterMount) {
-                        $parameterMountAttempt = $attributeInstance->onParameterMount(
-                            $reflectionParameter,
-                            $parameters[$key],
-                            $options,
-                        );
-                        if ($parameterMountAttempt->error) {
-                            return error($parameterMountAttempt->error);
+                        $attributeInstance->onParameterMount($reflectionParameter, $parameters[$key], $options)->try($error);
+                        if ($error) {
+                            return error($error);
                         }
                     }
                     
@@ -275,18 +269,16 @@ class Container {
         }
 
         if (!Container::has(LoggerInterface::class)) {
-            $loggerAttempt = LoggerFactory::create();
-            if ($loggerAttempt->error) {
-                return error($loggerAttempt->error);
+            $logger = LoggerFactory::create()->try($error);
+            if ($error) {
+                return error($error);
             }
-            $logger = $loggerAttempt->value;
             Container::set(LoggerInterface::class, $logger);
         } else {
-            $loggerAttempt = Container::create(LoggerInterface::class);
-            if ($loggerAttempt->error) {
-                return error($loggerAttempt->error);
+            $logger = Container::create(LoggerInterface::class)->try($error);
+            if ($error) {
+                return error($error);
             }
-            $logger = $loggerAttempt->value;
         }
         
         /** @var LoggerInterface $logger */
@@ -307,14 +299,13 @@ class Container {
             return ok([]);
         }
         
-        $flatListAttempt = Directory::flat($path);
-        if ($flatListAttempt->error) {
-            return  error($flatListAttempt->error);
+        $flatList = Directory::flat($path)->try($error);
+        if ($error) {
+            return  error($error);
         }
 
         $phpFileNames = [];
 
-        $flatList = $flatListAttempt->value;
         foreach ($flatList as $fileName) {
             if (str_ends_with(strtolower($fileName), '.php')) {
                 continue;
@@ -351,11 +342,11 @@ class Container {
                 $entry  = self::findEntryMethod($klass);
                 $object = $klass->newInstance(...$attributeArguments);
                 if ($entry) {
-                    $arguments = Container::dependencies($entry);
-                    if ($arguments->error) {
-                        return error($arguments->error);
+                    $arguments = Container::dependencies($entry)->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-                    $entry->invoke($object, ...$arguments->value);
+                    $entry->invoke($object, ...$arguments);
                 }
             }
             return ok();
@@ -388,12 +379,12 @@ class Container {
                 self::touch($function);
             }
 
-            $arguments = Container::dependencies($reflection);
-            if ($arguments->error) {
-                return error($arguments->error);
+            $arguments = Container::dependencies($reflection)->try($error);
+            if ($error) {
+                return error($error);
             }
 
-            $result = $function(...$arguments->value);
+            $result = $function(...$arguments);
             
             if ($result instanceof Unsafe) {
                 return $result;
@@ -427,8 +418,9 @@ class Container {
     /**
      * Make a new instance of the given class.<br />
      * This method will take care of dependency injections.
-     * @param  string         $className full name of the class.
-     * @return Unsafe<object>
+     * @template T
+     * @param  class-string<T> $className full name of the class.
+     * @return Unsafe<T>
      */
     public static function create(string $className):Unsafe {
         if ('callable' === $className) {
@@ -456,35 +448,35 @@ class Container {
             return error("Cannot instantiate $className because it's meant to be an attribute.");
         }
         
-        /** @var Unsafe<Singleton> $singleton */
-        $singleton = Singleton::findByClass($reflection);
-        if ($singleton->error) {
-            return error($singleton->error);
+        /** @var Singleton $singleton */
+        $singleton = Singleton::findByClass($reflection)->try($error);
+        if ($error) {
+            return error($error);
         }
 
-        /** @var Unsafe<Service> $service */
-        $service = Service::findByClass($reflection);
-        if ($service->error) {
-            return error($service->error);
+        /** @var Service $service */
+        $service = Service::findByClass($reflection)->try($error);
+        if ($error) {
+            return error($error);
         }
 
         $constructor = $reflection->getConstructor() ?? false;
 
         if ($constructor) {
-            $arguments = self::dependencies($constructor);
-            if ($arguments->error) {
-                return error($arguments->error);
+            $dependencies = self::dependencies($constructor)->try($error);
+            if ($error) {
+                return error($error);
             }
-            $dependencies = $arguments->value;
         } else {
             $dependencies = [];
         }
 
         $instance = null;
 
-        if ($singleton->value || $service->value) {
-            if ($service->value) {
-                if ($error = $service->value->onClassInstantiation($reflection, $instance, $dependencies)->error) {
+        if ($singleton || $service) {
+            if ($service) {
+                $service->onClassInstantiation($reflection, $instance, $dependencies)->try($error);
+                if ($error) {
                     return error($error);
                 }
             }
@@ -496,7 +488,9 @@ class Container {
             return error("Instance of $className is null.");
         }
 
-        if ($error = self::entry($instance, $reflection->getMethods())->error) {
+        self::entry($instance, $reflection->getMethods())->try($error);
+        
+        if ($error) {
             return error($error);
         }
             
