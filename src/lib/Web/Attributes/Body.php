@@ -20,14 +20,6 @@ use Throwable;
 
 /**
  * Get the body of the request.
- * 
- * - `#[Body] int $raw` 
- * - `#[Body] float $raw`
- * - `#[Body] string $raw`
- * - `#[Body] array $data`
- * - `#[Body] MyClass $account`
- * - `#[Body] \Amp\Http\Server\FormParser\Form $files`
- * 
  * @see Consumes
  * @package CatPaw\Web\Attributes
  */
@@ -46,7 +38,7 @@ class Body implements AttributeInterface, OnParameterMount {
         $className = ReflectionTypeManager::unwrap($reflection)?->getName() ?? '';
 
         try {
-            $attempt = match ($className) {
+            $value = match ($className) {
                 "string" => $context->request->getBody()->buffer(),
 
                 "int" => $this->toInteger(
@@ -71,12 +63,6 @@ class Body implements AttributeInterface, OnParameterMount {
         } catch(Throwable $e) {
             return error($e);
         }
-        
-        if ($attempt->error) {
-            return error($attempt->error);
-        }
-
-        $value = $attempt->value;
 
         return ok();
     }
