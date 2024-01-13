@@ -71,6 +71,12 @@ composer prod:start
 ```
 for production mode.
 
+
+
+> [!NOTE]
+> More in depth examples are available at [tncrazvan/catpaw-examples](https://github.com/tncrazvan/catpaw-examples/tree/master/src).
+
+
 # Build & Run
 
 It is possible, but not required, to build your application into a single `.phar` file using
