@@ -24,6 +24,7 @@ use CatPaw\Core\Signal;
 
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\FileServerInterface;
+use Error;
 use Phar;
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
@@ -76,13 +77,26 @@ class Server {
     }
 
     /**
-     * 
-     * @param  string         $interface       network interface to bind to.
-     * @param  string         $secureInterface same as `$interfaces` but using secure certificates.
-     * @param  string         $api             api directory, this is relative to the project directory.
-     * @param  string         $www             static assets directory, this is relative to the project directory.
-     * @param  string         $apiPrefix       a prefix to add to the api path.
      * @return Unsafe<Server>
+     */
+
+
+    /**
+     * 
+     * 
+     * @param  string                          $interface            network interface to bind to.
+     * @param  string                          $secureInterface      same as `$interfaces` but using secure certificates.
+     * @param  string                          $api                  api directory, this is relative to the project directory.
+     * @param  string                          $www                  static assets directory, this is relative to the project directory.
+     * @param  string                          $apiPrefix            a prefix to add to the api path.
+     * @param  bool                            $enableCompression
+     * @param  int                             $connectionLimit
+     * @param  int                             $connectionLimitPerIp
+     * @param  int                             $concurrencyLimit
+     * @param  array                           $allowedMethods
+     * @param  bool|SessionOperationsInterface $sessionOperations
+     * @throws Error
+     * @return Unsafe
      */
     public static function create(
         string $interface = '127.0.0.1:8080',
@@ -90,6 +104,11 @@ class Server {
         string $api = './server/api/',
         string $www = './server/www/',
         string $apiPrefix = '',
+        bool $enableCompression = true,
+        int $connectionLimit = 1000,
+        int $connectionLimitPerIp = 10,
+        int $concurrencyLimit = 1000,
+        array $allowedMethods = [],
         false|SessionOperationsInterface $sessionOperations = false,
     ): Unsafe {
         if (!str_starts_with($api, './')) {
@@ -135,6 +154,11 @@ class Server {
             apiPrefix        : $apiPrefix,
             api              : $api,
             www              : $www,
+            enableCompression: $enableCompression,
+            connectionLimit: $connectionLimit,
+            connectionLimitPerIp: $connectionLimitPerIp,
+            concurrencyLimit: $concurrencyLimit,
+            allowedMethods: $allowedMethods,
             router           : Router::create(),
             logger           : $logger,
             sessionOperations: $sessionOperations,
@@ -147,12 +171,18 @@ class Server {
     /** @var array<Middleware> */
     private array $middlewares = [];
 
+    
     private function __construct(
         public readonly string $interface,
         public readonly string $secureInterface,
         public readonly string $apiPrefix,
         public readonly string $api,
         public readonly string $www,
+        public readonly bool $enableCompression,
+        public readonly int $connectionLimit,
+        public readonly int $connectionLimitPerIp,
+        public readonly int $concurrencyLimit,
+        public readonly array $allowedMethods,
         public readonly Router $router,
         public readonly LoggerInterface $logger,
         public readonly SessionOperationsInterface $sessionOperations,
@@ -222,7 +252,14 @@ class Server {
                 $requestHandler = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
                 $stackedHandler = stackMiddleware($requestHandler, ...$this->middlewares);
                 $errorHandler   = ServerErrorHandler::create($logger);
-                $this->server   = SocketHttpServer::createForDirectAccess($logger);
+                $this->server   = SocketHttpServer::createForDirectAccess(
+                    logger: $logger,
+                    enableCompression: $this->enableCompression,
+                    connectionLimit: $this->connectionLimit,
+                    connectionLimitPerIp: $this->connectionLimitPerIp,
+                    concurrencyLimit: $this->concurrencyLimit,
+                    allowedMethods: $this->allowedMethods,
+                );
                 $this->server->onStop(static function() use ($endSignal) {
                     if (!$endSignal->isComplete()) {
                         $endSignal->complete();
