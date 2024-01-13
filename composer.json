@@ -33,10 +33,12 @@
     "dev:precommit": "pre-commit install && pre-commit autoupdate",
     "download:psalm": "[ ! -f psalm.phar ] && wget https://github.com/vimeo/psalm/releases/latest/download/psalm.phar || echo ''",
     "post-autoload-dump": [
-      "@download:psalm"
+      "@download:psalm",
+      "php catpaw.phar --tips"
     ],
     "post-create-project-cmd": [
-      "@download:psalm"
+      "@download:psalm",
+      "php catpaw.phar --tips"
     ]
   },
   "autoload": {
@@ -69,7 +71,8 @@
       "src/scripts/Web/constants.php",
       "src/scripts/Web/functions.php",
       "src/scripts/Build/functions.php",
-      "src/scripts/Store/functions.php"
+      "src/scripts/Store/functions.php",
+      "src/scripts/Text/functions.php"
     ]
   },
   "minimum-stability": "stable",
