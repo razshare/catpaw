@@ -18,7 +18,8 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 | ⚡ [Services](./docs/13.services.md)                      |
 | ⚡ [Stores](./docs/12.stores.md)                          |
 | ⚡ [Queues](./docs/21.queues.md)                          |
-| 💡 [Schedule](./docs/22.schedule.md)                      | 
+| ⚡ [Schedule](./docs/22.schedule.md)                      | 
+| ⚡ [Build](./docs/23.build.md)                      | 
 
 
 > [!NOTE]
