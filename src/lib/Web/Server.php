@@ -307,7 +307,10 @@ class Server {
 
                         if (!$routeExists) {
                             $cwd = dirname($api.$fileName)?:'';
-                            $router->initialize($symbolicMethod, $symbolicPath, $handler, $cwd);
+                            $router->initialize($symbolicMethod, $symbolicPath, $handler, $cwd)->try($error);
+                            if ($error) {
+                                return error($error);
+                            }
                         } else {
                             $logger->info("Route $symbolicMethod $symbolicPath already exists. Will not overwrite.");
                         }
