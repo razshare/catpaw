@@ -57,6 +57,7 @@ function tips() {
                 foreground(170, 140, 40),
                 "` if you want to sanitize your code before committing.",
                 nocolor(),
+                PHP_EOL,
             ]);
         }
 
