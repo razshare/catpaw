@@ -16,11 +16,12 @@
   "authors": [
     {
       "name": "Razvan Tanase",
-      "email": "tangent.jotey@gmail.com"
+      "email": "tangent.jotey@gmail.com",
+      "homepage": "https://razshare.dev"
     }
   ],
   "scripts": {
-    "load": "composer dump-autoload -o",
+    "load": "composer dump-autoload -o && pre-commit autoupdate",
     "prod:start": "php -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
     "prod:build": "@prod:start --build --build-config='./build.yml' --build-optimize",
     "prod:test": "php vendor/bin/phpunit tests",
