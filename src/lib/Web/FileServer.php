@@ -144,7 +144,7 @@ readonly class FileServer implements FileServerInterface {
         $fileName = $server->www.$path;
 
         if ($overwrite) {
-            $fileName = $overwrite->overwrite($fileName);
+            $fileName = $overwrite->overwrite($fileName, $path);
         }
 
 
