@@ -93,7 +93,6 @@ class Server {
      * @param  int                             $connectionLimit
      * @param  int                             $connectionLimitPerIp
      * @param  int                             $concurrencyLimit
-     * @param  array                           $allowedMethods
      * @param  bool|SessionOperationsInterface $sessionOperations
      * @throws Error
      * @return Unsafe
@@ -258,7 +257,7 @@ class Server {
                     connectionLimit: $this->connectionLimit,
                     connectionLimitPerIp: $this->connectionLimitPerIp,
                     concurrencyLimit: $this->concurrencyLimit,
-                    allowedMethods: $this->allowedMethods,
+                    allowedMethods: $this->allowedMethods?:null,
                 );
                 $this->server->onStop(static function() use ($endSignal) {
                     if (!$endSignal->isComplete()) {

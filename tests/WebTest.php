@@ -26,9 +26,9 @@ class WebTest extends TestCase {
         Container::set(HttpClient::class, HttpClientBuilder::buildDefault());
         $server = Server::create(
             interface: '127.0.0.1:8000',
-            api      : './tests/api',
-            www      : './tests/www',
-            apiPrefix: '/api'
+            api      : 'tests/api',
+            www      : 'tests/www',
+            apiPrefix: 'api'
         )->try($error);
         $this->assertFalse($error);
 
