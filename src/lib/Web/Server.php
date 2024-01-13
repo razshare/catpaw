@@ -311,10 +311,6 @@ class Server {
         string $api,
     ): Unsafe {
         if ($api) {
-            if (isPhar()) {
-                $api = Phar::running()."/$api";
-            }
-            
             $flatList = Directory::flat($api)->try($error);
             if ($error) {
                 return error($error);
