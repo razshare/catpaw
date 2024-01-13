@@ -46,8 +46,8 @@ function tips() {
         $message = '';
 
         if (
-            !File::exists('.pre-commit-config.yaml')
-            && !File::exists('.pre-commit-config.yml')
+            File::exists('.git/hooks')
+            && !File::exists('.git/hooks/pre-commit')
         ) {
             $message = join([
                 foreground(170, 140, 40),
