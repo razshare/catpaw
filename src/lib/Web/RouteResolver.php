@@ -80,7 +80,7 @@ class RouteResolver {
         if (false === $requestPathParameters) {
             $response = new Response();
             $response->setStatus(HttpStatus::NOT_FOUND, HttpStatus::getReason(HttpStatus::NOT_FOUND));
-            return ok($response);
+            return ok(false);
         }
 
         $requestQueries = $this->findQueriesFromRequest($request);

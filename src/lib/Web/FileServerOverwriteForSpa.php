@@ -14,9 +14,6 @@ readonly class FileServerOverwriteForSpa implements FileServerOverwriteInterface
     }
 
     public function overwrite(string $fileName, string $path): string {
-        if (str_starts_with($path, $this->server->apiPrefix)) {
-            return $fileName;
-        }
         // Required for Spa mode
         if (isDirectory($fileName) || !File::exists($fileName)) {
             return "{$this->server->www}/index.html";

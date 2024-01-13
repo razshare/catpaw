@@ -17,7 +17,6 @@ use function explode;
 
 use function in_array;
 
-use Psr\Http\Message\ResponseInterface;
 
 class HttpInvoker {
     public static function create(
@@ -55,8 +54,8 @@ class HttpInvoker {
 
 
     /**
-     * @param  RequestContext            $context
-     * @return Unsafe<ResponseInterface>
+     * @param  RequestContext   $context
+     * @return Unsafe<Response>
      */
     public function invoke(RequestContext $context):Unsafe {
         $onRequests         = $context->route->onRequest;
@@ -90,7 +89,7 @@ class HttpInvoker {
     }
 
     /**
-     * @return Unsafe<ResponseInterface>
+     * @return Unsafe<Response>
      */
     private function contextualize(RequestContext $context, mixed $modifier): Unsafe {
         $consumes = $context->route->consumes;
@@ -177,7 +176,7 @@ class HttpInvoker {
                 $response->setHeader("Content-Type", $acceptable);
                 return match ($acceptable) {
                     'application/json' => $modifier->forJson($response),
-                    'application/xml'  => ok($modifier->forxml($response)),
+                    'application/xml'  => ok($modifier->forXml($response)),
                     default            => ok($modifier->forText($response)),
                 };
             }

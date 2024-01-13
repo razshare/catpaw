@@ -39,15 +39,15 @@ readonly class ServerRequestHandler implements RequestHandler {
 
     public function handleRequest(Request $request): Response {
         try {
-            $responseFromFileServer = $this->fileServer->serve($request);
-            if (HttpStatus::NOT_FOUND === $responseFromFileServer->getStatus()) {
-                $response = $this->resolver->resolve($request)->try($error);
-                if ($error) {
-                    return $this->createResponseFromError($error);
-                }
-                return $response;
+            $response = $this->resolver->resolve($request)->try($error);
+            if ($error) {
+                return $this->createResponseFromError($error);
             }
-            return $responseFromFileServer;
+            if (!$response) {
+                $responseFromFileServer = $this->fileServer->serve($request);
+                return $responseFromFileServer;
+            }
+            return $response;
         } catch (Throwable $error) {
             return $this->createResponseFromError($error);
         }
