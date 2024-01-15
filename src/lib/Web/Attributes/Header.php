@@ -33,21 +33,11 @@ class Header implements AttributeInterface, OnParameterMount {
 
     public function __construct(
         private string $key = '',
-        private array|string|int|float|bool $example = [],
     ) {
     }
 
     public function getKey():string {
         return $this->key;
-    }
-
-
-    public function setExample(array|string|int|float|bool $example): void {
-        $this->example = $example;
-    }
-
-    public function getExample(): array|string|int|float|bool {
-        return $this->example;
     }
     
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {

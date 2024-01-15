@@ -32,7 +32,6 @@ class Query implements AttributeInterface, OnParameterMount {
 
     public function __construct(
         private string $name = '',
-        private array|string|int|float|bool $example = [],
     ) {
     }
 
@@ -42,14 +41,6 @@ class Query implements AttributeInterface, OnParameterMount {
 
     public function getName(): string {
         return $this->name;
-    }
-
-    public function setExample(array|string|int|float|bool $example): void {
-        $this->example = $example;
-    }
-
-    public function getExample(): array|string|int|float|bool {
-        return $this->example;
     }
 
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {

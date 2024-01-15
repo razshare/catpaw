@@ -32,7 +32,6 @@ class Param implements AttributeInterface, OnParameterMount {
 
     public function __construct(
         private string $regex = '',
-        private array|string|int|float|bool $example = [],
     ) {
         $this->setRegex($regex);
     }
@@ -43,15 +42,6 @@ class Param implements AttributeInterface, OnParameterMount {
 
     public function setRegex(string $value): void {
         $this->regex = $value;
-    }
-
-
-    public function setExample(array|string|int|float|bool $example): void {
-        $this->example = $example;
-    }
-
-    public function getExample(): array|string|int|float|bool {
-        return $this->example;
     }
 
     /** @var array<string,mixed>  */

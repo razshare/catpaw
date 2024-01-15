@@ -60,7 +60,7 @@ class PathResolver {
             }
 
             if (!$param) {
-                $param = new Param();
+                continue;
             }
 
             $typeName = ReflectionTypeManager::unwrap($reflectionParameter) ?? 'string';
