@@ -12,8 +12,10 @@ readonly class MatchingPathConfiguration {
      * @return bool
      */
     public static function findInArrayByName(array $configurations, MatchingPathConfiguration $configuration):bool {
-        if (in_array($configuration->name, $configurations, true)) {
-            return true;
+        foreach ($configurations as $configurationLocal) {
+            if ($configurationLocal->name === $configuration->name) {
+                return true;
+            }
         }
         return false;
     }
@@ -80,14 +82,13 @@ readonly class MatchingPathConfiguration {
         return $merged;
     }
 
-    
     /**
      * 
      * @param  array<MatchingPathConfiguration> $configurations
      * @param  string                           $path
-     * @return false|array
+     * @return PathParametersWrapper
      */
-    public static function findParametersFromPath(array $configurations, string $path):false|array {
+    public static function findParametersFromPath(array $configurations, string $path):PathParametersWrapper {
         $pattern  = '';
         $dynamics = [];
         foreach ($configurations as $configuration) {
@@ -95,23 +96,31 @@ readonly class MatchingPathConfiguration {
                 $pattern .= $configuration->param->getRegex();
             } else {
                 $dynamics[] = $configuration;
-                $pattern .= '('.$configuration->param->getRegex().')';
+                // $pattern .= '('.$configuration->param->getRegex().')';
+                $pattern .= '([^\/]*)';
             }
         }
 
         if (!preg_match("/^$pattern$/", $path, $matches)) {
-            return false;
+            return PathParametersWrapper::create(ok:false, parameters:false, badRequestEntries:false);
         }
 
-        $result = [];
-        $count  = count($matches);
-
+        $result            = [];
+        $count             = count($matches);
+        $badRequestEntries = [];
         for ($index = 1; $index < $count; $index++) {
-            $key          = $dynamics[$index - 1]->name;
-            $result[$key] = $matches[$index];
+            $configuration = $dynamics[$index - 1];
+            $key           = $configuration->name;
+            $receivedValue = $matches[$index];
+            $pattern       = $configuration->param                        ->getRegex();
+            if (!preg_match("/^$pattern$/", $receivedValue)) {
+                $badRequestEntries[] = "Invalid value `$receivedValue` for parameter `$key` which is expected to match pattern `$pattern`.";
+            }
+            $result[$key] = $receivedValue;
         }
+        
 
-        return $result;
+        return PathParametersWrapper::create(ok:true, parameters:$result, badRequestEntries:$badRequestEntries);
     }
 
     /**

@@ -7,13 +7,14 @@ use Amp\Http\Server\Response;
 
 readonly class RequestContext {
     /**
-     * @param  string         $key
-     * @param  Route          $route
-     * @param  Server         $server
-     * @param  Request        $request
-     * @param  Response       $response
-     * @param  array<string>  $requestQueries
-     * @param  array<string>  $requestPathParameters
+     * @param  string              $key
+     * @param  Route               $route
+     * @param  Server              $server
+     * @param  Request             $request
+     * @param  Response            $response
+     * @param  array<string>       $requestQueries
+     * @param  array<string>       $requestPathParameters
+     * @param  false|array<string> $badRequestEntries
      * @return RequestContext
      */
     public static function create(
@@ -24,6 +25,7 @@ readonly class RequestContext {
         Response $response,
         array $requestQueries,
         array $requestPathParameters,
+        false|array $badRequestEntries,
     ):self {
         return new self(
             key: $key,
@@ -33,6 +35,7 @@ readonly class RequestContext {
             response: $response,
             requestQueries: $requestQueries,
             requestPathParameters: $requestPathParameters,
+            badRequestEntries: $badRequestEntries,
         );
     }
         
@@ -44,6 +47,7 @@ readonly class RequestContext {
         public Response $response,
         public array $requestQueries,
         public array $requestPathParameters,
+        public false|array $badRequestEntries,
     ) {
     }
 }

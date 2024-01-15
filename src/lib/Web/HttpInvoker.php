@@ -58,6 +58,10 @@ class HttpInvoker {
      * @return Unsafe<Response>
      */
     public function invoke(RequestContext $context):Unsafe {
+        $badRequestEntries = $context->badRequestEntries;
+        if ($badRequestEntries) {
+            return $this->contextualize($context, failure(join("\n", $badRequestEntries), HttpStatus::BAD_REQUEST));
+        }
         $onRequests         = $context->route->onRequest;
         $onResults          = $context->route->onResult;
         $reflectionFunction = $context->route->reflectionFunction;
@@ -196,7 +200,7 @@ class HttpInvoker {
                 Response::class => static fn () => $response,
                 Page::class     => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
-                    $size  = $context->requestQueries['size']  ?? 10;
+                    $size  = $context->requestQueries['size'] ?? 10;
                     return
                         Page::create(start: $start, size: $size)
                             ->setUri($context->request->getUri());

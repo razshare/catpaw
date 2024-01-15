@@ -32,6 +32,8 @@ class RouteResolver {
 
 
         $requestPathParameters = false;
+        /** @var false|array<string> */
+        $badRequestEntries = false;
 
         foreach ($routes as $symbolicPath => $route) {
             $key         = "$requestMethod:$symbolicPath";
@@ -40,10 +42,14 @@ class RouteResolver {
 
             if (isset(self::$cache[$key])) {
                 /** @var PathResolver $pathResolver */
-                $pathResolver = self::$cache[$key];
-                $parameters   = $pathResolver->findParametersFromPath($requestPath);
-                if (false !== $parameters) {
-                    $requestPathParameters = $parameters;
+                $pathResolver      = self::$cache[$key];
+                $parametersWrapper = $pathResolver->findParametersFromPath($requestPath);
+                if ($parametersWrapper->ok) {
+                    if ($parametersWrapper->badRequestEntries) {
+                        $badRequestEntries = $parametersWrapper->badRequestEntries;
+                        break;
+                    }
+                    $requestPathParameters = $parametersWrapper->parameters;
                     break;
                 }
                 continue;
@@ -70,31 +76,33 @@ class RouteResolver {
             self::$cache[$key] = $pathResolver;
 
 
-            $requestPathParameters = $pathResolver->findParametersFromPath($requestPath);
+            $requestPathParametersWrapper = $pathResolver->findParametersFromPath($requestPath);
 
-            if (false !== $requestPathParameters) {
+            if ($requestPathParametersWrapper->ok) {
+                if ($requestPathParametersWrapper->badRequestEntries) {
+                    $badRequestEntries = $requestPathParametersWrapper->badRequestEntries;
+                    break;
+                }
+                $requestPathParameters = $requestPathParametersWrapper->parameters;
                 break;
             }
         }
 
-        if (false === $requestPathParameters) {
-            $response = new Response();
-            $response->setStatus(HttpStatus::NOT_FOUND, HttpStatus::getReason(HttpStatus::NOT_FOUND));
+        if (false === $requestPathParameters && !$badRequestEntries) {
             return ok(false);
         }
 
         $requestQueries = $this->findQueriesFromRequest($request);
-
-        $response = new Response();
-
-        $context = RequestContext::create(
+        $response       = new Response();
+        $context        = RequestContext::create(
             key: "$symbolicMethod:$symbolicPath",
             route: $route,
             server: $server,
             request: $request,
             response: $response,
             requestQueries: $requestQueries,
-            requestPathParameters: $requestPathParameters,
+            requestPathParameters: $requestPathParameters?:[],
+            badRequestEntries: $badRequestEntries,
         );
 
         try {

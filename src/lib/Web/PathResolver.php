@@ -58,8 +58,9 @@ class PathResolver {
             if ($error) {
                 return error($error);
             }
+
             if (!$param) {
-                continue;
+                $param = new Param();
             }
 
             $typeName = ReflectionTypeManager::unwrap($reflectionParameter) ?? 'string';
@@ -127,7 +128,7 @@ class PathResolver {
     public function __construct(private readonly array $configurations) {
     }
 
-    public function findParametersFromPath(string $path):false|array {
+    public function findParametersFromPath(string $path):PathParametersWrapper {
         return MatchingPathConfiguration::findParametersFromPath($this->configurations, $path);
     }
 }
