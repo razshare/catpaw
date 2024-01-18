@@ -84,7 +84,7 @@ class HttpInvoker {
         foreach ($onResults as $onResult) {
             $onResult->onResult($context->request, $result);
         }
-        
+
         if ($sessionIdCookie = Cookie::findFromRequestContextByName($context, 'session-id')) {
             $this->sessionOperations->persistSession($sessionIdCookie->value);
         }
@@ -101,7 +101,7 @@ class HttpInvoker {
 
         if (null !== $modifier) {
             $isAlreadyModifier = ($modifier instanceof ResponseModifier);
-        
+
             if (!$isAlreadyModifier) {
                 $status = $context->response->getStatus();
                 if ($status >= 300) {
@@ -139,10 +139,11 @@ class HttpInvoker {
             $producesPage        = false;
             $modifierIsPrimitive = false;
         }
-        
+
         $response = $context->response;
 
         if (!$response->hasHeader("Content-Type")) {
+            $customizedProduces = false;
             if ($produces) {
                 if ($producesContentType) {
                     $produced = $produces->getContentType();
@@ -161,7 +162,12 @@ class HttpInvoker {
                 $response->setHeader("Content-Type", $produced);
             }
         } else {
-            $produced = $response->getHeader("Content-Type");
+            $customizedProduces = true;
+            $produced           = [$response->getHeader("Content-Type") ?? 'text/plain'];
+        }
+
+        if ($customizedProduces) {
+            return ok($modifier->forText($response));
         }
 
         $acceptables = explode(",", $context->request->getHeader("Accept") ?? "*/*");
@@ -200,7 +206,7 @@ class HttpInvoker {
                 Response::class => static fn () => $response,
                 Page::class     => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
-                    $size  = $context->requestQueries['size'] ?? 10;
+                    $size  = $context->requestQueries['size']  ?? 10;
                     return
                         Page::create(start: $start, size: $size)
                             ->setUri($context->request->getUri());
