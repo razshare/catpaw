@@ -82,8 +82,8 @@ class Server {
 
 
     /**
-     * 
-     * 
+     *
+     *
      * @param  string                          $interface            network interface to bind to.
      * @param  string                          $secureInterface      same as `$interfaces` but using secure certificates.
      * @param  string                          $api                  api directory, this is relative to the project directory.
@@ -121,7 +121,7 @@ class Server {
         $api = preg_replace('/\/+$/', '', $api);
         $www = preg_replace('/\/+$/', '', $www);
 
-        
+
         $logger = Container::create(LoggerInterface::class)->try($error);
         if ($error) {
             return error($error);
@@ -134,7 +134,7 @@ class Server {
         if ((!$www = self::findFirstValidWebDirectory([$www]))) {
             $logger->warning("Could not find a valid web root directory.");
         }
-        
+
         if ((!$api = self::findFirstValidRoutesDirectory([$api]))) {
             $logger->warning("Could not find a valid api directory.");
         }
@@ -170,7 +170,7 @@ class Server {
     /** @var array<Middleware> */
     private array $middlewares = [];
 
-    
+
     private function __construct(
         public readonly string $interface,
         public readonly string $secureInterface,
@@ -215,7 +215,7 @@ class Server {
 
     /**
      * Start the server.
-     * 
+     *
      * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
      * @param  false|Signal         $signal the server will trigger this signal whenever it's ready to serve requests.
      * @return Future<Unsafe<void>>
@@ -237,17 +237,17 @@ class Server {
                     $this->stop();
                     Bootstrap::kill();
                 };
-    
+
                 EventLoop::onSignal(SIGHUP, $stopper);
                 EventLoop::onSignal(SIGINT, $stopper);
                 EventLoop::onSignal(SIGQUIT, $stopper);
                 EventLoop::onSignal(SIGTERM, $stopper);
-    
+
                 $logger = Container::create(LoggerInterface::class)->try($error);
                 if ($error) {
                     return error($error);
                 }
-                
+
                 $requestHandler = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
                 $stackedHandler = stackMiddleware($requestHandler, ...$this->middlewares);
                 $errorHandler   = ServerErrorHandler::create($logger);
@@ -323,17 +323,24 @@ class Server {
                 $offset       = strpos($fileName, $api);
                 $offset       = $offset?:0;
                 $relativePath = substr($fileName, $offset + strlen($api));
-                
+
                 if (!str_starts_with($relativePath, '.'.DIRECTORY_SEPARATOR)) {
                     if ($handler = require_once $fileName) {
                         $fileName = preg_replace('/\.php$/i', '', preg_replace('/\.\/+/', '/', '.'.DIRECTORY_SEPARATOR.$relativePath));
-                        
+
                         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                             $fileName = preg_replace('/\\\\/', '/', $fileName);
                         }
 
-                        $symbolicMethod = preg_replace('/^\\//', '', strtoupper(preg_replace('/^.*(?=\/)/', '', $fileName)));
-                        $symbolicPath   = preg_replace('/\\/$/', '', preg_replace('/(?<=\/)[^\/]*$/', '', "$apiPrefix$fileName"))?:'/';
+                        if (!preg_match('/^(.*)(\.|\/)(.*)$/', $fileName, $matches)) {
+                            $logger->error("Invalid api path for $fileName.", ["matches" => $matches]);
+                            continue;
+                        }
+
+                        $symbolicPath      = $apiPrefix.($matches[1] ?? '/');
+                        $symbolicPath      = preg_replace('/\/index$/', '', $symbolicPath);
+                        $symbolicPathAlias = "$symbolicPath/";
+                        $symbolicMethod    = strtoupper($matches[3] ?? 'get');
 
                         $routeExists = $router->routeExists($symbolicMethod, $symbolicPath);
 
@@ -344,7 +351,18 @@ class Server {
                                 return error($error);
                             }
                         } else {
-                            $logger->info("Route $symbolicMethod $symbolicPath already exists. Will not overwrite.");
+                            $logger->info("Route `$symbolicMethod $symbolicPath` already exists. Will not overwrite.");
+                        }
+
+                        $routeExistsAlias = $router->routeExists($symbolicMethod, $symbolicPathAlias);
+
+                        if (!$routeExistsAlias) {
+                            $router->alias($symbolicMethod, $symbolicPath, $symbolicPathAlias)->try($error);
+                            if ($error) {
+                                return error($error);
+                            }
+                        } else {
+                            $logger->info("Route `$symbolicMethod $symbolicPathAlias` is an alias for `$symbolicMethod $symbolicPath` and it already exists. Will not overwrite alias.");
                         }
                     }
                 }

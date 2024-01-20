@@ -6,7 +6,7 @@ use CatPaw\Web\Attributes\Summary;
 
 use const CatPaw\Web\TEXT_HTML;
 
-return 
+return
 #[Summary("Get information about an user")]
 #[Produces('string', TEXT_HTML)]
 fn (#[Param] string $username) => "hello $username";

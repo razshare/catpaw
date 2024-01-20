@@ -36,7 +36,7 @@ readonly class Router {
 
     private function __construct(private RouterContext $context) {
     }
-    
+
 
     /**
      * Initialize a new route.
@@ -68,7 +68,7 @@ readonly class Router {
             }
 
             $consumes = Consumes::findByFunction($reflectionFunction)->try($error);
-            
+
             if ($error) {
                 return error($error);
             }
@@ -91,7 +91,7 @@ readonly class Router {
             if ($error) {
                 return error($error);
             }
-            
+
             foreach ($reflectionFunction->getAttributes() as $attribute) {
                 $aname = $attribute->getName();
                 if (!method_exists($aname, 'findByFunction')) {
@@ -104,7 +104,7 @@ readonly class Router {
                 if ($error) {
                     return error($error);
                 }
-     
+
                 if ($attributeInstance instanceof OnRequest) {
                     $onRequest[] = $attributeInstance;
                 } else if ($attributeInstance instanceof OnResult) {
@@ -115,7 +115,7 @@ readonly class Router {
             }
 
             $ignoreOpenApi = IgnoreOpenApi::findByFunction($reflectionFunction)->try($error);
-            
+
             if ($error) {
                 return error($error);
             }
@@ -210,15 +210,15 @@ readonly class Router {
                 'bool'  => 'boolean',
                 default => $type,
             };
-            
+
             $schema = ["type" => $type];
-            
+
 
             $name    = $queryAttribute->getName();
             $summary = $summaryAttribute?$summaryAttribute->getValue():'';
             $example = $exampleAttribute?$exampleAttribute->getValue():[];
-            
-            
+
+
             if ('' === $name) {
                 $name = $paramReflection->getName();
             }
@@ -278,15 +278,15 @@ readonly class Router {
                 'bool'  => 'boolean',
                 default => $type,
             };
-            
+
             $schema = ["type" => $type];
-            
+
 
             $name    = $headerAttribute->getKey();
             $summary = $summaryAttribute?$summaryAttribute->getValue():'';
             $example = $exampleAttribute?$exampleAttribute->getValue():[];
-            
-            
+
+
             if ('' === $name) {
                 $name = $paramReflection->getName();
             }
@@ -308,7 +308,7 @@ readonly class Router {
     }
 
     /**
-     * 
+     *
      * @param  ReflectionFunction $reflectionFunction
      * @param  string             $path
      * @param  OpenApiService     $oa
@@ -331,7 +331,7 @@ readonly class Router {
 
         foreach ($configurations as $configuration) {
             $paramReflection = false;
-            
+
             $name = $configuration->name;
 
 
@@ -368,13 +368,13 @@ readonly class Router {
                 'bool'  => 'boolean',
                 default => $type,
             };
-            
+
 
             $schema = ["type" => $type];
-            
+
             $summary = $summaryAttribute?$summaryAttribute->getValue():'';
             $example = $exampleAttribute?$exampleAttribute->getValue():[];
-            
+
             $result = [
                 ...$result,
                 ...$oa->createParameter(
@@ -390,7 +390,7 @@ readonly class Router {
 
         return ok($result);
     }
-    
+
     private function findRouteOpenApiPageQueries(
         ReflectionFunction $reflectionFunction,
         OpenApiService $oa,
@@ -472,7 +472,7 @@ readonly class Router {
                     } else {
                         $content = $value['content'] ?? [];
                     }
-    
+
                     $responses[$status] = [
                         "description" => "",
                         "content"     => $content,
@@ -558,7 +558,7 @@ readonly class Router {
             } else {
                 $type = $reflectionType->getName();
             }
-            
+
             $name                  = $reflectionParameter->getName();
             $namedAndTypedParams[] = "$type &\$$name";
             $namedParams[]         = "\$$name";
@@ -617,9 +617,6 @@ readonly class Router {
         } else {
             return error("Trying to create alias \"$aliasSymbolicPath\" => \"$originalSymbolicPath\", but the original route \"$originalSymbolicPath\" has not been defined.\n");
         }
-        // if (isset($this->context->routes[$method][$original])) {
-        //     $this->custom($method, $alias, $this->context->routes[$method][$original]);
-        // }
         return ok();
     }
 
