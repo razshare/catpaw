@@ -263,14 +263,6 @@ class Bootstrap {
                 });
             }
 
-
-            echo "RESOURCES:\n";
-
-            print_r($resourcesList);
-
-            echo PHP_EOL;
-
-
             /** @var false|DeferredFuture<void> $ready */
             $ready = false;
 
