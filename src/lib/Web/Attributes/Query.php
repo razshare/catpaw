@@ -17,13 +17,13 @@ use ReflectionParameter;
 
 /**
  * Get a query string field.
- * 
+ *
  * Some examples:
- * 
+ *
  * - `#[Query('my-key')] $ua` will retrieve the `"my-key"` query string
  * - `#[Query] $authorization` will retrieve the `"authorization"` query string (it's equivalent to `#[Query("authorization")] $authorization` )
- * 
- * 
+ *
+ *
  * @package CatPaw\Web\Attributes
  */
 #[Attribute]
@@ -86,7 +86,7 @@ class Query implements AttributeInterface, OnParameterMount {
         if (isset($http->requestQueries[$key])) {
             return ok(urldecode($http->requestQueries[$key]));
         }
-        return error("Could not convert $key to string.");
+        return ok(null);
     }
 
 
@@ -104,7 +104,7 @@ class Query implements AttributeInterface, OnParameterMount {
                 return error("Query $key was expected to be numeric, but non numeric value has been provided instead:$value.");
             }
         }
-        return error("Could not convert $key to integer.");
+        return ok(null);
     }
 
 
@@ -117,7 +117,7 @@ class Query implements AttributeInterface, OnParameterMount {
         if (isset($http->requestQueries[$key])) {
             return ok(filter_var(urldecode($http->requestQueries[$key]), FILTER_VALIDATE_BOOLEAN));
         }
-        return error("Could not convert $key to bool.");
+        return ok(null);
     }
 
     /**
@@ -134,6 +134,6 @@ class Query implements AttributeInterface, OnParameterMount {
                 return error("Query $key was expected to be numeric, but non numeric value has been provided instead:$value.");
             }
         }
-        return error("Could not convert $key to float.");
+        return ok(null);
     }
 }

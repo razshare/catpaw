@@ -2,6 +2,7 @@
 
 namespace CatPaw\Web;
 
+use function Amp\ByteStream\buffer;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use CatPaw\Core\Container;
@@ -104,10 +105,19 @@ class HttpInvoker {
 
             if (!$isAlreadyModifier) {
                 $status = $context->response->getStatus();
+
                 if ($status >= 300) {
-                    $modifier = failure((string)$modifier, $status);
+                    if ($modifier instanceof Response) {
+                        $modifier = failure(buffer($modifier->getBody()), $status);
+                    } else {
+                        $modifier = failure((string)$modifier, $status);
+                    }
                 } else {
-                    $modifier = success($modifier, $status);
+                    if ($modifier instanceof Response) {
+                        $modifier = success($modifier->getBody(), $status);
+                    } else {
+                        $modifier = success($modifier, $status);
+                    }
                 }
             }
 

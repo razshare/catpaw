@@ -17,13 +17,17 @@ use CatPaw\Web\Interfaces\ByteRangeWriterInterface;
 use CatPaw\Web\Mime;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use SplFixedArray;
 
 #[Service]
 class ByteRangeService {
+    public function __construct(private LoggerInterface $logger) {
+    }
+
     /**
-     * 
+     *
      * @param  string                     $rangeQuery
      * @return Unsafe<SplFixedArray<int>>
      */
@@ -76,13 +80,11 @@ class ByteRangeService {
     }
 
     /**
-     * 
+     *
      * @param  ByteRangeWriterInterface  $interface
      * @return Unsafe<ResponseInterface>
      */
-    public function response(
-        ByteRangeWriterInterface $interface
-    ): Unsafe {
+    public function response(ByteRangeWriterInterface $interface): Unsafe {
         $headers    = [];
         $rangeQuery = $interface->getRangeQuery()->try($error);
         if ($error) {
@@ -103,14 +105,14 @@ class ByteRangeService {
         if ($contentLength < 0) {
             return error("Could not retrieve file size.");
         }
-        
+
         $contentType = $interface->getContentType()->try($error);
         if ($error) {
             return error($error);
         }
 
         $count = $ranges->count();
-        
+
 
         [$reader,$writer] = duplex();
 
@@ -119,7 +121,7 @@ class ByteRangeService {
             [$start, $end]             = $this->fixClientAmbiguity($start, $end, $contentLength);
             $headers['Content-Length'] = $end - $start + 1;
             $headers['Content-Range']  = "bytes $start-$end/$contentLength";
-            
+
             $interface->start();
 
             $response = new Response(
@@ -133,23 +135,25 @@ class ByteRangeService {
                 return ok($response);
             }
 
-            EventLoop::defer(static function() use ($writer, $start, $end, $interface) {
+            EventLoop::defer(function() use ($writer, $start, $end, $interface) {
                 $data = $interface->send($start, $end - $start + 1)->try($error);
                 if ($error) {
-                    return error($error);
+                    $this->logger->error($error->getMessage());
+                    $writer->close();
+                    $interface->close();
+                    return;
                 }
                 $writer->write($data);
                 $writer->close();
                 $interface->close();
-                return ok();
             });
 
             return ok($response);
         }
-        
+
         $boundary                = uuid();
         $headers['Content-Type'] = "multipart/byterange; boundary=$boundary";
-        
+
         $interface->start();
 
         try {
