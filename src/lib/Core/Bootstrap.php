@@ -5,6 +5,8 @@ namespace CatPaw\Core;
 use function Amp\async;
 use Amp\DeferredFuture;
 use function Amp\delay;
+use function Amp\File\isDirectory;
+
 use CatPaw\Core\Services\EnvironmentService;
 
 use Phar;
@@ -39,7 +41,7 @@ class Bootstrap {
         }
 
         require_once $fileName;
-        
+
         if (!function_exists('main')) {
             return error("could not find a global main function.\n");
         }
@@ -82,9 +84,9 @@ class Bootstrap {
             if (!$entry) {
                 self::kill("Please point to a php entry file.");
             }
-    
+
             $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-    
+
             if (!str_starts_with($entry, './')) {
                 if (!$isWindows) {
                     self::kill("The entry file path must be relative to the project, received: $entry.");
@@ -93,13 +95,13 @@ class Bootstrap {
                     self::kill("The entry file path must be relative to the project, received: $entry.");
                 }
             }
-    
+
             /** @var LoggerInterface $logger */
             $logger = LoggerFactory::create($name)->try($error);
             if ($error) {
                 self::kill($error->getMessage());
             }
-            
+
             Container::set(LoggerInterface::class, $logger);
             $environmentService = new EnvironmentService($logger);
 
@@ -118,13 +120,13 @@ class Bootstrap {
 
             /** @var array<string> $resourcesList */
             $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
-    
+
             $_ENV['ENTRY']         = $entry;
             $_ENV['LIBRARIES']     = $librariesList;
             $_ENV['RESOURCES']     = $resourcesList;
             $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
             $_ENV['SHOW_INFO']     = $info;
-    
+
             foreach ($librariesList as $library) {
                 if (!str_starts_with($library, './')) {
                     if (!$isWindows) {
@@ -135,7 +137,7 @@ class Bootstrap {
                     }
                 }
             }
-    
+
             foreach ($resourcesList as $resource) {
                 if (!str_starts_with($resource, './')) {
                     if (!$isWindows) {
@@ -146,7 +148,7 @@ class Bootstrap {
                     }
                 }
             }
-    
+
             if ($dieOnChange) {
                 if (isPhar()) {
                     self::kill("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
@@ -247,7 +249,7 @@ class Bootstrap {
             echo "Spawning $instruction".PHP_EOL;
 
             $signal = Signal::create();
-        
+
             /** @var array<string> $librariesList */
             $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
 
@@ -260,6 +262,13 @@ class Bootstrap {
                     self::kill();
                 });
             }
+
+
+            echo "RESOURCES:\n";
+
+            print_r($resourcesList);
+
+            echo PHP_EOL;
 
 
             /** @var false|DeferredFuture<void> $ready */
@@ -321,12 +330,21 @@ class Bootstrap {
                 $countLastPass = count($changes);
 
                 $fileNames = [$entry => false];
-                /** @var array<string> $directories */
-                $directories = [...$libraries, ...$resources];
-                foreach ($directories as $directory) {
-                    if (!File::exists($directory)) {
+                /** @var array<string> $files */
+                $files = [...$libraries, ...$resources];
+
+                foreach ($files as $file) {
+                    if (!File::exists($file)) {
                         continue;
                     }
+
+                    if (!isDirectory($file)) {
+                        $fileNames[$file] = false;
+                        continue;
+                    }
+
+                    $directory = $file;
+
                     $flatList = Directory::flat(realpath($directory))->try($error);
 
                     if ($error) {

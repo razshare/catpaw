@@ -337,10 +337,9 @@ class Server {
                             continue;
                         }
 
-                        $symbolicPath      = $apiPrefix.($matches[1] ?? '/');
-                        $symbolicPath      = preg_replace('/\/index$/', '', $symbolicPath);
-                        $symbolicPathAlias = "$symbolicPath/";
-                        $symbolicMethod    = strtoupper($matches[3] ?? 'get');
+                        $symbolicPath   = $apiPrefix.($matches[1] ?? '/');
+                        $symbolicPath   = preg_replace('/\/index$/', '', $symbolicPath);
+                        $symbolicMethod = strtoupper($matches[3] ?? 'get');
 
                         $routeExists = $router->routeExists($symbolicMethod, $symbolicPath);
 
@@ -352,17 +351,6 @@ class Server {
                             }
                         } else {
                             $logger->info("Route `$symbolicMethod $symbolicPath` already exists. Will not overwrite.");
-                        }
-
-                        $routeExistsAlias = $router->routeExists($symbolicMethod, $symbolicPathAlias);
-
-                        if (!$routeExistsAlias) {
-                            $router->alias($symbolicMethod, $symbolicPath, $symbolicPathAlias)->try($error);
-                            if ($error) {
-                                return error($error);
-                            }
-                        } else {
-                            $logger->info("Route `$symbolicMethod $symbolicPathAlias` is an alias for `$symbolicMethod $symbolicPath` and it already exists. Will not overwrite alias.");
                         }
                     }
                 }
