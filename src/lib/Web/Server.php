@@ -95,7 +95,7 @@ class Server {
      * @param  int                             $concurrencyLimit
      * @param  bool|SessionOperationsInterface $sessionOperations
      * @throws Error
-     * @return Unsafe
+     * @return Unsafe<Server>
      */
     public static function create(
         string $interface = '127.0.0.1:8080',
