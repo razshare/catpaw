@@ -1,4 +1,5 @@
 <?php
+
 namespace CatPaw\Web;
 
 use function Amp\async;
@@ -70,11 +71,6 @@ class Server {
         }
         return '';
     }
-
-    /**
-     * @return Unsafe<Server>
-     */
-
 
     /**
      *
@@ -159,11 +155,11 @@ class Server {
         ));
     }
 
-    private SocketHttpServer $server;
+    private SocketHttpServer $httpServer;
     private RouteResolver $resolver;
     private FileServerInterface $fileServer;
     /** @var array<Middleware> */
-    private array $middlewares = [];
+    private array $appendedMiddleware = [];
 
 
     private function __construct(
@@ -200,7 +196,7 @@ class Server {
     }
 
     public function appendMiddleware(Middleware $middleware): void {
-        $this->middlewares[] = $middleware;
+        $this->appendedMiddleware[] = $middleware;
     }
 
     public function setFileServer(FileServerInterface $fileServer):self {
@@ -243,10 +239,10 @@ class Server {
                     return error($error);
                 }
 
-                $requestHandler = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
-                $stackedHandler = stackMiddleware($requestHandler, ...$this->middlewares);
-                $errorHandler   = ServerErrorHandler::create($logger);
-                $this->server   = SocketHttpServer::createForDirectAccess(
+                $requestHandler   = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
+                $stackedHandler   = stackMiddleware($requestHandler, ...$this->appendedMiddleware);
+                $errorHandler     = ServerErrorHandler::create($logger);
+                $this->httpServer = SocketHttpServer::createForDirectAccess(
                     logger: $logger,
                     enableCompression: $this->enableCompression,
                     connectionLimit: $this->connectionLimit,
@@ -254,16 +250,19 @@ class Server {
                     concurrencyLimit: $this->concurrencyLimit,
                     allowedMethods: $this->allowedMethods?:null,
                 );
-                $this->server->onStop(static function() use ($endSignal) {
+
+                $this->httpServer->onStop(static function() use ($endSignal) {
                     if (!$endSignal->isComplete()) {
                         $endSignal->complete();
                     }
                 });
-                $this->server->expose($this->interface);
-                $this->server->start($stackedHandler, $errorHandler);
+                $this->httpServer->expose($this->interface);
+
+                $this->httpServer->start($stackedHandler, $errorHandler);
                 if ($signal) {
                     $signal->sigterm();
                 }
+
                 $endSignal->getFuture()->await();
                 return ok();
             } catch (Throwable $e) {
@@ -280,9 +279,9 @@ class Server {
      * @return Unsafe<void>
      */
     public function stop(): Unsafe {
-        if (isset($this->server)) {
+        if (isset($this->httpServer)) {
             try {
-                $this->server->stop();
+                $this->httpServer->stop();
                 return ok();
             } catch(CompositeException $e) {
                 return error($e);
