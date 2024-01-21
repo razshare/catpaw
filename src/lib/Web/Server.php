@@ -105,8 +105,6 @@ class Server {
         array $allowedMethods = [],
         false|SessionOperationsInterface $sessionOperations = false,
     ): Unsafe {
-        echo "\n\n\nUSING INTERFACE $interface\n\n\n";
-
         if (!str_starts_with($api, './')) {
             $api = "./$api";
             // return error("The api directory must be a relative path and within the project directory.");
