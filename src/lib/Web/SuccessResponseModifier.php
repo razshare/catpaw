@@ -80,10 +80,8 @@ class SuccessResponseModifier implements ResponseModifier {
      * @param  string                  $contentType
      * @return SuccessResponseModifier
      */
-    public function page(Page $page, string $contentType, string $wildcard = 'Href'):self {
-        $this->$contentType = $contentType;
-        $this->page         = $page;
-
+    public function page(Page $page, string $wildcard = 'Href'):self {
+        $this->page = $page;
         if (is_array($this->data)) {
             $count = count($this->data);
             if ($count > 0 && !isset($this->data[0])) {
