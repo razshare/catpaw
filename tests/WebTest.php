@@ -9,11 +9,13 @@ use Amp\Http\Client\HttpException;
 use Amp\Http\Client\Request;
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Container;
+
 use CatPaw\Core\Signal;
 use const CatPaw\Web\APPLICATION_JSON;
 use const CatPaw\Web\APPLICATION_XML;
 use CatPaw\Web\Attributes\Param;
 use CatPaw\Web\Server;
+use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
 use const CatPaw\Web\TEXT_PLAIN;
 use function json_decode;
@@ -124,7 +126,7 @@ class WebTest extends TestCase {
      * @throws StreamException
      */
     private function makeSureParamHintsWork(Server $server, HttpClient $http): void {
-        $server->router->get("/get-with-params/{name}", fn (#[Param] string $name) => "hello $name");
+        $server->router->get("/get-with-params/{name}", fn (#[Param] string $name) => success("hello $name"));
         $response = $http->request(new Request("http://127.0.0.1:5858/get-with-params/user1"));
         $this->assertEquals("hello user1", $response->getBody()->buffer());
         $response = $http->request(new Request("http://127.0.0.1:5858/get-with-params/user2"));

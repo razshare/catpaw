@@ -2,7 +2,6 @@
 
 namespace CatPaw\Web;
 
-use function Amp\ByteStream\buffer;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use CatPaw\Core\Container;
@@ -10,14 +9,9 @@ use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
+
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\ResponseModifier;
-
-
-use function explode;
-
-use function in_array;
-
 
 class HttpInvoker {
     public static function create(
@@ -53,7 +47,6 @@ class HttpInvoker {
         }
     }
 
-
     /**
      * @param  RequestContext   $context
      * @return Unsafe<Response>
@@ -61,14 +54,14 @@ class HttpInvoker {
     public function invoke(RequestContext $context):Unsafe {
         $badRequestEntries = $context->badRequestEntries;
         if ($badRequestEntries) {
-            return $this->contextualize($context, failure(join("\n", $badRequestEntries), HttpStatus::BAD_REQUEST));
+            return ok(failure(join("\n", $badRequestEntries), HttpStatus::BAD_REQUEST));
         }
         $onRequests         = $context->route->onRequest;
         $onResults          = $context->route->onResult;
         $reflectionFunction = $context->route->reflectionFunction;
         $function           = $context->route->function;
 
-        $options = $this->createDependenciesOptionsFromRequestContextAndResponse($context);
+        $options = $this->createDependenciesOptions($context);
 
         $dependencies = Container::dependencies($reflectionFunction, $options)->try($error);
 
@@ -80,141 +73,32 @@ class HttpInvoker {
             $onRequest->onRequest($context->request);
         }
 
-        $result = $function(...$dependencies);
+        $modifier = $function(...$dependencies);
+
+        if (!$modifier instanceof ResponseModifier) {
+            return error("A route handler must always return a response modifier but route handler {$context->key} did not.");
+        }
 
         foreach ($onResults as $onResult) {
-            $onResult->onResult($context->request, $result);
+            $onResult->onResult($context->request, $modifier);
         }
 
         if ($sessionIdCookie = Cookie::findFromRequestContextByName($context, 'session-id')) {
             $this->sessionOperations->persistSession($sessionIdCookie->value);
         }
 
-        return $this->contextualize($context, $result);
+        return $modifier->getResponse();
     }
 
-    /**
-     * @return Unsafe<Response>
-     */
-    private function contextualize(RequestContext $context, mixed $modifier): Unsafe {
-        $consumes = $context->route->consumes;
-        $produces = $context->route->produces;
-
-        if (null !== $modifier) {
-            $isAlreadyModifier = ($modifier instanceof ResponseModifier);
-
-            if (!$isAlreadyModifier) {
-                $status = $context->response->getStatus();
-
-                if ($status >= 300) {
-                    if ($modifier instanceof Response) {
-                        $modifier = failure(buffer($modifier->getBody()), $status);
-                    } else {
-                        $modifier = failure((string)$modifier, $status);
-                    }
-                } else {
-                    if ($modifier instanceof Response) {
-                        $modifier = success($modifier->getBody(), $status);
-                    } else {
-                        $modifier = success($modifier, $status);
-                    }
-                }
-            }
-
-            /** @var ResponseModifier $modifier */
-
-            $modifierIsPrimitive = $modifier->isPrimitive();
-
-            if ($produces) {
-                $producesContentType = $produces->hasContentType();
-                $producesItem        = $produces->isItem();
-                $producesPage        = $produces->isPage();
-            } else {
-                $producesContentType = false;
-                $producesItem        = false;
-                $producesPage        = false;
-            }
-
-            if ($producesItem) {
-                $modifier->withStructure();
-            } else if ($producesPage) {
-                $modifier->withStructure();
-                if (!$modifier->isPage()) {
-                    $modifier->page(Page::of(100));
-                }
-            }
-        } else {
-            $producesContentType = false;
-            $producesItem        = false;
-            $producesPage        = false;
-            $modifierIsPrimitive = false;
-        }
-
-        $response = $context->response;
-
-        if (!$response->hasHeader("Content-Type")) {
-            $customizedProduces = false;
-            if ($produces) {
-                if ($producesContentType) {
-                    $produced = $produces->getContentType();
-                } else if ($modifierIsPrimitive) {
-                    $produced = ['text/plain'];
-                } else {
-                    $produced = ['application/json'];
-                }
-                $response->setHeader("Content-Type", $produced);
-            } else {
-                if ($modifierIsPrimitive) {
-                    $produced = ['text/plain'];
-                } else {
-                    $produced = ['application/json'];
-                }
-                $response->setHeader("Content-Type", $produced);
-            }
-        } else {
-            $customizedProduces = true;
-            $produced           = [$response->getHeader("Content-Type") ?? 'text/plain'];
-        }
-
-        if ($customizedProduces) {
-            return ok($modifier->forText($response));
-        }
-
-        $acceptables = explode(",", $context->request->getHeader("Accept") ?? "*/*");
-
-        foreach ($acceptables as $acceptable) {
-            $acceptable = trim($acceptable);
-            if (str_starts_with($acceptable, "*/*")) {
-                $response->setHeader("Content-Type", $produced[0] ?? 'text/plain');
-                return match ($produced[0]) {
-                    'application/json' => $modifier->forJson($response),
-                    'application/xml'  => ok($modifier->forXml($response)),
-                    default            => ok($modifier->forText($response)),
-                };
-            }
-            if (in_array($acceptable, $produced)) {
-                $response->setHeader("Content-Type", $acceptable);
-                return match ($acceptable) {
-                    'application/json' => $modifier->forJson($response),
-                    'application/xml'  => ok($modifier->forXml($response)),
-                    default            => ok($modifier->forText($response)),
-                };
-            }
-        }
-
-        return ok($response);
-    }
-
-    private function createDependenciesOptionsFromRequestContextAndResponse(RequestContext $context):DependenciesOptions {
-        $response = $context->response;
-        $key      = $context->key;
+    private function createDependenciesOptions(RequestContext $context):DependenciesOptions {
+        $key = $context->key;
         return DependenciesOptions::create(
             key: $key,
             overwrites: [
-                Server::class   => static fn () => $context->server,
-                Request::class  => static fn () => $context->request,
-                Response::class => static fn () => $response,
-                Page::class     => static function() use ($context) {
+                Server::class  => static fn () => $context->server,
+                Request::class => static fn () => $context->request,
+                Accepts::class => static fn () => Accepts::createFromRequest($context->request),
+                Page::class    => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
                     $size  = $context->requestQueries['size']  ?? 10;
                     return

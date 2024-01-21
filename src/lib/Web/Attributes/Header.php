@@ -18,13 +18,13 @@ use ReflectionParameter;
 
 /**
  * Get a request header field.
- * 
+ *
  * Some examples:
- * 
+ *
  * - `#[Header('user-agent')] $ua`
  * - `#[Header] $authorization` (this is equivalent to `#[Header('authorization')] $authorization`)
- * 
- * 
+ *
+ *
  * @package CatPaw\Web\Attributes
  */
 #[Attribute]
@@ -39,7 +39,7 @@ class Header implements AttributeInterface, OnParameterMount {
     public function getKey():string {
         return $this->key;
     }
-    
+
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
         /** @var false|RequestContext $context */
         $context = $options->context;
@@ -59,7 +59,7 @@ class Header implements AttributeInterface, OnParameterMount {
             'int'    => (int)$context->request->getHeader($this->key)    ?? '',
             'double' => (double)$context->request->getHeader($this->key) ?? '',
             'float'  => (float)$context->request->getHeader($this->key)  ?? '',
-            'array'  => $context->request->getHeaderPairs(),
+            'array'  => explode(',', $context->request->getHeader($this->key) ?? ''),
             default  => $context->request->getHeader($this->key) ?? '',
         } ?? $value;
 

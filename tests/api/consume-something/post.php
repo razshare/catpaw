@@ -5,6 +5,8 @@ use CatPaw\Web\Attributes\Body;
 
 use CatPaw\Web\Attributes\Consumes;
 
+use function CatPaw\Web\success;
+
 class SchemaConsumeSomething {
     public string $key1;
     public string $key2;
@@ -14,4 +16,4 @@ class SchemaConsumeSomething {
 
 return
 #[Consumes(SchemaConsumeSomething::class, APPLICATION_JSON)]
-fn (#[Body] array $data) => $data;
+fn (#[Body] array $data) => success($data)->as(APPLICATION_JSON);

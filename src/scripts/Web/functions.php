@@ -51,6 +51,15 @@ function success(
 }
 
 /**
+ * Bad request.
+ * @param  string                $message
+ * @return ErrorResponseModifier
+ */
+function badRequest(string $message):ErrorResponseModifier {
+    return failure($message, HttpStatus::BAD_REQUEST);
+}
+
+/**
  * Something is wrong, notify the client with a code and a message.
  * @param  false|string          $message
  * @param  int                   $status

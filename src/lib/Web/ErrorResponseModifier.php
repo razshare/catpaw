@@ -22,8 +22,9 @@ class ErrorResponseModifier implements ResponseModifier {
         );
     }
 
-    private bool $isStructured = true;
-    
+    private mixed $body         = false;
+    private string $contentType = TEXT_PLAIN;
+
     private function __construct(
         private readonly int $status,
         private readonly string $message,
@@ -31,70 +32,50 @@ class ErrorResponseModifier implements ResponseModifier {
     ) {
     }
 
-    public function isPrimitive():bool {
-        return true;
+    public function as(string $contentType):self {
+        $this->contentType = $contentType;
+        return $this;
     }
 
-    public function isPage():bool {
-        return false;
-    }
-
-    public function withStructure(bool $value = true): void {
-        $this->isStructured = $value;
-    }
-
-    private function createStructuredPayload():array {
-        return [
+    public function item():self {
+        $this->body = [
             'type'    => 'error',
             'message' => $this->message,
             'status'  => $this->status,
         ];
-    }
-
-    public function forText(Response $response):Response {
-        $response->setBody($this->message);
-        $response->setStatus($this->status);
-        foreach ($this->headers as $key => $value) {
-            $response->setHeader($key, $value);
-        }
-        return $response;
+        return $this;
     }
 
     /**
-     * @return Unsafe<Response>
+     *
+     * @return Unsafe<Error>
      */
-    public function forJson(Response $response):Unsafe {
-        $payload = $this->isStructured?$this->createStructuredPayload():$this->message;
+    public function getResponse():Unsafe {
+        if (APPLICATION_JSON === $this->contentType) {
+            $body = json_encode($this->body);
+            if (false === $body) {
+                return error('Could not encode body to json.');
+            }
+        } else if (APPLICATION_XML === $this->contentType) {
+            $body = is_object($this->body)
+                    ?XMLSerializer::generateValidXmlFromObj($this->body)
+                    :XMLSerializer::generateValidXmlFromArray($this->body);
+        } else {
+            $body = (string)$this->body;
+        }
+
+        $response = new Response(
+            status: $this->status,
+            headers: $this->headers,
+            body: $body,
+        );
 
         try {
-            $json = json_encode($payload);
-        } catch(Throwable $e) {
-            return error($e);
+            $response->setHeader('Content-Type', $this->contentType);
+        } catch(Throwable $error) {
+            return error($error);
         }
-        $response->setBody($json);
-        $response->setStatus($this->status);
-        foreach ($this->headers as $key => $value) {
-            $response->setHeader($key, $value);
-        }
+
         return ok($response);
-    }
-
-    public function forXml(Response $response):Response {
-        $payload = $this->isStructured?$this->createStructuredPayload():$this->message;
-        $response->setBody(XMLSerializer::generateValidXmlFromArray($payload));
-        $response->setStatus($this->status);
-        foreach ($this->headers as $key => $value) {
-            $response->setHeader($key, $value);
-        }
-        return $response;
-    }
-
-    /**
-     * Page the response.
-     * @param  Page                  $page
-     * @return ErrorResponseModifier
-     */
-    public function page(Page $page):self {
-        return $this;
     }
 }

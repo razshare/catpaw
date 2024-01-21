@@ -19,14 +19,14 @@ class Cookie implements Stringable {
     }
 
     /**
-     * @param  Response     $response
      * @param  string       $cookieName
+     * @param  Response     $response
      * @return false|Cookie
      */
-    public static function findFromResponseByName(Response $response, string $cookieName):false|Cookie {
-        $cookies = self::listFromResponse($response);
-        return $cookies[$cookieName] ?? false;
-    }
+    // public static function findFromResponseByName(Response $response, string $cookieName):false|Cookie {
+    //     $cookies = self::listFromResponse($response);
+    //     return $cookies[$cookieName] ?? false;
+    // }
 
     /**
      * @param  RequestContext $context
@@ -34,11 +34,9 @@ class Cookie implements Stringable {
      * @return false|Cookie
      */
     public static function findFromRequestContextByName(RequestContext $context, string $cookieName):false|Cookie {
-        return Cookie::findFromResponseByName($context->response, $cookieName)
-        ?:Cookie::findFromRequestByName($context->request, $cookieName)
-        ?:false;
+        return Cookie::findFromRequestByName($context->request, $cookieName);
     }
-    
+
     /**
      * @param  Request       $request
      * @return array<Cookie>

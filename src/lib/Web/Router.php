@@ -37,7 +37,6 @@ readonly class Router {
     private function __construct(private RouterContext $context) {
     }
 
-
     /**
      * Initialize a new route.
      * @param  string           $symbolicMethod
@@ -57,6 +56,8 @@ readonly class Router {
                 return error("Symbolic paths must start with `/`, received `$symbolicPath`.");
             }
 
+            $key = "$symbolicMethod:$symbolicPath";
+
             if (!$function instanceof Closure) {
                 $function = Closure::fromCallable($function);
             }
@@ -65,6 +66,17 @@ readonly class Router {
                 $reflectionFunction = new ReflectionFunction($function);
             } catch(Throwable $e) {
                 return error($e);
+            }
+
+
+            if ($reflectionFunction->hasReturnType()) {
+                $successType = SuccessResponseModifier::class;
+                $errorType   = ErrorResponseModifier::class;
+                $returnType  = $reflectionFunction->getReturnType();
+
+                if ($successType !== $returnType && $errorType !== $errorType) {
+                    return error("All route handlers must return either `{$successType}` or `{$errorType}`, but route `$key` returns `$returnType`.");
+                }
             }
 
             $consumes = Consumes::findByFunction($reflectionFunction)->try($error);
@@ -93,13 +105,13 @@ readonly class Router {
             }
 
             foreach ($reflectionFunction->getAttributes() as $attribute) {
-                $aname = $attribute->getName();
-                if (!method_exists($aname, 'findByFunction')) {
+                $attributeName = $attribute->getName();
+                if (!method_exists($attributeName, 'findByFunction')) {
                     continue;
                 }
 
                 /** @var false|AttributeInterface $attributeInstance */
-                $attributeInstance = $aname::findByFunction($reflectionFunction)->try($error);
+                $attributeInstance = $attributeName::findByFunction($reflectionFunction)->try($error);
 
                 if ($error) {
                     return error($error);
@@ -141,7 +153,7 @@ readonly class Router {
             );
 
             $options = DependenciesOptions::create(
-                key: '',
+                key: $key,
                 overwrites:[],
                 provides: [],
                 fallbacks: [],

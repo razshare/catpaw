@@ -93,13 +93,11 @@ class RouteResolver {
         }
 
         $requestQueries = $this->findQueriesFromRequest($request);
-        $response       = new Response();
         $context        = RequestContext::create(
             key: "$symbolicMethod:$symbolicPath",
             route: $route,
             server: $server,
             request: $request,
-            response: $response,
             requestQueries: $requestQueries,
             requestPathParameters: $requestPathParameters?:[],
             badRequestEntries: $badRequestEntries,
