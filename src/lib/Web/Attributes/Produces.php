@@ -8,20 +8,25 @@ use CatPaw\Core\Interfaces\AttributeInterface;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
-
+use CatPaw\Web\ErrorItem;
 use CatPaw\Web\ProducedResponse;
 use CatPaw\Web\Services\OpenApiService;
 
 /**
- * Define the type of content the route handler produces.
- * 
- * Some examples:
- * 
- * - `#[Produces("string","application/json")]`
- * - `#[Produces("string", ["application/json", "application/xml"])]`
- * 
- * ### Note
- * Specifically the type `"application/json"` will serialize objects and arrays into JSON.
+ * Describe the type of content the route handler produces so that the `OpenApiService` can handle it.
+ *
+ * ## Example
+ *
+ * ```php
+ * use CatPaw\Web\Attributes\Produces;
+ * use function CatPaw\Web\success;
+ *
+ * #[Produces(200, 'text/plain', 'On success.', 'string', 'this is an example')]
+ * function myRouteHandler() {
+ *  return success('hello world');
+ * }
+ * ```
+ *
  * @see Body
  * @package CatPaw\Web\Attributes
  */
@@ -32,32 +37,45 @@ class Produces implements AttributeInterface {
     /** @var array<ProducedResponse> */
     protected array $response      = [];
     protected bool $isPrimitive    = true;
-    protected bool $isItem         = false;
-    protected bool $isPage         = false;
     protected bool $hasContentType = false;
-    
+
     /**
-     * @param string|array $className   usually `string`, but can also be a class name to indicate the structure of the content.
-     * @param string|array $contentType the http content-type, like `application/json`, `text/html` etc.
-     * @param mixed        $example
+     *
+     * @param  int    $status         status code of the response.
+     * @param  string $contentType    the http content-type, like `application/json`, `text/html` etc.
+     * @param  string $description    describe when this content is produced.
+     * @param  string $className      usually `string`, but can also be a class name to indicate the structure of the content.
+     * @param  mixed  $example
+     * @param  bool   $isItem
+     * @param  bool   $isPage
+     * @param  bool   $isErrorItem
+     * @param  string $errorClassName
+     * @return void
      */
     public function __construct(
-        protected string|array $className = 'string',
-        protected string|array $contentType = '',
+        protected int $status,
+        protected string $contentType,
+        protected string $description,
+        protected string $className,
         protected mixed $example = '',
+        protected bool $isItem = false,
+        protected bool $isPage = false,
+        protected bool $isErrorItem = false,
+        protected string $errorClassName = ErrorItem::class,
     ) {
         $this->setContentType($contentType);
     }
 
-    protected function createProducedResponse(
-        string|array $className,
-        string|array $contentType,
-        mixed $example,
-    ):ProducedResponse {
+    protected function createProducedResponse():ProducedResponse {
         return ProducedResponse::create(
-            type: $contentType,
-            className: $className,
-            example: $example,
+            status: $this->status,
+            type: $this->contentType,
+            className: $this->className,
+            example: $this->example,
+            isItem: $this->isItem,
+            isPage: $this->isPage,
+            isErrorItem: $this->isErrorItem,
+            description: $this->description,
         );
     }
 
@@ -92,7 +110,7 @@ class Produces implements AttributeInterface {
         if (is_string($contentType)) {
             $contentType = [$contentType];
         }
-        
+
         foreach ($contentType as $contentTypeItem) {
             if (!$this->hasContentType && $contentTypeItem) {
                 $this->hasContentType = true;
@@ -107,11 +125,7 @@ class Produces implements AttributeInterface {
                 $this->isPrimitive = false;
             }
 
-            $this->response[] = $this->createProducedResponse(
-                className: $this->className,
-                contentType: $contentTypeItem,
-                example: $this->example,
-            );
+            $this->response[] = $this->createProducedResponse();
         }
     }
 

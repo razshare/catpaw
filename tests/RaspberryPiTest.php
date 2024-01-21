@@ -5,7 +5,6 @@ use function Amp\delay;
 // use function CatPaw\Core\anyError;
 // use CatPaw\Core\Container;
 use function CatPaw\Core\error;
-
 use CatPaw\Core\Unsafe;
 use CatPaw\RaspberryPi\Services\GpioService;
 use PHPUnit\Framework\TestCase;
@@ -22,7 +21,7 @@ class RaspberryPiTest extends TestCase {
     //     $this->assertFalse($error);
     //     EventLoop::run();
     // }
-    
+
     public function blink(GpioService $gpio): Unsafe {
         $writer = $gpio->createWriter('12');
         $active = false;

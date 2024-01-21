@@ -23,12 +23,12 @@ class ErrorResponseModifier implements ResponseModifier {
     }
 
     private mixed $body         = false;
-    private string $contentType = TEXT_PLAIN;
+    private string $contentType = __TEXT_PLAIN;
 
     private function __construct(
-        private readonly int $status,
-        private readonly string $message,
-        private readonly array $headers,
+        private int $status,
+        private string $message,
+        private array $headers,
     ) {
     }
 
@@ -38,11 +38,10 @@ class ErrorResponseModifier implements ResponseModifier {
     }
 
     public function item():self {
-        $this->body = [
-            'type'    => 'error',
-            'message' => $this->message,
-            'status'  => $this->status,
-        ];
+        $this->body = ErrorItem::create(
+            message: $this->message,
+            status: $this->status,
+        );
         return $this;
     }
 
@@ -51,12 +50,12 @@ class ErrorResponseModifier implements ResponseModifier {
      * @return Unsafe<Error>
      */
     public function getResponse():Unsafe {
-        if (APPLICATION_JSON === $this->contentType) {
+        if (__APPLICATION_JSON === $this->contentType) {
             $body = json_encode($this->body);
             if (false === $body) {
                 return error('Could not encode body to json.');
             }
-        } else if (APPLICATION_XML === $this->contentType) {
+        } else if (__APPLICATION_XML === $this->contentType) {
             $body = is_object($this->body)
                     ?XMLSerializer::generateValidXmlFromObj($this->body)
                     :XMLSerializer::generateValidXmlFromArray($this->body);

@@ -14,12 +14,21 @@ use CatPaw\Web\Services\OpenApiService;
 
 /**
  * Define the type of content the route handler consumes.
- * 
- * Some examples:
- * 
- * - `#[Consumes("string", "application/json")]`
- * - `#[Consumes("string", "text/plain")]`
- * 
+ *
+ * ## Example
+ *
+ * ```php
+ * use CatPaw\Web\Attributes\Consumes;
+ * use CatPaw\Web\Attributes\Produces;
+ * use function CatPaw\Web\success;
+ *
+ * #[Consumes('text/plain', 'string', 'this is an example')]
+ * #[Produces(200, 'text/plain', 'On success.', 'string')]
+ * function myRouteHandler(#[Body] string $message) {
+ *  return success("Message: $message");
+ * }
+ * ```
+ *
  * ### Note
  * Specifically the type `"application/json"` will allow object and array mappings using `#[Body]`.
  * @see Body
@@ -31,16 +40,16 @@ class Consumes implements AttributeInterface {
 
     /** @var array<ConsumedRequest> */
     private array $request = [];
-    
+
 
     /**
-     * @param string|array $schema       usually `string`, but can also be a class name to indicate the structure of the content.
-     * @param string|array $contentTypes the http content-type, like `application/json`, `text/html` etc.
-     * @param mixed        $example
+     * @param string $contentTypes the http content-type, like `application/json`, `text/html` etc.
+     * @param string $schema       usually `string`, but can also be a class name to indicate the structure of the content.
+     * @param mixed  $example
      */
     public function __construct(
-        string|array $schema = 'string',
-        string|array $contentTypes = 'application/json',
+        string $contentTypes,
+        string $schema,
         mixed $example = '',
     ) {
         if (is_string($contentTypes)) {

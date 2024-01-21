@@ -9,18 +9,16 @@ use Amp\Http\Client\HttpException;
 use Amp\Http\Client\Request;
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Container;
-
 use CatPaw\Core\Signal;
-use const CatPaw\Web\APPLICATION_JSON;
-use const CatPaw\Web\APPLICATION_XML;
+use const CatPaw\Web\__APPLICATION_JSON;
+use const CatPaw\Web\__APPLICATION_XML;
+use const CatPaw\Web\__TEXT_HTML;
+use const CatPaw\Web\__TEXT_PLAIN;
 use CatPaw\Web\Attributes\Param;
 use CatPaw\Web\Server;
 use function CatPaw\Web\success;
-use const CatPaw\Web\TEXT_HTML;
-use const CatPaw\Web\TEXT_PLAIN;
 use function json_decode;
 use PHPUnit\Framework\TestCase;
-
 class WebTest extends TestCase {
     public function testAll() {
         Container::load('./src/lib/')->try($error);
@@ -69,10 +67,10 @@ class WebTest extends TestCase {
      */
     private function makeSureXmlConversionWorks(HttpClient $http): void {
         $request = new Request("http://127.0.0.1:5858/api/object/user1", "GET");
-        $request->setHeader("Accept", APPLICATION_XML);
+        $request->setHeader("Accept", __APPLICATION_XML);
         $response          = $http->request($request);
         $actualContentType = $response->getHeader("Content-Type");
-        $this->assertEquals(APPLICATION_XML, $actualContentType);
+        $this->assertEquals(__APPLICATION_XML, $actualContentType);
         $actualBody = $response->getBody()->buffer();
         $this->assertStringStartsWith("<?xml version=\"1.0\"", $actualBody);
     }
@@ -84,10 +82,10 @@ class WebTest extends TestCase {
      */
     private function makeSureJsonConversionWorks(HttpClient $http): void {
         $request = new Request("http://127.0.0.1:5858/api/object/user1", "GET");
-        $request->setHeader("Accept", APPLICATION_JSON);
+        $request->setHeader("Accept", __APPLICATION_JSON);
         $response          = $http->request($request);
         $actualContentType = $response->getHeader("Content-Type");
-        $this->assertEquals(APPLICATION_JSON, $actualContentType);
+        $this->assertEquals(__APPLICATION_JSON, $actualContentType);
         $actualBody = $response->getBody()->buffer();
         $this->assertJson($actualBody);
     }
@@ -98,8 +96,17 @@ class WebTest extends TestCase {
 
         $this->assertTrue((bool)$api);
         $this->assertTrue((bool)$apiUsername);
-        $this->assertContains(TEXT_PLAIN, $api->produces->getContentType());
-        $this->assertContains(TEXT_HTML, $apiUsername->produces->getContentType());
+
+        $this->assertNotEmpty($api->produces);
+        $this->assertNotEmpty($apiUsername->produces);
+
+        foreach ($api->produces as $produces) {
+            $this->assertContains(__TEXT_PLAIN, $produces->getContentType());
+        }
+
+        foreach ($apiUsername->produces as $produces) {
+            $this->assertContains(__TEXT_HTML, $produces->getContentType());
+        }
     }
 
     /**
@@ -155,9 +162,9 @@ class WebTest extends TestCase {
         $this->assertArrayHasKey('post', $json['paths']['/api/consume-something']);
         $this->assertArrayHasKey('requestBody', $json['paths']['/api/consume-something']['post']);
         $this->assertArrayHasKey('content', $json['paths']['/api/consume-something']['post']['requestBody']);
-        $this->assertArrayHasKey(APPLICATION_JSON, $json['paths']['/api/consume-something']['post']['requestBody']['content']);
-        $this->assertArrayHasKey('schema', $json['paths']['/api/consume-something']['post']['requestBody']['content'][APPLICATION_JSON]);
-        $this->assertArrayHasKey('$ref', $json['paths']['/api/consume-something']['post']['requestBody']['content'][APPLICATION_JSON]['schema']);
+        $this->assertArrayHasKey(__APPLICATION_JSON, $json['paths']['/api/consume-something']['post']['requestBody']['content']);
+        $this->assertArrayHasKey('schema', $json['paths']['/api/consume-something']['post']['requestBody']['content'][__APPLICATION_JSON]);
+        $this->assertArrayHasKey('$ref', $json['paths']['/api/consume-something']['post']['requestBody']['content'][__APPLICATION_JSON]['schema']);
         $this->assertArrayHasKey('key1', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
         $this->assertArrayHasKey('key2', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
         $this->assertArrayHasKey('key3', $json['components']['schemas']['SchemaConsumeSomething']['properties']);

@@ -12,51 +12,58 @@ use CatPaw\Web\ProducedResponse;
 use CatPaw\Web\Services\OpenApiService;
 
 /**
- * Define the type of content the route handler produces.
- * 
- * Some examples:
- * 
- * - `#[Produces("string","application/json")]`
- * - `#[Produces("string", ["application/json", "application/xml"])]`
- * 
- * ### Note
- * Specifically the type `"application/json"` will serialize objects and arrays into JSON.
+ * Describe the type of content the route handler produces so that the `OpenApiService` can handle it.
+ *
+ * ## Example
+ *
+ * ```php
+ * use CatPaw\Web\Attributes\ProducesItem;
+ * use function CatPaw\Web\success;
+ *
+ * #[ProducesItem(200, 'application/json', 'On success.', 'string', 'this is an example')]
+ * function myRouteHandler() {
+ *  return
+ *      success('hello world')
+ *          ->as('application/json')
+ *              ->item();
+ * }
+ * ```
+ *
  * @see Body
  * @package CatPaw\Web\Attributes
  */
 #[Attribute]
-class ProducesItem extends Produces implements AttributeInterface {
+class ProducesItem implements AttributeInterface {
     use CoreAttributeDefinition;
-    
+
+    private Produces $produces;
+
     /**
-     * @param string|array $className   usually `string`, but can also be a class name to indicate the structure of the content.
-     * @param string|array $contentType the http content-type, like `application/json`, `text/html` etc.
-     * @param mixed        $example
+     * @param int    $status      status code of the response.
+     * @param string $contentType the http content-type, like `application/json`, `text/html` etc.
+     * @param string $description describe when this item is produced.
+     * @param string $className   usually `string`, but can also be a class name to indicate the structure of the content.
+     * @param mixed  $example
      */
     public function __construct(
-        string|array $className = 'string',
-        string|array $contentType = 'application/json',
-        mixed $example = []
+        private int $status,
+        private string $contentType,
+        private string $description,
+        private string $className,
+        private mixed $example = []
     ) {
-        parent::__construct($className, $contentType, $example);
-        $this->isItem = true;
-    }
-
-    protected function createProducedResponse(
-        string|array $className,
-        string|array $contentType,
-        mixed $example,
-    ):ProducedResponse {
-        return ProducedResponse::create(
-            type: $contentType,
+        $this->produces = new Produces(
+            status: $status,
             className: $className,
+            contentType: $contentType,
+            description: $description,
             example: $example,
             isItem: true,
         );
     }
 
     #[Entry] public function setup(OpenApiService $oa): Unsafe {
-        foreach ($this->response as $response) {
+        foreach ($this->produces->getResponse() as $response) {
             $response->setup($oa)->try($error);
             if ($error) {
                 return error($error);
@@ -72,7 +79,7 @@ class ProducesItem extends Produces implements AttributeInterface {
      */
     public function getContentType():array {
         $contentType = [];
-        foreach ($this->response as $response) {
+        foreach ($this->produces->getResponse() as $response) {
             $contentType[] = $response->getContentType();
         }
         return $contentType;
@@ -84,6 +91,10 @@ class ProducesItem extends Produces implements AttributeInterface {
      * @return array<ProducedResponse>
      */
     public function getResponse():array {
-        return $this->response;
+        return $this->produces->getResponse();
+    }
+
+    public function getProduces():Produces {
+        return $this->produces;
     }
 }

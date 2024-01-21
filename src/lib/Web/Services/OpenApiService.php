@@ -6,14 +6,22 @@ use CatPaw\Core\Attributes\ArrayList;
 use CatPaw\Core\Attributes\HashMap;
 use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\error;
-use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
 
+use function CatPaw\Core\ok;
+use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Unsafe;
 use ReflectionClass;
 use Throwable;
 
 #[Service]
 class OpenApiService {
+    public static function templateForObjectComponent(string $className):array {
+        return [
+            'type' => 'object',
+            '$ref' => "#/components/schemas/{$className}",
+        ];
+    }
+
     public static function templateForItem(string $className, bool $dataIsObject = true):array {
         if ($dataIsObject) {
             $data = [
@@ -144,6 +152,9 @@ class OpenApiService {
         $this->json['paths'][$path] = $pathContent;
     }
 
+    public function setComponentReference(string $className):void {
+        $this->json['components']['schemas'][$className] = self::templateForObjectComponent($className);
+    }
 
     public function setComponentReferenceItem(string $className):void {
         $this->json['components']['schemas']["{$className}Item"] = self::templateForItem($className);
@@ -166,7 +177,8 @@ class OpenApiService {
             foreach ($reflection->getProperties() as $reflectionProperty) {
                 $propertyName = $reflectionProperty->getName();
 
-                $type = \CatPaw\Core\ReflectionTypeManager::unwrap($reflectionProperty)?->getName() ?? 'string';
+                $reflectionNamedType = ReflectionTypeManager::unwrap($reflectionProperty);
+                $type                = $reflectionNamedType?$reflectionNamedType->getName() ?? 'string':'string';
 
                 if (class_exists($type)) {
                     $this->setComponentObject($type)->try($error);
@@ -311,7 +323,7 @@ class OpenApiService {
     /**
      *
      * @param string $method
-     * @param string $operationID
+     * @param string $operationId
      * @param string $summary
      * @param array  $parameters
      * @param array  $requestBody
@@ -326,7 +338,7 @@ class OpenApiService {
      */
     public function createPathContent(
         string $method,
-        string $operationID,
+        string $operationId,
         string $summary,
         array $parameters,
         array $requestBody,
@@ -337,7 +349,7 @@ class OpenApiService {
         $result = [
             "$method" => [
                 "summary"     => $summary,
-                "operationId" => $operationID,
+                "operationId" => $operationId,
                 "parameters"  => $parameters,
                 "requestBody" => $requestBody,
                 "responses"   => $responses,

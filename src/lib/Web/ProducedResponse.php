@@ -22,6 +22,7 @@ class ProducedResponse implements AttributeInterface {
         mixed $example = [],
         bool $isPage = false,
         bool $isItem = false,
+        bool $isErrorItem = false,
     ):self {
         return new self(
             type: $type,
@@ -31,6 +32,7 @@ class ProducedResponse implements AttributeInterface {
             example: $example,
             isPage: $isPage,
             isItem: $isItem,
+            isErrorItem: $isErrorItem,
         );
     }
 
@@ -38,13 +40,14 @@ class ProducedResponse implements AttributeInterface {
 
     /**
      *
-     * @param string $type        http content-type
+     * @param string $type        http content type
      * @param int    $status      http status code
      * @param string $className
      * @param string $description
      * @param mixed  $example     an example of the body of the response
      * @param bool   $isPage      if set to true, the produced response will be wrapped in a page structure.
-     * @param bool   $isItem      if set to true, the produced response will be wrapped in an item structure.
+     * @param bool   $isItem      if set to true, the produced response will be wrapped in an item structure with type `item`.
+     * @param bool   $isErrorItem if set to true, the produced response will be wrapped in an item structure with type `error` instead of `item`.
      */
     private function __construct(
         private readonly string $type,
@@ -54,32 +57,39 @@ class ProducedResponse implements AttributeInterface {
         private mixed $example,
         private readonly bool $isPage,
         private readonly bool $isItem,
+        private readonly bool $isErrorItem,
     ) {
         if ($isItem) {
             $converted     = is_array($this->example) || is_object($this->example)?(object)$this->example:$this->example;
             $this->example = (object)[
-                "type"    => "item",
-                "status"  => 200,
-                "message" => "OK",
-                "data"    => $converted,
+                'type'    => 'item',
+                'status'  => HttpStatus::OK,
+                'message' => HttpStatus::getReason(HttpStatus::OK),
+                'data'    => $converted,
+            ];
+        } else if ($isErrorItem) {
+            $this->example = (object)[
+                'type'    => 'error',
+                'status'  => HttpStatus::INTERNAL_SERVER_ERROR,
+                'message' => HttpStatus::getReason(HttpStatus::INTERNAL_SERVER_ERROR),
             ];
         } else if ($isPage) {
             $converted     = is_array($this->example) || is_object($this->example)?(object)$this->example:$this->example;
             $this->example = (object)[
-                "type"         => "page",
-                "status"       => 200,
-                "message"      => "OK",
-                "previousHref" => "http://example.com?start0&size=3",
-                "nextHref"     => "http://example.com?start6&size=3",
-                "previous"     => [
-                    "start" => 0,
-                    "size"  => 3,
+                'type'         => 'page',
+                'status'       => HttpStatus::OK,
+                'message'      => HttpStatus::getReason(HttpStatus::OK),
+                'previousHref' => 'http://example.com?start0&size=3',
+                'nextHref'     => 'http://example.com?start6&size=3',
+                'previous'     => [
+                    'start' => 0,
+                    'size'  => 3,
                 ],
-                "next" => [
-                    "start" => 6,
-                    "size"  => 3,
+                'next' => [
+                    'start' => 6,
+                    'size'  => 3,
                 ],
-                "data" => [
+                'data' => [
                     $converted,
                 ],
             ];
@@ -103,7 +113,7 @@ class ProducedResponse implements AttributeInterface {
     }
 
     /**
-     * 
+     *
      * @param  OpenApiService $oa
      * @return Unsafe<void>
      */
@@ -123,7 +133,7 @@ class ProducedResponse implements AttributeInterface {
                 return error($error);
             }
         }
-        
+
         if ($isClass) {
             $schema = [
                 'type' => 'object',
@@ -145,9 +155,17 @@ class ProducedResponse implements AttributeInterface {
                     default => $this->className,
                 };
                 if ($this->isItem) {
-                    $schema = OpenApiService::templateForItem( className: $type, dataIsObject: false );
+                    $schema = OpenApiService::templateForItem(className:$type, dataIsObject:false);
+                } else if ($this->isErrorItem) {
+                    $oa->setComponentReference(ErrorItem::class);
+                    $oa->setComponentObject(ErrorItem::class)->try($error);
+                    if ($error) {
+                        return error($error);
+                    }
+
+                    $schema = OpenApiService::templateForObjectComponent(className:ErrorItem::class);
                 } else if ($this->isPage) {
-                    $schema = OpenApiService::templateForPage( className: $type, dataIsObject: false );
+                    $schema = OpenApiService::templateForPage(className:$type, dataIsObject:false);
                 } else {
                     $schema = [
                         'type' => $type,
@@ -157,7 +175,7 @@ class ProducedResponse implements AttributeInterface {
         }
 
         $this->response = $oa->createResponse(
-            status:$this->status,
+            status: $this->status,
             description: $this->description,
             contentType: $this->type,
             schema: $schema,

@@ -14,7 +14,11 @@ use CatPaw\Web\Attributes\Example;
 use CatPaw\Web\Attributes\Header;
 use CatPaw\Web\Attributes\IgnoreDescribe;
 use CatPaw\Web\Attributes\IgnoreOpenApi;
+use CatPaw\Web\Attributes\OperationId;
 use CatPaw\Web\Attributes\Produces;
+use CatPaw\Web\Attributes\ProducesErrorItem;
+use CatPaw\Web\Attributes\ProducesItem;
+use CatPaw\Web\Attributes\ProducesPage;
 use CatPaw\Web\Attributes\Query;
 use CatPaw\Web\Attributes\Summary;
 use CatPaw\Web\Interfaces\OnRequest;
@@ -79,18 +83,43 @@ readonly class Router {
                 }
             }
 
-            $consumes = Consumes::findByFunction($reflectionFunction)->try($error);
-
+            $consumes = Consumes::findAllByFunction($reflectionFunction)->try($error);
             if ($error) {
                 return error($error);
             }
-            $consumes = $consumes?:new Consumes();
+            $consumes = $consumes?:[];
 
-            $produces = Produces::findByFunction($reflectionFunction)->try($error);
+            $producesBase = Produces::findAllByFunction($reflectionFunction)->try($error);
             if ($error) {
                 return error($error);
             }
-            $produces = $produces?:new Produces();
+            $producesBase = $producesBase?:[];
+
+            $producesItem = ProducesItem::findAllByFunction($reflectionFunction)->try($error);
+            if ($error) {
+                return error($error);
+            }
+            $producesItem = $producesItem?:[];
+
+            $producesErrorItem = ProducesErrorItem::findAllByFunction($reflectionFunction)->try($error);
+            if ($error) {
+                return error($error);
+            }
+            $producesErrorItem = $producesErrorItem?:[];
+
+            $producesPage = ProducesPage::findAllByFunction($reflectionFunction)->try($error);
+            if ($error) {
+                return error($error);
+            }
+            $producesPage = $producesPage?:[];
+
+            $produces = [
+                ...$producesBase,
+                ...$producesItem,
+                ...$producesErrorItem,
+                ...$producesPage,
+            ];
+
 
             $onRequest = [];
             $onResult  = [];
@@ -466,32 +495,48 @@ readonly class Router {
         $symbolicPath       = $route->symbolicPath;
 
         if ($consumes) {
-            foreach ($consumes->getRequest() as $request) {
-                foreach ($request->getValue() as $status => $content) {
-                    $requests[$status] = $content;
+            /** @var array<Consumes> $consumes */
+            foreach ($consumes as $consumesLocal) {
+                foreach ($consumesLocal->getRequest() as $request) {
+                    foreach ($request->getValue() as $contentType => $content) {
+                        $requests[$contentType] = $content;
+                    }
                 }
             }
         }
 
         if ($produces) {
-            foreach ($produces->getResponse() as $response) {
-                foreach ($response->getValue() as $status => $value) {
-                    if ($responses[$status] ?? false) {
-                        $content = [
-                            ...($responses[$status]['content'] ?? []),
-                            ...$value['content'] ?? [],
-                        ];
-                    } else {
-                        $content = $value['content'] ?? [];
+            /** @var array<Produces> $produces */
+            foreach ($produces as $producesLocal) {
+                foreach ($producesLocal->getResponse() as $response) {
+                    foreach ($response->getValue() as $status => $value) {
+                        if ($responses[$status] ?? false) {
+                            $content = [
+                                ...($responses[$status]['content'] ?? []),
+                                ...$value['content'] ?? [],
+                            ];
+                        } else {
+                            $content = $value['content'] ?? [];
+                        }
+                        if (isset($responses[$status])) {
+                            $responses[$status] = [
+                                "description" => "",
+                                "content"     => [
+                                    ...$responses[$status]['content'] ?? [],
+                                    ...$content,
+                                ],
+                            ];
+                        } else {
+                            $responses[$status] = [
+                                "description" => "",
+                                "content"     => $content,
+                            ];
+                        }
                     }
-
-                    $responses[$status] = [
-                        "description" => "",
-                        "content"     => $content,
-                    ];
                 }
             }
         }
+
         $openApi = Container::create(OpenApiService::class)->try($error);
         if ($error) {
             return error($error);
@@ -535,12 +580,24 @@ readonly class Router {
 
         $crequests = count($requests);
 
+        /** @var false|OperationId $operationId */
+        $operationId = OperationId::findByFunction($reflectionFunction)->try($error);
+        if ($error) {
+            return error($error);
+        }
+
+        if ($operationId) {
+            $operationIdValue = $operationId->getValue();
+        } else {
+            $operationIdValue = \sha1("$symbolicMethod:$symbolicPath:".\sha1(\json_encode($parameters)));
+        }
+
         $openApi->setPath(
             path: $symbolicPath,
             pathContent: [
                 ...$openApi->createPathContent(
                     method     : $symbolicMethod,
-                    operationID: \sha1("$symbolicMethod:$symbolicPath:".\sha1(\json_encode($parameters))),
+                    operationId: $operationIdValue,
                     summary    : $summary->getValue(),
                     parameters : $parameters,
                     requestBody: $openApi->createRequestBody(

@@ -19,8 +19,8 @@ readonly class Route {
      * @param string               $symbolicMethod
      * @param string               $symbolicPath
      * @param callable             $function
-     * @param Consumes             $consumes
-     * @param Produces             $produces
+     * @param array<Consumes>      $consumes
+     * @param array<Produces>      $produces
      * @param array<OnRequest>     $onRequest
      * @param array<OnResult>      $onResult
      * @param array<OnMount>       $onMount
@@ -33,8 +33,8 @@ readonly class Route {
         string $symbolicMethod,
         string $symbolicPath,
         mixed $function,
-        Consumes $consumes,
-        Produces $produces,
+        array $consumes,
+        array $produces,
         array $onRequest,
         array $onResult,
         array $onMount,
@@ -63,8 +63,8 @@ readonly class Route {
      * @param string               $symbolicPath,
      * @param string               $workDirectory,
      * @param callable             $function,
-     * @param Consumes             $consumes,
-     * @param Produces             $produces,
+     * @param array<Consumes>      $consumes,
+     * @param array<Produces>      $produces,
      * @param array<OnRequest>     $onRequest,
      * @param array<OnResult>      $onResult,
      * @param array<OnMount>       $onMount,
@@ -77,8 +77,8 @@ readonly class Route {
         public string $symbolicPath,
         public string $workDirectory,
         public mixed $function,
-        public Consumes $consumes,
-        public Produces $produces,
+        public array $consumes,
+        public array $produces,
         public array $onRequest,
         public array $onResult,
         public array $onMount,

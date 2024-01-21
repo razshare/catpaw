@@ -1,6 +1,7 @@
 <?php
+use const CatPaw\Web\__OK;
+use const CatPaw\Web\__TEXT_PLAIN;
 use CatPaw\Web\Attributes\Produces;
 use function CatPaw\Web\success;
-use const CatPaw\Web\TEXT_PLAIN;
 
-return #[Produces('string', TEXT_PLAIN)] static fn () => success('hello');
+return #[Produces(__OK, __TEXT_PLAIN, 'on success', 'string')] static fn () => success('hello');

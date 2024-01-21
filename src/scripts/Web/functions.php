@@ -35,7 +35,7 @@ function redirect(string $to):SuccessResponseModifier {
  */
 function success(
     mixed $data = '',
-    int $status = 200,
+    false|int $status = false,
     array $headers = [],
     false|string $message = false,
 ):SuccessResponseModifier {
@@ -56,7 +56,7 @@ function success(
  * @return ErrorResponseModifier
  */
 function badRequest(string $message):ErrorResponseModifier {
-    return failure($message, HttpStatus::BAD_REQUEST);
+    return failure($message, __BAD_REQUEST);
 }
 
 /**
@@ -68,7 +68,7 @@ function badRequest(string $message):ErrorResponseModifier {
  */
 function failure(
     false|string $message = false,
-    int $status = 500,
+    int $status = __INTERNAL_SERVER_ERROR,
     array $headers = []
 ):ErrorResponseModifier {
     if (false === $message) {
@@ -112,3 +112,5 @@ function queries(UriInterface $uri):array {
     }
     return $queries;
 }
+
+define('EXAMPLE_FAILURE', failure('Something went wront.'));

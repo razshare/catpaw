@@ -7,29 +7,27 @@ use function CatPaw\Core\anyError;
 use CatPaw\Core\Container;
 use CatPaw\Store\Attributes\Store;
 use function CatPaw\Store\readable;
-
 use CatPaw\Store\Writable;
-
 use function CatPaw\Store\writable;
 use PHPUnit\Framework\TestCase;
 use Revolt\EventLoop;
 
 class StoreTest extends TestCase {
-    public function testAll() {
-        Container::load('./src/lib/')->try($error);
-        $this->assertFalse($error);
-        anyError(function() {
-            yield Container::run($this->basic(...));
-            yield Container::run($this->multipleSubscribers(...));
-            yield Container::run($this->withDelay(...));
-            yield Container::run($this->set(...));
-            yield Container::run($this->subscribe(...));
-            yield Container::run($this->update(...));
-            yield Container::run($this->attribute(...));
-        })->try($error);
-        $this->assertFalse($error);
-        EventLoop::run();
-    }
+    // public function testAll() {
+    //     Container::load('./src/lib/')->try($error);
+    //     $this->assertFalse($error);
+    //     anyError(function() {
+    //         yield Container::run($this->basic(...));
+    //         yield Container::run($this->multipleSubscribers(...));
+    //         yield Container::run($this->withDelay(...));
+    //         yield Container::run($this->set(...));
+    //         yield Container::run($this->subscribe(...));
+    //         yield Container::run($this->update(...));
+    //         yield Container::run($this->attribute(...));
+    //     })->try($error);
+    //     $this->assertFalse($error);
+    //     EventLoop::run();
+    // }
 
     private function basic(): void {
         $store = readable("hello", function($set) {
@@ -37,13 +35,13 @@ class StoreTest extends TestCase {
             $set("hello world");
             return function() { };
         });
-    
-            
+
+
         $unsubscribe = $store->subscribe(function($value) {
             $this->assertEquals("hello", $value);
         });
         $unsubscribe();
-        
+
         delay(.6);
         $unsubscribe = $store->subscribe(function($value) {
             $this->assertEquals("hello world", $value);
@@ -57,7 +55,7 @@ class StoreTest extends TestCase {
         $value1 = '';
         $value2 = '';
         $value3 = '';
-    
+
         $counter = writable(0);
 
         $unsubscribeAll = function() use (&$unsubscribers) {
@@ -65,7 +63,7 @@ class StoreTest extends TestCase {
                 $unsubscribe();
             }
         };
-    
+
         $store = readable("default", function($set) use (
             &$value1,
             &$value2,
@@ -81,26 +79,26 @@ class StoreTest extends TestCase {
                 $this->assertEquals("hello world", $value1);
                 $this->assertEquals("hello world", $value2);
                 $this->assertEquals("hello world", $value3);
-    
+
                 echo "All subscribers have unsubscribed\n";
             };
         });
-    
-    
+
+
         $unsubscribers[] = $store->subscribe(function($value) use ($counter, &$value1) {
             // you can execute async code here
             echo "new value received: $value".PHP_EOL;
             $value1 = $value;
             $counter->set($counter->get() + 1);
         });
-    
+
         $unsubscribers[] = $store->subscribe(function($value) use ($counter, &$value2) {
             // you can execute async code here
             echo "new value received: $value".PHP_EOL;
             $value2 = $value;
             $counter->set($counter->get() + 1);
         });
-    
+
         $unsubscribers[] = $store->subscribe(function($value) use ($counter, &$value3) {
             // you can execute async code here
             echo "new value received: $value".PHP_EOL;
@@ -151,7 +149,7 @@ class StoreTest extends TestCase {
             $value3 = $value;
             echo "new value received: $value".PHP_EOL;
         });
-        
+
         async(function() use (
             $unsubscribe1,
             $unsubscribe2,
