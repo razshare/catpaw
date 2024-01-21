@@ -2,6 +2,10 @@
 
 namespace CatPaw\Core;
 
+use function CatPaw\Web\failure;
+use CatPaw\Web\Interfaces\ResponseModifier;
+use function CatPaw\Web\success;
+
 use Error;
 
 /**
@@ -20,6 +24,18 @@ readonly class Unsafe {
         if ($error && !($error instanceof Error)) {
             $this->error = new Error($error);
         }
+    }
+
+    public function toResponseModifier():ResponseModifier {
+        if ($this->error) {
+            return failure($this->error->getMessage());
+        }
+
+        if ($this->value instanceof ResponseModifier) {
+            return $this->value;
+        }
+
+        return success($this->value);
     }
 
     /**

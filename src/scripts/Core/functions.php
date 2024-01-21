@@ -174,8 +174,8 @@ function execute(
             pipe($process->getStdout(), $writer);
             pipe($process->getStderr(), $writer);
             $code = $process->join();
-        } catch(Throwable $e) {
-            return error($e->getMessage());
+        } catch(Throwable $error) {
+            return error($error);
         }
 
         if ($signal) {
@@ -187,9 +187,9 @@ function execute(
                 try {
                     $process->signal($code);
                     return ok();
-                } catch(Throwable $e) {
-                    $logger->error($e->getMessage());
-                    return error($e);
+                } catch(Throwable $error) {
+                    $logger->error($error);
+                    return error($error);
                 }
             });
         }
@@ -218,12 +218,12 @@ function get(string $command): Future {
  * Invoke a generator function and immediately return any `Error`
  * or `Unsafe` that contains an error.\
  * In both cases the result is always an `Unsafe<T>` object.
- * 
+ *
  * - If you generate an `Unsafe<T>` the error within the object is transfered to a new `Unsafe<T>` for the sake of consistency.
  * - If you generate an `Error` instead, then the `Error` is wrapped in `Unsafe<T>`.
- * 
+ *
  * The generator is consumed and if no error is detected then the function produces the returned value of the generator.
- * 
+ *
  * ## Example
  * ```php
  * $content = anyError(function(){
@@ -231,7 +231,7 @@ function get(string $command): Future {
  *  $content = $file->readAll()->await()->try($error) or yield $error; // <=== same thing
  *  return $content; // <=== return the content of the file
  * })->try($error) or stop($error); // <=== stop the application if any error is detected.
- * 
+ *
  * // Otherwise print the content of the file
  * print($content);
  * ```
@@ -311,5 +311,5 @@ function stop(string|Error $error) {
     if (is_string($error)) {
         $error = new Error($error);
     }
-    Bootstrap::kill($error->getMessage());
+    Bootstrap::kill((string)$error);
 }

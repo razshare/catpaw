@@ -24,7 +24,7 @@ class ScheduleTest extends TestCase {
     }
 
     private function scheduleDaily(ScheduleService $scheduler): void {
-        $hour     = date('H');
+        $hour     = $scheduler->date()->format('H');
         $value    = false;
         $schedule = $scheduler->daily(
             due:"at $hour:00",
@@ -37,8 +37,8 @@ class ScheduleTest extends TestCase {
         $schedule->future->await();
         $this->assertTrue($value);
     }
-    
-    
+
+
     private function scheduleAfter1Second(ScheduleService $schedule, LoggerInterface $logger): void {
         $signal  = Signal::create();
         $checked = false;
@@ -60,7 +60,7 @@ class ScheduleTest extends TestCase {
             $this->assertTrue($checked);
         });
     }
-    
+
     public function scheduleEvery1Second3Times(ScheduleService $scheduler, LoggerInterface $logger): void {
         $value = 0;
         $logger->info("Executing function every 1 second 3 times...");

@@ -37,7 +37,8 @@ function main(
             buildConfigInit: $buildConfigInit,
             buildOptimize  : $buildOptimize,
         ),
-        $tips => tips(),
+        $tips   => tips(),
+        default => true,
     });
 }
 

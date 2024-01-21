@@ -99,7 +99,7 @@ class Bootstrap {
             /** @var LoggerInterface $logger */
             $logger = LoggerFactory::create($name)->try($error);
             if ($error) {
-                self::kill($error->getMessage());
+                self::kill((string)$error);
             }
 
             Container::set(LoggerInterface::class, $logger);
@@ -110,7 +110,7 @@ class Bootstrap {
                     $environmentService->setFileName($environment);
                     $environmentService->load($info)->try($error);
                     if ($error) {
-                        self::kill($error->getMessage());
+                        self::kill((string)$error);
                     }
                 }
             }
@@ -170,8 +170,8 @@ class Bootstrap {
             }
 
             EventLoop::run();
-        } catch (Throwable $e) {
-            self::kill((string)$e);
+        } catch (Throwable $error) {
+            self::kill((string)$error);
         }
     }
 
@@ -217,80 +217,84 @@ class Bootstrap {
         string $libraries,
         string $resources,
     ):void {
-        EventLoop::onSignal(SIGHUP, static fn () => self::kill("Killing application..."));
-        EventLoop::onSignal(SIGINT, static fn () => self::kill("Killing application..."));
-        EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
-        EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
+        try {
+            EventLoop::onSignal(SIGHUP, static fn () => self::kill("Killing application..."));
+            EventLoop::onSignal(SIGINT, static fn () => self::kill("Killing application..."));
+            EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
+            EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
 
-        async(static function() use (
-            $binary,
-            $fileName,
-            $arguments,
-            $entry,
-            $libraries,
-            $resources,
-        ) {
-            if (!Container::has(LoggerInterface::class)) {
-                $logger = LoggerFactory::create()->try($error);
-                if ($error) {
-                    return error($error);
-                }
-                Container::set(LoggerInterface::class, $logger);
-            } else {
-                $logger = Container::create(LoggerInterface::class)->try($error);
-                if ($error) {
-                    return error($error);
-                }
-            }
-
-            $argumentsStringified = join(' ', $arguments);
-            $instruction          = "$binary $fileName $argumentsStringified";
-
-            echo "Spawning $instruction".PHP_EOL;
-
-            $signal = Signal::create();
-
-            /** @var array<string> $librariesList */
-            $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
-
-            /** @var array<string> $resourcesList */
-            $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
-
-            if (DIRECTORY_SEPARATOR === '/') {
-                EventLoop::onSignal(SIGINT, static function() use ($signal) {
-                    $signal->sigterm();
-                    self::kill();
-                });
-            }
-
-            /** @var false|DeferredFuture<void> $ready */
-            $ready = false;
-
-            self::onFileChange(
-                entry: $entry,
-                libraries: $librariesList,
-                resources: $resourcesList,
-                function: static function() use (&$ready) {
-                    if (!$ready) {
-                        return;
+            async(static function() use (
+                $binary,
+                $fileName,
+                $arguments,
+                $entry,
+                $libraries,
+                $resources,
+            ) {
+                if (!Container::has(LoggerInterface::class)) {
+                    $logger = LoggerFactory::create()->try($error);
+                    if ($error) {
+                        return error($error);
                     }
-                    $ready->complete();
-                },
-            );
-
-            while (true) {
-                if ($ready) {
-                    $ready->getFuture()->await();
+                    Container::set(LoggerInterface::class, $logger);
+                } else {
+                    $logger = Container::create(LoggerInterface::class)->try($error);
+                    if ($error) {
+                        return error($error);
+                    }
                 }
-                execute($instruction, out())->await()->try($error);
-                if ($error) {
-                    echo $error.PHP_EOL;
-                    $ready = new DeferredFuture;
-                }
-            }
-        });
 
-        EventLoop::run();
+                $argumentsStringified = join(' ', $arguments);
+                $instruction          = "$binary $fileName $argumentsStringified";
+
+                echo "Spawning $instruction".PHP_EOL;
+
+                $signal = Signal::create();
+
+                /** @var array<string> $librariesList */
+                $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
+
+                /** @var array<string> $resourcesList */
+                $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
+
+                if (DIRECTORY_SEPARATOR === '/') {
+                    EventLoop::onSignal(SIGINT, static function() use ($signal) {
+                        $signal->sigterm();
+                        self::kill();
+                    });
+                }
+
+                /** @var false|DeferredFuture<void> $ready */
+                $ready = false;
+
+                self::onFileChange(
+                    entry: $entry,
+                    libraries: $librariesList,
+                    resources: $resourcesList,
+                    function: static function() use (&$ready) {
+                        if (!$ready) {
+                            return;
+                        }
+                        $ready->complete();
+                    },
+                );
+
+                while (true) {
+                    if ($ready) {
+                        $ready->getFuture()->await();
+                    }
+                    execute($instruction, out())->await()->try($error);
+                    if ($error) {
+                        echo $error.PHP_EOL;
+                        $ready = new DeferredFuture;
+                    }
+                }
+            });
+
+            EventLoop::run();
+        } catch (Throwable $error) {
+            self::kill((string)$error);
+        }
     }
 
     /**

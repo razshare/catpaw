@@ -17,11 +17,11 @@ use Throwable;
 
 
 #[Service]
-class ScheduleService {
+readonly class ScheduleService {
     private const PATTERN_AFTER = '/\s*after\s+([0-9])+\s+(minutes|seconds|hours|months|years|minute|second|hour|month|year)\s*/i';
     private const PATTERN_DAILY = '/\s*daily\s+at\s+([0-9]{1,2})[:.]?([0-9]{0,2})[:.]?([0-9]{0,2})(\s+AM|PM)?\s*/i';
-
     private DateTimeZone $timezone;
+
     #[Entry] public function start(): Unsafe {
         try {
             $systemTimeZone = system('date +%Z');
@@ -31,7 +31,16 @@ class ScheduleService {
             return error($e);
         }
     }
-    
+
+    /**
+     * Create a date using the scheduler's internal timezone.
+     * @param  mixed    $value the same value you would pass to `new DateTime($value)`.
+     * @return DateTime a new `DateTime` that's using the scheduler's timezone.
+     */
+    public function date(mixed $value = 'now'):DateTime {
+        return new DateTime($value, $this->timezone);
+    }
+
     /**
      * @param  string                  $due
      * @param  callable(callable):void $function
@@ -42,13 +51,13 @@ class ScheduleService {
         if ($error) {
             return error($error);
         }
-        
+
         return $this->schedule(
             function: $function,
             scheduleConfiguration: $scheduleConfiguration,
         );
     }
-    
+
     /**
      * @param  string                  $due
      * @param  callable(callable):void $function
@@ -59,7 +68,7 @@ class ScheduleService {
         if ($error) {
             return error($error);
         }
-        
+
         return $this->schedule(
             function: $function,
             scheduleConfiguration: $scheduleConfiguration,
@@ -74,13 +83,13 @@ class ScheduleService {
         if ($error) {
             return error($error);
         }
-        
+
         return $this->schedule(
             function: $function,
             scheduleConfiguration: $scheduleConfiguration,
         );
     }
-    
+
     /**
      * @param  string                        $format
      * @param  bool                          $repeat
@@ -99,29 +108,29 @@ class ScheduleService {
                 'second','seconds' => 1,
                 default => -1,
             };
-            
+
             if (-1 === $multiplier) {
                 return error("Invalid time unit `$humanReadableUnit`.");
             }
-        
+
             return ok(ScheduleConfiguration::create(value: ((int)$value) * $multiplier, repeat: $repeat));
         }
-        
+
         if (preg_match(self::PATTERN_DAILY, $format, $matches)) {
             $hour   = (int)($matches[1] ?? date('H'));
             $minute = (int)($matches[2] ?? date('i'));
             $second = (int)($matches[3] ?? date('s'));
-            
+
             if ($minute > 59) {
                 return error("Invalid time format `$format`, minute can't be greater than 59.");
             }
             if ($second > 59) {
                 return error("Invalid time format `$format`, second can't be greater than 59.");
             }
-            
+
             $am = strtoupper(trim($matches[4] ?? '')) === 'AM';
             $pm = strtoupper(trim($matches[4] ?? '')) === 'PM';
-            
+
             if ($am || $pm) {
                 if (12 === $hour && $minute > 0) {
                     return error("Invalid time format `$format`, minute can't be greater than 0 when hour is 12.");
@@ -131,7 +140,7 @@ class ScheduleService {
             } else if ($hour > 23) {
                 return error("Invalid time format `$format`, hour can't be greater than 23.");
             }
-            
+
             if ($am) {
                 if (12 === $hour && $minute <= 59) {
                     $hour = 0;
@@ -148,7 +157,7 @@ class ScheduleService {
             } catch(Throwable $e) {
                 return error($e);
             }
-            
+
             $value = $requested->getTimestamp() - $now->getTimestamp();
             if ($value < 0) {
                 $value = 0;
@@ -157,7 +166,7 @@ class ScheduleService {
         }
         return error("Invalid due pattern.");
     }
-    
+
     /**
      * Schedule a function to execute.
      * @param  callable(callable):void $function              the function to execute.
@@ -170,7 +179,7 @@ class ScheduleService {
     ):Unsafe {
         $delta     = $scheduleConfiguration->value;
         $semaphore = deferred();
-        
+
         $cancel = static function() use (&$callbackId, &$scheduleConfiguration, $semaphore) {
             EventLoop::cancel($callbackId);
             $semaphore->complete();

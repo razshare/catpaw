@@ -4,13 +4,11 @@ namespace CatPaw\Web\Services;
 
 use Amp\Http\Server\Response;
 use CatPaw\Core\Attributes\Service;
-
 use function CatPaw\Core\duplex;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
-
 use function CatPaw\Core\uuid;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\ByteRangeWriterInterface;
@@ -138,7 +136,7 @@ class ByteRangeService {
             EventLoop::defer(function() use ($writer, $start, $end, $interface) {
                 $data = $interface->send($start, $end - $start + 1)->try($error);
                 if ($error) {
-                    $this->logger->error($error->getMessage());
+                    $this->logger->error((string)$error);
                     $writer->close();
                     $interface->close();
                     return;

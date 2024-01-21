@@ -4,24 +4,19 @@ namespace CatPaw\Web;
 use function Amp\async;
 use Amp\CompositeException;
 use Amp\DeferredFuture;
-
 use function Amp\File\isDirectory;
 use Amp\Future;
 use Amp\Http\Server\Middleware;
-
 use function Amp\Http\Server\Middleware\stackMiddleware;
 use Amp\Http\Server\SocketHttpServer;
-
 use CatPaw\Core\Bootstrap;
 use CatPaw\Core\Container;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use function CatPaw\Core\isPhar;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\Signal;
-
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\FileServerInterface;
 use Error;
@@ -110,6 +105,8 @@ class Server {
         array $allowedMethods = [],
         false|SessionOperationsInterface $sessionOperations = false,
     ): Unsafe {
+        echo "\n\n\nUSING INTERFACE $interface\n\n\n";
+
         if (!str_starts_with($api, './')) {
             $api = "./$api";
             // return error("The api directory must be a relative path and within the project directory.");
@@ -194,7 +191,7 @@ class Server {
         )->try($error);
 
         if ($error) {
-            $logger->error($error->getMessage());
+            $logger->error((string)$error);
         }
 
         Bootstrap::onKill(function() {
