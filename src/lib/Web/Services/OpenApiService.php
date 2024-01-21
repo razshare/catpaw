@@ -3,6 +3,7 @@
 namespace CatPaw\Web\Services;
 
 use CatPaw\Core\Attributes\ArrayList;
+use CatPaw\Core\Attributes\HashMap;
 use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
@@ -31,7 +32,8 @@ class OpenApiService {
                     "type" => "string",
                 ],
                 "status" => [
-                    "type" => "integer",
+                    "type"   => "integer",
+                    "format" => "int32",
                 ],
                 "message" => [
                     "type" => "string",
@@ -59,7 +61,8 @@ class OpenApiService {
                     "type" => "string",
                 ],
                 "status" => [
-                    "type" => "integer",
+                    "type"   => "integer",
+                    "format" => "int32",
                 ],
                 "message" => [
                     "type" => "string",
@@ -74,10 +77,12 @@ class OpenApiService {
                     "type"       => "object",
                     "properties" => [
                         "start" => [
-                            "type" => "integer",
+                            "type"   => "integer",
+                            "format" => "int32",
                         ],
                         "size" => [
-                            "type" => "integer",
+                            "type"   => "integer",
+                            "format" => "int32",
                         ],
                     ],
                 ],
@@ -85,10 +90,12 @@ class OpenApiService {
                     "type"       => "object",
                     "properties" => [
                         "start" => [
-                            "type" => "integer",
+                            "type"   => "integer",
+                            "format" => "int32",
                         ],
                         "size" => [
-                            "type" => "integer",
+                            "type"   => "integer",
+                            "format" => "int32",
                         ],
                     ],
                 ],
@@ -98,7 +105,7 @@ class OpenApiService {
     }
 
     private array $json = [
-        'openapi' => '3.0.0',
+        'openapi' => '3.1.0',
         'info'    => [
             'title'   => 'OpenAPI',
             'version' => '0.0.1',
@@ -121,7 +128,7 @@ class OpenApiService {
     public function setTitle(string $title):void {
         $this->json['info']['title'] = $title;
     }
-    
+
     public function setVersion(string $title):void {
         $this->json['info']['version'] = $title;
     }
@@ -147,7 +154,7 @@ class OpenApiService {
     }
 
     /**
-     * 
+     *
      * @param  string       $className
      * @return Unsafe<void>
      */
@@ -155,7 +162,7 @@ class OpenApiService {
         try {
             $resolvedProperties = [];
             $reflection         = new ReflectionClass($className);
-            
+
             foreach ($reflection->getProperties() as $reflectionProperty) {
                 $propertyName = $reflectionProperty->getName();
 
@@ -177,20 +184,80 @@ class OpenApiService {
                         return error($error);
                     }
 
-                    if ($arrayListAttribute) {
-                        $subType = $arrayListAttribute->className;
-                        $this->setComponentObject($subType)->try($error);
-                        if ($error) {
-                            return error($error);
+                    /** @var false|HashMap $hashMapAttribute */
+                    $hashMapAttribute = HashMap::findByProperty($reflectionProperty)->try($error);
+                    if ($error) {
+                        return error($error);
+                    }
+
+
+                    if ($arrayListAttribute || $hashMapAttribute) {
+                        if ($arrayListAttribute) {
+                            $subType = $arrayListAttribute->className;
+                        } else if ($hashMapAttribute) {
+                            $subType = $hashMapAttribute->className;
                         }
-                        $resolvedProperties[$propertyName] = [
-                            'type'  => 'array',
-                            'items' => [
-                                '$ref' => "#/components/schemas/{$subType}",
-                            ],
-                        ];
+
+                        if (class_exists($subType)) {
+                            $this->setComponentObject($subType)->try($error);
+                            if ($error) {
+                                return error($error);
+                            }
+                            if ($arrayListAttribute) {
+                                $resolvedProperties[$propertyName] = [
+                                    'type'  => 'array',
+                                    'items' => [
+                                        '$ref' => "#/components/schemas/{$subType}",
+                                    ],
+                                ];
+                            } else if ($hashMapAttribute) {
+                                $resolvedProperties[$propertyName] = [
+                                    'type'  => 'array',
+                                    'items' => [
+                                        'key'  => [ 'type' => 'string' ],
+                                        '$ref' => "#/components/schemas/{$subType}",
+                                    ],
+                                ];
+                            }
+                        } else {
+                            if ($arrayListAttribute) {
+                                $resolvedProperties[$propertyName] = [
+                                    'type'  => 'array',
+                                    'items' => [
+                                        'type' => match ($type) {
+                                            'int'   => 'integer',
+                                            'float' => 'number',
+                                            'bool'  => 'boolean',
+                                            default => $type,
+                                        },
+                                    ],
+                                ];
+
+                                if ('integer' === $resolvedProperties[$propertyName]['items']['type']) {
+                                    $resolvedProperties[$propertyName]['items']['format'] = 'int32';
+                                }
+                            } else if ($hashMapAttribute) {
+                                $resolvedProperties[$propertyName] = [
+                                    'type'  => 'array',
+                                    'items' => [
+                                        'key'  => [ 'type' => 'string' ],
+                                        'type' => match ($type) {
+                                            'int'   => 'integer',
+                                            'float' => 'number',
+                                            'bool'  => 'boolean',
+                                            default => $type,
+                                        },
+                                    ],
+                                ];
+
+                                if ('integer' === $resolvedProperties[$propertyName]['items']['type']) {
+                                    $resolvedProperties[$propertyName]['items']['format'] = 'int32';
+                                }
+                            }
+                        }
                         continue;
                     }
+
                     $resolvedProperties[$propertyName] = [
                         'type' => match ($type) {
                             'int'   => 'integer',
@@ -199,6 +266,10 @@ class OpenApiService {
                             default => $type,
                         },
                     ];
+
+                    if ('integer' === $resolvedProperties[$propertyName]['type']) {
+                        $resolvedProperties[$propertyName]['format'] = 'int32';
+                    }
                 }
             }
             $this->json['components']['schemas'][$className] = [
@@ -238,7 +309,7 @@ class OpenApiService {
     }
 
     /**
-     * 
+     *
      * @param string $method
      * @param string $operationID
      * @param string $summary
@@ -282,12 +353,12 @@ class OpenApiService {
         if (!$result["$method"]['responses']) {
             unset($result["$method"]['responses']);
         }
-        
+
         return $result;
     }
 
     /**
-     * 
+     *
      * @param string                             $name
      * @param string                             $in
      * @param string                             $description
@@ -322,7 +393,7 @@ class OpenApiService {
     }
 
     /**
-     * 
+     *
      * @param int                         $status
      * @param string                      $description
      * @param string                      $contentType
@@ -331,7 +402,7 @@ class OpenApiService {
      * @return array<string, array{
      *      content: array<string, array{
      *          example: array<array-key, mixed>|scalar, schema: array<array-key, mixed>
-     *      }>, 
+     *      }>,
      *      description: string
      * }>
      */
@@ -410,7 +481,7 @@ class OpenApiService {
     }
 
     /**
-     * 
+     *
      * @param string $description
      * @param bool   $required
      * @param array  $content
@@ -436,7 +507,7 @@ class OpenApiService {
     }
 
     /**
-     * 
+     *
      * @param string                      $contentType
      * @param array                       $schema
      * @param array|string|int|float|bool $example

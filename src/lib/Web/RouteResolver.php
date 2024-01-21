@@ -72,7 +72,7 @@ class RouteResolver {
             if ($error) {
                 return error($error);
             }
-            
+
             self::$cache[$key] = $pathResolver;
 
 
@@ -107,8 +107,8 @@ class RouteResolver {
 
         try {
             $result = $this->invoker->invoke($context)->try($error);
-        } catch(Throwable $e) {
-            return error($e);
+        } catch(Throwable $error) {
+            return error($error);
         }
         if ($error) {
             return error($error);

@@ -23,7 +23,7 @@ class Directory {
         if (!$directoryName) {
             return error("Invalid directory $directoryName.");
         }
-        
+
         try {
             $list = listFiles($directoryName);
         } catch (Throwable $e) {
@@ -57,15 +57,15 @@ class Directory {
     /**
      * Create a directory recursively.
      * @param  string       $directoryName the directory path.
-     * @param  int          $mode          the permissions are 0777 by default, which means the widest possible access. For more information on permissions, read the details on the [chmod()](https://www.php.net/manual/en/function.chmod.php) page. 
+     * @param  int          $mode          the permissions are 0777 by default, which means the widest possible access. For more information on permissions, read the details on the [chmod()](https://www.php.net/manual/en/function.chmod.php) page.
      * @return Unsafe<void>
      */
     public static function create(string $directoryName, int $mode = 0777):Unsafe {
         try {
             createDirectoryRecursively($directoryName, $mode);
             return ok();
-        } catch (Throwable $e) {
-            return error($e);
+        } catch (Throwable $error) {
+            return error($error);
         }
     }
 
@@ -135,7 +135,7 @@ class Directory {
             if (!isDirectory($from)) {
                 return error("Directory $from not found.");
             }
-            
+
             try {
                 $iterator = new FilesystemIterator($from);
             } catch(Throwable $e) {
