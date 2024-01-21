@@ -12,6 +12,7 @@ repos:
     hooks:
     -   id: php-cs-fixer
     -   id: php-lint-all
+    -   id: php-unit
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
