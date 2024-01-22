@@ -118,15 +118,13 @@ class ProducedResponse implements AttributeInterface {
      * @return Unsafe<void>
      */
     #[Entry] public function setup(OpenApiService $oa):Unsafe {
-        $isClass = class_exists($this->className);
-        $type    = '';
+        $isClass   = class_exists($this->className);
+        $reference = false;
         if ($isClass) {
             if ($this->isPage) {
-                $type = 'Page';
-                $oa->setComponentReferencePage($this->className);
+                $reference = $oa->setComponentReferencePage($this->className);
             } else if ($this->isItem) {
-                $type = 'Item';
-                $oa->setComponentReferenceItem($this->className);
+                $reference = $oa->setComponentReferenceItem($this->className);
             }
             $oa->setComponentObject($this->className)->try($error);
             if ($error) {
@@ -134,10 +132,10 @@ class ProducedResponse implements AttributeInterface {
             }
         }
 
-        if ($isClass) {
+        if ($isClass && $reference) {
             $schema = [
                 'type' => 'object',
-                '$ref' => "#/components/schemas/$this->className$type",
+                '$ref' => $reference,
             ];
         } else {
             if ('array' === $this->className) {

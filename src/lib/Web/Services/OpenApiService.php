@@ -25,7 +25,7 @@ class OpenApiService {
     public static function templateForItem(string $className, bool $dataIsObject = true):array {
         if ($dataIsObject) {
             $data = [
-                'type' => 'array',
+                'type' => 'object',
                 '$ref' => "#/components/schemas/{$className}",
             ];
         } else {
@@ -113,7 +113,7 @@ class OpenApiService {
     }
 
     private array $json = [
-        'openapi' => '3.1.0',
+        'openapi' => '3.0.3',
         'info'    => [
             'title'   => 'OpenAPI',
             'version' => '0.0.1',
@@ -152,16 +152,19 @@ class OpenApiService {
         $this->json['paths'][$path] = $pathContent;
     }
 
-    public function setComponentReference(string $className):void {
+    public function setComponentReference(string $className):string {
         $this->json['components']['schemas'][$className] = self::templateForObjectComponent($className);
+        return "#/components/schemas/{$className}";
     }
 
-    public function setComponentReferenceItem(string $className):void {
+    public function setComponentReferenceItem(string $className):string {
         $this->json['components']['schemas']["{$className}Item"] = self::templateForItem($className);
+        return "#/components/schemas/{$className}Item";
     }
 
-    public function setComponentReferencePage(string $className):void {
+    public function setComponentReferencePage(string $className):string {
         $this->json['components']['schemas']["{$className}Page"] = self::templateForPage($className);
+        return "#/components/schemas/{$className}Page";
     }
 
     /**
