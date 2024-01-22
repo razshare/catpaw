@@ -59,7 +59,10 @@ class OpenApiService {
             ];
         } else {
             $data = [
-                'type' => $className,
+                'type'  => 'array',
+                'items' => [
+                    'type' => $className,
+                ],
             ];
         }
         return [

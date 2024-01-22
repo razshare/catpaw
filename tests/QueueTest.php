@@ -9,17 +9,17 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class QueueTest extends TestCase {
-    // public function testAll() {
-    //     Container::load('./src/lib/')->try($error);
-    //     $this->assertFalse($error);
-    //     anyError(function() {
-    //         yield Container::run($this->execution(...));
-    //         yield Container::run($this->tag(...));
-    //         yield Container::run($this->order(...));
-    //         yield Container::run($this->timedQueue(...));
-    //     })->try($error);
-    //     $this->assertFalse($error);
-    // }
+    public function testAll() {
+        Container::load('./src/lib/')->try($error);
+        $this->assertFalse($error);
+        anyError(function() {
+            yield Container::run($this->execution(...));
+            yield Container::run($this->tag(...));
+            yield Container::run($this->order(...));
+            yield Container::run($this->timedQueue(...));
+        })->try($error);
+        $this->assertFalse($error);
+    }
 
     private function execution(QueueService $queue): void {
         $executed = false;

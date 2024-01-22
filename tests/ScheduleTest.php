@@ -10,17 +10,17 @@ use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 
 class ScheduleTest extends TestCase {
-    // public function testAll() {
-    //     Container::load('./src/lib/')->try($error);
-    //     $this->assertFalse($error);
-    //     anyError(function() {
-    //         yield Container::run($this->scheduleDaily(...));
-    //         yield Container::run($this->scheduleAfter1Second(...));
-    //         yield Container::run($this->scheduleEvery1Second3Times(...));
-    //     })->try($error);
-    //     $this->assertFalse($error);
-    //     EventLoop::run();
-    // }
+    public function testAll() {
+        Container::load('./src/lib/')->try($error);
+        $this->assertFalse($error);
+        anyError(function() {
+            yield Container::run($this->scheduleDaily(...));
+            yield Container::run($this->scheduleAfter1Second(...));
+            yield Container::run($this->scheduleEvery1Second3Times(...));
+        })->try($error);
+        $this->assertFalse($error);
+        EventLoop::run();
+    }
 
     private function scheduleDaily(ScheduleService $scheduler): void {
         $hour     = $scheduler->date()->format('H');

@@ -13,21 +13,21 @@ use PHPUnit\Framework\TestCase;
 use Revolt\EventLoop;
 
 class StoreTest extends TestCase {
-    // public function testAll() {
-    //     Container::load('./src/lib/')->try($error);
-    //     $this->assertFalse($error);
-    //     anyError(function() {
-    //         yield Container::run($this->basic(...));
-    //         yield Container::run($this->multipleSubscribers(...));
-    //         yield Container::run($this->withDelay(...));
-    //         yield Container::run($this->set(...));
-    //         yield Container::run($this->subscribe(...));
-    //         yield Container::run($this->update(...));
-    //         yield Container::run($this->attribute(...));
-    //     })->try($error);
-    //     $this->assertFalse($error);
-    //     EventLoop::run();
-    // }
+    public function testAll() {
+        Container::load('./src/lib/')->try($error);
+        $this->assertFalse($error);
+        anyError(function() {
+            yield Container::run($this->basic(...));
+            yield Container::run($this->multipleSubscribers(...));
+            yield Container::run($this->withDelay(...));
+            yield Container::run($this->set(...));
+            yield Container::run($this->subscribe(...));
+            yield Container::run($this->update(...));
+            yield Container::run($this->attribute(...));
+        })->try($error);
+        $this->assertFalse($error);
+        EventLoop::run();
+    }
 
     private function basic(): void {
         $store = readable("hello", function($set) {
