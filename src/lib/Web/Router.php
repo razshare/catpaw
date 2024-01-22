@@ -520,7 +520,7 @@ readonly class Router {
                         }
                         if (isset($responses[$status])) {
                             $responses[$status] = [
-                                "description" => "",
+                                "description" => $value['description'] ?? '',
                                 "content"     => [
                                     ...$responses[$status]['content'] ?? [],
                                     ...$content,
@@ -528,7 +528,7 @@ readonly class Router {
                             ];
                         } else {
                             $responses[$status] = [
-                                "description" => "",
+                                "description" => $value['description'] ?? '',
                                 "content"     => $content,
                             ];
                         }
