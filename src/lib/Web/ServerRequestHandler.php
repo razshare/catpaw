@@ -6,7 +6,6 @@ use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\Response;
 use CatPaw\Web\Interfaces\FileServerInterface;
-use Error;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -26,7 +25,7 @@ readonly class ServerRequestHandler implements RequestHandler {
     ) {
     }
 
-    private function createResponseFromError(Error $error):Response {
+    private function createResponseFromError(Throwable $error):Response {
         $message    = $error->getMessage();
         $fileName   = $error->getFile();
         $lineNumber = $error->getLine();

@@ -93,6 +93,8 @@ class ProducedResponse implements AttributeInterface {
                     $converted,
                 ],
             ];
+        } else {
+            $this->example = HttpStatus::getReason($status);
         }
     }
 

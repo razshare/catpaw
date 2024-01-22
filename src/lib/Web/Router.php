@@ -16,6 +16,7 @@ use CatPaw\Web\Attributes\IgnoreDescribe;
 use CatPaw\Web\Attributes\IgnoreOpenApi;
 use CatPaw\Web\Attributes\OperationId;
 use CatPaw\Web\Attributes\Produces;
+use CatPaw\Web\Attributes\ProducesError;
 use CatPaw\Web\Attributes\ProducesErrorItem;
 use CatPaw\Web\Attributes\ProducesItem;
 use CatPaw\Web\Attributes\ProducesPage;
@@ -101,6 +102,12 @@ readonly class Router {
             }
             $producesItem = $producesItem?:[];
 
+            $producesError = ProducesError::findAllByFunction($reflectionFunction)->try($error);
+            if ($error) {
+                return error($error);
+            }
+            $producesError = $producesError?:[];
+
             $producesErrorItem = ProducesErrorItem::findAllByFunction($reflectionFunction)->try($error);
             if ($error) {
                 return error($error);
@@ -116,6 +123,7 @@ readonly class Router {
             $produces = [
                 ...$producesBase,
                 ...$producesItem,
+                ...$producesError,
                 ...$producesErrorItem,
                 ...$producesPage,
             ];

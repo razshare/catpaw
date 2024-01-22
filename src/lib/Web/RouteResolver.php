@@ -8,7 +8,6 @@ use Amp\Http\Server\Response;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\Attributes\Session;
 use Psr\Http\Message\UriInterface;
 use ReflectionFunction;
 
@@ -144,6 +143,6 @@ class RouteResolver {
 
     public HttpInvoker $invoker;
     private function __construct(private Server $server) {
-        $this->invoker = HttpInvoker::create($server, Session::getOperations());
+        $this->invoker = HttpInvoker::create($server);
     }
 }

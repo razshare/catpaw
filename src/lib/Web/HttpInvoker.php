@@ -14,37 +14,16 @@ use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\ResponseModifier;
 
 class HttpInvoker {
-    public static function create(
-        Server $server,
-        false|SessionOperationsInterface $sessionOperations,
-    ):self {
-        return new self(
-            $server,
-            $server->router,
-            $sessionOperations,
-        );
+    public static function create(Server $server):self {
+        return new self($server);
     }
 
     /**
-     * @param Server                           $server
-     * @param Router                           $router
-     * @param false|SessionOperationsInterface $sessionOperations
-     * @param false|Response                   $badRequestNoContentType
-     * @param false|Response                   $badRequestCantConsume
+     * @param Server $server
      */
     private function __construct(
         private readonly Server $server,
-        private readonly Router $router,
-        private readonly false|SessionOperationsInterface $sessionOperations,
-        private false|Response $badRequestNoContentType = false,
-        private false|Response $badRequestCantConsume = false,
     ) {
-        if (!$this->badRequestNoContentType) {
-            $this->badRequestNoContentType = new Response(HttpStatus::BAD_REQUEST, [], '');
-        }
-        if (!$this->badRequestCantConsume) {
-            $this->badRequestCantConsume = new Response(HttpStatus::BAD_REQUEST, [], '');
-        }
     }
 
     /**
@@ -79,12 +58,15 @@ class HttpInvoker {
             return error("A route handler must always return a response modifier but route handler {$context->key} did not.");
         }
 
+        $modifier->setRequestContext($context);
+
         foreach ($onResults as $onResult) {
             $onResult->onResult($context->request, $modifier);
         }
 
-        if ($sessionIdCookie = Cookie::findFromRequestContextByName($context, 'session-id')) {
-            $this->sessionOperations->persistSession($sessionIdCookie->value);
+        
+        if ($sessionIdCookie = $context->request->getCookie('session-id') ?? false) {
+            $this->server->sessionOperations->persistSession($sessionIdCookie->getValue());
         }
 
         return $modifier->getResponse();

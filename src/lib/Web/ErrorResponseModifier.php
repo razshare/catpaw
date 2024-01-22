@@ -22,6 +22,7 @@ class ErrorResponseModifier implements ResponseModifier {
         );
     }
 
+    // private RequestContext $context;
     private mixed $body         = false;
     private string $contentType = __TEXT_PLAIN;
 
@@ -33,6 +34,10 @@ class ErrorResponseModifier implements ResponseModifier {
     }
 
     public function setData(mixed $data) {
+    }
+
+    public function setRequestContext(RequestContext $context) {
+        // $this->context = $context;
     }
 
     public function setHeaders(array $headers) {
@@ -83,7 +88,7 @@ class ErrorResponseModifier implements ResponseModifier {
                     ?XMLSerializer::generateValidXmlFromObj($this->body)
                     :XMLSerializer::generateValidXmlFromArray($this->body);
         } else {
-            $body = (string)$this->body;
+            $body = (string)$this->message;
         }
 
         $response = new Response(

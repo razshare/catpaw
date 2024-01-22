@@ -2,9 +2,10 @@
 
 namespace CatPaw\Web;
 
+use Amp\Http\Cookie\ResponseCookie;
 use Amp\Http\Server\Request;
 
-readonly class RequestContext {
+class RequestContext {
     /**
      * @param  string              $key
      * @param  Route               $route
@@ -35,14 +36,16 @@ readonly class RequestContext {
         );
     }
 
+    /** @var array<ResponseCookie> */
+    public array $cookies = [];
     private function __construct(
-        public string $key,
-        public Route $route,
-        public Server $server,
-        public Request $request,
-        public array $requestQueries,
-        public array $requestPathParameters,
-        public false|array $badRequestEntries,
+        public readonly string $key,
+        public readonly Route $route,
+        public readonly Server $server,
+        public readonly Request $request,
+        public readonly array $requestQueries,
+        public readonly array $requestPathParameters,
+        public readonly false|array $badRequestEntries,
     ) {
     }
 }

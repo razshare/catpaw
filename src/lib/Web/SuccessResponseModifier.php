@@ -37,6 +37,7 @@ class SuccessResponseModifier implements ResponseModifier {
         );
     }
 
+    private RequestContext $context;
     private false|Page $page = false;
     public mixed $body;
     private bool $bodyIsResponse = false;
@@ -62,6 +63,10 @@ class SuccessResponseModifier implements ResponseModifier {
     public function setData(mixed $data) {
         $this->data = $data;
         $this->update();
+    }
+
+    public function setRequestContext(RequestContext $context) {
+        $this->context = $context;
     }
 
     public function setHeaders(array $headers) {
@@ -186,6 +191,15 @@ class SuccessResponseModifier implements ResponseModifier {
             headers: $this->headers,
             body: $body,
         );
+
+        if ($this->context) {
+            foreach ($this->context->cookies as $cookie) {
+                if ($response->getCookie($cookie->getName())) {
+                    continue;
+                }
+                $response->setCookie($cookie);
+            }
+        }
 
         try {
             $response->setHeader('Content-Type', $this->contentType);

@@ -2,20 +2,17 @@
 
 namespace CatPaw\Web\Attributes;
 
+use Amp\Http\Cookie\ResponseCookie;
 use Attribute;
 use CatPaw\Core\DependenciesOptions;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Interfaces\OnParameterMount;
 use CatPaw\Core\Interfaces\StorageInterface;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\Cookie;
 use CatPaw\Web\RequestContext;
-
-use CatPaw\Web\SessionOperationsInterface;
 use ReflectionParameter;
 
 /**
@@ -30,18 +27,8 @@ use ReflectionParameter;
 class Session implements AttributeInterface, StorageInterface, OnParameterMount {
     use CoreAttributeDefinition;
 
-    private static false|SessionOperationsInterface $operations = false;
-
     public function getStorageInitialValue(): mixed {
         return [];
-    }
-
-    public static function setOperations(SessionOperationsInterface $operations):void {
-        self::$operations = $operations;
-    }
-
-    public static function getOperations():false|SessionOperationsInterface {
-        return self::$operations;
     }
 
     public static function create():Session {
@@ -99,11 +86,10 @@ class Session implements AttributeInterface, StorageInterface, OnParameterMount 
             return error("No context found for session.");
         }
         
-        $cookies = Cookie::listFromRequest($context->request);
+        $cookies = $context->request->getCookies();
 
-        /** @var Session $session */
-        $sessionIdCookie = $cookies["session-id"]  ?? false;
-        $sessionId       = $sessionIdCookie->value ?? '';
+        $sessionIdCookie = $cookies['session-id'] ?? false;
+        $sessionId       = $sessionIdCookie?$sessionIdCookie->getValue():'';
         $session         = $context->server->sessionOperations->validateSession(id: $sessionId)->try($error);
         if ($error) {
             return error($error);
@@ -112,8 +98,10 @@ class Session implements AttributeInterface, StorageInterface, OnParameterMount 
         if (!$session) {
             $session = $context->server->sessionOperations->startSession($sessionId);
         }
+        
         if ($session->getId() !== $sessionId) {
-            $sessionIdCookie->addToResponse($context->response);
+            $sessionIdCookie    = new ResponseCookie('session-id', $session->getId());
+            $context->cookies[] = $sessionIdCookie;
         }
 
         $value = $session;
