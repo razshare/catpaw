@@ -32,6 +32,29 @@ class ErrorResponseModifier implements ResponseModifier {
     ) {
     }
 
+    public function setData(mixed $data) {
+    }
+
+    public function setHeaders(array $headers) {
+        $this->headers = $headers;
+    }
+
+    public function setStatus(int $status) {
+        $this->status = $status;
+    }
+
+    public function getData():mixed {
+        return null;
+    }
+
+    public function getHeaders():array {
+        return $this->headers;
+    }
+
+    public function getStatus():int {
+        return $this->status;
+    }
+
     public function as(string $contentType):self {
         $this->contentType = $contentType;
         return $this;

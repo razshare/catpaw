@@ -37,8 +37,8 @@ class SuccessResponseModifier implements ResponseModifier {
         );
     }
 
-    private false|Page $page     = false;
-    private mixed $body          = false;
+    private false|Page $page = false;
+    public mixed $body;
     private bool $bodyIsResponse = false;
     private string $contentType  = __TEXT_PLAIN;
 
@@ -56,23 +56,55 @@ class SuccessResponseModifier implements ResponseModifier {
         private false|int $status,
         private string $message,
     ) {
-        if ($data instanceof Response) {
+        $this->update();
+    }
+
+    public function setData(mixed $data) {
+        $this->data = $data;
+        $this->update();
+    }
+
+    public function setHeaders(array $headers) {
+        $this->headers = $headers;
+        $this->update();
+    }
+
+    public function setStatus(int $status) {
+        $this->status = $status;
+        $this->update();
+    }
+
+    public function getData():mixed {
+        return $this->data;
+    }
+
+    public function getHeaders():array {
+        return $this->headers;
+    }
+
+    public function getStatus():int {
+        return $this->status;
+    }
+
+
+    private function update() {
+        if ($this->data instanceof Response) {
             $this->bodyIsResponse = true;
-            foreach ($headers as $key => $value) {
-                $data->setHeader($key, $value);
+            foreach ($this->headers as $key => $value) {
+                $this->data->setHeader($key, $value);
             }
-            if (false !== $status) {
-                $data->setStatus($status);
+            if (false !== $this->status) {
+                $this->data->setStatus($this->status);
             }
-        } else if (false === $status) {
+        } else if (false === $this->status) {
             $this->status = 200;
         }
 
-        if (!$message) {
+        if (!$this->message) {
             $this->message = HttpStatus::getReason($this->status);
         }
 
-        $this->body = $data;
+        $this->body = $this->data;
     }
 
     public function as(string $contentType):self {
