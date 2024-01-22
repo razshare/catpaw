@@ -63,22 +63,22 @@ class ProducedResponse implements AttributeInterface {
             $converted     = is_array($this->example) || is_object($this->example)?(object)$this->example:$this->example;
             $this->example = (object)[
                 'type'    => 'item',
-                'status'  => HttpStatus::OK,
-                'message' => HttpStatus::getReason(HttpStatus::OK),
+                'status'  => $status,
+                'message' => HttpStatus::getReason($status),
                 'data'    => $converted,
             ];
         } else if ($isErrorItem) {
             $this->example = (object)[
                 'type'    => 'error',
-                'status'  => HttpStatus::INTERNAL_SERVER_ERROR,
-                'message' => HttpStatus::getReason(HttpStatus::INTERNAL_SERVER_ERROR),
+                'status'  => $status,
+                'message' => HttpStatus::getReason($status),
             ];
         } else if ($isPage) {
             $converted     = is_array($this->example) || is_object($this->example)?(object)$this->example:$this->example;
             $this->example = (object)[
                 'type'         => 'page',
-                'status'       => HttpStatus::OK,
-                'message'      => HttpStatus::getReason(HttpStatus::OK),
+                'status'       => $status,
+                'message'      => HttpStatus::getReason($status),
                 'previousHref' => 'http://example.com?start0&size=3',
                 'nextHref'     => 'http://example.com?start6&size=3',
                 'previous'     => [

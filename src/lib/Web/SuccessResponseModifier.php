@@ -68,6 +68,10 @@ class SuccessResponseModifier implements ResponseModifier {
             $this->status = 200;
         }
 
+        if (!$message) {
+            $this->message = HttpStatus::getReason($this->status);
+        }
+
         $this->body = $data;
     }
 

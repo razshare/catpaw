@@ -112,5 +112,3 @@ function queries(UriInterface $uri):array {
     }
     return $queries;
 }
-
-define('EXAMPLE_FAILURE', failure('Something went wront.'));
