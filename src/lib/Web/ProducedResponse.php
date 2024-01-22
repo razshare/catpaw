@@ -15,14 +15,14 @@ class ProducedResponse implements AttributeInterface {
     use SchemaEncoder;
 
     public static function create(
-        string $type = 'text/plain',
-        int $status = 200,
-        string $className = '',
-        string $description = '',
-        mixed $example = [],
-        bool $isPage = false,
-        bool $isItem = false,
-        bool $isErrorItem = false,
+        string $type,
+        int $status,
+        string $className,
+        string $description,
+        mixed $example,
+        bool $isPage,
+        bool $isItem,
+        bool $isErrorItem,
     ):self {
         return new self(
             type: $type,

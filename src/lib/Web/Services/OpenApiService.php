@@ -54,8 +54,10 @@ class OpenApiService {
     public static function templateForPage(string $className, bool $dataIsObject = true):array {
         if ($dataIsObject) {
             $data = [
-                'type' => 'array',
-                '$ref' => "#/components/schemas/{$className}",
+                'type'  => 'array',
+                'items' => [
+                    '$ref' => "#/components/schemas/{$className}",
+                ],
             ];
         } else {
             $data = [
