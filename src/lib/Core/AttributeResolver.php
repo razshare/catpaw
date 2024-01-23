@@ -57,7 +57,7 @@ class AttributeResolver {
         }
         return $arguments;
     }
-    
+
     /**
      * @param  ReflectionFunction $reflection_function
      * @param  string             $attributeName
@@ -190,6 +190,45 @@ class AttributeResolver {
             }
         }
         return null;
+    }
+
+    /**
+     * @param  ReflectionParameter $reflectionParameter
+     * @param  string              $attributeName
+     * @return array|null
+     */
+    public static function getParameterAllAttributeArguments(ReflectionParameter $reflectionParameter, string $attributeName): ?array {
+        $arguments  = [];
+        $attributes = $reflectionParameter->getAttributes();
+        foreach ($attributes as $attribute) {
+            $className = $attribute->getName();
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
+                $arguments[] = $attribute->getArguments();
+            }
+        }
+        return $arguments;
+    }
+
+    /**
+     * @param  ReflectionParameter $reflectionParameter
+     * @param  string              $attributeName
+     * @return false|array
+     */
+    public static function issetParameterAttributes(ReflectionParameter $reflectionParameter, string $attributeName): false|array {
+        $attributes = $reflectionParameter->getAttributes();
+        $result     = [];
+        foreach ($attributes as $attribute) {
+            $className = $attribute->getName();
+            if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
+                $result[] = $className;
+            }
+        }
+
+        if ($result) {
+            return $result;
+        }
+
+        return false;
     }
 
     /**

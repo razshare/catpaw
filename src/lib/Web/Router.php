@@ -248,6 +248,12 @@ readonly class Router {
                 return error($error);
             }
 
+            /** @var array<Example> $exampleAttributes */
+            $exampleAttributes = Example::findAllByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
+            }
+
             /** @var false|Example $exampleAttribute */
             $exampleAttribute = Example::findByParameter($paramReflection)->try($error);
             if ($error) {
@@ -270,10 +276,15 @@ readonly class Router {
             $schema = ["type" => $type];
 
 
-            $name    = $queryAttribute->getName();
-            $summary = $summaryAttribute?$summaryAttribute->getValue():'';
-            $example = $exampleAttribute?$exampleAttribute->getValue():[];
-
+            $name     = $queryAttribute->getName();
+            $summary  = $summaryAttribute?$summaryAttribute->getValue():'';
+            $examples = [];
+            foreach ($exampleAttributes as $exampleAttribute) {
+                $examples = [
+                    ...$examples,
+                    ...($exampleAttribute->getValue() ?? []),
+                ];
+            }
 
             if ('' === $name) {
                 $name = $paramReflection->getName();
@@ -287,7 +298,7 @@ readonly class Router {
                     description: $summary,
                     required: false,
                     schema: $schema,
-                    examples: $example,
+                    examples: $examples,
                 ),
             ];
         }
@@ -319,11 +330,18 @@ readonly class Router {
                 return error($error);
             }
 
+            /** @var array<Example> $exampleAttributes */
+            $exampleAttributes = Example::findAllByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
+            }
+
             /** @var false|Example $exampleAttribute */
             $exampleAttribute = Example::findByParameter($paramReflection)->try($error);
             if ($error) {
                 return error($error);
             }
+
 
             $reflectionType = ReflectionTypeManager::unwrap($paramReflection);
             $type           = $reflectionType?$reflectionType->getName():'string';
@@ -338,10 +356,15 @@ readonly class Router {
             $schema = ["type" => $type];
 
 
-            $name    = $headerAttribute->getKey();
-            $summary = $summaryAttribute?$summaryAttribute->getValue():'';
-            $example = $exampleAttribute?$exampleAttribute->getValue():[];
-
+            $name     = $headerAttribute->getKey();
+            $summary  = $summaryAttribute?$summaryAttribute->getValue():'';
+            $examples = [];
+            foreach ($exampleAttributes as $exampleAttribute) {
+                $examples = [
+                    ...$examples,
+                    ...($exampleAttribute->getValue() ?? []),
+                ];
+            }
 
             if ('' === $name) {
                 $name = $paramReflection->getName();
@@ -355,7 +378,7 @@ readonly class Router {
                     description: $summary,
                     required: false,
                     schema: $schema,
-                    examples: $example,
+                    examples: $examples,
                 ),
             ];
         }
@@ -411,6 +434,12 @@ readonly class Router {
             }
 
 
+            /** @var array<Example> $exampleAttributes */
+            $exampleAttributes = Example::findAllByParameter($paramReflection)->try($error);
+            if ($error) {
+                return error($error);
+            }
+
             /** @var false|Example $exampleAttribute */
             $exampleAttribute = Example::findByParameter($paramReflection)->try($error);
             if ($error) {
@@ -428,8 +457,14 @@ readonly class Router {
 
             $schema = ["type" => $type];
 
-            $summary = $summaryAttribute?$summaryAttribute->getValue():'';
-            $example = $exampleAttribute?$exampleAttribute->getValue():[];
+            $summary  = $summaryAttribute?$summaryAttribute->getValue():'';
+            $examples = [];
+            foreach ($exampleAttributes as $exampleAttribute) {
+                $examples = [
+                    ...$examples,
+                    ...($exampleAttribute->getValue() ?? []),
+                ];
+            }
 
             $result = [
                 ...$result,
@@ -439,7 +474,7 @@ readonly class Router {
                     description: $summary,
                     required: true,
                     schema: $schema,
-                    examples: $example,
+                    examples: $examples,
                 ),
             ];
         }

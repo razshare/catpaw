@@ -11,15 +11,15 @@ use CatPaw\Web\Services\OpenApiService;
 #[Attribute]
 class Example implements AttributeInterface {
     use CoreAttributeDefinition;
-    
-    private mixed $example = [];
+
+    private mixed $example = '';
 
     public function __construct(
-        private readonly array|string|int|float|bool $value,
+        private readonly mixed $value,
     ) {
     }
 
-    public function getValue():array {
+    public function getValue():mixed {
         return $this->example;
     }
 

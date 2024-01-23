@@ -26,7 +26,7 @@ trait CoreAttributeDefinition {
             self::$coreDefinitionCache = new SplObjectStorage();
         }
     }
-    
+
 
     /**
      * @param  ReflectionFunction  $reflectionFunction
@@ -37,13 +37,12 @@ trait CoreAttributeDefinition {
         if (!($trueClassNames = AttributeResolver::issetFunctionAttributes($reflectionFunction, static::class))) {
             return ok([]);
         }
-        
 
         try {
             $instances = [];
-    
+
             $allAttributesArguments = AttributeResolver::getFunctionAllAttributesArguments($reflectionFunction, static::class);
-            
+
             foreach ($trueClassNames as $key => $trueClassName) {
                 $attributeArguments = $allAttributesArguments[$key];
                 $klass              = new ReflectionClass($trueClassName);
@@ -205,7 +204,7 @@ trait CoreAttributeDefinition {
         if (!($trueClassName = AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))) {
             return ok(false);
         }
-        
+
         try {
             $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
             $klass              = new ReflectionClass($trueClassName);
@@ -220,6 +219,38 @@ trait CoreAttributeDefinition {
                 info: $instance,
             );
             return ok($instance);
+        } catch(Throwable $e) {
+            return error($e);
+        }
+    }
+
+    /**
+     * @param  ReflectionFunction  $reflectionFunction
+     * @return Unsafe<array<self>>
+     */
+    public static function findAllByParameter(ReflectionParameter $reflectionParameter): Unsafe {
+        self::initializeCache();
+        if (!($trueClassNames = AttributeResolver::issetParameterAttributes($reflectionParameter, static::class))) {
+            return ok([]);
+        }
+
+        try {
+            $instances = [];
+
+            $allAttributesArguments = AttributeResolver::getParameterAllAttributeArguments($reflectionParameter, static::class);
+
+            foreach ($trueClassNames as $key => $trueClassName) {
+                $attributeArguments = $allAttributesArguments[$key];
+                $klass              = new ReflectionClass($trueClassName);
+                /** @var object $instance */
+                $instance = $klass->newInstance(...$attributeArguments);
+                Container::entry($instance, $klass->getMethods())->try($error);
+                if ($error) {
+                    return error($error);
+                }
+                $instances[] = $instance;
+            }
+            return ok($instances);
         } catch(Throwable $e) {
             return error($e);
         }
