@@ -330,12 +330,13 @@ class OpenApiService {
 
     /**
      *
-     * @param string $method
-     * @param string $operationId
-     * @param string $summary
-     * @param array  $parameters
-     * @param array  $requestBody
-     * @param array  $responses
+     * @param array<string> $tags
+     * @param string        $method
+     * @param string        $operationId
+     * @param string        $summary
+     * @param array         $parameters
+     * @param array         $requestBody
+     * @param array         $responses
      * @return array<string,array{
      *      summary: string,
      *      operationId: string,
@@ -345,6 +346,7 @@ class OpenApiService {
      * }>
      */
     public function createPathContent(
+        array $tags,
         string $method,
         string $operationId,
         string $summary,
@@ -356,6 +358,7 @@ class OpenApiService {
 
         $result = [
             "$method" => [
+                "tags"        => $tags,
                 "summary"     => $summary,
                 "operationId" => $operationId,
                 "parameters"  => $parameters,

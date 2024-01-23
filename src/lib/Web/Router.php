@@ -22,6 +22,7 @@ use CatPaw\Web\Attributes\ProducesItem;
 use CatPaw\Web\Attributes\ProducesPage;
 use CatPaw\Web\Attributes\Query;
 use CatPaw\Web\Attributes\Summary;
+use CatPaw\Web\Attributes\Tag;
 use CatPaw\Web\Interfaces\OnRequest;
 use CatPaw\Web\Interfaces\OnResult;
 use CatPaw\Web\Services\OpenApiService;
@@ -128,6 +129,11 @@ readonly class Router {
                 ...$producesPage,
             ];
 
+            /** @var array<Tag> $tags */
+            $tags = Tag::findAllByFunction($reflectionFunction)->try($error);
+            if ($error) {
+                return error($error);
+            }
 
             $onRequest = [];
             $onResult  = [];
@@ -187,6 +193,7 @@ readonly class Router {
                 onMount           : $onMount,
                 ignoreOpenApi     : $ignoreOpenApi,
                 ignoreDescribe    : $ignoreDescribe,
+                tags              : $tags,
             );
 
             $options = DependenciesOptions::create(
@@ -502,6 +509,14 @@ readonly class Router {
         $symbolicMethod     = $route->symbolicMethod;
         $symbolicPath       = $route->symbolicPath;
 
+        /** @var array<string> $tags */
+        $tags = [];
+
+        /** @var Tag $tag */
+        foreach ($route->tags as $tag) {
+            $tags[] = $tag->getValue();
+        }
+
         if ($consumes) {
             /** @var array<Consumes> $consumes */
             foreach ($consumes as $consumesLocal) {
@@ -604,6 +619,7 @@ readonly class Router {
             path: $symbolicPath,
             pathContent: [
                 ...$openApi->createPathContent(
+                    tags: $tags,
                     method     : $symbolicMethod,
                     operationId: $operationIdValue,
                     summary    : $summary->getValue(),
