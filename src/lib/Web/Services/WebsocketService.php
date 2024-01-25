@@ -6,18 +6,29 @@ use Amp\Http\Server\HttpServer;
 use Amp\Websocket\Server\Rfc6455Acceptor;
 use Amp\Websocket\Server\Websocket;
 use Amp\Websocket\Server\WebsocketClientHandler;
+use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Service;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
+
+use CatPaw\Web\Server;
 use Psr\Log\LoggerInterface;
 
 #[Service]
 class WebsocketService {
     private HttpServer $httpServer;
-
-    public function __construct(private LoggerInterface $logger) {
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {
     }
 
-    public function setServer(HttpServer $httpServer) {
-        $this->httpServer = $httpServer;
+    #[Entry] public function start(Server $server):Unsafe {
+        $this->httpServer = $server->getHttpServer()->try($error);
+        if ($error) {
+            return error($error);
+        }
+        return ok();
     }
 
     public function create(WebsocketClientHandler $clientHandler):Websocket {

@@ -27,6 +27,7 @@ use Revolt\EventLoop;
 use Throwable;
 
 class Server {
+    private static Server $singleton;
     private static function findFirstValidWebDirectory(array $www):string {
         if (isPhar()) {
             $phar = Phar::running();
@@ -73,8 +74,18 @@ class Server {
     }
 
     /**
-     *
-     *
+     * Get the current server instance.
+     * @return Unsafe<Server>
+     */
+    public static function get(): Unsafe {
+        if (!isset(self::$singleton)) {
+            return error("Server not initialized.");
+        }
+        return ok(self::$singleton);
+    }
+
+    /**
+     *  Create a new server.
      * @param  string                          $interface            network interface to bind to.
      * @param  string                          $secureInterface      same as `$interfaces` but using secure certificates.
      * @param  string                          $api                  api directory, this is relative to the project directory.
@@ -101,6 +112,9 @@ class Server {
         array $allowedMethods = [],
         false|SessionOperationsInterface $sessionOperations = false,
     ): Unsafe {
+        if (isset(self::$singleton)) {
+            return error('You can only have one server instance at any time. Use `Server::get()` to get the current instance.');
+        }
         if (!str_starts_with($api, './')) {
             $api = "./$api";
             // return error("The api directory must be a relative path and within the project directory.");
@@ -155,7 +169,7 @@ class Server {
         ));
     }
 
-    public readonly SocketHttpServer $httpServer;
+    private SocketHttpServer $httpServer;
     private RouteResolver $resolver;
     private FileServerInterface $fileServer;
     /** @var array<Middleware> */
@@ -195,6 +209,17 @@ class Server {
         $this->resolver = RouteResolver::create($this);
     }
 
+    /**
+     *
+     * @return Unsafe<HttpServer>
+     */
+    public function getHttpServer():Unsafe {
+        if (!isset($this->httpServer)) {
+            return error("Http server not started.");
+        }
+        return ok($this->httpServer);
+    }
+
     public function appendMiddleware(Middleware $middleware): void {
         $this->appendedMiddleware[] = $middleware;
     }
@@ -213,6 +238,9 @@ class Server {
      */
     public function start(false|Signal $signal = false):Future {
         return async(function() use ($signal) {
+            if (isset($this->httpServer)) {
+                return error("Server already started.");
+            }
             $endSignal = new DeferredFuture;
             try {
                 if (!isset($this->fileServer)) {
