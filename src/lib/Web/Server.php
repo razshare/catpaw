@@ -155,7 +155,7 @@ class Server {
         ));
     }
 
-    private SocketHttpServer $httpServer;
+    public readonly SocketHttpServer $httpServer;
     private RouteResolver $resolver;
     private FileServerInterface $fileServer;
     /** @var array<Middleware> */
