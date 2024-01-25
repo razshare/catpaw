@@ -7,6 +7,7 @@ use Amp\CompositeException;
 use Amp\DeferredFuture;
 use function Amp\File\isDirectory;
 use Amp\Future;
+use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
 use Amp\Http\Server\SocketHttpServer;
@@ -20,7 +21,6 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\Signal;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\FileServerInterface;
-use Closure;
 use Error;
 use Phar;
 use Psr\Log\LoggerInterface;
@@ -29,18 +29,26 @@ use Throwable;
 
 class Server {
     private static Server $singleton;
+    /** @var array<callable(HttpServer):(void|Unsafe<void>)> */
     private static array $onStartListeners = [];
-    public static function onStart(Closure $callback): void {
-        self::$onStartListeners[] = $callback;
-        if (isset(self::$singleton)) {
-            $result = $callback();
+
+    /**
+     * Invoke a function when the server starts.
+     * @param  callable(HttpServer):(void|Unsafe<void>) $function the function to invoke, with the http server as parameter.
+     * @return Unsafe<void>
+     */
+    public static function onStart(callable $function):Unsafe {
+        self::$onStartListeners[] = $function;
+        if (isset(self::$singleton) && isset(self::$singleton->httpServer) && self::$singleton->httpServerStarted) {
+            $result = $function(self::$singleton->httpServer);
             if ($result instanceof Unsafe) {
                 $result->try($error);
                 if ($error) {
-                    self::$singleton->logger->error((string)$error);
+                    return error($error);
                 }
             }
         }
+        return ok();
     }
 
     private static function findFirstValidWebDirectory(array $www):string {
@@ -167,7 +175,7 @@ class Server {
             );
         }
 
-        return ok(new self(
+        return ok(self::$singleton = new self(
             interface        : $interface,
             secureInterface  : $secureInterface,
             apiPrefix        : $apiPrefix,
@@ -189,6 +197,7 @@ class Server {
     private FileServerInterface $fileServer;
     /** @var array<Middleware> */
     private array $appendedMiddleware = [];
+    private bool $httpServerStarted   = false;
 
 
     private function __construct(
@@ -224,17 +233,6 @@ class Server {
         $this->resolver = RouteResolver::create($this);
     }
 
-    /**
-     *
-     * @return Unsafe<HttpServer>
-     */
-    public function getHttpServer():Unsafe {
-        if (!isset($this->httpServer)) {
-            return error("Http server not started.");
-        }
-        return ok($this->httpServer);
-    }
-
     public function appendMiddleware(Middleware $middleware): void {
         $this->appendedMiddleware[] = $middleware;
     }
@@ -254,7 +252,10 @@ class Server {
     public function start(false|Signal $signal = false):Future {
         return async(function() use ($signal) {
             if (isset($this->httpServer)) {
-                return error("Server already started.");
+                if ($this->httpServerStarted) {
+                    return error("Server already started.");
+                }
+                return error("Server already created.");
             }
             $endSignal = new DeferredFuture;
             try {
@@ -301,20 +302,20 @@ class Server {
                 });
                 $this->httpServer->expose($this->interface);
 
+                $this->httpServer->start($stackedHandler, $errorHandler);
+                $this->httpServerStarted = true;
+                if ($signal) {
+                    $signal->sigterm();
+                }
 
                 foreach (self::$onStartListeners as $function) {
-                    $result = $function();
+                    $result = $function($this->httpServer);
                     if ($result instanceof Unsafe) {
                         $result->try($error);
                         if ($error) {
                             return error($error);
                         }
                     }
-                }
-
-                $this->httpServer->start($stackedHandler, $errorHandler);
-                if ($signal) {
-                    $signal->sigterm();
                 }
 
                 $endSignal->getFuture()->await();
