@@ -32,7 +32,7 @@ class Server {
     private static array $onStartListeners = [];
     public static function onStart(Closure $callback): void {
         self::$onStartListeners[] = $callback;
-        if (self::$singleton) {
+        if (isset(self::$singleton)) {
             $result = $callback();
             if ($result instanceof Unsafe) {
                 $result->try($error);
