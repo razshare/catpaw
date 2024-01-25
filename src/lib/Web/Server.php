@@ -20,6 +20,7 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\Signal;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\FileServerInterface;
+use Closure;
 use Error;
 use Phar;
 use Psr\Log\LoggerInterface;
@@ -28,6 +29,11 @@ use Throwable;
 
 class Server {
     private static Server $singleton;
+    private static array $onStartListeners = [];
+    public static function onStart(Closure $callback): void {
+        self::$onStartListeners[] = $callback;
+    }
+
     private static function findFirstValidWebDirectory(array $www):string {
         if (isPhar()) {
             $phar = Phar::running();
@@ -285,6 +291,11 @@ class Server {
                     }
                 });
                 $this->httpServer->expose($this->interface);
+
+
+                foreach (self::$onStartListeners as $function) {
+                    $function();
+                }
 
                 $this->httpServer->start($stackedHandler, $errorHandler);
                 if ($signal) {
