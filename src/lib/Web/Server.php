@@ -32,6 +32,15 @@ class Server {
     private static array $onStartListeners = [];
     public static function onStart(Closure $callback): void {
         self::$onStartListeners[] = $callback;
+        if (self::$singleton) {
+            $result = $callback();
+            if ($result instanceof Unsafe) {
+                $result->try($error);
+                if ($error) {
+                    self::$singleton->logger->error((string)$error);
+                }
+            }
+        }
     }
 
     private static function findFirstValidWebDirectory(array $www):string {
@@ -294,7 +303,13 @@ class Server {
 
 
                 foreach (self::$onStartListeners as $function) {
-                    $function();
+                    $result = $function();
+                    if ($result instanceof Unsafe) {
+                        $result->try($error);
+                        if ($error) {
+                            return error($error);
+                        }
+                    }
                 }
 
                 $this->httpServer->start($stackedHandler, $errorHandler);
