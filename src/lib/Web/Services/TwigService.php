@@ -6,7 +6,7 @@ use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
-use Catpaw\Web\TwigAsyncFilesystemLoader;
+use CatPaw\Web\TwigAsyncFilesystemLoader;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
