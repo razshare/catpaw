@@ -94,7 +94,8 @@
     "amphp/http-server": "^3.3",
     "amphp/http-client": "^5.0",
     "amphp/parallel": "^2.0",
-    "amphp/websocket-server": "^4.0"
+    "amphp/websocket-server": "^4.0",
+    "twig/twig": "^3.0"
   },
   "autoload-dev": {
     "psr-4": {
