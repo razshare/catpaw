@@ -2,7 +2,6 @@
 
 namespace CatPaw\Web;
 
-use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use function CatPaw\Core\ok;
@@ -16,13 +15,8 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
      * @param  callable(string):string           $mapNames
      * @return Unsafe<TwigAsyncFilesystemLoader>
      */
-    public static function create(string $directoryName, callable $mapNames):Unsafe {
-        $loader = new self();
-        $loader->loadAllFromDirectory(directoryName:$directoryName, mapNames:$mapNames)->try($error);
-        if ($error) {
-            return error($error);
-        }
-        return ok($loader);
+    public static function create():self {
+        return new self();
     }
 
     private function __construct() {
@@ -56,38 +50,6 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
 
     /** @var array<string, Source> $sources */
     private array $sources = [];
-
-    /**
-     * @param  string                  $directoryName
-     * @param  callable(string):string $mapNames
-     * @return Unsafe<void>
-     */
-    public function loadAllFromDirectory(string $directoryName, callable $mapNames): Unsafe {
-        $fileNames = Directory::flat(directoryName: $directoryName)->try($error);
-        if ($error) {
-            return error($error);
-        }
-
-        foreach ($fileNames as $fileName) {
-            if (!str_ends_with($fileName, '.twig')) {
-                continue;
-            }
-            $name              = $mapNames($fileName);
-            $key               = $name;
-            $this->keys[$name] = $key;
-            $file              = File::open($fileName)->try($error);
-            if ($error) {
-                return error($error);
-            }
-            $code = $file->readAll()->await()->try($error);
-            if ($error) {
-                return error($error);
-            }
-            $this->sources[$key] = new Source(code: $code, name: $name, path: $fileName);
-        }
-
-        return ok();
-    }
 
     public function getSourceContext(string $name): Source {
         return $this->sources[$this->keys[$name]];

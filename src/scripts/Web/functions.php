@@ -135,6 +135,11 @@ function websocket(Request $request, WebsocketClientHandler $handler): ResponseM
 }
 
 
+/**
+ * Render twig a file.
+ * @param  string            ...$name The absolute path to the twig file.
+ * @return TwigRenderContext
+ */
 function twig(string ...$name):TwigRenderContext {
     return TwigRenderContext::create(asFileName(...$name));
 }

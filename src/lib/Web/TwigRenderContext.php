@@ -51,7 +51,7 @@ class TwigRenderContext {
         }
 
         $data = $twig->render(
-            name: $this->fileName,
+            fileName  : $this->fileName,
             properties: $this->properties,
         )->try($errorTwig);
         if ($errorTwig) {
