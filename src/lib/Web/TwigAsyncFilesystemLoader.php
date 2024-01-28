@@ -28,6 +28,29 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
     private function __construct() {
     }
 
+    /**
+     * @param  string ...$path
+     * @return Unsafe
+     */
+    public function loadFromFile(string $fileName):Unsafe {
+        if (!str_ends_with($fileName, '.twig')) {
+            return error("File name `$fileName` does not end with `.twig`.");
+        }
+        $name              = $fileName;
+        $key               = $name;
+        $this->keys[$name] = $key;
+        $file              = File::open($fileName)->try($error);
+        if ($error) {
+            return error($error);
+        }
+        $code = $file->readAll()->await()->try($error);
+        if ($error) {
+            return error($error);
+        }
+        $this->sources[$key] = new Source(code: $code, name: $name, path: $fileName);
+        return ok();
+    }
+
     /** @var array<string,string> $keys */
     private array $keys = [];
 

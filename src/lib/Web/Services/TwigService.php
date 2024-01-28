@@ -15,6 +15,7 @@ use Twig\Error\SyntaxError;
 #[Service]
 class TwigService {
     private Environment $environment;
+    private TwigAsyncFilesystemLoader $loader;
 
     /**
      * @param  string       $directoryName
@@ -22,10 +23,9 @@ class TwigService {
      */
     public function load(string $directoryName): Unsafe {
         return anyError(function() use ($directoryName) {
-            $loader = TwigAsyncFilesystemLoader::create($directoryName, static function(string $fileName) use ($directoryName) {
-                $fileNameWithoutExtension = preg_replace('/\.twig$/', '', $fileName);
-                $quotedDirectoryName      = preg_quote("$directoryName/", '/');
-                return preg_replace("/^$quotedDirectoryName/", '', $fileNameWithoutExtension);
+            $this->loader = $loader = TwigAsyncFilesystemLoader::create($directoryName, static function(string $fileName) use ($directoryName) {
+                $quotedDirectoryName = preg_quote("$directoryName/", '/');
+                return preg_replace("/^$quotedDirectoryName/", '', $fileName);
             })
                 ->try($error)
             or yield $error;
@@ -39,8 +39,14 @@ class TwigService {
      * @param  array          $properties
      * @return Unsafe<string>
      */
-    public function render(string $name, array $properties = []): Unsafe {
+    public function render(string $name, array $properties): Unsafe {
         try {
+            if (!$this->loader->exists($name)) {
+                $this->loader->loadFromFile($name)->try($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
             $template = $this->environment->load($name);
             return ok($template->render($properties));
         } catch(LoaderError|RuntimeError|SyntaxError $error) {

@@ -313,3 +313,21 @@ function stop(string|Error $error) {
     }
     Bootstrap::kill((string)$error);
 }
+
+/**
+ * Given a `$path`, create a file name.
+ * @param  string ...$path
+ * @return string
+ */
+function asFileName(string ...$path):string {
+    $parts = [];
+    $count = count($path);
+    for ($index = 0; $index < $count; $index++) {
+        $pathName = $path[$index];
+        if ($index < $count - 1 && !str_ends_with($pathName, '/')) {
+            $pathName = "$pathName/";
+        }
+        $parts[] = $pathName;
+    }
+    return join( $parts);
+}

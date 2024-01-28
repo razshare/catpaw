@@ -5,6 +5,7 @@ namespace CatPaw\Web;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use Amp\Websocket\Server\WebsocketClientHandler;
+use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Services\WebsocketService;
@@ -131,4 +132,9 @@ function websocket(Request $request, WebsocketClientHandler $handler): ResponseM
         return failure();
     }
     return success($websocketService->create($handler)->handleRequest($request));
+}
+
+
+function twig(string ...$name):TwigRenderContext {
+    return TwigRenderContext::create(asFileName(...$name));
 }
