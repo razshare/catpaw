@@ -2,8 +2,14 @@
 
 namespace CatPaw\Web;
 
+use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
+use Amp\Websocket\Server\WebsocketClientHandler;
+use CatPaw\Core\Container;
+use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Services\WebsocketService;
 use Psr\Http\Message\UriInterface;
+use Psr\Log\LoggerInterface;
 
 
 /**
@@ -111,4 +117,18 @@ function queries(UriInterface $uri):array {
         $queries[$key] = $value;
     }
     return $queries;
+}
+
+function websocket(Request $request, WebsocketClientHandler $handler): ResponseModifier {
+    $websocketService = Container::create(WebsocketService::class)->try($errorWebsocket);
+    if ($errorWebsocket) {
+        $logger = Container::create(LoggerInterface::class)->try($errorLogger);
+        if ($errorLogger) {
+            echo $errorLogger.PHP_EOL;
+            echo $errorWebsocket.PHP_EOL;
+        }
+        $logger->error($errorWebsocket);
+        return failure();
+    }
+    return success($websocketService->create($handler)->handleRequest($request));
 }
