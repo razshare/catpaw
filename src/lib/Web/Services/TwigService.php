@@ -36,12 +36,13 @@ class TwigService {
 
     /**
      * @param  string         $name
+     * @param  array          $properties
      * @return Unsafe<string>
      */
-    public function render(string $name): Unsafe {
+    public function render(string $name, array $properties = []): Unsafe {
         try {
             $template = $this->environment->load($name);
-            return ok($template->render());
+            return ok($template->render($properties));
         } catch(LoaderError|RuntimeError|SyntaxError $error) {
             return error($error);
         }
