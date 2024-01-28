@@ -4,8 +4,9 @@ namespace CatPaw\Core;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use stdClass;
+use Stringable;
 
-class State {
+class State implements Stringable {
     public function __construct() {
         $state            = new stdClass;
         $state->functions = [];
@@ -24,7 +25,17 @@ class State {
         StateContext::set($this, $state);
     }
 
-    private function __destruct() {
+    public function __toString():string {
+        /** @var false|stdClass */
+        static $state = false;
+        if (!$state) {
+            $state = StateContext::get($this);
+        }
+
+        return json_encode($state->data);
+    }
+
+    public function __destruct() {
         /** @var false|stdClass */
         static $state = false;
         if (!$state) {
@@ -37,7 +48,7 @@ class State {
         StateContext::unset($this);
     }
 
-    private function __get($key) {
+    public function __get($key) {
         /** @var false|stdClass */
         static $state = false;
         if (!$state) {
@@ -46,7 +57,7 @@ class State {
         return $state->data->$key ?? null;
     }
 
-    private function __set($key, $value) {
+    public function __set($key, $value) {
         /** @var false|stdClass */
         static $state = false;
         if (!$state) {
@@ -56,7 +67,7 @@ class State {
         $this->activate();
     }
 
-    private function __isset($key) {
+    public function __isset($key) {
         /** @var false|stdClass */
         static $state = false;
         if (!$state) {
@@ -65,7 +76,7 @@ class State {
         return isset($state->data->$key);
     }
 
-    private function __unset($key) {
+    public function __unset($key) {
         /** @var false|stdClass */
         static $state = false;
         if (!$state) {
