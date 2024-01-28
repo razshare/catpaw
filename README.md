@@ -6,20 +6,23 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 
 | Table of Contents                                         |
 |-----------------------------------------------------------|
-| ⚡ [Error Management](./docs/0.error-managament.md)       |
-| 🌐 [Router](./docs/1.router.md)                            |
-| 🌐 [Path Parameters](./docs/2.path-parameters.md)          |
-| 🌐 [Open Api](./docs/18.open-api.md)                       |
-| 🌐 [Session](./docs/4.session.md)                          |
-| 🌐 [Byte Range Requests](./docs/7.byte-range-requests.md)  |
-| ⚡ [Entry](./docs/5.entry.md)                             |
-| ⚡ [Custom Attributes](./docs/8.custom-attributes.md)     |
+| ⚡ [Error Management](./docs/0.error-managament.md)        |
+| 🌐 [Router](./docs/1.router.md)                           |
+| 🌐 [Path Parameters](./docs/2.path-parameters.md)         |
+| 🌐 [Open Api](./docs/18.open-api.md)                      |
+| 🌐 [Session](./docs/4.session.md)                         |
+| 🌐 [Byte Range Requests](./docs/7.byte-range-requests.md) |
+| ⚡ [Entry](./docs/5.entry.md)                              |
+| ⚡ [Custom Attributes](./docs/8.custom-attributes.md)      |
 | 💡 [RaspberryPi](./docs/11.raspberrypi.md)                |
-| ⚡ [Services](./docs/13.services.md)                      |
-| ⚡ [Stores](./docs/12.stores.md)                          |
-| ⚡ [Queues](./docs/21.queues.md)                          |
-| ⚡ [Schedule](./docs/22.schedule.md)                      | 
-| ⚡ [Build](./docs/23.build.md)                      | 
+| ⚡ [Services](./docs/13.services.md)                       |
+| ⚡ [Stores](./docs/12.stores.md)                           |
+| ⚡ [Queues](./docs/21.queues.md)                           |
+| ⚡ [Schedule](./docs/22.schedule.md)                       |
+| ⚡ [Build](./docs/23.build.md)                             |
+| 🌐 [Websockets](./docs/24.websockets.md)                  |
+| 🌐 [Twig](./docs/26.twig)                              |
+| ⚡ [State](./docs/26.twig.md)                              |
 
 
 > [!NOTE]
@@ -86,7 +89,7 @@ composer prod:build
 ```
 The building process can be configured inside the `build.yml` file.
 
-After building your application, you can simply run it using 
+After building your application, you can simply run it using
 ```
 php app.phar
 ```
@@ -97,7 +100,7 @@ The resulting `.phar`, by default (check `build.yml`), includes the following di
 - `./bin`
 - `./.build-cache` (created at comptile time)
 
-which means it's a portable binary, you just need to make 
+which means it's a portable binary, you just need to make
 sure php is installed on whatever machine you're trying to run it on.
 
 # Debugging with VSCode
