@@ -21,8 +21,8 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 | ⚡ [Schedule](./docs/22.schedule.md)                       |
 | ⚡ [Build](./docs/23.build.md)                             |
 | 🌐 [Websockets](./docs/24.websockets.md)                  |
-| 🌐 [Twig](./docs/25.twig)                                 |
-| ⚡ [State](./docs/26.state)                                |
+| 🌐 [Twig](./docs/25.twig.md)                              |
+| ⚡ [State](./docs/26.state.md)                             |
 
 
 > [!NOTE]
