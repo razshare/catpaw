@@ -32,7 +32,7 @@ use CatPaw\Web\Services\OpenApiService;
  * @see Body
  * @package CatPaw\Web\Attributes
  */
-#[Attribute(flags:Attribute::TARGET_FUNCTION | Attribute::TARGET_METHOD)]
+#[Attribute(flags:Attribute::TARGET_FUNCTION | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 class ProducesItem implements AttributeInterface {
     use CoreAttributeDefinition;
 

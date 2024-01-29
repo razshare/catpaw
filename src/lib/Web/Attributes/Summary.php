@@ -6,7 +6,7 @@ use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 
 
-#[Attribute(flags:Attribute::TARGET_ALL)]
+#[Attribute(flags:Attribute::TARGET_ALL | Attribute::IS_REPEATABLE)]
 class Summary implements AttributeInterface {
     use CoreAttributeDefinition;
 

@@ -8,7 +8,7 @@ use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Web\Services\OpenApiService;
 
 
-#[Attribute(flags:Attribute::TARGET_PARAMETER)]
+#[Attribute(flags:Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 class Example implements AttributeInterface {
     use CoreAttributeDefinition;
 
