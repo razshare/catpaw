@@ -41,7 +41,7 @@ class SuccessResponseModifier implements ResponseModifier {
     private false|Page $page = false;
     public mixed $body;
     private bool $bodyIsResponse = false;
-    private string $contentType  = __TEXT_PLAIN;
+    private string $contentType  = TEXT_PLAIN;
 
     /**
      *
@@ -168,12 +168,12 @@ class SuccessResponseModifier implements ResponseModifier {
             return ok($this->body);
         }
 
-        if (__APPLICATION_JSON === $this->contentType) {
+        if (APPLICATION_JSON === $this->contentType) {
             $body = json_encode($this->body);
             if (false === $body) {
                 return error('Could not encode body to json.');
             }
-        } else if (__APPLICATION_XML === $this->contentType) {
+        } else if (APPLICATION_XML === $this->contentType) {
             $body = is_object($this->body)
                     ?XMLSerializer::generateValidXmlFromObj($this->body)
                     :XMLSerializer::generateValidXmlFromArray($this->body);

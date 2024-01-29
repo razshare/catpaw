@@ -1,5 +1,5 @@
 <?php
-use const CatPaw\Web\__APPLICATION_JSON;
+use const CatPaw\Web\APPLICATION_JSON;
 use CatPaw\Web\Attributes\Body;
 use CatPaw\Web\Attributes\Consumes;
 use function CatPaw\Web\success;
@@ -12,5 +12,5 @@ class SchemaConsumeSomething {
 }
 
 return
-#[Consumes(__APPLICATION_JSON, SchemaConsumeSomething::class)]
-fn (#[Body] array $data) => success($data)->as(__APPLICATION_JSON);
+#[Consumes(APPLICATION_JSON, SchemaConsumeSomething::class)]
+fn (#[Body] array $data) => success($data)->as(APPLICATION_JSON);

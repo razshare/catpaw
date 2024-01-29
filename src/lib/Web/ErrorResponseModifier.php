@@ -24,7 +24,7 @@ class ErrorResponseModifier implements ResponseModifier {
 
     // private RequestContext $context;
     private mixed $body         = false;
-    private string $contentType = __TEXT_PLAIN;
+    private string $contentType = TEXT_PLAIN;
 
     private function __construct(
         private int $status,
@@ -78,12 +78,12 @@ class ErrorResponseModifier implements ResponseModifier {
      * @return Unsafe<Error>
      */
     public function getResponse():Unsafe {
-        if (__APPLICATION_JSON === $this->contentType) {
+        if (APPLICATION_JSON === $this->contentType) {
             $body = json_encode($this->body);
             if (false === $body) {
                 return error('Could not encode body to json.');
             }
-        } else if (__APPLICATION_XML === $this->contentType) {
+        } else if (APPLICATION_XML === $this->contentType) {
             $body = is_object($this->body)
                     ?XMLSerializer::generateValidXmlFromObj($this->body)
                     :XMLSerializer::generateValidXmlFromArray($this->body);

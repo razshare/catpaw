@@ -64,7 +64,7 @@ function success(
  * @return ErrorResponseModifier
  */
 function badRequest(string $message):ErrorResponseModifier {
-    return failure($message, __BAD_REQUEST);
+    return failure($message, BAD_REQUEST);
 }
 
 /**

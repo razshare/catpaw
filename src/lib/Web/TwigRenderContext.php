@@ -66,6 +66,6 @@ class TwigRenderContext {
             $logger->error((string)$errorTwig);
             return failure();
         }
-        return success($data, $status, $headers)->as(__TEXT_HTML);
+        return success($data, $status, $headers)->as(TEXT_HTML);
     }
 }

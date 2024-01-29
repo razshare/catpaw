@@ -24,7 +24,7 @@ class Accepts implements Stringable {
 
     public function json():bool {
         foreach ($this->accepts as $value) {
-            if (__APPLICATION_JSON === $value) {
+            if (APPLICATION_JSON === $value) {
                 return true;
             }
         }
@@ -33,7 +33,7 @@ class Accepts implements Stringable {
 
     public function xml():bool {
         foreach ($this->accepts as $value) {
-            if (__APPLICATION_XML === $value) {
+            if (APPLICATION_XML === $value) {
                 return true;
             }
         }
@@ -42,7 +42,7 @@ class Accepts implements Stringable {
 
     public function plain():bool {
         foreach ($this->accepts as $value) {
-            if (__TEXT_PLAIN === $value) {
+            if (TEXT_PLAIN === $value) {
                 return true;
             }
         }
@@ -51,7 +51,7 @@ class Accepts implements Stringable {
 
     public function html():bool {
         foreach ($this->accepts as $value) {
-            if (__TEXT_HTML === $value) {
+            if (TEXT_HTML === $value) {
                 return true;
             }
         }
