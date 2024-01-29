@@ -122,7 +122,7 @@ function queries(UriInterface $uri):array {
 }
 
 /**
- * Return this from a route handler to upgrade the exchange into websocket ([RFC 6455](https://www.rfc-editor.org/rfc/rfc6455.html)).
+ * Return this from a route handler to upgrade an http connection to websocket [RFC 6455](https://www.rfc-editor.org/rfc/rfc6455.html).
  *
  * ## Example
  * ```php
