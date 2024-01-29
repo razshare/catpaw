@@ -12,6 +12,9 @@ class TwigRenderContext {
         string $fileName,
         array $properties = [],
     ):self {
+        if (!str_ends_with($fileName, '.twig')) {
+            $fileName .= '.twig';
+        }
         return new self($fileName, $properties);
     }
     private function __construct(
