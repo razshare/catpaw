@@ -14,17 +14,15 @@ use ReflectionClass;
 use Throwable;
 
 /**
- * Attach this attribute to a class.
- *
- * Catpaw will treat it as a singleton.
+ * Attach this attribute to a class and catpaw will treat it as a singleton.
  */
-#[Attribute]
+#[Attribute(flags: Attribute::TARGET_CLASS)]
 class Singleton implements AttributeInterface, OnClassInstantiation {
     use CoreAttributeDefinition;
-    
+
     public function __construct() {
     }
-    
+
     private static array $cache = [];
 
     /**

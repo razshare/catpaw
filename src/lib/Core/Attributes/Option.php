@@ -15,10 +15,10 @@ use CatPaw\Core\Unsafe;
 use ReflectionParameter;
 
 
-#[Attribute]
+#[Attribute(flags: Attribute::TARGET_PARAMETER)]
 class Option implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
-    
+
     private static bool $initialized = false;
     private static array $cache      = [];
     /** @var array<int,string> */
@@ -46,7 +46,7 @@ class Option implements AttributeInterface, OnParameterMount {
 
     /**
      * @inheritDoc
-     * @internal 
+     * @internal
      */
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
         if (isset(self::$cache[$this->name])) {
@@ -56,7 +56,7 @@ class Option implements AttributeInterface, OnParameterMount {
 
 
         /** @var string|int|bool|float $value */
-        
+
         $wrapper = ReflectionTypeManager::wrap($reflection);
 
         $value = $this->findValue(
@@ -98,7 +98,7 @@ class Option implements AttributeInterface, OnParameterMount {
                 ) {
                     $listingOptions = true;
                 }
-                
+
                 if (!$listingOptions) {
                     continue;
                 }

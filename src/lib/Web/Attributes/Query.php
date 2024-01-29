@@ -25,7 +25,7 @@ use ReflectionParameter;
  *
  * @package CatPaw\Web\Attributes
  */
-#[Attribute]
+#[Attribute(flags:Attribute::TARGET_PARAMETER)]
 class Query implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
 

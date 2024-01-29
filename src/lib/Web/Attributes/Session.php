@@ -21,9 +21,9 @@ use ReflectionParameter;
  * Catpaw will provide and start (if not already
  * started) the session of the current user.
  *
- * This parameter <b>MUST</b> be of type "array" and it must be a pointer.
+ * This parameter **MUST** be of type `array` and it should be a pointer (`array &$session`) if you want to modify the session.
  */
-#[Attribute]
+#[Attribute(flags:Attribute::TARGET_PARAMETER)]
 class Session implements AttributeInterface, StorageInterface, OnParameterMount {
     use CoreAttributeDefinition;
 
@@ -85,7 +85,7 @@ class Session implements AttributeInterface, StorageInterface, OnParameterMount 
         if (!$context = $options->context) {
             return error("No context found for session.");
         }
-        
+
         $cookies = $context->request->getCookies();
 
         $sessionIdCookie = $cookies['session-id'] ?? false;
@@ -94,11 +94,11 @@ class Session implements AttributeInterface, StorageInterface, OnParameterMount 
         if ($error) {
             return error($error);
         }
-        
+
         if (!$session) {
             $session = $context->server->sessionOperations->startSession($sessionId);
         }
-        
+
         if ($session->getId() !== $sessionId) {
             $sessionIdCookie    = new ResponseCookie('session-id', $session->getId());
             $context->cookies[] = $sessionIdCookie;

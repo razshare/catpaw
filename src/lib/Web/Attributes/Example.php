@@ -8,7 +8,7 @@ use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Web\Services\OpenApiService;
 
 
-#[Attribute]
+#[Attribute(flags:Attribute::TARGET_PARAMETER)]
 class Example implements AttributeInterface {
     use CoreAttributeDefinition;
 

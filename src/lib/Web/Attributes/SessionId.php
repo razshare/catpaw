@@ -6,19 +6,20 @@ use CatPaw\Core\DependenciesOptions;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Interfaces\OnParameterMount;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\Cookie;
-
 use CatPaw\Web\RequestContext;
 use ReflectionParameter;
 
-#[Attribute]
+/**
+ * Get the current session-id cookie of the client.
+ * @package CatPaw\Web\Attributes
+ */
+#[Attribute(flags:Attribute::TARGET_PARAMETER)]
 class SessionId implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
-    
+
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
         $value = '';
 
@@ -27,8 +28,8 @@ class SessionId implements AttributeInterface, OnParameterMount {
             return error("No context found for session id.");
         }
 
-        if ($cookie = Cookie::findFromRequestContextByName($context, 'session-id')) {
-            $value = $cookie->value;
+        if ($cookie = $context->request->getCookie('session-id') ?? '') {
+            $value = $cookie;
         }
 
         return ok();

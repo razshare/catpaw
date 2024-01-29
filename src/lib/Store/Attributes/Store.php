@@ -13,12 +13,12 @@ use CatPaw\Store\Services\StoreService;
 
 use ReflectionParameter;
 
-#[Attribute]
 #[Singleton]
+#[Attribute(flags:Attribute::TARGET_PARAMETER)]
 class Store implements OnParameterMount {
     use CoreAttributeDefinition;
     private StoreService $storeService;
-    
+
     public function __construct(private readonly string $name) {
     }
 

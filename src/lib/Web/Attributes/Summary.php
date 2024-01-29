@@ -6,10 +6,10 @@ use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 
 
-#[Attribute]
+#[Attribute(flags:Attribute::TARGET_ALL)]
 class Summary implements AttributeInterface {
     use CoreAttributeDefinition;
-    
+
     public function __construct(private string $value) {
     }
 

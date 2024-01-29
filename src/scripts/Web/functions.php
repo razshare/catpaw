@@ -5,13 +5,14 @@ namespace CatPaw\Web;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use Amp\Websocket\Server\WebsocketClientHandler;
+use Amp\Websocket\WebsocketClient;
+
 use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Services\WebsocketService;
 use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerInterface;
-
 
 /**
  * Suggest a download action to the client.
@@ -120,6 +121,31 @@ function queries(UriInterface $uri):array {
     return $queries;
 }
 
+/**
+ * Return this from a route handler to upgrade the exchange into websocket ([RFC 6455](https://www.rfc-editor.org/rfc/rfc6455.html)).
+ *
+ * ## Example
+ * ```php
+ * return fn() => websocket(
+ *  request: $request,
+ *  handler: new class implements WebsocketClientHandler {
+ *      public function handleClient(
+ *          WebsocketClient $client,
+ *          Request $request,
+ *          Response $response,
+ *      ): void {
+ *          $client->sendText("hello!");
+ *          foreach ($client as $message) {
+ *              echo "client says: $message\n";
+ *          }
+ *      }
+ *  }
+ * );
+ * ```
+ * @param  Request                $request Incoming http request.
+ * @param  WebsocketClientHandler $handler Websocket handler.
+ * @return ResponseModifier
+ */
 function websocket(Request $request, WebsocketClientHandler $handler): ResponseModifier {
     $websocketService = Container::create(WebsocketService::class)->try($errorWebsocket);
     if ($errorWebsocket) {
@@ -133,7 +159,6 @@ function websocket(Request $request, WebsocketClientHandler $handler): ResponseM
     }
     return success($websocketService->create($handler)->handleRequest($request));
 }
-
 
 /**
  * Render twig a file.

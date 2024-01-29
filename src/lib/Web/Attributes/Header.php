@@ -27,7 +27,7 @@ use ReflectionParameter;
  *
  * @package CatPaw\Web\Attributes
  */
-#[Attribute]
+#[Attribute(flags:Attribute::TARGET_PARAMETER)]
 class Header implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
 

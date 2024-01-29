@@ -12,7 +12,7 @@ use CatPaw\Core\Traits\CoreAttributeDefinition;
  * Attach this attribute to a class property as `HashMap<T>`.\
  * The open api service will interpret it as `array<string,T>`.
  */
-#[Attribute]
+#[Attribute(flags: Attribute::TARGET_PARAMETER)]
 class HashMap implements AttributeInterface {
     use CoreAttributeDefinition;
 

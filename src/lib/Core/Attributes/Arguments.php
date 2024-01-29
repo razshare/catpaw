@@ -14,13 +14,13 @@ use CatPaw\Core\Unsafe;
 
 use ReflectionParameter;
 
-#[Attribute]
+#[Attribute(flags: Attribute::TARGET_PARAMETER)]
 class Arguments implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
 
     private static bool $initialized = false;
     private static array $cache      = [];
-    
+
     public function __construct() {
         self::init();
     }
@@ -46,7 +46,7 @@ class Arguments implements AttributeInterface, OnParameterMount {
 
     /**
      * @inheritDoc
-     * @internal 
+     * @internal
      */
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
         /** @var array<string|int|bool|float> $value */

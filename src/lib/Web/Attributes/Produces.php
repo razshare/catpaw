@@ -30,7 +30,7 @@ use CatPaw\Web\Services\OpenApiService;
  * @see Body
  * @package CatPaw\Web\Attributes
  */
-#[Attribute]
+#[Attribute(flags:Attribute::TARGET_FUNCTION | Attribute::TARGET_METHOD)]
 class Produces implements AttributeInterface {
     use CoreAttributeDefinition;
 

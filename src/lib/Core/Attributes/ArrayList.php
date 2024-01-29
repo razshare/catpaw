@@ -12,7 +12,7 @@ use CatPaw\Core\Traits\CoreAttributeDefinition;
  * Attach this attribute to a class property as `ArrayList<T>`.\
  * The open api service will interpret it as `array<T>`.
  */
-#[Attribute]
+#[Attribute(flags: Attribute::TARGET_PARAMETER)]
 class ArrayList implements AttributeInterface {
     use CoreAttributeDefinition;
 

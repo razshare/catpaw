@@ -23,7 +23,7 @@ use Throwable;
  * @see Consumes
  * @package CatPaw\Web\Attributes
  */
-#[Attribute]
+#[Attribute(flags:Attribute::TARGET_PARAMETER)]
 class Body implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
 
@@ -34,7 +34,7 @@ class Body implements AttributeInterface, OnParameterMount {
         if (!$context) {
             return error("No context provided for body.");
         }
-        
+
         $className = ReflectionTypeManager::unwrap($reflection)?->getName() ?? '';
 
         try {

@@ -17,16 +17,16 @@ use ReflectionParameter;
 
 /**
  * Get a parameter from the route path.
- * 
- * 
+ *
+ *
  * The name of the parameter must match with the name of the path variable.
- * 
+ *
  * Given the path `/api/user/{username}/settings`, you would be able to get the `username` path variable using `#[Param] string $username`.
- * 
- * 
+ *
+ *
  * @package CatPaw\Web\Attributes
  */
-#[Attribute]
+#[Attribute(flags:Attribute::TARGET_PARAMETER)]
 class Param implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
 
@@ -51,7 +51,7 @@ class Param implements AttributeInterface, OnParameterMount {
         /** @var false|RequestContext $context */
         $context = $options->context;
         $name    = $reflection->getName();
-        
+
         if (!isset(self::$cache[$context->key])) {
             $type = ReflectionTypeManager::unwrap($reflection);
             if (!$type) {
@@ -70,7 +70,7 @@ class Param implements AttributeInterface, OnParameterMount {
         if ("bool" === $cname) {
             $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
         }
-        
+
         return ok();
     }
 }
