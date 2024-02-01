@@ -219,7 +219,7 @@ function get(string $command): Future {
  * or `Unsafe` that contains an error.\
  * In both cases the result is always an `Unsafe<T>` object.
  *
- * - If you generate an `Unsafe<T>` the error within the object is transfered to a new `Unsafe<T>` for the sake of consistency.
+ * - If you generate an `Unsafe<T>` the error within the object is transferred to a new `Unsafe<T>` for the sake of consistency.
  * - If you generate an `Error` instead, then the `Error` is wrapped in `Unsafe<T>`.
  *
  * The generator is consumed and if no error is detected then the function produces the returned value of the generator.
@@ -227,15 +227,17 @@ function get(string $command): Future {
  * ## Example
  * ```php
  * $content = anyError(function(){
- *  $file = File::open('file.txt')->try($error) or yield $error; // <=== yield error if detected
- *  $content = $file->readAll()->await()->try($error) or yield $error; // <=== same thing
- *  return $content; // <=== return the content of the file
- * })->try($error) or stop($error); // <=== stop the application if any error is detected.
+ *  $file = File::open('file.txt')->try($error)
+ *  or yield $error;
  *
- * // Otherwise print the content of the file
- * print($content);
+ *  $content = $file->readAll()->await()->try($error)
+ *  or yield $error;
+ *
+ *  return $content;
+ * });
  * ```
- * @param  callable():Generator<Unsafe|Error> $function
+ * @template T
+ * @param  callable():Generator<Unsafe|Error|T> $function
  * @return Unsafe<T>
  */
 function anyError(callable $function): Unsafe {
