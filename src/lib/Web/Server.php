@@ -127,7 +127,7 @@ class Server {
         string $secureInterface = '',
         string $api = './server/api/',
         string $www = './server/www/',
-        string $apiPrefix = '',
+        string $apiPrefix = '/',
         bool $enableCompression = true,
         int $connectionLimit = 1000,
         int $connectionLimitPerIp = 10,
@@ -138,13 +138,14 @@ class Server {
         if (isset(self::$singleton)) {
             return error('You can only have one server instance at any time. Use `Server::get()` to get the current instance.');
         }
+        if (!str_starts_with($apiPrefix, '/')) {
+            $apiPrefix = "/$apiPrefix";
+        }
         if (!str_starts_with($api, './')) {
             $api = "./$api";
-            // return error("The api directory must be a relative path and within the project directory.");
         }
         if (!str_starts_with($www, './')) {
             $www = "./$www";
-            // return error("The web root directory must be a relative path and within the project directory.");
         }
         $api = preg_replace('/\/+$/', '', $api);
         $www = preg_replace('/\/+$/', '', $www);
@@ -153,10 +154,6 @@ class Server {
         $logger = Container::create(LoggerInterface::class)->try($error);
         if ($error) {
             return error($error);
-        }
-
-        if (!str_starts_with($apiPrefix, "/")) {
-            $apiPrefix = "/$apiPrefix";
         }
 
         if ((!$www = self::findFirstValidWebDirectory([$www]))) {
@@ -386,7 +383,8 @@ class Server {
                             continue;
                         }
 
-                        $symbolicPath   = $apiPrefix.($matches[1] ?? '/');
+                        $symbolicPath   = "$apiPrefix/".(preg_replace('/^\//', '', $matches[1]) ?? '');
+                        $symbolicPath   = preg_replace(['/\/index$/','/\/$/'], '', $symbolicPath);
                         $symbolicPath   = preg_replace('/\/index$/', '', $symbolicPath);
                         $symbolicMethod = strtoupper($matches[3] ?? 'get');
 
