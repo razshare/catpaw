@@ -76,7 +76,7 @@ function badRequest(string $message):ErrorResponseModifier {
  */
 function failure(
     false|string $message = false,
-    int $status = __INTERNAL_SERVER_ERROR,
+    int $status = INTERNAL_SERVER_ERROR,
     array $headers = []
 ):ErrorResponseModifier {
     if (false === $message) {
