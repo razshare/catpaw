@@ -383,9 +383,8 @@ class Server {
                             continue;
                         }
 
-                        $symbolicPath   = "$apiPrefix/".(preg_replace('/^\//', '', $matches[1]) ?? '');
-                        $symbolicPath   = preg_replace(['/\/index$/','/\/$/'], '', $symbolicPath);
-                        $symbolicPath   = preg_replace('/\/index$/', '', $symbolicPath);
+                        $symbolicPath   = $apiPrefix.$matches[1] ?? '';
+                        $symbolicPath   = preg_replace(['/^\/+/','/\/index$/'], ['/',''], $symbolicPath);
                         $symbolicMethod = strtoupper($matches[3] ?? 'get');
 
                         $routeExists = $router->routeExists($symbolicMethod, $symbolicPath);
