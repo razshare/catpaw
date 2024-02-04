@@ -8,7 +8,7 @@ use function Amp\delay;
 use function Amp\File\isDirectory;
 
 use CatPaw\Core\Services\EnvironmentService;
-
+use Error;
 use Phar;
 use function preg_split;
 use Psr\Log\LoggerInterface;
@@ -158,7 +158,7 @@ class Bootstrap {
                     libraries: $librariesList,
                     resources: $resourcesList,
                     function: static function() {
-                        self::kill("Killing application...");
+                        self::kill("Killing application...", 0);
                     },
                 );
             }
@@ -188,15 +188,28 @@ class Bootstrap {
     }
 
     /**
-     * @param  string $message
+     * @param  false|string|Error $error
      * @return never
      */
-    public static function kill(string $message = ''):never {
+    public static function kill(false|string|Error $error = false, false|int $code = false):never {
         foreach (self::$onKillActions as $function) {
             $function();
         }
-        echo $message.PHP_EOL;
-        die(CommandStatus::SUCCESS);
+
+        if ($error) {
+            echo ($error?:'').PHP_EOL;
+            if (false === $code) {
+                die(CommandStatus::OPERATION_CANCELED);
+            } else {
+                die($code);
+            }
+        }
+
+        if (false === $code) {
+            die($code?:CommandStatus::SUCCESS);
+        } else {
+            die($code);
+        }
     }
 
     /**
@@ -271,7 +284,7 @@ class Bootstrap {
                     entry: $entry,
                     libraries: $librariesList,
                     resources: $resourcesList,
-                    function: static function() use (&$ready) {
+                    function: static function() use (&$ready, &$code) {
                         if (!$ready) {
                             return;
                         }
@@ -283,8 +296,8 @@ class Bootstrap {
                     if ($ready) {
                         $ready->getFuture()->await();
                     }
-                    execute($instruction, out())->await()->try($error);
-                    if ($error) {
+                    $code = execute($instruction, out())->await()->try($error);
+                    if ($error || $code > 0) {
                         echo $error.PHP_EOL;
                         $ready = new DeferredFuture;
                     }
@@ -293,7 +306,7 @@ class Bootstrap {
 
             EventLoop::run();
         } catch (Throwable $error) {
-            self::kill((string)$error);
+            self::kill($error);
         }
     }
 
