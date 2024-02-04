@@ -37,14 +37,29 @@ class EnvironmentService {
     private array $variables = [];
 
     /**
+     * Merges `$_ENV` into this service's internal map of variables.\
+     * \
+     * This could potentially overwrite some user defined variables.\
+     * You can recover these _lost_ variables by invoking `load()` again.
+     * @return void
+     */
+    public function includeSystemEnvironment() {
+        $this->variables = [
+            ...$this->variables,
+            ...$_ENV,
+        ];
+    }
+
+    /**
      * Parse the first valid environment file and update all variables in memory.
-     * Multiple calls are allowed.
-     * @param  bool         $info if true, feedback messages will be written to stdout, otherwise the loading process will be silent.
+     * Multiple calls are allowed.\
+     * This function is invoked automatically when the application starts.
+     * @param  bool         $info if true, feedback messages will be logged, otherwise the loading process will be silent.
      * @return Unsafe<void>
      */
     public function load(bool $info = false):Unsafe {
         $this->variables = [];
-            
+
         if (!$fileName = $this->fileName) {
             if ($info) {
                 $this->logger->info("Environment file $this->fileName not found.");
@@ -66,7 +81,7 @@ class EnvironmentService {
             return error($error);
         }
 
-            
+
         if (trim($content) !== '') {
             if (str_ends_with($fileName, '.yaml') || str_ends_with($fileName, '.yml')) {
                 if (function_exists('yaml_parse')) {
@@ -83,19 +98,40 @@ class EnvironmentService {
             }
         }
 
-        $_ENV = [
-            ...$_ENV,
-            ... $this->variables,
-        ];
-
         return ok();
     }
 
     /**
-     * Get all the environment variables
-     * @return array<string,string|null>
+     * Find an environment variable by name.
+     *
+     * ## Example
+     * ```php
+     * $service->findByName("server")['www'];
+     * // or better even
+     * $service->$findByName("server.www");
+     * ```
+     * @template T
+     * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
+     * @return T      value of the variable.
      */
-    public function getVariables():array {
-        return $this->variables;
+    public function findByName(string $query):mixed {
+        if (isset($this->variables[$query])) {
+            return $this->variables[$query];
+        }
+        $reference = &$this->variables;
+        foreach (explode('.', $query) as $key) {
+            if (!isset($reference[$key])) {
+                return null;
+            }
+            $reference = &$reference[$key];
+        }
+
+        if ($reference === $this->variables) {
+            // When reference has not changed it
+            // means `$name` is invalid or was not found.
+            return null;
+        }
+
+        return $reference;
     }
 }

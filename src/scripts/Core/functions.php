@@ -15,6 +15,7 @@ use Amp\ByteStream\WritableStream;
 use Amp\DeferredFuture;
 use Amp\Future;
 use Amp\Process\Process;
+use CatPaw\Core\Services\EnvironmentService;
 use Error;
 use Generator;
 use Phar;
@@ -293,14 +294,32 @@ function deferred(): DeferredFuture {
     return new DeferredFuture;
 }
 
+
 /**
- * Get an environment variable.
+ * Find an environment variable by name.
+ *
+ * ## Example
+ * ```php
+ * $service->findByName("server")['www'];
+ * // or better even
+ * $service->$findByName("server.www");
+ * ```
  * @template T
- * @param  string $name name of the variable.
+ * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
  * @return T      value of the variable.
  */
-function env(string $name): mixed {
-    return $_ENV[$name];
+function env(string $query): mixed {
+    /** @var false|EnvironmentService */
+    static $env = false;
+
+    if (!$env) {
+        $env = Container::create(EnvironmentService::class)->try($error);
+        if ($error) {
+            Bootstrap::kill("Couldn't load environment service.", CommandStatus::NO_DATA_AVAILABLE);
+        }
+    }
+
+    return $env->findByName($query);
 }
 
 
