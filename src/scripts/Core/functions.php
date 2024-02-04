@@ -331,5 +331,5 @@ function asFileName(string ...$path):string {
         }
         $parts[] = $pathName;
     }
-    return join( $parts);
+    return realpath(join($parts))?:'';
 }
