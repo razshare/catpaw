@@ -101,28 +101,27 @@ class Bootstrap {
             }
 
             Container::set(LoggerInterface::class, $logger);
-            $env = new EnvironmentService($logger);
-
-            if ($environment) {
-                if (File::exists($environment)) {
-                    $env->setFileName($environment);
-                    $env->load(skipErrors:true)->try($error);
-                    if ($error) {
-                        self::kill((string)$error);
-                    }
-                }
-            }
-
             /** @var array<string> $librariesList */
             $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
 
             /** @var array<string> $resourcesList */
             $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
 
+            $env = new EnvironmentService($logger);
+            Container::set(EnvironmentService::class, $env);
+
             $env->set('ENTRY', $entry);
             $env->set('LIBRARIES', $librariesList);
             $env->set('RESOURCES', $resourcesList);
             $env->set('DIE_ON_CHANGE', $dieOnChange);
+
+            if ($environment) {
+                $env->setFileName($environment);
+                $env->load()->try($error);
+                if ($error) {
+                    self::kill((string)$error);
+                }
+            }
 
             foreach ($librariesList as $library) {
                 if (!str_starts_with($library, './')) {

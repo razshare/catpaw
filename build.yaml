@@ -1,5 +1,4 @@
 name: catpaw
 entry: ./src/main.php
 libraries: ./src
-environment: ./env.yaml
 match: /(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(^\.\/(\.env|env\.yaml|env\.yml))/

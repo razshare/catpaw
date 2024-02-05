@@ -26,6 +26,13 @@ class EnvironmentService {
     private string $fileName = './env.yaml';
 
 
+    /**
+     * Merge `$_ENV` and `getenv()` with this service's internal variables map.\
+     * \
+     * This may overwrite keys defined in your environment file.\
+     * Call `load()` again to recover the lost keys.
+     * @return void
+     */
     public function includeSystemEnvironment() {
         $this->variables = [
             ...$this->variables,
@@ -44,61 +51,30 @@ class EnvironmentService {
         $this->fileName = $fileName;
     }
 
+    /**
+     * Clear all environment variables.
+     * @return void
+     */
+    public function clear() {
+        $this->variables = [];
+    }
 
     /**
      * Parse the first valid environment file and update all variables in memory.
      * Multiple calls are allowed.\
      * This function is invoked automatically when the application starts.
-     * @param  bool         $skipErrors When set to `true`, the function will never return any errors.
      * @return Unsafe<void>
      */
-    public function load(bool $skipErrors = false):Unsafe {
-        $this->variables = [];
-        $fileName        = $this->fileName;
-
-        if (!File::exists($fileName)) {
-            $variants = [];
-
-            if (str_ends_with($fileName, '.yml')) {
-                $variants[] = substr($fileName, -3).'.yaml';
-            } else if (str_ends_with($fileName, '.yaml')) {
-                $variants[] = substr($fileName, -5).'.yml';
-            } else {
-                $variants[] = "$fileName.yaml";
-                $variants[] = "$fileName.yml";
-                $variants[] = ".$fileName";
-            }
-
-            foreach ($variants as $variant) {
-                if (!str_starts_with($variant, '/') && !str_starts_with($variant, '../') && !str_starts_with($variant, './')) {
-                    $variant = "./$variant";
-                }
-
-                if (File::exists($variant)) {
-                    $fileName = $variant;
-                    break;
-                }
-            }
-        } else {
-            if (!str_starts_with($fileName, '/') && !str_starts_with($fileName, '../') && !str_starts_with($fileName, './')) {
-                $fileName = "./$fileName";
-            }
-        }
-
+    public function load():Unsafe {
+        $fileName = $this->fileName;
 
         $file = File::open($fileName)->try($error);
         if ($error) {
-            if ($skipErrors) {
-                return ok();
-            }
             return error($error);
         }
 
         $content = $file->readAll()->await()->try($error);
         if ($error) {
-            if ($skipErrors) {
-                return ok();
-            }
             return error($error);
         }
 
@@ -108,20 +84,20 @@ class EnvironmentService {
                 if (function_exists('yaml_parse')) {
                     $vars = yaml_parse($content);
                     if (false === $vars) {
-                        if ($skipErrors) {
-                            return ok();
-                        }
                         return error("Error while parsing environment yaml file.");
                     }
-                    $this->variables = $vars?:[];
+                    $this->variables = [
+                        ...$this->variables,
+                        ...($vars?:[]),
+                    ];
                 } else {
-                    if ($skipErrors) {
-                        return ok();
-                    }
                     return error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
                 }
             } else {
-                $this->variables = Dotenv::parse($content);
+                $this->variables = [
+                    ...$this->variables,
+                    ...Dotenv::parse($content),
+                ];
             }
         }
 

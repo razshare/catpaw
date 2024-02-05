@@ -21,7 +21,7 @@ $resources   = $resources->findValue('string', true)   ?? '';
 $dieOnChange = $dieOnChange->findValue('bool')         ?? false;
 $watch       = $watch->findValue('bool')               ?? false;
 $php         = $php->findValue('string', true)         ?? 'php';
-$environment = $environment->findValue('string', true) ?? 'env';
+$environment = $environment->findValue('string', true) ?? '';
 
 try {
     if ($watch) {

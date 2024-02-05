@@ -177,9 +177,9 @@ function build(
             require 'vendor/autoload.php';
 
             \$environment = new Option('--environment');
-            \$environment = \$environment->findValue('string', true);
+            \$environment = \$environment->findValue('string', true)??'';
 
-            if(null === \$environment){
+            if(\$environment){
                 \$environment = \Phar::running().'/'.$environmentFallbackStringified;
             }
 
