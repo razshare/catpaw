@@ -23,7 +23,10 @@ class CoreTest extends TestCase {
         $service->setFileName(asFileName(__DIR__, 'env.yaml'));
         $service->load()->try($error);
         $this->assertFalse($error);
-        $message = env("say.hello");
-        $this->assertEquals('hello world', $message);
+        $sayHello = env("say.hello");
+        $this->assertEquals('hello world', $sayHello);
+        $service->set("test-key", "test-value");
+        $test = env("test-key");
+        $this->assertEquals('test-value', $test);
     }
 }

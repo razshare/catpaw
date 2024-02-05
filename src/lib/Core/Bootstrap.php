@@ -67,7 +67,6 @@ class Bootstrap {
      * @param  string $libraries   libraries to load
      * @param  string $resources   resources to load
      * @param  string $environment
-     * @param  bool   $info        if true, the bootstrap starter will write feedback messages to stdout, otherwise it will be silent unless it crashes with an exception.
      * @param  bool   $dieOnChange die when a change to the entry file, libraries or resources is detected
      * @return void
      */
@@ -77,7 +76,6 @@ class Bootstrap {
         string $libraries,
         string $resources,
         string $environment,
-        bool $info = false,
         bool $dieOnChange = false,
     ): void {
         try {
@@ -103,12 +101,12 @@ class Bootstrap {
             }
 
             Container::set(LoggerInterface::class, $logger);
-            $environmentService = new EnvironmentService($logger);
+            $env = new EnvironmentService($logger);
 
             if ($environment) {
                 if (File::exists($environment)) {
-                    $environmentService->setFileName($environment);
-                    $environmentService->load($info)->try($error);
+                    $env->setFileName($environment);
+                    $env->load(skipErrors:true)->try($error);
                     if ($error) {
                         self::kill((string)$error);
                     }
@@ -121,11 +119,10 @@ class Bootstrap {
             /** @var array<string> $resourcesList */
             $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
 
-            $_ENV['ENTRY']         = $entry;
-            $_ENV['LIBRARIES']     = $librariesList;
-            $_ENV['RESOURCES']     = $resourcesList;
-            $_ENV['DIE_ON_CHANGE'] = $dieOnChange;
-            $_ENV['SHOW_INFO']     = $info;
+            $env->set('ENTRY', $entry);
+            $env->set('LIBRARIES', $librariesList);
+            $env->set('RESOURCES', $resourcesList);
+            $env->set('DIE_ON_CHANGE', $dieOnChange);
 
             foreach ($librariesList as $library) {
                 if (!str_starts_with($library, './')) {

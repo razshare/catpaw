@@ -17,7 +17,6 @@ $resources   = new Option('--resources');
 $dieOnChange = new Option('--die-on-change');
 $watch       = new Option('--watch');
 $php         = new Option('--php');
-$info        = new Option('--info');
 $environment = new Option('--environment');
 
 $entry       = $entry->findValue('string', true)       ?? '';
@@ -27,8 +26,7 @@ $resources   = $resources->findValue('string', true)   ?? '';
 $dieOnChange = $dieOnChange->findValue('bool')         ?? false;
 $watch       = $watch->findValue('bool')               ?? false;
 $php         = $php->findValue('string', true)         ?? 'php';
-$info        = $info->findValue('bool', true)          ?? false;
-$environment = $environment->findValue('string', true) ?? './env.yml';
+$environment = $environment->findValue('string', true) ?? 'env';
 
 try {
     if ($watch) {
@@ -49,7 +47,6 @@ try {
             libraries: $libraries,
             resources: $resources,
             environment: $environment,
-            info: $info,
             dieOnChange: $dieOnChange,
         );
     }

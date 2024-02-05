@@ -27,8 +27,8 @@ function build(
     bool $buildConfigInit = false,
     bool $buildOptimize = false,
 ):Unsafe {
-    if (File::exists('build.yml')) {
-        $buildConfig = $buildConfig?:'build.yml';
+    if (File::exists('build.yaml')) {
+        $buildConfig = $buildConfig?:'build.yaml';
     } else {
         $buildConfig = $buildConfig?:'build.yaml';
     }
@@ -40,30 +40,30 @@ function build(
     }
 
     if ($buildConfigInit) {
-        $logger->info('Trying to generate build.yml file...');
-        
-        if (!File::exists('build.yml')) {
-            $file = File::open('build.yml')->try($error);
+        $logger->info('Trying to generate build.yaml file...');
+
+        if (!File::exists('build.yaml')) {
+            $file = File::open('build.yaml')->try($error);
             if ($error) {
                 return error($error);
             }
 
-            $file->write('build.yml', <<<YAML
+            $file->write('build.yaml', <<<YAML
                 name: app
                 entry: ./src/main.php
                 libraries: ./src/lib
-                environment: ./env.yml
+                environment: ./env.yaml
                 info: false
-                match: /(^\.\/(\.build-cache|src|vendor|resources|bin)\/.*)|(\.\/env\.yml)/
+                match: /(^\.\/(\.build-cache|src|vendor|resources|bin)\/.*)|(\.\/env\.yaml)/
                 YAML)->await()->try($error);
 
             if ($error) {
                 return error($error);
             }
-            
+
             $logger->info('done!');
         } else {
-            $logger->info('A build.yml file already exists - will not overwrite.');
+            $logger->info('A build.yaml file already exists - will not overwrite.');
         }
     }
 
@@ -78,7 +78,7 @@ function build(
     if ($error) {
         return error($error);
     }
-    
+
     $content = $file->readAll()->await()->try($error);
     if ($error) {
         return error($error);
@@ -108,7 +108,7 @@ function build(
     if ($environment) {
         $environment = str_replace(['"',"\n"], ['\\"',''], $environment);
     }
-    
+
     if (!str_ends_with(strtolower($name), '.phar')) {
         $name .= '.phar';
     }
@@ -127,7 +127,7 @@ function build(
     $app          = "$name";
     $start        = '.build-cache/start.php';
     $dirnameStart = dirname($start);
-    
+
     try {
         if (File::exists($dirnameStart)) {
             Directory::delete($dirnameStart)->try($error);
@@ -144,7 +144,7 @@ function build(
         $environmentFallbackStringified = $environment ? "'$environment'":"''";
 
         $infoFallbackStringified = $info ? 'true':'false';
-        
+
         $file = File::open($start, 'w+')->try($error);
         if ($error) {
             return error($error);
@@ -180,7 +180,7 @@ function build(
                 dieOnChange: false,
             );
             PHP)->await()->try($error);
-        
+
         $file->close();
 
         if ($error) {
@@ -189,7 +189,7 @@ function build(
 
 
         // die($output.PHP_EOL);
-        
+
         if (File::exists($app)) {
             File::delete($app)->try($error);
             if ($error) {
@@ -203,14 +203,14 @@ function build(
                 return error($error);
             }
         }
-        
+
         if ($buildOptimize) {
             execute("composer update --no-dev", out())->await()->try($error);
             if ($error) {
                 return error($error);
             }
         }
-        
+
         if (isDirectory("./vendor/bin")) {
             Directory::delete("./vendor/bin")->try($error);
             if ($error) {

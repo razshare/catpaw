@@ -21,7 +21,7 @@ class EnvironmentService {
     }
 
     /** @var string */
-    private string $fileName = '';
+    private string $fileName = './env';
 
     /**
      * Set the environment file name.
@@ -33,51 +33,60 @@ class EnvironmentService {
     }
 
 
-    /** @var array<string,string|null> */
-    private array $variables = [];
-
-    /**
-     * Merges `$_ENV` into this service's internal map of variables.\
-     * \
-     * This could potentially overwrite some user defined variables.\
-     * You can recover these _lost_ variables by invoking `load()` again.
-     * @return void
-     */
-    public function includeSystemEnvironment() {
-        $this->variables = [
-            ...$this->variables,
-            ...$_ENV,
-        ];
-    }
-
     /**
      * Parse the first valid environment file and update all variables in memory.
      * Multiple calls are allowed.\
      * This function is invoked automatically when the application starts.
-     * @param  bool         $info if true, feedback messages will be logged, otherwise the loading process will be silent.
+     * @param  bool         $skipErrors When set to `true`, the function will never return any errors.
      * @return Unsafe<void>
      */
-    public function load(bool $info = false):Unsafe {
-        $this->variables = [];
+    public function load(bool $skipErrors = false):Unsafe {
+        $variables = [];
+        $fileName  = $this->fileName;
 
-        if (!$fileName = $this->fileName) {
-            if ($info) {
-                $this->logger->info("Environment file $this->fileName not found.");
+        if (!File::exists($fileName)) {
+            $variants = [];
+
+            if (str_ends_with($fileName, '.yml')) {
+                $variants[] = substr($fileName, -3).'.yaml';
+            } else if (str_ends_with($fileName, '.yaml')) {
+                $variants[] = substr($fileName, -5).'.yml';
+            } else {
+                $variants[] = "$fileName.yaml";
+                $variants[] = "$fileName.yml";
+                $variants[] = ".$fileName";
             }
-            return ok();
+
+            foreach ($variants as $variant) {
+                if (!str_starts_with($variant, '/') && !str_starts_with($variant, '../') && !str_starts_with($variant, './')) {
+                    $variant = "./$variant";
+                }
+
+                if (File::exists($variant)) {
+                    $fileName = $variant;
+                    break;
+                }
+            }
+        } else {
+            if (!str_starts_with($fileName, '/') && !str_starts_with($fileName, '../') && !str_starts_with($fileName, './')) {
+                $fileName = "./$fileName";
+            }
         }
 
-        if ($info) {
-            $this->logger->info("Environment file is $fileName");
-        }
 
         $file = File::open($fileName)->try($error);
         if ($error) {
+            if ($skipErrors) {
+                return ok();
+            }
             return error($error);
         }
 
         $content = $file->readAll()->await()->try($error);
         if ($error) {
+            if ($skipErrors) {
+                return ok();
+            }
             return error($error);
         }
 
@@ -87,18 +96,53 @@ class EnvironmentService {
                 if (function_exists('yaml_parse')) {
                     $vars = yaml_parse($content);
                     if (false === $vars) {
+                        if ($skipErrors) {
+                            return ok();
+                        }
                         return error("Error while parsing environment yaml file.");
                     }
-                    $this->variables = $vars?:[];
+                    $variables = $vars?:[];
                 } else {
+                    if ($skipErrors) {
+                        return ok();
+                    }
                     return error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
                 }
             } else {
-                $this->variables = Dotenv::parse($content);
+                $variables = Dotenv::parse($content);
             }
         }
 
+        $_ENV = [
+            ...$_ENV,
+            ...$variables,
+        ];
+
         return ok();
+    }
+
+    /**
+     *
+     * @param  mixed  $value
+     * @param  string $key
+     * @return void
+     */
+    public function set(string $query, $value) {
+        $reference = &$_ENV;
+        foreach (explode('.', $query) as $key) {
+            if (!isset($reference[$key])) {
+                $reference[$key] = [];
+            }
+            $reference = &$reference[$key];
+        }
+
+        if ($reference === $_ENV) {
+            // When reference has not changed it
+            // means `$name` is invalid or was not found.
+            return;
+        }
+
+        $reference = $value;
     }
 
     /**
@@ -106,19 +150,19 @@ class EnvironmentService {
      *
      * ## Example
      * ```php
-     * $service->findByName("server")['www'];
+     * $service->get("server")['www'];
      * // or better even
-     * $service->$findByName("server.www");
+     * $service->$get("server.www");
      * ```
      * @template T
      * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
      * @return T      value of the variable.
      */
-    public function findByName(string $query):mixed {
-        if (isset($this->variables[$query])) {
-            return $this->variables[$query];
+    public function get(string $query):mixed {
+        if (isset($_ENV[$query])) {
+            return $_ENV[$query];
         }
-        $reference = &$this->variables;
+        $reference = &$_ENV;
         foreach (explode('.', $query) as $key) {
             if (!isset($reference[$key])) {
                 return null;
@@ -126,7 +170,7 @@ class EnvironmentService {
             $reference = &$reference[$key];
         }
 
-        if ($reference === $this->variables) {
+        if ($reference === $_ENV) {
             // When reference has not changed it
             // means `$name` is invalid or was not found.
             return null;

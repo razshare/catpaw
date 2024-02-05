@@ -87,13 +87,13 @@ It is possible, but not required, to build your application into a single `.phar
 ```bash
 composer prod:build
 ```
-The building process can be configured inside the `build.yml` file.
+The building process can be configured inside the `build.yaml` file.
 
 After building your application, you can simply run it using
 ```
 php app.phar
 ```
-The resulting `.phar`, by default (check `build.yml`), includes the following directories:
+The resulting `.phar`, by default (check `build.yaml`), includes the following directories:
 
 - `./src`
 - `./vendor`

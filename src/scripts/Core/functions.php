@@ -315,11 +315,11 @@ function env(string $query): mixed {
     if (!$env) {
         $env = Container::create(EnvironmentService::class)->try($error);
         if ($error) {
-            Bootstrap::kill("Couldn't load environment service.", CommandStatus::NO_DATA_AVAILABLE);
+            Bootstrap::kill("Couldn't load environment service.\n$error", CommandStatus::NO_DATA_AVAILABLE);
         }
     }
 
-    return $env->findByName($query);
+    return $env->get($query);
 }
 
 
