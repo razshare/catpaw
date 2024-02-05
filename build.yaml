@@ -3,4 +3,4 @@ entry: ./src/main.php
 libraries: ./src
 environment: ./env.yaml
 info: false
-match: /(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(\.\/env\.yaml)/
+match: /(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(\.\/env)|(\.yaml)|(\.yml)/

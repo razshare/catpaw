@@ -27,10 +27,37 @@ function build(
     bool $buildConfigInit = false,
     bool $buildOptimize = false,
 ):Unsafe {
+    if ($buildConfig) {
+        if (!File::exists($buildConfig)) {
+            $variants = [];
+
+            if (str_ends_with($buildConfig, '.yml')) {
+                $variants[] = substr($buildConfig, -3).'.yaml';
+            } else if (str_ends_with($buildConfig, '.yaml')) {
+                $variants[] = substr($buildConfig, -5).'.yml';
+            } else {
+                $variants[] = "$buildConfig.yaml";
+                $variants[] = "$buildConfig.yml";
+            }
+
+            foreach ($variants as $variant) {
+                if (!str_starts_with($variant, '/') && !str_starts_with($variant, '../') && !str_starts_with($variant, './')) {
+                    $variant = "./$variant";
+                }
+
+                if (File::exists($variant)) {
+                    $buildConfig = $variant;
+                    break;
+                }
+            }
+        }
+    }
+
+
     if (File::exists('build.yaml')) {
         $buildConfig = $buildConfig?:'build.yaml';
     } else {
-        $buildConfig = $buildConfig?:'build.yaml';
+        $buildConfig = $buildConfig?:'build.yml';
     }
 
 
@@ -42,7 +69,7 @@ function build(
     if ($buildConfigInit) {
         $logger->info('Trying to generate build.yaml file...');
 
-        if (!File::exists('build.yaml')) {
+        if (!File::exists('build.yaml') && !File::exists('build.yml')) {
             $file = File::open('build.yaml')->try($error);
             if ($error) {
                 return error($error);
@@ -53,7 +80,6 @@ function build(
                 entry: ./src/main.php
                 libraries: ./src/lib
                 environment: ./env.yaml
-                info: false
                 match: /(^\.\/(\.build-cache|src|vendor|resources|bin)\/.*)|(\.\/env\.yaml)/
                 YAML)->await()->try($error);
 
@@ -70,9 +96,6 @@ function build(
     if (ini_get('phar.readonly')) {
         return error('Cannot build using readonly phar, please disable the phar.readonly flag by running the builder with "php -dphar.readonly=0"'.PHP_EOL);
     }
-
-
-
 
     $file = File::open($buildConfig)->try($error);
     if ($error) {
@@ -92,14 +115,12 @@ function build(
      * @var string      $libraries
      * @var string      $match
      * @var null|string $environment
-     * @var null|bool   $info
      */
     $name        = $config['name']        ?? 'app.phar';
     $entry       = $config['entry']       ?? '';
     $libraries   = $config['libraries']   ?? '';
     $match       = $config['match']       ?? '';
     $environment = $config['environment'] ?? null;
-    $info        = $config['info']        ?? null;
 
     $name      = str_replace(['"',"\n"], ['\\"',''], $name);
     $entry     = str_replace(['"',"\n"], ['\\"',''], $entry);
@@ -143,8 +164,6 @@ function build(
 
         $environmentFallbackStringified = $environment ? "'$environment'":"''";
 
-        $infoFallbackStringified = $info ? 'true':'false';
-
         $file = File::open($start, 'w+')->try($error);
         if ($error) {
             return error($error);
@@ -167,16 +186,12 @@ function build(
                 \$environment = \Phar::running().'/'.$environmentFallbackStringified;
             }
 
-            \$info = new Option('--info');
-            \$info = \$info->findValue('bool', true) ?? $infoFallbackStringified;
-
             Bootstrap::start(
                 entry: "$entry",
                 name: "$name",
                 libraries: "$libraries",
                 resources: '',
                 environment: \$environment,
-                info: \$info,
                 dieOnChange: false,
             );
             PHP)->await()->try($error);

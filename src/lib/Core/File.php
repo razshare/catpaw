@@ -12,6 +12,8 @@ use function Amp\File\getSize;
 use function Amp\File\getStatus;
 use function Amp\File\openFile;
 use Amp\Future;
+use Dotenv\Dotenv;
+use Error;
 use Throwable;
 
 readonly class File {
@@ -125,20 +127,20 @@ readonly class File {
      * Open a file.
      * @param string $fileName name of the file to open.
      * @param string $mode     specifies the type of access you require to the stream. It may be any of the following:
-     *                         - `r` - Open for reading only; place the file pointer at the beginning of the file. 
-     *                         - `r+` - Open for reading and writing; place the file pointer at the beginning of the file. 
-     *                         - `w` - Open for writing only; place the file pointer at the beginning of the file and truncate the file to zero length. If the file does not exist, attempt to create it. 
-     *                         - `w+` - Open for reading and writing; otherwise it has the same behavior as 'w'. 
-     *                         - `a` - Open for writing only; place the file pointer at the end of the file. If the file does not exist, attempt to create it. In this mode, [fseek()](https://www.php.net/manual/en/function.fseek.php) has no effect, writes are always appended. 
-     *                         - `a+` - Open for reading and writing; place the file pointer at the end of the file. If the file does not exist, attempt to create it. In this mode, [fseek()](https://www.php.net/manual/en/function.fseek.php) only affects the reading position, writes are always appended. 
-     *                         - `x` - Create and open for writing only; place the file pointer at the beginning of the file. If the file already exists, the fopen() call will fail by returning false and generating an error of level E_WARNING. If the file does not exist, attempt to create it. This is equivalent to specifying O_EXCL|O_CREAT flags for the underlying open(2) system call. 
-     *                         - `x+` - Create and open for reading and writing; otherwise it has the same behavior as 'x'. 
-     *                         - `c` - Open the file for writing only. If the file does not exist, it is created. If it exists, it is neither truncated (as opposed to 'w'), nor the call to this function fails (as is the case with 'x'). The file pointer is positioned on the beginning of the file. This may be useful if it's desired to get an advisory lock (see [flock()](https://www.php.net/manual/en/function.flock.php)) before attempting to modify the file, as using 'w' could truncate the file before the lock was obtained (if truncation is desired, [ftruncate()](https://www.php.net/manual/en/function.ftruncate.php) can be used after the lock is requested). 
-     *                         - `c+` - Open the file for reading and writing; otherwise it has the same behavior as 'c'. 
-     *                         - `e` - Set close-on-exec flag on the opened file descriptor. Only available in PHP compiled on POSIX.1-2008 conform systems. 
-     * 
+     *                         - `r` - Open for reading only; place the file pointer at the beginning of the file.
+     *                         - `r+` - Open for reading and writing; place the file pointer at the beginning of the file.
+     *                         - `w` - Open for writing only; place the file pointer at the beginning of the file and truncate the file to zero length. If the file does not exist, attempt to create it.
+     *                         - `w+` - Open for reading and writing; otherwise it has the same behavior as 'w'.
+     *                         - `a` - Open for writing only; place the file pointer at the end of the file. If the file does not exist, attempt to create it. In this mode, [fseek()](https://www.php.net/manual/en/function.fseek.php) has no effect, writes are always appended.
+     *                         - `a+` - Open for reading and writing; place the file pointer at the end of the file. If the file does not exist, attempt to create it. In this mode, [fseek()](https://www.php.net/manual/en/function.fseek.php) only affects the reading position, writes are always appended.
+     *                         - `x` - Create and open for writing only; place the file pointer at the beginning of the file. If the file already exists, the fopen() call will fail by returning false and generating an error of level E_WARNING. If the file does not exist, attempt to create it. This is equivalent to specifying O_EXCL|O_CREAT flags for the underlying open(2) system call.
+     *                         - `x+` - Create and open for reading and writing; otherwise it has the same behavior as 'x'.
+     *                         - `c` - Open the file for writing only. If the file does not exist, it is created. If it exists, it is neither truncated (as opposed to 'w'), nor the call to this function fails (as is the case with 'x'). The file pointer is positioned on the beginning of the file. This may be useful if it's desired to get an advisory lock (see [flock()](https://www.php.net/manual/en/function.flock.php)) before attempting to modify the file, as using 'w' could truncate the file before the lock was obtained (if truncation is desired, [ftruncate()](https://www.php.net/manual/en/function.ftruncate.php) can be used after the lock is requested).
+     *                         - `c+` - Open the file for reading and writing; otherwise it has the same behavior as 'c'.
+     *                         - `e` - Set close-on-exec flag on the opened file descriptor. Only available in PHP compiled on POSIX.1-2008 conform systems.
+     *
      * > **Note**\
-     * > The `mode` is ignored for `php://output`, `php://input`, `php://stdin`, `php://stdout`, `php://stderr` and `php://fd` stream wrappers. 
+     * > The `mode` is ignored for `php://output`, `php://input`, `php://stdin`, `php://stdout`, `php://stderr` and `php://fd` stream wrappers.
      * @see https://www.php.net/manual/en/function.fopen.php
      * @return Unsafe<File>
      */
@@ -149,6 +151,121 @@ readonly class File {
             return error($e);
         }
         return ok(new self($file, $mode, $fileName));
+    }
+
+    /**
+     * Read the contents of a _.yaml_ file.
+     * @param  string $fileName
+     * @throws Error
+     * @return Unsafe
+     */
+    public static function readYaml(string $fileName):Unsafe {
+        if (!File::exists($fileName)) {
+            $variants = [];
+
+            if (str_ends_with($fileName, '.yml')) {
+                $variants[] = substr($fileName, -3).'.yaml';
+            } else if (str_ends_with($fileName, '.yaml')) {
+                $variants[] = substr($fileName, -5).'.yml';
+            } else {
+                $variants[] = "$fileName.yaml";
+                $variants[] = "$fileName.yml";
+            }
+
+            $stringifiedVariants = '';
+
+            foreach ($variants as $variant) {
+                if (!str_starts_with($variant, '/') && !str_starts_with($variant, '../') && !str_starts_with($variant, './')) {
+                    $variant = "./$variant";
+                }
+
+                if (File::exists($variant)) {
+                    $fileName = $variant;
+                    $file     = File::open($fileName, 'r')->try($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                    $contents = $file->readAll()->await()->try($error);
+                    if ($error) {
+                        return error($error);
+                    }
+
+                    $parsed = yaml_parse($contents);
+                    if (false === $parsed) {
+                        return error("Couldn't parse yaml file.");
+                    }
+                    return ok($parsed);
+                }
+
+                if ($stringifiedVariants) {
+                    $stringifiedVariants .= ', ';
+                }
+
+                $stringifiedVariants .= "`$variant`";
+            }
+
+
+            return error("Couldn't find yaml file, tried `$fileName` and different variants $stringifiedVariants.");
+        }
+
+        $file = File::open($fileName, 'r')->try($error);
+        if ($error) {
+            return error($error);
+        }
+        $contents = $file->readAll()->await()->try($error);
+        if ($error) {
+            return error($error);
+        }
+        $parsed = yaml_parse($contents);
+        if (false === $parsed) {
+            return error("Couldn't parse yaml file.");
+        }
+        return ok($parsed);
+    }
+
+    /**
+     * Read the contents of a _.json_ file.
+     * @param  string $fileName
+     * @throws Error
+     * @return Unsafe
+     */
+    public static function readJson(string $fileName):Unsafe {
+        $file = File::open($fileName, 'r')->try($error);
+        if ($error) {
+            return error($error);
+        }
+        $contents = $file->readAll()->await()->try($error);
+        if ($error) {
+            return error($error);
+        }
+        $parsed = json_decode($contents);
+        if (false === $parsed) {
+            return error("Couldn't parse json file.");
+        }
+        return ok($parsed);
+    }
+
+    /**
+     * Read the contents of a _.env_ file.
+     * @param  string $fileName
+     * @throws Error
+     * @return Unsafe
+     */
+    public static function redEnv(string $fileName):Unsafe {
+        $file = File::open($fileName, 'r')->try($error);
+        if ($error) {
+            return error($error);
+        }
+        $contents = $file->readAll()->await()->try($error);
+        if ($error) {
+            return error($error);
+        }
+        try {
+            $parsed = Dotenv::parse($contents);
+        } catch(Throwable $error) {
+            return error($error);
+        }
+        return ok($parsed);
     }
 
     /**
@@ -166,7 +283,7 @@ readonly class File {
     public function truncate(int $size) {
         $this->ampFile->truncate($size);
     }
-    
+
     /**
      * @param  string               $content
      * @param  int                  $chunkSize
@@ -257,7 +374,7 @@ readonly class File {
             }
         });
     }
-    
+
     /**
      * Read the whole file in chunks.
      * @param  int                    $chunkSize size of each chunk.

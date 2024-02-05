@@ -30,6 +30,10 @@ function main(
     // ===> TIPS
     #[Option("--tips")]
     bool $tips,
+
+    // ===> Hi
+    #[Option("--hi")]
+    bool $hi,
 ): Unsafe {
     return anyError(fn () => match (true) {
         $build => build(
@@ -38,6 +42,7 @@ function main(
             buildOptimize  : $buildOptimize,
         ),
         $tips   => tips(),
+        $hi     => out()->write("hello\n"),
         default => true,
     });
 }
@@ -61,7 +66,6 @@ function tips() {
                 PHP_EOL,
             ]);
         }
-
 
         out()->write($message);
         return ok();
