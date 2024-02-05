@@ -17,10 +17,6 @@ function main(
     // ===> BUILD
     #[Option("--build")]
     bool $build = false,
-    #[Option("--build-config-init")]
-    bool $buildConfigInit = false,
-    #[Option("--build-config")]
-    false|string $buildConfig = false,
     #[Option("--build-optimize")]
     bool $buildOptimize = false,
 
@@ -33,11 +29,7 @@ function main(
     bool $hi,
 ): Unsafe {
     return anyError(fn () => match (true) {
-        $build => build(
-            buildConfig    : $buildConfig,
-            buildConfigInit: $buildConfigInit,
-            buildOptimize  : $buildOptimize,
-        ),
+        $build  => build(buildOptimize:$buildOptimize),
         $tips   => tips(),
         $hi     => out()->write("hello\n"),
         default => true,

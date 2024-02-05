@@ -3,124 +3,51 @@ namespace CatPaw\Core\Build;
 
 use function Amp\File\isDirectory;
 
-use CatPaw\Core\Container;
 use CatPaw\Core\Directory;
+use function CatPaw\Core\env;
 use function CatPaw\Core\error;
 use function CatPaw\Core\execute;
 use CatPaw\Core\File;
+
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
 use CatPaw\Core\Unsafe;
 use Exception;
 use Phar;
-use Psr\Log\LoggerInterface;
 
 /**
  *
+ * @param  bool         $buildOptimize
  * @param  false|string $buildConfig
  * @param  bool         $buildConfigInit
- * @param  bool         $buildOptimize
  * @return Unsafe<void>
  */
 function build(
-    false|string $buildConfig = false,
-    bool $buildConfigInit = false,
     bool $buildOptimize = false,
 ):Unsafe {
-    if ($buildConfig) {
-        if (!File::exists($buildConfig)) {
-            $variants = [];
-
-            if (str_ends_with($buildConfig, '.yml')) {
-                $variants[] = substr($buildConfig, -3).'.yaml';
-            } else if (str_ends_with($buildConfig, '.yaml')) {
-                $variants[] = substr($buildConfig, -5).'.yml';
-            } else {
-                $variants[] = "$buildConfig.yaml";
-                $variants[] = "$buildConfig.yml";
-            }
-
-            foreach ($variants as $variant) {
-                if (!str_starts_with($variant, '/') && !str_starts_with($variant, '../') && !str_starts_with($variant, './')) {
-                    $variant = "./$variant";
-                }
-
-                if (File::exists($variant)) {
-                    $buildConfig = $variant;
-                    break;
-                }
-            }
-        }
-    }
-
-
-    if (File::exists('build.yaml')) {
-        $buildConfig = $buildConfig?:'build.yaml';
-    } else {
-        $buildConfig = $buildConfig?:'build.yml';
-    }
-
-
-    $logger = Container::create(LoggerInterface::class)->try($error);
-    if ($error) {
-        return error($error);
-    }
-
-    if ($buildConfigInit) {
-        $logger->info('Trying to generate build.yaml file...');
-
-        if (!File::exists('build.yaml') && !File::exists('build.yml')) {
-            $file = File::open('build.yaml')->try($error);
-            if ($error) {
-                return error($error);
-            }
-
-            $file->write('build.yaml', <<<YAML
-                name: app
-                entry: ./src/main.php
-                libraries: ./src/lib
-                environment: ./env.yaml
-                match: /(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(^\.\/(\.env|env\.yaml|env\.yml))/
-                YAML)->await()->try($error);
-
-            if ($error) {
-                return error($error);
-            }
-
-            $logger->info('done!');
-        } else {
-            $logger->info('A build.yaml file already exists - will not overwrite.');
-        }
-    }
-
     if (ini_get('phar.readonly')) {
         return error('Cannot build using readonly phar, please disable the phar.readonly flag by running the builder with "php -dphar.readonly=0"'.PHP_EOL);
     }
 
-    $file = File::open($buildConfig)->try($error);
-    if ($error) {
-        return error($error);
-    }
-
-    $content = $file->readAll()->await()->try($error);
-    if ($error) {
-        return error($error);
-    }
-
-    $config = yaml_parse($content);
-
     /**
-     * @var string      $name
-     * @var string      $entry
-     * @var string      $libraries
-     * @var string      $match
-     * @var null|string $environment
+     * @var string $name
+     * @var string $entry
+     * @var string $libraries
+     * @var string $match
+     * @var string $environment
      */
-    $name        = $config['name']        ?? 'app.phar';
-    $entry       = $config['entry']       ?? '';
-    $libraries   = $config['libraries']   ?? '';
-    $match       = $config['match']       ?? '';
-    $environment = $config['environment'] ?? null;
+    $name        = env('name')        ?? 'app.phar';
+    $entry       = env('entry')       ?? '';
+    $libraries   = env('libraries')   ?? '';
+    $match       = env('match')       ?? '';
+    $environment = env('environment') ?? '';
+
+    if (!$entry) {
+        return error(join("\n", [
+            "Entry file is missing from environment.",
+            "Remember to properly load your build configuration using `--environment=\"./build.yaml\"`.",
+        ]));
+    }
 
     $name      = str_replace(['"',"\n"], ['\\"',''], $name);
     $entry     = str_replace(['"',"\n"], ['\\"',''], $entry);
@@ -162,7 +89,7 @@ function build(
             return error($error);
         }
 
-        $environmentFallbackStringified = $environment ? "'$environment'":"''";
+        $environmentFallbackStringified = $environment ? "\Phar::running().'/'.'$environment'":"''";
 
         $file = File::open($start, 'w+')->try($error);
         if ($error) {
@@ -179,8 +106,8 @@ function build(
             \$environment = new Option('--environment');
             \$environment = \$environment->findValue('string', true)??'';
 
-            if(\$environment){
-                \$environment = \Phar::running().'/'.$environmentFallbackStringified;
+            if(!\$environment){
+                \$environment = $environmentFallbackStringified;
             }
 
             Bootstrap::start(

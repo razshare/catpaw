@@ -23,11 +23,11 @@
   "scripts": {
     "load": "composer dump-autoload -o && pre-commit autoupdate",
     "prod:start": "php -dphar.readonly=0 -dopcache.enable_cli=1 -dopcache.jit_buffer_size=100M ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
-    "prod:build": "@prod:start --build --build-config='./build.yaml' --build-optimize",
+    "prod:build": "@prod:start --build --environment='./build.yaml' --build-optimize",
     "prod:test": "php vendor/bin/phpunit tests",
     "prod:fix": "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix .",
     "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
-    "dev:build": "@dev:start --build --build-config='./build.yaml'",
+    "dev:build": "@dev:start --build --environment='./build.yaml'",
     "dev:test": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests",
     "dev:fix": "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix .",
     "dev:precommit": "pre-commit install && pre-commit autoupdate",
