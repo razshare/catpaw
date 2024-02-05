@@ -80,7 +80,7 @@ function build(
                 entry: ./src/main.php
                 libraries: ./src/lib
                 environment: ./env.yaml
-                match: /(^\.\/(\.build-cache|src|vendor|resources|bin)\/.*)|(\.\/env\.yaml)/
+                match: /(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(^\.\/(\.env|env\.yaml|env\.yml))/
                 YAML)->await()->try($error);
 
             if ($error) {
