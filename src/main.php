@@ -1,16 +1,13 @@
 <?php
-
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Attributes\Option;
 use function CatPaw\Core\Build\build;
-
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
 use CatPaw\Core\Unsafe;
 use function CatPaw\Text\foreground;
-
 use function CatPaw\Text\nocolor;
 
 /**

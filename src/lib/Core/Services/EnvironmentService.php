@@ -15,13 +15,25 @@ use function yaml_parse;
 
 #[Service]
 class EnvironmentService {
+    private array $variables = [];
+
     public function __construct(
         private readonly LoggerInterface $logger,
     ) {
     }
 
     /** @var string */
-    private string $fileName = './env';
+    private string $fileName = './env.yaml';
+
+
+    public function includeSystemEnvironment() {
+        $this->variables = [
+            ...$this->variables,
+            ...$_ENV,
+            ...getenv(),
+        ];
+    }
+
 
     /**
      * Set the environment file name.
@@ -41,8 +53,8 @@ class EnvironmentService {
      * @return Unsafe<void>
      */
     public function load(bool $skipErrors = false):Unsafe {
-        $variables = [];
-        $fileName  = $this->fileName;
+        $this->variables = [];
+        $fileName        = $this->fileName;
 
         if (!File::exists($fileName)) {
             $variants = [];
@@ -101,7 +113,7 @@ class EnvironmentService {
                         }
                         return error("Error while parsing environment yaml file.");
                     }
-                    $variables = $vars?:[];
+                    $this->variables = $vars?:[];
                 } else {
                     if ($skipErrors) {
                         return ok();
@@ -109,14 +121,9 @@ class EnvironmentService {
                     return error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
                 }
             } else {
-                $variables = Dotenv::parse($content);
+                $this->variables = Dotenv::parse($content);
             }
         }
-
-        $_ENV = [
-            ...$_ENV,
-            ...$variables,
-        ];
 
         return ok();
     }
@@ -128,7 +135,7 @@ class EnvironmentService {
      * @return void
      */
     public function set(string $query, $value) {
-        $reference = &$_ENV;
+        $reference = &$this->variables;
         foreach (explode('.', $query) as $key) {
             if (!isset($reference[$key])) {
                 $reference[$key] = [];
@@ -136,7 +143,7 @@ class EnvironmentService {
             $reference = &$reference[$key];
         }
 
-        if ($reference === $_ENV) {
+        if ($reference === $this->variables) {
             // When reference has not changed it
             // means `$name` is invalid or was not found.
             return;
@@ -159,10 +166,10 @@ class EnvironmentService {
      * @return T      value of the variable.
      */
     public function get(string $query):mixed {
-        if (isset($_ENV[$query])) {
-            return $_ENV[$query];
+        if (isset($this->variables[$query])) {
+            return $this->variables[$query];
         }
-        $reference = &$_ENV;
+        $reference = &$this->variables;
         foreach (explode('.', $query) as $key) {
             if (!isset($reference[$key])) {
                 return null;
@@ -170,7 +177,7 @@ class EnvironmentService {
             $reference = &$reference[$key];
         }
 
-        if ($reference === $_ENV) {
+        if ($reference === $this->variables) {
             // When reference has not changed it
             // means `$name` is invalid or was not found.
             return null;

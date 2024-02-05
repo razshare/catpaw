@@ -1,14 +1,9 @@
 #!/usr/bin/env php
 <?php
-
 use CatPaw\Core\Attributes\Option;
 use CatPaw\Core\Bootstrap;
-$_ENV = [
-    ...$_ENV,
-    ...getenv(),
-];
-require 'vendor/autoload.php';
 
+require 'vendor/autoload.php';
 
 $entry       = new Option('--entry');
 $name        = new Option('--name');

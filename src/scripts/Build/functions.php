@@ -173,10 +173,7 @@ function build(
             <?php
             use CatPaw\Core\Attributes\Option;
             use CatPaw\Core\Bootstrap;
-            \$_ENV = [
-                ...\$_ENV,
-                ...getenv(),
-            ];
+
             require 'vendor/autoload.php';
 
             \$environment = new Option('--environment');
