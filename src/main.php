@@ -1,4 +1,6 @@
 <?php
+
+use Amp\ByteStream\ClosedException;
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Attributes\Option;
 use function CatPaw\Core\Build\build;
@@ -11,15 +13,14 @@ use function CatPaw\Text\foreground;
 use function CatPaw\Text\nocolor;
 
 /**
+ * @param  bool            $tips
+ * @param  bool            $hi
+ * @param  bool            $build
+ * @param  bool            $buildOptimize
+ * @throws ClosedException
  * @return Unsafe<void>
  */
 function main(
-    // ===> BUILD
-    #[Option("--build")]
-    bool $build = false,
-    #[Option("--build-optimize")]
-    bool $buildOptimize = false,
-
     // ===> TIPS
     #[Option("--tips")]
     bool $tips,
@@ -27,6 +28,12 @@ function main(
     // ===> Hi
     #[Option("--hi")]
     bool $hi,
+
+    // ===> BUILD
+    #[Option("--build")]
+    bool $build = false,
+    #[Option("--build-optimize")]
+    bool $buildOptimize = false,
 ): Unsafe {
     return anyError(fn () => match (true) {
         $build  => build(buildOptimize:$buildOptimize),
