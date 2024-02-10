@@ -2,6 +2,8 @@
 namespace Tests;
 
 use function CatPaw\Core\anyError;
+use function CatPaw\Core\asFileName;
+
 use CatPaw\Core\Container;
 use CatPaw\Core\Signal;
 use CatPaw\Schedule\Services\ScheduleService;
@@ -11,7 +13,7 @@ use Revolt\EventLoop;
 
 class ScheduleTest extends TestCase {
     public function testAll() {
-        Container::load('./src/lib/')->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
         $this->assertFalse($error);
         anyError(function() {
             yield Container::run($this->scheduleDaily(...));

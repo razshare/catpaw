@@ -8,6 +8,8 @@ use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\HttpException;
 use Amp\Http\Client\Request;
 use function CatPaw\Core\anyError;
+use function CatPaw\Core\asFileName;
+
 use CatPaw\Core\Container;
 use CatPaw\Core\Signal;
 use const CatPaw\Web\APPLICATION_JSON;
@@ -21,7 +23,7 @@ use function json_decode;
 use PHPUnit\Framework\TestCase;
 class WebTest extends TestCase {
     public function testAll() {
-        Container::load('./src/lib/')->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
         $this->assertFalse($error);
         Container::set(HttpClient::class, HttpClientBuilder::buildDefault());
         $server = Server::create(

@@ -4,6 +4,8 @@ namespace Tests;
 use function Amp\async;
 use function Amp\delay;
 use function CatPaw\Core\anyError;
+use function CatPaw\Core\asFileName;
+
 use CatPaw\Core\Container;
 use CatPaw\Store\Attributes\Store;
 use function CatPaw\Store\readable;
@@ -14,7 +16,7 @@ use Revolt\EventLoop;
 
 class StoreTest extends TestCase {
     public function testAll() {
-        Container::load('./src/lib/')->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
         $this->assertFalse($error);
         anyError(function() {
             yield Container::run($this->basic(...));

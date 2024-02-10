@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
     public function testAll() {
-        Container::load('./src/lib/')->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
         $this->assertFalse($error);
         anyError(function() {
             yield Container::run($this->makeSureEnvWorks(...));
