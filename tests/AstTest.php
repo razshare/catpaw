@@ -38,11 +38,11 @@ class AstTest extends TestCase {
                     private array &$globals,
                 ) {
                 }
-                public function on_block(Block $block) {
+                public function on_block(Block $block):void {
                     $this->blocks[] = $block;
                 }
 
-                public function on_global(string $global) {
+                public function on_global(string $global):void {
                     $this->globals[] = $global;
                 }
             });
