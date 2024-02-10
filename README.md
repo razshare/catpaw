@@ -53,9 +53,11 @@ Create a new project using one of the starter templates.
 Every application must declare a ```main``` function in the global scope, that will be your entry point:
 
 ```php
+<?php
 // src/main.php
-function main(){
-    echo "hello world\n";
+use Psr\Log\LoggerInterface;
+function main(LoggerInterface $logger){
+  $logger->info("hello world\n");
 }
 ```
 
