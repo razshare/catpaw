@@ -73,7 +73,7 @@ class Search {
         false|Block $parent = false,
     ):void {
         $uncommented = '';
-        $search      = Search::fromSource(preg_replace('/^\s*\/\/.*/', '', $this->source));
+        $search      = Search::fromSource(preg_replace('/^\s*\/\/.*/m', '', $this->source));
 
         $comment_opened = 0;
         $comment_closed = 0;
