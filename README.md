@@ -57,7 +57,7 @@ Every application must declare a ```main``` function in the global scope, that w
 // src/main.php
 use Psr\Log\LoggerInterface;
 function main(LoggerInterface $logger){
-  $logger->info("hello world\n");
+  $logger->info("hello world");
 }
 ```
 
