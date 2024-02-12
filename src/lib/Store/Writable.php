@@ -1,9 +1,7 @@
 <?php
-
 namespace CatPaw\Store;
 
 use Closure;
-
 use SplDoublyLinkedList;
 
 class Writable {
@@ -59,13 +57,13 @@ class Writable {
 
     /**
      * Subscribe to this store and get notified of every update.
-     * @param  callable        $function callback executed whenever there's an update,
-     *                                   it takes 1 parameter, the new value of the store.
-     * @return callable():void a function that cancels this subscription.
+     * @param  callable(mixed $value):void $function callback executed whenever there's an update,
+     *                                               it takes 1 parameter, the new value of the store.
+     * @return callable():void             a function that cancels this subscription.
      */
     public function subscribe(callable $function): callable {
         $this->functions->push($function);
-        
+
         ($function)($this->value);
 
         return function() use ($function):void {
@@ -73,6 +71,11 @@ class Writable {
         };
     }
 
+    /**
+     *
+     * @param  callable $function
+     * @return void
+     */
     private function unsubscribe(callable $function):void {
         for ($this->functions->rewind(); $this->functions->valid(); $this->functions->next()) {
             if ($this->functions->current() === $function) {

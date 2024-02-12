@@ -26,6 +26,7 @@ class StoreTest extends TestCase {
             yield Container::run($this->subscribe(...));
             yield Container::run($this->update(...));
             yield Container::run($this->attribute(...));
+            yield Container::run($this->makingSureCleanUpFunctionIsInvoked(...));
         })->try($error);
         $this->assertFalse($error);
         EventLoop::run();
@@ -71,7 +72,6 @@ class StoreTest extends TestCase {
             &$value2,
             &$value3,
         ) {
-            // you can execute async code here
             $set("hello world");
             return function() use (
                 &$value1,
@@ -88,21 +88,18 @@ class StoreTest extends TestCase {
 
 
         $unsubscribers[] = $store->subscribe(function($value) use ($counter, &$value1) {
-            // you can execute async code here
             echo "new value received: $value".PHP_EOL;
             $value1 = $value;
             $counter->set($counter->get() + 1);
         });
 
         $unsubscribers[] = $store->subscribe(function($value) use ($counter, &$value2) {
-            // you can execute async code here
             echo "new value received: $value".PHP_EOL;
             $value2 = $value;
             $counter->set($counter->get() + 1);
         });
 
         $unsubscribers[] = $store->subscribe(function($value) use ($counter, &$value3) {
-            // you can execute async code here
             echo "new value received: $value".PHP_EOL;
             $value3 = $value;
             $counter->set($counter->get() + 1);
@@ -111,13 +108,31 @@ class StoreTest extends TestCase {
         $counter->subscribe(fn ($counter) => $counter >= 6?$unsubscribeAll():false);
     }
 
+    private function makingSureCleanUpFunctionIsInvoked() {
+        $cleanedUp = false;
+        $store     = readable("default", function($set) use (&$cleanedUp) {
+            $set("hello world");
+            return function() use (&$cleanedUp) {
+                echo "All subscribers have unsubscribed\n";
+                $cleanedUp = true;
+            };
+        });
+        $unsubscribe = $store->subscribe(function($value) {
+            echo "new value: $value\n";
+        });
+
+        $unsubscribe();
+
+        $this->assertEquals(true, $cleanedUp);
+    }
 
     private function withDelay(): void {
-        $store = readable("default", function($set) {
-            // you can execute async code here
+        $cleanedUp = false;
+        $store     = readable("default", function($set) use (&$cleanedUp) {
             $set("hello world");
-            return function() {
+            return function() use (&$cleanedUp) {
                 echo "All subscribers have unsubscribed\n";
+                $cleanedUp = true;
             };
         });
 
@@ -129,7 +144,6 @@ class StoreTest extends TestCase {
             if ('default' === $value) {
                 return;
             }
-            // you can execute async code here
             $value1 = $value;
             echo "new value received: $value".PHP_EOL;
         });
@@ -138,7 +152,6 @@ class StoreTest extends TestCase {
             if ('default' === $value) {
                 return;
             }
-            // you can execute async code here
             $value2 = $value;
             echo "new value received: $value".PHP_EOL;
         });
@@ -147,7 +160,6 @@ class StoreTest extends TestCase {
             if ('default' === $value) {
                 return;
             }
-            // you can execute async code here
             $value3 = $value;
             echo "new value received: $value".PHP_EOL;
         });
