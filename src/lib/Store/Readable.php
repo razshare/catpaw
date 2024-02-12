@@ -1,7 +1,6 @@
 <?php
 namespace CatPaw\Store;
 
-use Amp\Future;
 use function CatPaw\Core\tick;
 use SplDoublyLinkedList;
 
@@ -67,7 +66,7 @@ class Readable {
      * Subscribe to this store and get notified of every update.
      * @param  callable(mixed $value):void $function a function that's executed whenever there's an update,
      *                                               it takes 1 parameter, the new value of the store.
-     * @return callable():Future<void>     a function that cancels this subscription.
+     * @return callable():void             a function that cancels this subscription.
      */
     public function subscribe($function) {
         $this->functions->push($function);
