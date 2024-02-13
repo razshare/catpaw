@@ -43,26 +43,20 @@ class Consumes implements AttributeInterface {
 
 
     /**
-     * @param string $contentTypes the http content-type, like `application/json`, `text/html` etc.
-     * @param string $schema       usually `string`, but can also be a class name to indicate the structure of the content.
+     * @param string $contentType the http content-type, like `application/json`, `text/html` etc.
+     * @param string $schema      usually `string`, but can also be a class name to indicate the structure of the content.
      * @param mixed  $example
      */
     public function __construct(
-        string $contentTypes,
+        string $contentType,
         string $schema,
         mixed $example = '',
     ) {
-        if (is_string($contentTypes)) {
-            $contentTypes = [$contentTypes];
-        }
-
-        foreach ($contentTypes as $contentType) {
-            $this->request[] = ConsumedRequest::create(
-                className  : $schema,
-                type       : $contentType,
-                example    : $example,
-            );
-        }
+        $this->request[] = ConsumedRequest::create(
+            className  : $schema,
+            type       : $contentType,
+            example    : $example,
+        );
     }
 
     #[Entry] public function setup(OpenApiService $oa):Unsafe {
