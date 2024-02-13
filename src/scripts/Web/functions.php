@@ -126,7 +126,7 @@ function queries(UriInterface $uri):array {
  *
  * ## Example
  * ```php
- * return fn() => websocket(
+ * return fn(Request $request) => websocket(
  *  request: $request,
  *  handler: new class implements WebsocketClientHandler {
  *      public function handleClient(
