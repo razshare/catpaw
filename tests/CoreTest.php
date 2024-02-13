@@ -5,6 +5,7 @@ use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use function CatPaw\Core\env;
+use CatPaw\Core\File;
 use CatPaw\Core\Services\EnvironmentService;
 use PHPUnit\Framework\TestCase;
 
@@ -14,6 +15,8 @@ class CoreTest extends TestCase {
         $this->assertFalse($error);
         anyError(function() {
             yield Container::run($this->makeSureEnvWorks(...));
+            yield Container::run($this->makeSureUnsafeWorks(...));
+            yield Container::run($this->makeSureUnsafeWorksWithAnyError(...));
         })->try($error);
         $this->assertFalse($error);
     }
@@ -28,5 +31,45 @@ class CoreTest extends TestCase {
         $service->set("test-key", "test-value");
         $test = env("test-key");
         $this->assertEquals('test-value', $test);
+    }
+
+    public function makeSureUnsafeWorks() {
+        // open file
+        $file = File::open(asFileName(__DIR__, 'file.txt'))->try($error);
+        $this->assertFalse($error);
+
+        // read contents
+        $contents = $file->readAll()->await()->try($error);
+        $this->assertFalse($error);
+
+        $this->assertEquals("hello\n", $contents);
+
+        // close file
+        $file->close();
+
+        echo $contents.PHP_EOL;
+    }
+
+    public function makeSureUnsafeWorksWithAnyError() {
+        $contents = anyError(function() {
+            // open file
+            $file = File::open(asFileName(__DIR__, 'file.txt'))->try($error)
+                or yield $error;
+
+            // read contents
+            $contents = $file->readAll()->await()->try($error)
+            or yield $error;
+
+            // close file
+            $file->close();
+
+            return $contents;
+        })->try($error);
+
+        $this->assertFalse($error);
+
+        $this->assertEquals("hello\n", $contents);
+
+        echo $contents.PHP_EOL;
     }
 }
