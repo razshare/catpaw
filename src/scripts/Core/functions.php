@@ -164,14 +164,15 @@ function execute(
     string $command,
     false|WritableStream $writer = false,
     false|Signal $signal = false,
+    false|string $workingDirectory = false,
 ): Future {
-    return async(static function() use ($command, $writer, $signal) {
+    return async(static function() use ($command, $writer, $signal, $workingDirectory) {
         try {
             $logger = Container::create(LoggerInterface::class)->try($error);
             if ($error) {
                 return error($error);
             }
-            $process = Process::start($command);
+            $process = Process::start($command, $workingDirectory?:null);
             pipe($process->getStdout(), $writer);
             pipe($process->getStderr(), $writer);
             $code = $process->join();
