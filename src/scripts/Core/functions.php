@@ -264,7 +264,13 @@ function anyError(callable $function): Unsafe {
     }
 
     try {
-        return ok($result->getReturn() ?? true);
+        $return = $result->getReturn() ?? true;
+
+        if ($return instanceof Unsafe) {
+            return $result;
+        }
+
+        return ok($return);
     } catch (Throwable $error) {
         return error($error);
     }
