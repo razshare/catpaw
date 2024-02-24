@@ -20,28 +20,19 @@ class Signal {
     private function __construct(private readonly LinkedList $list) {
     }
 
-    /**
-     * @deprecated in favor of `send(\SIGTERM)`
-     * @return Signal
-     */
-    public function sigterm():self {
-        return $this->send(SIGTERM);
-    }
-
 
     /**
      * Send signal and trigger listeners.
-     * @param int $code code to send, defaults to <b>0</b>.
      *
      */
-    public function send(int $code = 0):self {
+    public function send():self {
         if ($this->busy) {
             return $this;
         }
         $this->busy = true;
         for ($this->list->rewind();$this->list->valid();$this->list->next()) {
             $function = $this->list->current();
-            $function($code);
+            $function();
         }
         $this->busy = false;
         return $this;
