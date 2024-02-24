@@ -243,11 +243,11 @@ class Server {
      * Start the server.
      *
      * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
-     * @param  false|Signal         $signal the server will trigger this signal whenever it's ready to serve requests.
+     * @param  false|Signal         $ready the server will trigger this signal whenever it's ready to serve requests.
      * @return Future<Unsafe<void>>
      */
-    public function start(false|Signal $signal = false):Future {
-        return async(function() use ($signal) {
+    public function start(false|Signal $ready = false):Future {
+        return async(function() use ($ready) {
             if (isset($this->httpServer)) {
                 if ($this->httpServerStarted) {
                     return error("Server already started.");
@@ -301,8 +301,8 @@ class Server {
 
                 $this->httpServer->start($stackedHandler, $errorHandler);
                 $this->httpServerStarted = true;
-                if ($signal) {
-                    $signal->sigterm();
+                if ($ready) {
+                    $ready->send();
                 }
 
                 foreach (self::$onStartListeners as $function) {

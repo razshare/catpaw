@@ -258,8 +258,6 @@ class Bootstrap {
 
                 echo "Spawning $instruction".PHP_EOL;
 
-                $signal = Signal::create();
-
                 /** @var array<string> $librariesList */
                 $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
 
@@ -267,8 +265,7 @@ class Bootstrap {
                 $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
 
                 if (DIRECTORY_SEPARATOR === '/') {
-                    EventLoop::onSignal(SIGINT, static function() use ($signal) {
-                        $signal->sigterm();
+                    EventLoop::onSignal(SIGINT, static function() {
                         self::kill();
                     });
                 }
@@ -280,7 +277,7 @@ class Bootstrap {
                     entry: $entry,
                     libraries: $librariesList,
                     resources: $resourcesList,
-                    function: static function() use (&$ready, &$code) {
+                    function: static function() use (&$ready) {
                         if (!$ready) {
                             return;
                         }

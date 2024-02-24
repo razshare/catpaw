@@ -17,6 +17,7 @@ use Amp\Future;
 use Amp\Process\Process;
 use CatPaw\Core\Services\EnvironmentService;
 use Error;
+use FFI;
 use Generator;
 use Phar;
 use Psr\Log\LoggerInterface;
@@ -153,35 +154,37 @@ function error(string|Error $message): Unsafe {
     return new Unsafe(null, $message);
 }
 
+
 /**
  * Execute a command.
- * @param  string               $command instruction to run.
- * @param  false|WritableStream $writer  send the output of the process to this stream.
- * @param  false|Signal         $signal  when this signal is triggered the process is killed.
+ * @param  string              $command       Command to run.
+ * @param  bool|WritableStream $output        Send the output of the process to this stream.
+ * @param  bool|string         $workDirectory Work directory of the command.
+ * @param  bool|Signal         $kill          When this signal is triggered the process is killed.
  * @return Future<Unsafe<int>>
  */
 function execute(
     string $command,
-    false|WritableStream $writer = false,
-    false|Signal $signal = false,
-    false|string $workingDirectory = false,
+    false|WritableStream $output = false,
+    false|string $workDirectory = false,
+    false|Signal $kill = false,
 ): Future {
-    return async(static function() use ($command, $writer, $signal, $workingDirectory) {
+    return async(static function() use ($command, $output, $kill, $workDirectory) {
         try {
             $logger = Container::create(LoggerInterface::class)->try($error);
             if ($error) {
                 return error($error);
             }
-            $process = Process::start($command, $workingDirectory?:null);
-            pipe($process->getStdout(), $writer);
-            pipe($process->getStderr(), $writer);
+            $process = Process::start($command, $workDirectory?:null);
+            pipe($process->getStdout(), $output);
+            pipe($process->getStderr(), $output);
             $code = $process->join();
         } catch(Throwable $error) {
             return error($error);
         }
 
-        if ($signal) {
-            $signal->listen(static function(int $code) use ($process, $writer, $logger) {
+        if ($kill) {
+            $kill->listen(static function(int $code) use ($process, $output, $logger) {
                 if (!$process->isRunning()) {
                     return ok();
                 }
@@ -360,4 +363,90 @@ function asFileName(string ...$path):string {
         $parts[] = $pathName;
     }
     return realpath(join($parts))?:'';
+}
+
+/**
+ * Create an _FFI_ wrapper for a _Go_ shared object.
+ *
+ * # WARNING!
+ * > This is still experimental and in development.\
+ * > **DO NOT USE IN PRODUCTION!**
+ *
+ * # Example
+ *
+ * Given the following _Go_ program
+ *
+ * ```
+ * // goffi.go
+ * package main
+ * import "C"
+ * func main() {}
+ *
+ * //export DoubleIt
+ * func DoubleIt(x int) int {
+ *  return x * 2
+ * }
+ * ```
+ *
+ * 1. Compile it with `go build -o libgoffi.so -buildmode=c-shared goffi.go`
+ * 2. Resolve the c directives in your header file with `cpp -P ./libgoffi.h ./libgoffi.static.h`
+ *
+ * Afterwards you can use `goffi()` to call your _Go_ code from _Php_.
+ *
+ * ```php
+ * <?php
+ * // main.php
+ * use function CatPaw\Core\goffi;
+ *
+ *  interface Goffi {
+ *      function DoubleIt(int $value);
+ *  }
+ *
+ * function main(){
+ *
+ *  $lib = goffi(Goffi::class, './libgoffi.so')->try($error);
+ *  if($error){
+ *      return error($error);
+ *  }
+ *
+ *  $doubled = $lib->DoubleIt(3);
+ *  echo "doubled: $doubled\n";
+ * }
+ * ```
+ * @template T
+ * @param  class-string<T> $interface Interface of the shared object.\
+ *                                    This will just give you intellisense.\
+ *                                    You can just set this to `object::class` or `stdClass::class` if you're not interested in specifying a proper interface.
+ * @param  string          $fileName  Name of the shared object file, for example `lib.so`.\
+ *                                    The shared object's equivalent C definition file must be located in the same directory as `$fileName` and have the `.h` or `.static.h` extension.\
+ *                                    This header file must not contain any C preprocessor directives.\
+ *                                    You can resolve C preprocessor directives in a header file by running `cpp -P ./lib.h ./lib.static.h`.\
+ *                                    You can read more about this [here](https://www.php.net/manual/en/ffi.cdef.php).
+ * @return Unsafe<FFI&T>
+ */
+function goffi(string $interface, string $fileName) {
+    $strippedFileName = preg_replace('/\.so$/', '', $fileName);
+    $sharedFile       = File::open("$strippedFileName.static.h")->try($error);
+    if ($error) {
+        $sharedFile = File::open("$strippedFileName.h")->try($error);
+        if ($error) {
+            return error($error);
+        }
+    }
+
+    $cdefComplex = $sharedFile->readAll()->await()->try($error);
+
+    if ($error) {
+        return error($error);
+    }
+
+    if (null === ($cdef = preg_replace('/^\s*typedef\s+(float|double)\s+_Complex.*/m', '', $cdefComplex))) {
+        return error("Unknown error while trying to clear `_Complex` definitions in the header file {$sharedFile->fileName}.");
+    }
+    try {
+        /** @var Unsafe<FFI&T> */
+        return ok(FFI::cdef($cdef, $fileName));
+    } catch(Throwable $error) {
+        return error($error);
+    }
 }

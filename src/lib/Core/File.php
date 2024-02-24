@@ -276,7 +276,7 @@ readonly class File {
     private function __construct(
         private AmpFile $ampFile,
         private string $mode,
-        private string $fileName,
+        public readonly string $fileName,
     ) {
     }
 

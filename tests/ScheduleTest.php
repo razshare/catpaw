@@ -54,7 +54,7 @@ class ScheduleTest extends TestCase {
         });
         $schedule->after('1 second', static function() use ($signal, $logger) {
             $logger->info("Function executed after 1 second.");
-            $signal->sigterm();
+            $signal->send();
         })->try($error);
         $this->assertFalse($error);
         EventLoop::delay(1.1, function() use (&$checked) {

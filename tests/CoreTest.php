@@ -6,7 +6,10 @@ use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use function CatPaw\Core\env;
 use CatPaw\Core\File;
+
 use CatPaw\Core\Services\EnvironmentService;
+use CatPaw\Core\Signal;
+
 use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
@@ -17,6 +20,7 @@ class CoreTest extends TestCase {
             yield Container::run($this->makeSureEnvWorks(...));
             yield Container::run($this->makeSureUnsafeWorks(...));
             yield Container::run($this->makeSureUnsafeWorksWithAnyError(...));
+            yield Container::run($this->makeSureSignalsWork(...));
         })->try($error);
         $this->assertFalse($error);
     }
@@ -71,5 +75,15 @@ class CoreTest extends TestCase {
         $this->assertEquals("hello\n", $contents);
 
         echo $contents.PHP_EOL;
+    }
+
+    public function makeSureSignalsWork() {
+        $signal  = Signal::create();
+        $counter = 0;
+        $signal->listen(function() use (&$counter) {
+            $counter++;
+        });
+        $signal->send();
+        $this->assertEquals(1, $counter);
     }
 }
