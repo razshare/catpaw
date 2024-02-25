@@ -6,6 +6,7 @@ use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionProperty;
+use ReflectionType;
 use ReflectionUnionType;
 use Throwable;
 
@@ -59,11 +60,15 @@ class ReflectionTypeManager {
     }
 
     /**
-     * @param  ReflectionParameter|ReflectionProperty $parameter
+     * @param  ReflectionParameter|ReflectionProperty|ReflectionType $subject
      * @return ReflectionNamedType|false
      */
-    public static function unwrap(ReflectionParameter|ReflectionProperty $parameter): ReflectionNamedType|false {
-        $type = $parameter->getType() ?? false;
+    public static function unwrap(ReflectionParameter|ReflectionProperty|ReflectionType $subject): ReflectionNamedType|false {
+        if ($subject instanceof ReflectionType) {
+            $type = $subject;
+        } else {
+            $type = $subject->getType() ?? false;
+        }
         if (false === $type) {
             return false;
         }

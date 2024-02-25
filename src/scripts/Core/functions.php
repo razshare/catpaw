@@ -399,7 +399,7 @@ function asFileName(string ...$path):string {
  * use function CatPaw\Core\goffi;
  *
  *  interface Goffi {
- *      function DoubleIt(int $value);
+ *      function DoubleIt(int $value):Unsafe;
  *  }
  *
  * function main(){
@@ -409,44 +409,25 @@ function asFileName(string ...$path):string {
  *      return error($error);
  *  }
  *
- *  $doubled = $lib->DoubleIt(3);
+ *  $doubled = $lib->DoubleIt(3)->try($error);
+ *  if($error){
+ *      return error($error);
+ *  }
  *  echo "doubled: $doubled\n";
  * }
  * ```
  * @template T
- * @param  class-string<T> $interface Interface of the shared object.\
- *                                    This will just give you intellisense.\
- *                                    You can just set this to `object::class` or `stdClass::class` if you're not interested in specifying a proper interface.
- * @param  string          $fileName  Name of the shared object file, for example `lib.so`.\
- *                                    The shared object's equivalent C definition file must be located in the same directory as `$fileName` and have the `.h` or `.static.h` extension.\
- *                                    This header file must not contain any C preprocessor directives.\
- *                                    You can resolve C preprocessor directives in a header file by running `cpp -P ./lib.h ./lib.static.h`.\
- *                                    You can read more about this [here](https://www.php.net/manual/en/ffi.cdef.php).
- * @return Unsafe<FFI&T>
+ * @param  class-string<T>         $interface Interface of the shared object.\
+ *                                            This will give you intellisense.\
+ *                                            Methods of this interface must all return `Unsafe`.\
+ *                                            Remember you cal always use php-poc to specify `Unsafe<T>` instead of just `Unsafe`, in order to get proper intellisense.
+ * @param  string                  $fileName  Name of the shared object file, for example `lib.so`.\
+ *                                            The shared object's equivalent C definition file must be located in the same directory as `$fileName` and have the `.h` or `.static.h` extension.\
+ *                                            This header file must not contain any C preprocessor directives.\
+ *                                            You can resolve C preprocessor directives in a header file by running `cpp -P ./lib.h ./lib.static.h`.\
+ *                                            You can read more about this [here](https://www.php.net/manual/en/ffi.cdef.php).
+ * @return Unsafe<GoffiContract&T>
  */
 function goffi(string $interface, string $fileName) {
-    $strippedFileName = preg_replace('/\.so$/', '', $fileName);
-    $sharedFile       = File::open("$strippedFileName.static.h")->try($error);
-    if ($error) {
-        $sharedFile = File::open("$strippedFileName.h")->try($error);
-        if ($error) {
-            return error($error);
-        }
-    }
-
-    $cdefComplex = $sharedFile->readAll()->await()->try($error);
-
-    if ($error) {
-        return error($error);
-    }
-
-    if (null === ($cdef = preg_replace('/^\s*typedef\s+(float|double)\s+_Complex.*/m', '', $cdefComplex))) {
-        return error("Unknown error while trying to clear `_Complex` definitions in the header file {$sharedFile->fileName}.");
-    }
-    try {
-        /** @var Unsafe<FFI&T> */
-        return ok(FFI::cdef($cdef, $fileName));
-    } catch(Throwable $error) {
-        return error($error);
-    }
+    return GoffiContract::create($interface, $fileName);
 }
