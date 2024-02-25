@@ -163,7 +163,7 @@ class GoffiContract {
         }
 
         FFI::memcpy($struct->p, $phpString, $count);
-        $struct->n = 5;
+        $struct->n = $count;
 
         return ok($struct);
     }
