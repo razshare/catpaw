@@ -409,10 +409,7 @@ function asFileName(string ...$path):string {
  *      return error($error);
  *  }
  *
- *  $doubled = $lib->DoubleIt(3)->try($error);
- *  if($error){
- *      return error($error);
- *  }
+ *  $doubled = $lib->DoubleIt(3);
  *  echo "doubled: $doubled\n";
  * }
  * ```
