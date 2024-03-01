@@ -39,6 +39,12 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress --ignore-platform-req=ext-sdl
 
+    - name: Build Go Shared Objects
+      run: go build -o ./tests/main.so -buildmode=c-shared ./tests/main.go
+
+    - name: Resolve C headers preprocessor directives
+      run: cpp -P ./tests/main.h ./tests/main.static.h
+
     - name: Run tests
       run: composer prod:test
 
