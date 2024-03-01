@@ -139,9 +139,7 @@ class GoffiContract {
                 $result = $lib->$methodName(...$resolvedArgs);
                 return match ($returnTypeName) {
                     'string' => FFI::string($result),
-                    'int'    => $result,
-                    'float'  => $result,
-                    'bool'   => $result,
+                    default  => $result,
                 };
             };
         }
