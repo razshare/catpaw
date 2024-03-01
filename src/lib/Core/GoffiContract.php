@@ -3,6 +3,8 @@ namespace CatPaw\Core;
 
 use Error;
 use FFI;
+use FFI\CData;
+use FFI\ParserException;
 use ReflectionClass;
 use Throwable;
 
@@ -43,8 +45,9 @@ class GoffiContract {
             return error($error);
         }
 
-        $methods = self::loadContract($lib, $interface)->try($error);
-        if ($error) {
+        try {
+            $methods = self::loadContract($lib, $interface);
+        } catch(Throwable $error) {
             return error($error);
         }
 
@@ -76,11 +79,10 @@ class GoffiContract {
      * Php's FFI api will not convert php `string`s into `_GoString_`s (understandably so), which means you would need to do it by hand, which is not the best experience.
      *
      * This method will create the necessary _contract methods_ that will automate your Go calls, converting php strings and other primitives to their correct Go counterparts.
-     * @param  FFI    $lib
-     * @param  string $interface
-     * @return Unsafe
+     * @param FFI    $lib
+     * @param string $interface
      */
-    private static function loadContract(FFI $lib, string $interface):Unsafe {
+    private static function loadContract(FFI $lib, string $interface) {
         $reflectionClass = new ReflectionClass($interface);
         $methods         = [];
         foreach ($reflectionClass->getMethods() as $reflectionMethod) {
@@ -88,25 +90,18 @@ class GoffiContract {
             $reflectionParameters = $reflectionMethod->getParameters();
             $methodReturnType     = $reflectionMethod->getReturnType();
             if (!$methodReturnType) {
-                return error("The Go contract method `$methodName` must return `".(Unsafe::class)."`.");
+                throw new Error("The Go contract method `$methodName` must specify a return type.");
             }
 
-            $returnType = ReflectionTypeManager::unwrap($methodReturnType);
-
-            if (Unsafe::class !== $returnType->getName()) {
-                return error("The Go contract method `$methodName` must return `".(Unsafe::class)."`.");
-            }
 
 
             $resolvers   = [];
             $paramsCount = 0;
 
-            // Create parameters resolvers for Go FFI.
-            // This is necessary because some Go primitives differ from Php primitives, like strings.
             foreach ($reflectionParameters as $reflectionParameter) {
                 $parameterName = $reflectionParameter->getName();
                 if (!$type = ReflectionTypeManager::unwrap($reflectionParameter)) {
-                    return error("The Go contract method `$methodName` defines parameter `$parameterName` without a type, which is not allowed. Please make sure that parameter `$parameterName` specifies a type.");
+                    throw new Error("The Go contract method `$methodName` defines parameter `$parameterName` without a type, which is not allowed. Please make sure that parameter `$parameterName` specifies a type.");
                 }
                 $paramsCount++;
                 $resolvers[] = match ($type->getName()) {
@@ -117,54 +112,58 @@ class GoffiContract {
                 };
             }
 
+            $returnType     = ReflectionTypeManager::unwrap($methodReturnType);
+            $returnTypeName = $returnType->getName();
+
             $methods[$methodName] = function(...$args) use (
                 $resolvers,
                 $paramsCount,
                 $methodName,
                 $interface,
                 $lib,
+                $returnTypeName,
             ) {
                 // Check that the correct number of parameters are being received.
                 // In the future I should check for optional/nullable parameters and decide what to do with those.
                 // For now all defined parameters will be required for simplicity sake.
                 $argsCount = count($args);
                 if ($paramsCount !== $argsCount) {
-                    return error("The Go contract method `$methodName` in interface `$interface` is expecting $paramsCount parameters, but only $argsCount have been received. Please make sure the correct number of parameters are being passed.");
+                    throw new Error("The Go contract method `$methodName` in interface `$interface` is expecting $paramsCount parameters, but only $argsCount have been received. Please make sure the correct number of parameters are being passed.");
                 }
 
                 $resolvedArgs = [];
                 foreach ($args as $key => $arg) {
-                    $resolver = $resolvers[$key];
-                    /** @var Error $error */
-                    $resolvedArgs[] = $resolver($arg)->try($error);
-                    if ($error) {
-                        return error($error);
-                    }
+                    $resolver       = $resolvers[$key];
+                    $resolvedArgs[] = $resolver($arg);
                 }
-                return ok($lib->$methodName(...$resolvedArgs));
+                $result = $lib->$methodName(...$resolvedArgs);
+                return match ($returnTypeName) {
+                    'string' => FFI::string($result),
+                    'int'    => $result,
+                    'float'  => $result,
+                    'bool'   => $result,
+                };
             };
         }
-        return ok($methods);
+        return $methods;
     }
+
 
     /**
      * Create a Go string from a Php string.
-     * @param  FFI           $lib
-     * @param  string        $phpString
-     * @return Unsafe<mixed> the Go string.
+     * @param  FFI             $lib
+     * @param  string          $phpString
+     * @throws ParserException
+     * @return CData|null      the Go string.
      */
-    private static function goString(FFI $lib, string $phpString):Unsafe {
-        try {
-            $struct    = $lib->new('_GoString_');
-            $count     = strlen($phpString);
-            $struct->p = $lib->new('char['.$count.']', 0);
-        } catch(Throwable $error) {
-            return error($error);
-        }
+    private static function goString(FFI $lib, string $phpString) {
+        $struct    = $lib->new('_GoString_');
+        $count     = strlen($phpString);
+        $struct->p = $lib->new('char['.$count.']', 0);
 
         FFI::memcpy($struct->p, $phpString, $count);
         $struct->n = $count;
 
-        return ok($struct);
+        return $struct;
     }
 }

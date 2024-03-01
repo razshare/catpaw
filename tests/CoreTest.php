@@ -7,9 +7,10 @@ use CatPaw\Core\Container;
 use function CatPaw\Core\env;
 use CatPaw\Core\File;
 
+use function CatPaw\Core\goffi;
+
 use CatPaw\Core\Services\EnvironmentService;
 use CatPaw\Core\Signal;
-
 use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
@@ -21,6 +22,7 @@ class CoreTest extends TestCase {
             yield Container::run($this->makeSureUnsafeWorks(...));
             yield Container::run($this->makeSureUnsafeWorksWithAnyError(...));
             yield Container::run($this->makeSureSignalsWork(...));
+            yield Container::run($this->makeSureGoffiWorks(...));
         })->try($error);
         $this->assertFalse($error);
     }
@@ -86,4 +88,18 @@ class CoreTest extends TestCase {
         $signal->send();
         $this->assertEquals(1, $counter);
     }
+
+    public function makeSureGoffiWorks() {
+        return anyError(function() {
+            $lib = goffi(Contract::class, asFileName(__DIR__, './main.so'))
+                ->try($error) or yield $error;
+
+            $result = $lib->hello("world");
+            $this->assertEquals("hello world", $result);
+        });
+    }
+}
+
+interface Contract {
+    public function hello(string $name):string;
 }

@@ -19,6 +19,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
     - name: Validate composer.json and composer.lock
       run: composer validate
 
@@ -33,9 +38,10 @@ jobs:
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress --ignore-platform-req=ext-sdl
+
     - name: Run tests
       run: composer prod:test
-      
+
     # Docs: https://getcomposer.org/doc/articles/scripts.md
 
     # - name: Run test suite

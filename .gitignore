@@ -3,6 +3,8 @@
 *.exe
 *.pem
 *.phar
+*.h
+*.so
 /.settings
 /.history
 /.idea
