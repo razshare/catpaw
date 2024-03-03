@@ -241,7 +241,7 @@ readonly class File {
             return error($error);
         }
         $parsed = json_decode($contents, false);
-        if (false === $parsed) {
+        if (false === $parsed || null === $parsed) {
             return error("Couldn't parse json file.");
         }
         return ok($parsed);
