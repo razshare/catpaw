@@ -3,7 +3,6 @@ namespace CatPaw\Core;
 
 use function Amp\async;
 use Amp\ByteStream\ReadableStream;
-
 use function Amp\File\deleteFile;
 use function Amp\File\exists;
 use Amp\File\File as AmpFile;
@@ -154,12 +153,14 @@ readonly class File {
     }
 
     /**
-     * Read the contents of a _.yaml_ file.
-     * @param  string $fileName
+     * Read and parse the contents of a _.yaml_ file.
+     * @template T
+     * @param  class-string<T> $interface Interface of the resulting object.
+     * @param  string          $fileName
      * @throws Error
      * @return Unsafe
      */
-    public static function readYaml(string $fileName):Unsafe {
+    public static function readYaml(string $interface, string $fileName):Unsafe {
         if (!File::exists($fileName)) {
             $variants = [];
 
@@ -194,7 +195,7 @@ readonly class File {
                     if (false === $parsed) {
                         return error("Couldn't parse yaml file.");
                     }
-                    return ok($parsed);
+                    return ok((object)$parsed);
                 }
 
                 if ($stringifiedVariants) {
@@ -220,16 +221,17 @@ readonly class File {
         if (false === $parsed) {
             return error("Couldn't parse yaml file.");
         }
-        return ok($parsed);
+        return ok((object)$parsed);
     }
 
     /**
-     * Read the contents of a _.json_ file.
-     * @param  string $fileName
-     * @throws Error
-     * @return Unsafe
+     * Read and parse the contents of a _.json_ file.
+     * @template T
+     * @param  class-string<T> $interface Interface of the resulting object.
+     * @param  string          $fileName
+     * @return Unsafe<T>
      */
-    public static function readJson(string $fileName):Unsafe {
+    public static function readJson(string $interface, string $fileName):Unsafe {
         $file = File::open($fileName, 'r')->try($error);
         if ($error) {
             return error($error);
@@ -238,7 +240,7 @@ readonly class File {
         if ($error) {
             return error($error);
         }
-        $parsed = json_decode($contents);
+        $parsed = json_decode($contents, false);
         if (false === $parsed) {
             return error("Couldn't parse json file.");
         }
@@ -246,12 +248,13 @@ readonly class File {
     }
 
     /**
-     * Read the contents of a _.env_ file.
-     * @param  string $fileName
-     * @throws Error
-     * @return Unsafe
+     * Read and parse the contents of a _.env_ file.
+     * @template T
+     * @param  class-string<T> $interface Interface of the resulting object.
+     * @param  string          $fileName
+     * @return Unsafe<T>
      */
-    public static function redEnv(string $fileName):Unsafe {
+    public static function readEnv(string $interface, string $fileName):Unsafe {
         $file = File::open($fileName, 'r')->try($error);
         if ($error) {
             return error($error);
@@ -265,7 +268,7 @@ readonly class File {
         } catch(Throwable $error) {
             return error($error);
         }
-        return ok($parsed);
+        return ok((object)$parsed);
     }
 
     /**
