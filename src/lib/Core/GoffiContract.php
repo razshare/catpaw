@@ -144,10 +144,14 @@ class GoffiContract {
                     $resolvedArgs[] = $value;
                 }
                 $result = $lib->$methodName(...$resolvedArgs);
-                return match ($returnTypeName) {
-                    'string' => FFI::string($result),
-                    default  => $result,
-                };
+
+                if ('string' === $returnTypeName) {
+                    $converted = FFI::string($result);
+                    FFI::free($result);
+                    return $converted;
+                }
+
+                return $result;
             };
         }
         return $methods;
