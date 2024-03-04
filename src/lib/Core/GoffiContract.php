@@ -105,7 +105,8 @@ class GoffiContract {
                 }
                 $paramsCount++;
                 $resolvers[] = match ($type->getName()) {
-                    'string' => fn (string $phpString) => self::goString($lib, $phpString),
+                    // 'string' => fn (string $phpString) => self::goString($lib, $phpString),
+                    'string' => fn (string $value) => ok($value),
                     'int'    => fn (int $value) => ok($value),
                     'float'  => fn (float $value) => ok($value),
                     'bool'   => fn (bool $value) => ok($value),
@@ -133,8 +134,14 @@ class GoffiContract {
 
                 $resolvedArgs = [];
                 foreach ($args as $key => $arg) {
-                    $resolver       = $resolvers[$key];
-                    $resolvedArgs[] = $resolver($arg);
+                    $resolver = $resolvers[$key];
+                    /** @var Unsafe<mixed> $result */
+                    $result = $resolver($arg);
+                    $value  = $result->try($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                    $resolvedArgs[] = $value;
                 }
                 $result = $lib->$methodName(...$resolvedArgs);
                 return match ($returnTypeName) {
