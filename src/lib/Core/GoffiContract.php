@@ -110,6 +110,7 @@ class GoffiContract {
                     'int'    => fn (int $value) => ok($value),
                     'float'  => fn (float $value) => ok($value),
                     'bool'   => fn (bool $value) => ok($value),
+                    default  => fn (mixed $value) => ok($value),
                 };
             }
 
