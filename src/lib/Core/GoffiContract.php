@@ -5,6 +5,7 @@ use Error;
 use FFI;
 use FFI\CData;
 use FFI\ParserException;
+use Phar;
 use ReflectionClass;
 use Throwable;
 
@@ -21,26 +22,62 @@ class GoffiContract {
      * @return Unsafe<GoffiContract&T>
      */
     public static function create(string $interface, string $fileName):Unsafe {
+        if (isPhar()) {
+            $phar     = Phar::running();
+            $fileName = asPharFileName($fileName);
+        } else {
+            $phar = '';
+        }
+
         $strippedFileName = preg_replace('/\.so$/', '', $fileName);
-        $sharedFile       = File::open("$strippedFileName.static.h")->try($error);
+
+        if ($phar) {
+            $localHeaderFileName = "$strippedFileName.static.h";
+            $headerFileName      = './'.basename('.'.str_replace($phar, '', $localHeaderFileName));
+            if (!File::exists($headerFileName)) {
+                File::copy($localHeaderFileName, $headerFileName)->await()->try($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
+        } else {
+            $headerFileName = "$strippedFileName.static.h";
+        }
+
+        $headerFile = File::open($headerFileName)->try($error);
         if ($error) {
-            $sharedFile = File::open("$strippedFileName.h")->try($error);
+            $headerFile = File::open("$strippedFileName.h")->try($error);
             if ($error) {
                 return error($error);
             }
         }
+        $cdefComplex = $headerFile->readAll()->await()->try($error);
 
-        $cdefComplex = $sharedFile->readAll()->await()->try($error);
 
         if ($error) {
             return error($error);
         }
 
         if (null === ($cdef = preg_replace('/^\s*typedef\s+(float|double)\s+_Complex.*/m', '', $cdefComplex))) {
-            return error("Unknown error while trying to clear `_Complex` definitions in the header file {$sharedFile->fileName}.");
+            return error("Unknown error while trying to clear `_Complex` definitions in the header file {$headerFile->fileName}.");
         }
+
+        $externalFileName = '';
         try {
-            $lib = FFI::cdef($cdef, $fileName);
+            if ($phar) {
+                $externalFileName = './'.basename('.'.str_replace($phar, '', $fileName));
+
+                if (!File::exists($externalFileName)) {
+                    File::copy($fileName, $externalFileName)->await()->try($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                }
+
+                $lib = FFI::cdef($cdef, $externalFileName);
+            } else {
+                $lib = FFI::cdef($cdef, $fileName);
+            }
         } catch(Throwable $error) {
             return error($error);
         }

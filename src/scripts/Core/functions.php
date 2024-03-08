@@ -366,6 +366,35 @@ function asFileName(string ...$path):string {
 }
 
 /**
+ * Given a `$path`, create a file name.
+ * @param  string ...$path
+ * @return string
+ */
+function asPharFileName(string ...$path):string {
+    if (isPhar()) {
+        $phar = Phar::running();
+        $path = [$phar, ...$path];
+
+        $parts = [];
+        $count = count($path);
+        for ($index = 0; $index < $count; $index++) {
+            $pathName = $path[$index];
+
+            if ($index < $count - 1 && !str_ends_with($pathName, '/')) {
+                $pathName = "$pathName/";
+            }
+            $parts[] = $pathName;
+        }
+        $result = join($parts);
+        $result = preg_replace('#/\\./#', '/', $result);
+        echo "result: $result\n";
+        return $result;
+    } else {
+        return asFileName(...$path);
+    }
+}
+
+/**
  * Create an _FFI_ wrapper for a _Go_ shared object.
  *
  * # WARNING!

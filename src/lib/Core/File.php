@@ -30,6 +30,41 @@ readonly class File {
     }
 
     /**
+     *
+     * @param  string       $fileNameA
+     * @param  string       $fileNameB
+     * @param  bool         $binary
+     * @return Unsafe<bool>
+     */
+    public static function checksum(string $fileNameA, string $fileNameB, bool $binary = false):Unsafe {
+        $fileA = File::open($fileNameA)->try($error);
+        if ($error) {
+            return error($error);
+        }
+
+        $fileB = File::open($fileNameB)->try($error);
+        if ($error) {
+            return error($error);
+        }
+
+
+        $contentA = $fileA->readAll()->await()->try($error);
+        if ($error) {
+            return error($error);
+        }
+
+        $contentB = $fileB->readAll()->await()->try($error);
+        if ($error) {
+            return error($error);
+        }
+
+        $md5A = md5($contentA, $binary);
+        $md5B = md5($contentB, $binary);
+
+        return ok($md5A === $md5B);
+    }
+
+    /**
      * Copy a file.
      * @param  string               $from
      * @param  string               $to
