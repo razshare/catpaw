@@ -372,9 +372,8 @@ function asFileName(string ...$path):string {
  */
 function asPharFileName(string ...$path):string {
     if (isPhar()) {
-        $phar = Phar::running();
-        $path = [$phar, ...$path];
-
+        $phar  = Phar::running();
+        $path  = [$phar, ...$path];
         $parts = [];
         $count = count($path);
         for ($index = 0; $index < $count; $index++) {
@@ -387,7 +386,6 @@ function asPharFileName(string ...$path):string {
         }
         $result = join($parts);
         $result = preg_replace('#/\\./#', '/', $result);
-        echo "result: $result\n";
         return $result;
     } else {
         return asFileName(...$path);
