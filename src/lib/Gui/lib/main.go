@@ -2,14 +2,16 @@ package main
 
 import "C"
 import (
-    "gioui.org/layout"
-    "gioui.org/unit"
-    "image/color"
-
     "gioui.org/app"
+    "gioui.org/f32"
+    "gioui.org/layout"
     "gioui.org/op"
+    "gioui.org/op/clip"
+    "gioui.org/op/paint"
     "gioui.org/text"
+    "gioui.org/unit"
     "gioui.org/widget/material"
+    "image/color"
 )
 
 var ops op.Ops
@@ -24,115 +26,156 @@ func toStringC(value string) stringC {
     return C.CString(value)
 }
 
-//export appNewWindow
-func appNewWindow() int {
+//export window
+func window() int {
     window := app.NewWindow()
     return WindowRefs.Add(window).key
 }
 
-//export materialNewTheme
-func materialNewTheme() int {
+//export theme
+func theme() int {
     return ThemeRefs.Add(material.NewTheme()).key
 }
 
-//export materialH1
-func materialH1(theme int, labelC stringC) int {
+//export h1
+func h1(theme int, labelC stringC) int {
     th := ThemeRefs.items[theme]
     label := material.H1(th, toString(labelC))
-    return LabelStyleRefs.Add(&label).key
+    return LabelRefs.Add(&label).key
 }
 
-//export materialH2
-func materialH2(theme int, labelC stringC) int {
+//export h2
+func h2(theme int, labelC stringC) int {
     th := ThemeRefs.items[theme]
     label := material.H2(th, toString(labelC))
-    return LabelStyleRefs.Add(&label).key
+    return LabelRefs.Add(&label).key
 }
 
-//export materialH3
-func materialH3(theme int, labelC stringC) int {
+//export h3
+func h3(theme int, labelC stringC) int {
     th := ThemeRefs.items[theme]
     label := material.H3(th, toString(labelC))
-    return LabelStyleRefs.Add(&label).key
+    return LabelRefs.Add(&label).key
 }
 
-//export materialH4
-func materialH4(theme int, labelC stringC) int {
+//export h4
+func h4(theme int, labelC stringC) int {
     th := ThemeRefs.items[theme]
     label := material.H4(th, toString(labelC))
-    return LabelStyleRefs.Add(&label).key
+    return LabelRefs.Add(&label).key
 }
 
-//export materialH5
-func materialH5(theme int, labelC stringC) int {
+//export h5
+func h5(theme int, labelC stringC) int {
     th := ThemeRefs.items[theme]
     label := material.H5(th, toString(labelC))
-    return LabelStyleRefs.Add(&label).key
+    return LabelRefs.Add(&label).key
 }
 
-//export materialH6
-func materialH6(theme int, labelC stringC) int {
+//export h6
+func h6(theme int, labelC stringC) int {
     th := ThemeRefs.items[theme]
     label := material.H6(th, toString(labelC))
-    return LabelStyleRefs.Add(&label).key
+    return LabelRefs.Add(&label).key
 }
 
-//export materialLabel
-func materialLabel(theme int, sizeC float32, labelC stringC) int {
+//export label
+func label(theme int, sizeC float32, labelC stringC) int {
     th := ThemeRefs.items[theme]
     label := material.Label(th, unit.Sp(sizeC), toString(labelC))
-    return LabelStyleRefs.Add(&label).key
+    return LabelRefs.Add(&label).key
 }
 
-//export colorRgba
-func colorRgba(r int16, g int16, b int16, a int16) int {
+//export rgba
+func rgba(r int16, g int16, b int16, a int16) int {
     c := color.NRGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
     return NRGBARefs.Add(&c).key
 }
 
-//export materialLabelStyleDrawToContext
-func materialLabelStyleDrawToContext(label int, context int) {
+//export labelLayout
+func labelLayout(label int, context int) {
     ctx := ContextRefs.items[context]
-    lbl := LabelStyleRefs.items[label]
+    lbl := LabelRefs.items[label]
     lbl.Layout(*ctx)
 }
 
-//export appNewContext
-func appNewContext(frameEvent int) int {
+//export context
+func context(frameEvent int) int {
     fe := FrameEventRefs.items[frameEvent]
     ctx := app.NewContext(&ops, *fe)
     return ContextRefs.Add(&ctx).key
 }
 
-//export submit
-func submit(frameEvent int, context int) {
-    fe := FrameEventRefs.items[frameEvent]
-    ctx := ContextRefs.items[context]
-    fe.Frame(ctx.Ops)
-}
-
-//export materialSetLabelAlignment
-func materialSetLabelAlignment(label int, value uint8) {
-    lbl := LabelStyleRefs.items[label]
+//export labelSetAlignment
+func labelSetAlignment(label int, value uint8) {
+    lbl := LabelRefs.items[label]
     lbl.Alignment = text.Alignment(value)
 }
 
-//export materialSetLabelColor
-func materialSetLabelColor(label int, color int) {
-    lbl := LabelStyleRefs.items[label]
+//export labelSetColor
+func labelSetColor(label int, color int) {
+    lbl := LabelRefs.items[label]
     clr := NRGBARefs.items[color]
     lbl.Color = *clr
 }
 
-//export windowNextEvent
-func windowNextEvent(window int) (int, int) {
+//export lineFrom
+func lineFrom(x float32, y float32) int {
+    var p clip.Path
+    p.Begin(&ops)
+    p.Move(f32.Point{
+        X: x,
+        Y: y,
+    })
+    return PathRefs.Add(&p).key
+}
+
+//export lineTo
+func lineTo(line int, x float32, y float32) int {
+    p := PathRefs.items[line]
+    p.Line(f32.Point{
+        X: x,
+        Y: y,
+    })
+    return line
+}
+
+//export lineEnd
+func lineEnd(line int, width float32, clr int) {
+    p := PathRefs.items[line]
+    c := NRGBARefs.items[clr]
+    spec := p.End()
+
+    paint.FillShape(&ops, *c,
+        clip.Stroke{
+            Path:  spec,
+            Width: width,
+        }.Op(),
+    )
+}
+
+//export event
+func event(window int) (int, int) {
     w := WindowRefs.items[window]
     event := w.NextEvent()
     switch e := event.(type) {
     case app.FrameEvent:
         return FrameEventRefs.Add(&e).key, 1
+    case app.DestroyEvent:
+        return DestroyEventRefs.Add(&e).key, 2
     }
     return -1, -1
+}
+
+//export reset
+func reset() {
+    ops.Reset()
+}
+
+//export draw
+func draw(frameEvent int) {
+    e := FrameEventRefs.items[frameEvent]
+    e.Frame(&ops)
 }
 
 type Reference[T any] struct {
@@ -172,31 +215,56 @@ func (item *ReferenceItem[T]) Get() *T {
     return &result
 }
 
-func (item *ReferenceItem[T]) Free() {
-    item.reference.Remove(item.key)
+const RefWindow = 0
+const RefFrameEvent = 1
+const RefContext = 2
+const RefLabel = 3
+const RefRgba = 4
+const RefTheme = 5
+
+//export remove
+func remove(refKey int, refType int) {
+    switch refType {
+    case RefWindow:
+        WindowRefs.Remove(refKey)
+    case RefFrameEvent:
+        FrameEventRefs.Remove(refKey)
+    case RefContext:
+        ContextRefs.Remove(refKey)
+    case RefLabel:
+        LabelRefs.Remove(refKey)
+    case RefRgba:
+        NRGBARefs.Remove(refKey)
+    case RefTheme:
+        ThemeRefs.Remove(refKey)
+    }
 }
 
 var WindowRefs = CreateReference[*app.Window]()
 var FrameEventRefs = CreateReference[*app.FrameEvent]()
+var DestroyEventRefs = CreateReference[*app.DestroyEvent]()
 var ContextRefs = CreateReference[*layout.Context]()
-var LabelStyleRefs = CreateReference[*material.LabelStyle]()
+var LabelRefs = CreateReference[*material.LabelStyle]()
 var NRGBARefs = CreateReference[*color.NRGBA]()
 var ThemeRefs = CreateReference[*material.Theme]()
+var PathRefs = CreateReference[*clip.Path]()
+var PathSpecRefs = CreateReference[*clip.PathSpec]()
 
 func main() {
-    //window := appNewWindow()
-    //theme := materialNewTheme()
+    //window := window()
+    //theme := theme()
     //for {
-    //  event, t := windowNextEvent(window)
+    //  event, t := event(window)
     //
     //  if event >= 0 && t == 1 {
-    //      context := appNewContext(event)
-    //      title := materialH1(theme, toStringC("Hello, Gio Ref"))
-    //      maroon := colorRgba(127, 0, 0, 255)
-    //      materialSetLabelColor(title, maroon)
-    //      materialSetLabelAlignment(title, uint8(text.Middle))
-    //      materialLabelStyleDrawToContext(title, context)
-    //      submit(event, context)
+    //      reset()
+    //      context := context(event)
+    //      title := h1(theme, toStringC("Hello, Gio Ref"))
+    //      maroon := rgba(127, 0, 0, 255)
+    //      labelSetColor(title, maroon)
+    //      labelSetAlignment(title, uint8(text.Middle))
+    //      labelLayout(title, context)
+    //      draw(event)
     //  }
     //}
 }

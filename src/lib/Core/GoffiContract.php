@@ -167,7 +167,7 @@ class GoffiContract {
                 // For now all defined parameters will be required for simplicity sake.
                 $argsCount = count($args);
                 if ($paramsCount !== $argsCount) {
-                    throw new Error("The Go contract method `$methodName` in interface `$interface` is expecting $paramsCount parameters, but only $argsCount have been received. Please make sure the correct number of parameters are being passed.");
+                    throw new Error("The Go contract method `$methodName` in interface `$interface` is expecting $paramsCount parameters, but $argsCount have been received. Please make sure the correct number of parameters are being passed.");
                 }
 
                 $resolvedArgs = [];
