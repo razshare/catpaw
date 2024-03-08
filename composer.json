@@ -55,6 +55,9 @@
       "CatPaw\\Core\\": [
         "src/lib/Core"
       ],
+      "CatPaw\\Gui\\": [
+        "src/lib/Gui"
+      ],
       "CatPaw\\Ast\\": [
         "src/lib/Ast"
       ],
