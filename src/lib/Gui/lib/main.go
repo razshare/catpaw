@@ -2,6 +2,8 @@ package main
 
 import "C"
 import (
+    "image/color"
+
     "gioui.org/app"
     "gioui.org/f32"
     "gioui.org/layout"
@@ -11,7 +13,6 @@ import (
     "gioui.org/text"
     "gioui.org/unit"
     "gioui.org/widget/material"
-    "image/color"
 )
 
 var ops op.Ops
@@ -119,8 +120,8 @@ func labelSetColor(label int, color int) {
     lbl.Color = *clr
 }
 
-//export lineFrom
-func lineFrom(x float32, y float32) int {
+//export pathStart
+func pathStart(x float32, y float32) int {
     var p clip.Path
     p.Begin(&ops)
     p.Move(f32.Point{
@@ -131,17 +132,30 @@ func lineFrom(x float32, y float32) int {
 }
 
 //export lineTo
-func lineTo(line int, x float32, y float32) int {
+func lineTo(line int, x float32, y float32) {
     p := PathRefs.items[line]
     p.Line(f32.Point{
         X: x,
         Y: y,
     })
-    return line
 }
 
-//export lineEnd
-func lineEnd(line int, width float32, clr int) {
+//export arcTo
+func arcTo(line int, x1 float32, y1 float32, x2 float32, y2 float32, angle float32) {
+    p := PathRefs.items[line]
+    f1 := f32.Point{
+        X: x1,
+        Y: y1,
+    }
+    f2 := f32.Point{
+        X: x2,
+        Y: y2,
+    }
+    p.Arc(f1, f2, angle)
+}
+
+//export pathEnd
+func pathEnd(line int, width float32, clr int) {
     p := PathRefs.items[line]
     c := NRGBARefs.items[clr]
     spec := p.End()

@@ -149,33 +149,50 @@ interface Contract {
      */
     function draw(FrameEvent $frame):void;
     /**
-     * Start a line at a position.
+     * Start a path at a position.
      * > **Note**\
      * > This doesn't draw anything to the canvas yet.\
-     * > Use `lineTo()` then `lineEnd()` to draw the line.
+     * > YOu can use other functions like `lineTo()` then `pathEnd()` to draw the line.
      * @param  float $x
      * @param  float $y
      * @return Path
      */
-    function lineFrom(float $x, float $y):Path;
+    function pathStart(float $x, float $y):Path;
     /**
-     * Move a line to a position.
+     * Add a line to path.
      * > **Note**\
      * > This doesn't draw anything to the canvas yet.\
-     * > Use `lineEnd()` to draw the line.\
-     * > You can chain multiple calls to `lineTo()` for the same `Path` before invoking `lineEnd()`.
-     * @param  Path  $line
+     * > See `pathEnd()` for more info.
      * @param  float $x
      * @param  float $y
-     * @return Path
-     */
-    function lineTo(Path $line, float $x, float $y):Path;
-    /**
-     * Draw the path of lines.
-     * @param  Path  $line
-     * @param  float $width Width of the lines.
-     * @param  Rgba  $color Color of the lines.
+     * @param  Path  $path
      * @return void
      */
-    function lineEnd(Path $line, float $width, Rgba $color):void;
+    function lineTo(Path $line, float $x, float $y):void;
+    /**
+     * Add an arc to path.
+     * > **Note**\
+     * > This doesn't draw anything to the canvas yet.\
+     * > See `pathEnd()` for more info.
+     * @param  Path  $line
+     * @param  float $x1    X position of the _first_ focus point.
+     * @param  float $y1    Y position of the _first_ focus point.
+     * @param  float $x2    X position of the _second_ focus point.
+     * @param  float $y2    Y position of the _second_ focus point.
+     * @param  float $angle Angle of the arc.\
+     *                      Value may range from 0 to 1.\
+     *                      - Value of 0 is a line.
+     *                      - Value of 1 (or above) is an arc that round-trips, which means it's a perfect circle.\
+     *                      This also means that the end position of the path will be the same position the arc started from.
+     * @return void
+     */
+    function arcTo(Path $line, float $x1, float $y1, float $x2, float $y2, float $angle):void;
+    /**
+     * Draw the path.
+     * @param  float $width Width of the lines.
+     * @param  Rgba  $color Color of the lines.
+     * @param  Path  $path
+     * @return void
+     */
+    function pathEnd(Path $line, float $width, Rgba $color):void;
 }
