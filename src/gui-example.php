@@ -1,5 +1,6 @@
 <?php
 use function CatPaw\Core\error;
+
 use function CatPaw\Core\goffi;
 use CatPaw\Gui\Contract;
 

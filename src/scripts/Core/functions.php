@@ -349,20 +349,11 @@ function stop(string|Error $error) {
 
 /**
  * Given a `$path`, create a file name.
- * @param  string ...$path
- * @return string
+ * @param  string   ...$path
+ * @return FileName
  */
-function asFileName(string ...$path):string {
-    $parts = [];
-    $count = count($path);
-    for ($index = 0; $index < $count; $index++) {
-        $pathName = $path[$index];
-        if ($index < $count - 1 && !str_ends_with($pathName, '/')) {
-            $pathName = "$pathName/";
-        }
-        $parts[] = $pathName;
-    }
-    return realpath(join($parts))?:'';
+function asFileName(string ...$path):FileName {
+    return FileName::create($path);
 }
 
 /**
@@ -372,7 +363,8 @@ function asFileName(string ...$path):string {
  */
 function asPharFileName(string ...$path):string {
     if (isPhar()) {
-        $phar  = Phar::running();
+        $phar = Phar::running();
+
         $path  = [$phar, ...$path];
         $parts = [];
         $count = count($path);
