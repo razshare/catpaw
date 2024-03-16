@@ -9,7 +9,7 @@ use CatPaw\Core\Unsafe;
  * Attach this to route handlers in order intercept their events.
  * @package CatPaw\Web\Interfaces
  */
-interface OnResult extends AttributeInterface {
+interface OnResponse extends AttributeInterface {
     /**
      * Invoked after a route is executed.
      * @see https://github.com/tncrazvan/catpaw/blob/main/docs/1.RouteHandlers.md
@@ -18,5 +18,5 @@ interface OnResult extends AttributeInterface {
      * @param  ResponseModifier $modifier this is the result of the route handler.
      * @return Unsafe<void>
      */
-    public function onResult(Request $request, ResponseModifier $modifier):Unsafe;
+    public function onResponse(Request $request, ResponseModifier $modifier):Unsafe;
 }

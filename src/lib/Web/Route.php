@@ -23,7 +23,7 @@ readonly class Route {
      * @param array<Consumes>      $consumes
      * @param array<Produces>      $produces
      * @param array<OnRequest>     $onRequest
-     * @param array<OnResult>      $onResult
+     * @param array<OnResult>      $onResponse
      * @param array<OnMount>       $onMount
      * @param array<Tag>           $tags
      * @param false|IgnoreOpenApi  $ignoreOpenApi
@@ -38,7 +38,7 @@ readonly class Route {
         array $consumes,
         array $produces,
         array $onRequest,
-        array $onResult,
+        array $onResponse,
         array $onMount,
         array $tags,
         false|IgnoreOpenApi $ignoreOpenApi,
@@ -53,7 +53,7 @@ readonly class Route {
             consumes: $consumes,
             produces: $produces,
             onRequest: $onRequest,
-            onResult: $onResult,
+            onResponse: $onResponse,
             onMount: $onMount,
             tags: $tags,
             ignoreOpenApi: $ignoreOpenApi,
@@ -62,19 +62,20 @@ readonly class Route {
     }
 
     /**
-     * @param ReflectionFunction   $reflectionFunction,
-     * @param string               $symbolicMethod,
-     * @param string               $symbolicPath,
-     * @param string               $workDirectory,
-     * @param callable             $function,
-     * @param array<Consumes>      $consumes,
-     * @param array<Produces>      $produces,
-     * @param array<OnRequest>     $onRequest,
-     * @param array<OnResult>      $onResult,
-     * @param array<OnMount>       $onMount,
-     * @param array<Tag>           $tags,
-     * @param false|IgnoreOpenApi  $ignoreOpenApi,
-     * @param false|IgnoreDescribe $ignoreDescribe,
+     *
+     * @param ReflectionFunction   $reflectionFunction
+     * @param string               $symbolicMethod
+     * @param string               $symbolicPath
+     * @param string               $workDirectory
+     * @param mixed                $function
+     * @param array                $consumes
+     * @param array                $produces
+     * @param array                $onRequest
+     * @param array                $onResponse
+     * @param array                $onMount
+     * @param array                $tags
+     * @param false|IgnoreOpenApi  $ignoreOpenApi
+     * @param false|IgnoreDescribe $ignoreDescribe
      */
     private function __construct(
         public ReflectionFunction $reflectionFunction,
@@ -85,7 +86,7 @@ readonly class Route {
         public array $consumes,
         public array $produces,
         public array $onRequest,
-        public array $onResult,
+        public array $onResponse,
         public array $onMount,
         public array $tags,
         public false|IgnoreOpenApi $ignoreOpenApi,

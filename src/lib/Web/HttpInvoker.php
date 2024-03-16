@@ -36,7 +36,7 @@ class HttpInvoker {
             return ok(failure(join("\n", $badRequestEntries), HttpStatus::BAD_REQUEST));
         }
         $onRequests         = $context->route->onRequest;
-        $onResults          = $context->route->onResult;
+        $onResponses        = $context->route->onResponse;
         $reflectionFunction = $context->route->reflectionFunction;
         $function           = $context->route->function;
 
@@ -60,11 +60,11 @@ class HttpInvoker {
 
         $modifier->setRequestContext($context);
 
-        foreach ($onResults as $onResult) {
-            $onResult->onResult($context->request, $modifier);
+        foreach ($onResponses as $onResponse) {
+            $onResponse->onResponse($context->request, $modifier);
         }
 
-        
+
         if ($sessionIdCookie = $context->request->getCookie('session-id') ?? false) {
             $this->server->sessionOperations->persistSession($sessionIdCookie->getValue());
         }

@@ -189,7 +189,7 @@ readonly class Router {
                 consumes          : $consumes,
                 produces          : $produces,
                 onRequest         : $onRequest,
-                onResult          : $onResult,
+                onResponse          : $onResult,
                 onMount           : $onMount,
                 ignoreOpenApi     : $ignoreOpenApi,
                 ignoreDescribe    : $ignoreDescribe,
