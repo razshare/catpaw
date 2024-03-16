@@ -22,17 +22,13 @@ class GoffiContract {
      * @return Unsafe<GoffiContract&T>
      */
     public static function create(string $interface, string $fileName):Unsafe {
-        if (isPhar()) {
-            $phar     = Phar::running();
-            $fileName = asPharFileName($fileName);
-        } else {
-            $phar = '';
-        }
+        $isPharFileName = str_starts_with($fileName, 'phar://');
 
         $strippedFileName = preg_replace('/\.so$/', '', $fileName);
 
-        if ($phar) {
+        if ($isPharFileName) {
             $localHeaderFileName = "$strippedFileName.static.h";
+            $phar                = Phar::running();
             $headerFileName      = './'.basename('.'.str_replace($phar, '', $localHeaderFileName));
             if (!File::exists($headerFileName)) {
                 File::copy($localHeaderFileName, $headerFileName)->await()->try($error);
@@ -64,7 +60,8 @@ class GoffiContract {
 
         $externalFileName = '';
         try {
-            if ($phar) {
+            if ($isPharFileName) {
+                $phar             = Phar::running();
                 $externalFileName = './'.basename('.'.str_replace($phar, '', $fileName));
 
                 if (!File::exists($externalFileName)) {

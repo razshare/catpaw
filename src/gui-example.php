@@ -1,4 +1,5 @@
 <?php
+use function CatPaw\Core\asFileName;
 use function CatPaw\Core\error;
 
 use function CatPaw\Core\goffi;
@@ -10,7 +11,7 @@ use const CatPaw\Gui\REF_LABEL;
 use const CatPaw\Gui\REF_RGBA;
 
 function main() {
-    $lib = goffi(Contract::class, './src/lib/Gui/lib/main.so')->try($error);
+    $lib = goffi(Contract::class, asFileName(__DIR__, './lib/Gui/lib/main.so')->withPhar())->try($error);
     if ($error) {
         return error($error);
     }
