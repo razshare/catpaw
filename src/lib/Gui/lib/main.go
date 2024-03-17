@@ -1,281 +1,18 @@
+//author: https://github.com/5k3105
+
 package main
 
-import "C"
 import (
-    "image"
-    "image/color"
+    "C"
     "os"
+    "strconv"
 
-    "gioui.org/app"
-    "gioui.org/f32"
-    "gioui.org/layout"
-    "gioui.org/op"
-    "gioui.org/op/clip"
-    "gioui.org/op/paint"
-    "gioui.org/text"
-    "gioui.org/unit"
-    "gioui.org/widget/material"
+    "github.com/therecipe/qt/core"
+    "github.com/therecipe/qt/gui"
+    "github.com/therecipe/qt/widgets"
 )
 
-type stringC = *C.char
-
-func toString(value stringC) string {
-    return C.GoString(value)
-}
-
-func toStringC(value string) stringC {
-    return C.CString(value)
-}
-
-//export window
-func window() int {
-    window := app.NewWindow()
-    return WindowRefs.Add(window).key
-}
-
-//export theme
-func theme() int {
-    return ThemeRefs.Add(material.NewTheme()).key
-}
-
-//export h1
-func h1(theme int, labelC stringC) int {
-    th := ThemeRefs.items[theme]
-    label := material.H1(th, toString(labelC))
-    return LabelRefs.Add(&label).key
-}
-
-//export h2
-func h2(theme int, labelC stringC) int {
-    th := ThemeRefs.items[theme]
-    label := material.H2(th, toString(labelC))
-    return LabelRefs.Add(&label).key
-}
-
-//export h3
-func h3(theme int, labelC stringC) int {
-    th := ThemeRefs.items[theme]
-    label := material.H3(th, toString(labelC))
-    return LabelRefs.Add(&label).key
-}
-
-//export h4
-func h4(theme int, labelC stringC) int {
-    th := ThemeRefs.items[theme]
-    label := material.H4(th, toString(labelC))
-    return LabelRefs.Add(&label).key
-}
-
-//export h5
-func h5(theme int, labelC stringC) int {
-    th := ThemeRefs.items[theme]
-    label := material.H5(th, toString(labelC))
-    return LabelRefs.Add(&label).key
-}
-
-//export h6
-func h6(theme int, labelC stringC) int {
-    th := ThemeRefs.items[theme]
-    label := material.H6(th, toString(labelC))
-    return LabelRefs.Add(&label).key
-}
-
-//export label
-func label(theme int, sizeC float32, labelC stringC) int {
-    th := ThemeRefs.items[theme]
-    label := material.Label(th, unit.Sp(sizeC), toString(labelC))
-    return LabelRefs.Add(&label).key
-}
-
-//export rgba
-func rgba(r int16, g int16, b int16, a int16) int {
-    c := color.NRGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
-    return NRGBARefs.Add(&c).key
-}
-
-//export labelLayout
-func labelLayout(label int, context int) {
-    ctx := ContextRefs.items[context]
-    lbl := LabelRefs.items[label]
-    lbl.Layout(*ctx)
-}
-
-//export context
-func context(operations int, frameEvent int) int {
-    ops := OperationsRefs.items[operations]
-    fe := FrameEventRefs.items[frameEvent]
-    ctx := app.NewContext(ops, *fe)
-    return ContextRefs.Add(&ctx).key
-}
-
-//export labelSetAlignment
-func labelSetAlignment(label int, value uint8) {
-    lbl := LabelRefs.items[label]
-    lbl.Alignment = text.Alignment(value)
-}
-
-//export labelSetColor
-func labelSetColor(label int, color int) {
-    lbl := LabelRefs.items[label]
-    clr := NRGBARefs.items[color]
-    lbl.Color = *clr
-}
-
-//export pathStart
-func pathStart(operations int, x float32, y float32) int {
-    ops := OperationsRefs.items[operations]
-    var p clip.Path
-    p.Begin(ops)
-    p.Move(f32.Point{
-        X: x,
-        Y: y,
-    })
-    return PathRefs.Add(&p).key
-}
-
-//export lineTo
-func lineTo(line int, x float32, y float32) {
-    p := PathRefs.items[line]
-    p.Line(f32.Point{
-        X: x,
-        Y: y,
-    })
-}
-
-//export arcTo
-func arcTo(line int, x1 float32, y1 float32, x2 float32, y2 float32, angle float32) {
-    p := PathRefs.items[line]
-    f1 := f32.Point{
-        X: x1,
-        Y: y1,
-    }
-    f2 := f32.Point{
-        X: x2,
-        Y: y2,
-    }
-    p.Arc(f1, f2, angle)
-}
-
-//export pathEnd
-func pathEnd(operations int, line int, width float32, clr int) {
-    ops := OperationsRefs.items[operations]
-    p := PathRefs.items[line]
-    c := NRGBARefs.items[clr]
-    spec := p.End()
-
-    paint.FillShape(ops, *c,
-        clip.Stroke{
-            Path:  spec,
-            Width: width,
-        }.Op(),
-    )
-}
-
-//export openFile
-func openFile(fileNameC stringC) int {
-    file, error := os.Open(toString(fileNameC))
-    if error != nil {
-        return -1
-    }
-    return GoFileRefs.Add(file).key
-}
-
-type GoImage struct {
-    image  *image.Image
-    format stringC
-}
-
-//export decodeImage
-func decodeImage(goFile int) int {
-    f := GoFileRefs.items[goFile]
-    image, format, error := image.Decode(f)
-    if error != nil {
-        return -1
-    }
-
-    wrapper := GoImage{
-        image:  &image,
-        format: toStringC(format),
-    }
-
-    return GoImageRefs.Add(&wrapper).key
-}
-
-//export addImage
-func addImage(operations int, goImage int) {
-    ops := OperationsRefs.items[operations]
-    goImageRef := GoImageRefs.items[goImage]
-
-    imageOp := paint.NewImageOp(*goImageRef.image)
-    imageOp.Filter = paint.FilterNearest
-    imageOp.Add(ops)
-
-    paint.PaintOp{}.Add(ops)
-}
-
-//export scale
-func scale(operations int, originX float32, originY float32, factorX float32, factorY float32) {
-    ops := OperationsRefs.items[operations]
-    base := f32.Affine2D{}
-    aff := base.Scale(f32.Pt(originX, originY), f32.Pt(factorX, factorY))
-    op.Affine(aff).Add(ops)
-}
-
-//export rotate
-func rotate(operations int, originX float32, originY float32, radians float32) {
-    ops := OperationsRefs.items[operations]
-    base := f32.Affine2D{}
-    aff := base.Rotate(f32.Pt(originX, originY), radians)
-    op.Affine(aff).Add(ops)
-}
-
-//export offset
-func offset(operations int, originX float32, originY float32) {
-    ops := OperationsRefs.items[operations]
-    base := f32.Affine2D{}
-    aff := base.Offset(f32.Pt(originX, originY))
-    op.Affine(aff).Add(ops)
-}
-
-//export shear
-func shear(operations int, originX float32, originY float32, radiansX float32, radiansY float32) {
-    ops := OperationsRefs.items[operations]
-    base := f32.Affine2D{}
-    aff := base.Shear(f32.Pt(originX, originY), radiansX, radiansY)
-    op.Affine(aff).Add(ops)
-}
-
-//export operations
-func operations() int {
-    var ops op.Ops
-    return OperationsRefs.Add(&ops).key
-}
-
-//export event
-func event(window int) (int, int) {
-    w := WindowRefs.items[window]
-    event := w.NextEvent()
-    switch e := event.(type) {
-    case app.FrameEvent:
-        return FrameEventRefs.Add(&e).key, 1
-    case app.DestroyEvent:
-        return DestroyEventRefs.Add(&e).key, 2
-    }
-    return -1, -1
-}
-
-//export reset
-func reset(operations int) {
-    ops := OperationsRefs.items[operations]
-    ops.Reset()
-}
-
-//export draw
-func draw(operations int, frameEvent int) {
-    ops := OperationsRefs.items[operations]
-    e := FrameEventRefs.items[frameEvent]
-    e.Frame(ops)
-}
+// Framework stuff
 
 type Reference[T any] struct {
     items map[int]T
@@ -314,70 +51,558 @@ func (item *ReferenceItem[T]) Get() *T {
     return &result
 }
 
-const RefWindow = 0
-const RefFrameEvent = 1
-const RefContext = 2
-const RefLabel = 3
-const RefRgba = 4
-const RefTheme = 5
-const RefGoFile = 6
-const RefGoImage = 7
-const RefOperations = 8
+type stringC = *C.char
+
+func toString(value stringC) string {
+    return C.GoString(value)
+}
+
+func toStringC(value string) stringC {
+    return C.CString(value)
+}
+
+// Library stuff
+
+var (
+    Scene     *widgets.QGraphicsScene
+    View      *widgets.QGraphicsView
+    Item      *widgets.QGraphicsPixmapItem
+    statusbar *widgets.QStatusBar
+    mp        bool
+)
+
+func ItemMousePressEvent(event *widgets.QGraphicsSceneMouseEvent) {
+    mp = true
+    mousePosition := event.Pos()
+    x, y := int(mousePosition.X()), int(mousePosition.Y())
+    drawpixel(x, y)
+
+}
+
+func ItemMouseReleaseEvent(event *widgets.QGraphicsSceneMouseEvent) {
+    mp = false
+
+    Item.MousePressEventDefault(event) // absofukinlutely necessary for drag & draw !!
+
+    //Item.MouseReleaseEventDefault(event) // worthless
+}
+
+func ItemMouseMoveEvent(event *widgets.QGraphicsSceneMouseEvent) {
+    mousePosition := event.Pos()
+    x, y := int(mousePosition.X()), int(mousePosition.Y())
+
+    drawpixel(x, y)
+
+}
+
+func ItemHoverMoveEvent(event *widgets.QGraphicsSceneHoverEvent) {
+    mousePosition := event.Pos()
+    x, y := int(mousePosition.X()), int(mousePosition.Y())
+
+    rgbValue := Item.Pixmap().ToImage().PixelColor2(x, y)
+    r, g, b := rgbValue.Red(), rgbValue.Green(), rgbValue.Blue()
+    statusbar.ShowMessage("x: "+strconv.Itoa(x)+" y: "+strconv.Itoa(y)+" r: "+strconv.Itoa(r)+" g: "+strconv.Itoa(g)+" b: "+strconv.Itoa(b), 0)
+
+}
+
+func drawpixel(x, y int) {
+
+    if mp {
+        img := Item.Pixmap().ToImage()
+        img.SetPixelColor2(x, y, gui.NewQColor3(255, 255, 255, 255))
+        Item.SetPixmap(gui.NewQPixmap().FromImage(img, 0))
+    }
+
+}
+
+func keyPressEvent(e *gui.QKeyEvent) {
+
+    switch int32(e.Key()) {
+    case int32(core.Qt__Key_0):
+        View.Scale(1.25, 1.25)
+
+    case int32(core.Qt__Key_9):
+        View.Scale(0.8, 0.8)
+    }
+
+}
+
+func wheelEvent(e *widgets.QGraphicsSceneWheelEvent) {
+    if gui.QGuiApplication_QueryKeyboardModifiers()&core.Qt__ShiftModifier != 0 {
+        if e.Delta() > 0 {
+            View.Scale(1.25, 1.25)
+        } else {
+            View.Scale(0.8, 0.8)
+        }
+    }
+}
+
+func resizeEvent(e *gui.QResizeEvent) {
+
+    View.FitInView(Scene.ItemsBoundingRect(), core.Qt__KeepAspectRatio)
+
+}
+
+const WindowCode = 1
+const StatusBarCode = 2
+const SceneCode = 3
+const ViewCode = 4
+const KeyEventCode = 5
+const WheelEventCode = 6
+const ResizeEventCode = 7
+const MouseEventCode = 8
+const HoverEventCode = 9
+const PixelMapCode = 10
+const TextCode = 11
+const ImageCode = 12
+const PixmapCode = 13
+const PushButtonCode = 14
+const ProxyWidgetCode = 15
 
 //export destroy
 func destroy(refKey int, refType int) {
     switch refType {
-    case RefWindow:
+    case WindowCode:
         WindowRefs.Remove(refKey)
-    case RefFrameEvent:
-        FrameEventRefs.Remove(refKey)
-    case RefContext:
-        ContextRefs.Remove(refKey)
-    case RefLabel:
-        LabelRefs.Remove(refKey)
-    case RefRgba:
-        NRGBARefs.Remove(refKey)
-    case RefTheme:
-        ThemeRefs.Remove(refKey)
-    case RefGoFile:
-        file := GoFileRefs.items[refKey]
-        file.Close()
-        GoFileRefs.Remove(refKey)
-    case RefGoImage:
-        GoImageRefs.Remove(refKey)
-    case RefOperations:
-        OperationsRefs.Remove(refKey)
+    case StatusBarCode:
+        StatusBarRefs.Remove(refKey)
+    case SceneCode:
+        SceneRefs.Remove(refKey)
+    case ViewCode:
+        ViewRefs.Remove(refKey)
+    case KeyEventCode:
+        KeyEventRefs.Remove(refKey)
+    case WheelEventCode:
+        WheelEventRefs.Remove(refKey)
+    case ResizeEventCode:
+        ResizeEventRefs.Remove(refKey)
+    case MouseEventCode:
+        MouseEventRefs.Remove(refKey)
+    case HoverEventCode:
+        HoverEventRefs.Remove(refKey)
+    case PixelMapCode:
+        PixmapItemRefs.Remove(refKey)
+    case TextCode:
+        TextRefs.Remove(refKey)
+    case ImageCode:
+        ImageRefs.Remove(refKey)
     }
 }
 
-var WindowRefs = CreateReference[*app.Window]()
-var FrameEventRefs = CreateReference[*app.FrameEvent]()
-var DestroyEventRefs = CreateReference[*app.DestroyEvent]()
-var ContextRefs = CreateReference[*layout.Context]()
-var LabelRefs = CreateReference[*material.LabelStyle]()
-var NRGBARefs = CreateReference[*color.NRGBA]()
-var ThemeRefs = CreateReference[*material.Theme]()
-var PathRefs = CreateReference[*clip.Path]()
-var PathSpecRefs = CreateReference[*clip.PathSpec]()
-var GoFileRefs = CreateReference[*os.File]()
-var GoImageRefs = CreateReference[*GoImage]()
-var OperationsRefs = CreateReference[*op.Ops]()
+var WindowRefs = CreateReference[*widgets.QMainWindow]()
+var ViewRefs = CreateReference[*widgets.QGraphicsView]()
+var SceneRefs = CreateReference[*widgets.QGraphicsScene]()
+var StatusBarRefs = CreateReference[*widgets.QStatusBar]()
+var KeyEventRefs = CreateReference[*gui.QKeyEvent]()
+var WheelEventRefs = CreateReference[*widgets.QGraphicsSceneWheelEvent]()
+var ResizeEventRefs = CreateReference[*gui.QResizeEvent]()
+var MouseEventRefs = CreateReference[*widgets.QGraphicsSceneMouseEvent]()
+var HoverEventRefs = CreateReference[*widgets.QGraphicsSceneHoverEvent]()
+var PixmapItemRefs = CreateReference[*widgets.QGraphicsPixmapItem]()
+var TextRefs = CreateReference[*widgets.QGraphicsTextItem]()
+var ImageRefs = CreateReference[*gui.QImage]()
+var PixmapItem = CreateReference[*widgets.QGraphicsPixmapItem]()
+var PushButtonRefs = CreateReference[*widgets.QPushButton]()
+var ProxyWidgetRefs = CreateReference[*widgets.QGraphicsProxyWidget]()
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> Application
+//
+//export application
+func application() {
+    widgets.NewQApplication(len(os.Args), os.Args)
+}
+
+//export application_set_style
+func application_set_style(style stringC) {
+    widgets.QApplication_SetStyle2(toString(style))
+}
+
+//export application_execute
+func application_execute() {
+    go func() {
+        widgets.QApplication_Exec()
+    }()
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> Window
+//
+//export window
+func window() int {
+    return WindowRefs.Add(widgets.NewQMainWindow(nil, 0)).key
+}
+
+//export window_show
+func window_show(window int) {
+    w := WindowRefs.items[window]
+    w.Show()
+}
+
+//export window_set_title
+func window_set_title(window int, title stringC) {
+    w := WindowRefs.items[window]
+    w.SetWindowTitle(toString(title))
+}
+
+//export window_set_minimum_size
+func window_set_minimum_size(window int, width int, height int) {
+    w := WindowRefs.items[window]
+    w.SetMinimumSize2(width, height)
+}
+
+//export window_set_status_bar
+func window_set_status_bar(window int, status_bar int) {
+    w := WindowRefs.items[window]
+    s := StatusBarRefs.items[status_bar]
+    w.SetStatusBar(s)
+}
+
+//export window_set_central_view
+func window_set_central_view(window int, view int) {
+    w := WindowRefs.items[window]
+    v := ViewRefs.items[view]
+    w.SetCentralWidget(v)
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> StatusBar
+//
+//export status_bar
+func status_bar(window int) int {
+    w := WindowRefs.items[window]
+    return StatusBarRefs.Add(widgets.NewQStatusBar(w)).key
+}
+
+//export status_bar_show_message
+func status_bar_show_message(status_bar int, message stringC) {
+    s := StatusBarRefs.items[status_bar]
+    s.ShowMessage(toString(message), 0)
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> Scene
+//
+//export scene
+func scene() int {
+    return SceneRefs.Add(widgets.NewQGraphicsScene(nil)).key
+}
+
+//export scene_set_rect
+func scene_set_rect(scene int, x float64, y float64, width float64, height float64) {
+    s := SceneRefs.items[scene]
+    s.SetSceneRect2(x, y, width, height)
+}
+
+//export scene_match_window
+func scene_match_window(scene int, window int) {
+    s := SceneRefs.items[scene]
+    w := WindowRefs.items[window]
+    r := w.Rect()
+    s.SetSceneRect2(0, 0, float64(r.Width()), float64(r.Height()))
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> Text
+//
+//export text
+func text(scene int, text stringC) int {
+    s := SceneRefs.items[scene]
+    t := s.AddText(toString(text), gui.NewQFont2("Helvetica", -1, -1, false))
+    t.SetDefaultTextColor(gui.NewQColor6("black"))
+    return TextRefs.Add(t).key
+}
+
+//export text_set_default_color
+func text_set_default_color(text int, color stringC) {
+    t := TextRefs.items[text]
+    t.SetDefaultTextColor(gui.NewQColor6(toString(color)))
+}
+
+//export text_set_position
+func text_set_position(text int, x float64, y float64) {
+    t := TextRefs.items[text]
+    t.SetPos2(x, y)
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> View
+//
+//export view
+func view() int {
+    return ViewRefs.Add(widgets.NewQGraphicsView(nil)).key
+}
+
+//export view_set_scene
+func view_set_scene(view int, scene int) {
+    v := ViewRefs.items[view]
+    s := SceneRefs.items[scene]
+    v.SetScene(s)
+
+}
+
+//export view_show
+func view_show(view int) {
+    v := ViewRefs.items[view]
+    v.Show()
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> Image
+//
+//export image
+func image(data stringC, width int, height int) int {
+    img := gui.NewQImage4(toString(data), width, height, gui.QImage__Format_ARGB32)
+    return ImageRefs.Add(img).key
+}
+
+//export image_from_file_name
+func image_from_file_name(file_name stringC, format stringC) int {
+    img := gui.NewQImage9(toString(file_name), toString(format))
+    return ImageRefs.Add(img).key
+}
+
+//export image_add_to_scene
+func image_add_to_scene(image int, scene int) int {
+    img := ImageRefs.items[image]
+    scn := SceneRefs.items[scene]
+    pix := gui.NewQPixmap().FromImage(img, 0)
+    item := scn.AddPixmap(pix)
+    scn.AddItem(item)
+    return PixmapItemRefs.Add(item).key
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> PixmapItem
+//
+//export pixmap_item_set_position
+func pixmap_item_set_position(pixmap_item int, x float64, y float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetPos2(x, y)
+}
+
+//export pixmap_item_set_opacity
+func pixmap_item_set_opacity(pixmap_item int, opacity float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetOpacity(opacity)
+}
+
+//export pixmap_item_set_scale
+func pixmap_item_set_scale(pixmap_item int, scale float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetScale(scale)
+}
+
+//export pixmap_item_set_rotation
+func pixmap_item_set_rotation(pixmap_item int, angle float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetRotation(angle)
+}
+
+//export pixmap_item_set_tooltip
+func pixmap_item_set_tooltip(pixmap_item int, tooltip stringC) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetToolTip(toString(tooltip))
+}
+
+//export pixmap_item_set_visible
+func pixmap_item_set_visible(pixmap_item int, visible bool) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetVisible(visible)
+}
+
+//export pixmap_item_set_z
+func pixmap_item_set_z(pixmap_item int, z float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetZValue(z)
+}
+
+//export pixmap_item_set_x
+func pixmap_item_set_x(pixmap_item int, x float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetX(x)
+}
+
+//export pixmap_item_set_y
+func pixmap_item_set_y(pixmap_item int, y float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetX(y)
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> Button
+//
+//export button
+func button(text stringC) int {
+    btn := widgets.NewQPushButton2(toString(text), nil)
+    return PushButtonRefs.Add(btn).key
+}
+
+//export button_add_to_scene
+func button_add_to_scene(button int, scene int) int {
+    b := PushButtonRefs.items[button]
+    s := SceneRefs.items[scene]
+    item := s.AddWidget(b, core.Qt__Widget)
+    return ProxyWidgetRefs.Add(item).key
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> ProxyWidget
+//
+//export proxy_widget_set_position
+func proxy_widget_set_position(proxy_widget int, x float64, y float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetPos2(x, y)
+}
+
+//export proxy_widget_set_enabled
+func proxy_widget_set_enabled(proxy_widget int, enabled bool) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetEnabled(enabled)
+}
+
+//export proxy_widget_set_visible
+func proxy_widget_set_visible(proxy_widget int, visible bool) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetVisible(visible)
+}
+
+//export proxy_widget_set_opacity
+func proxy_widget_set_opacity(proxy_widget int, opacity float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetOpacity(opacity)
+}
+
+//export proxy_widget_set_x
+func proxy_widget_set_x(proxy_widget int, x float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetX(x)
+}
+
+//export proxy_widget_set_y
+func proxy_widget_set_y(proxy_widget int, y float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetY(y)
+}
+
+//export proxy_widget_set_z
+func proxy_widget_set_z(proxy_widget int, z float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetZValue(z)
+}
+
+//export proxy_widget_set_tooltip
+func proxy_widget_set_tooltip(proxy_widget int, tooltip stringC) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetToolTip(toString(tooltip))
+}
+
+//export proxy_widget_set_scale
+func proxy_widget_set_scale(proxy_widget int, scale float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetScale(scale)
+}
+
+//export proxy_widget_set_rotation
+func proxy_widget_set_rotation(proxy_widget int, angle float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetRotation(angle)
+}
 
 func main() {
-    //window := window()
-    //theme := theme()
-    //for {
-    //  event, t := event(window)
-    //
-    //  if event >= 0 && t == 1 {
-    //      reset()
-    //      context := context(event)
-    //      title := h1(theme, toStringC("Hello, Gio Ref"))
-    //      maroon := rgba(127, 0, 0, 255)
-    //      labelSetColor(title, maroon)
-    //      labelSetAlignment(title, uint8(text.Middle))
-    //      labelLayout(title, context)
-    //      draw(event)
+    // gui.NewQIm
+    // widgets.NewQApplication(len(os.Args), os.Args)
+
+    // // Main Window
+    // var window = widgets.NewQMainWindow(nil, 0)
+    // window.SetWindowTitle("Sprite Editor")
+    // window.SetMinimumSize2(360, 520)
+
+    // // Statusbar
+    // statusbar = widgets.NewQStatusBar(window)
+    // window.SetStatusBar(statusbar)
+
+    // Scene = widgets.NewQGraphicsScene(nil)
+    // View = widgets.NewQGraphicsView(nil)
+
+    // Scene.ConnectKeyPressEvent(keyPressEvent)
+    // Scene.ConnectWheelEvent(wheelEvent)
+    // View.ConnectResizeEvent(resizeEvent)
+
+    // dx, dy := 16, 32
+
+    // img := gui.NewQImage3(dx, dy, gui.QImage__Format_ARGB32)
+
+    // for i := 0; i < dx; i++ {
+    //  for j := 0; j < dy; j++ {
+    //      img.SetPixelColor2(i, j, gui.NewQColor3(i*2, j*8, i*2, 255))
+
     //  }
-    //}
+    // }
+
+    // //img = img.Scaled2(dx*2,dy,core.Qt__IgnoreAspectRatio, core.Qt__FastTransformation)
+
+    // Item = widgets.NewQGraphicsPixmapItem2(gui.NewQPixmap().FromImage(img, 0), nil)
+
+    // Item.ConnectMouseMoveEvent(ItemMouseMoveEvent)
+    // Item.ConnectMousePressEvent(ItemMousePressEvent)
+    // Item.ConnectMouseReleaseEvent(ItemMouseReleaseEvent)
+
+    // Item.SetAcceptHoverEvents(true)
+    // Item.ConnectHoverMoveEvent(ItemHoverMoveEvent)
+
+    // Scene.AddItem(Item)
+
+    // View.SetScene(Scene)
+    // View.Show()
+
+    // statusbar.ShowMessage(core.QCoreApplication_ApplicationDirPath(), 0)
+
+    // // Set Central Widget
+    // window.SetCentralWidget(View)
+
+    // // Run App
+    // widgets.QApplication_SetStyle2("fusion")
+    // window.Show()
+    // widgets.QApplication_Exec()
 }

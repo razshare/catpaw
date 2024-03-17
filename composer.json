@@ -80,6 +80,7 @@
       ]
     },
     "files": [
+      "src/gui_test.php",
       "src/scripts/Core/constants.php",
       "src/scripts/Core/functions.php",
       "src/scripts/Web/constants.php",
