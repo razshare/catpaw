@@ -1,6 +1,12 @@
 <?php
 namespace CatPaw\Gui;
 
+interface Operations {
+}
+interface GoFile {
+}
+interface GoImage {
+}
 interface Path {
 }
 interface Window {
@@ -26,6 +32,9 @@ const REF_CONTEXT     = 2;
 const REF_LABEL       = 3;
 const REF_RGBA        = 4;
 const REF_THEME       = 5;
+const REF_GO_FILE     = 6;
+const REF_GO_IMAGE    = 7;
+const REF_OPERATIONS  = 8;
 
 interface Contract {
     /**
@@ -120,7 +129,7 @@ interface Contract {
      * @param  FrameEvent $frameEvent
      * @return Context
      */
-    function context(FrameEvent $frameEvent):Context;
+    function context(Operations $ops, FrameEvent $frameEvent):Context;
     /**
      * Create a material color.
      * @param  int  $r
@@ -131,23 +140,23 @@ interface Contract {
      */
     function rgba(int $r, int $g, int $b, int $a, ):Rgba;
     /**
-     * Remove an object reference from memory.
+     * Destroy an object reference from memory.
      * @param  Window|Context|FrameEvent|Label|Rgba|Theme $key
      * @param  int                                        $type
      * @return void
      */
-    function remove(mixed $key, int $type):void;
+    function destroy(mixed $key, int $type):void;
     /**
      * Reset operations.
      * @return void
      */
-    function reset():void;
+    function reset(Operations $ops):void;
     /**
      * Submit a frame to the Gpu.
      * @param  FrameEvent $frame Frame to draw.
      * @return void
      */
-    function draw(FrameEvent $frame):void;
+    function draw(Operations $ops, FrameEvent $frame):void;
     /**
      * Start a path at a position.
      * > **Note**\
@@ -157,7 +166,7 @@ interface Contract {
      * @param  float $y
      * @return Path
      */
-    function pathStart(float $x, float $y):Path;
+    function pathStart(Operations $ops, float $x, float $y):Path;
     /**
      * Add a line to path.
      * > **Note**\
@@ -186,7 +195,14 @@ interface Contract {
      *                      This also means that the end position of the path will be the same position the arc started from.
      * @return void
      */
-    function arcTo(Path $line, float $x1, float $y1, float $x2, float $y2, float $angle):void;
+    function arcTo(
+        Path $line,
+        float $x1,
+        float $y1,
+        float $x2,
+        float $y2,
+        float $angle,
+    ):void;
     /**
      * Draw the path.
      * @param  float $width Width of the lines.
@@ -194,5 +210,38 @@ interface Contract {
      * @param  Path  $path
      * @return void
      */
-    function pathEnd(Path $line, float $width, Rgba $color):void;
+    function pathEnd(Operations $ops, Path $line, float $width, Rgba $color):void;
+    /**
+     * Open a file.
+     *
+     * > **Note**\
+     * > This ia a Go file, you cannot manage this file from Php.
+     * @param  string $fileName
+     * @return GoFile
+     */
+    function openFile(string $fileName):GoFile;
+    /**
+     * Decode a file as an image.
+     * @param  GoFile  $file
+     * @return GoImage
+     */
+    function decodeImage(GoFile $file):GoImage;
+    /**
+     * Add image to the context.
+     * @param  GoImage $image Image to add.
+     * @return void
+     */
+    function addImage(
+        Operations $ops,
+        GoImage $image
+    ):void;
+    /**
+     * Create operations.
+     * @return Operations
+     */
+    function operations():Operations;
+    function scale(Operations $ops, float $originX, float $originY, float $factorX, float $factorY):void;
+    function rotate(Operations $ops, float $originX, float $originY, float $radians):void;
+    function offset(Operations $ops, float $originX, float $originY):void;
+    function shear(Operations $ops, float $originX, float $originY, float $radiansX, float $radiansY):void;
 }

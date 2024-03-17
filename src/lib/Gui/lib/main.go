@@ -2,7 +2,9 @@ package main
 
 import "C"
 import (
+    "image"
     "image/color"
+    "os"
 
     "gioui.org/app"
     "gioui.org/f32"
@@ -14,8 +16,6 @@ import (
     "gioui.org/unit"
     "gioui.org/widget/material"
 )
-
-var ops op.Ops
 
 type stringC = *C.char
 
@@ -101,9 +101,10 @@ func labelLayout(label int, context int) {
 }
 
 //export context
-func context(frameEvent int) int {
+func context(operations int, frameEvent int) int {
+    ops := OperationsRefs.items[operations]
     fe := FrameEventRefs.items[frameEvent]
-    ctx := app.NewContext(&ops, *fe)
+    ctx := app.NewContext(ops, *fe)
     return ContextRefs.Add(&ctx).key
 }
 
@@ -121,9 +122,10 @@ func labelSetColor(label int, color int) {
 }
 
 //export pathStart
-func pathStart(x float32, y float32) int {
+func pathStart(operations int, x float32, y float32) int {
+    ops := OperationsRefs.items[operations]
     var p clip.Path
-    p.Begin(&ops)
+    p.Begin(ops)
     p.Move(f32.Point{
         X: x,
         Y: y,
@@ -155,17 +157,98 @@ func arcTo(line int, x1 float32, y1 float32, x2 float32, y2 float32, angle float
 }
 
 //export pathEnd
-func pathEnd(line int, width float32, clr int) {
+func pathEnd(operations int, line int, width float32, clr int) {
+    ops := OperationsRefs.items[operations]
     p := PathRefs.items[line]
     c := NRGBARefs.items[clr]
     spec := p.End()
 
-    paint.FillShape(&ops, *c,
+    paint.FillShape(ops, *c,
         clip.Stroke{
             Path:  spec,
             Width: width,
         }.Op(),
     )
+}
+
+//export openFile
+func openFile(fileNameC stringC) int {
+    file, error := os.Open(toString(fileNameC))
+    if error != nil {
+        return -1
+    }
+    return GoFileRefs.Add(file).key
+}
+
+type GoImage struct {
+    image  *image.Image
+    format stringC
+}
+
+//export decodeImage
+func decodeImage(goFile int) int {
+    f := GoFileRefs.items[goFile]
+    image, format, error := image.Decode(f)
+    if error != nil {
+        return -1
+    }
+
+    wrapper := GoImage{
+        image:  &image,
+        format: toStringC(format),
+    }
+
+    return GoImageRefs.Add(&wrapper).key
+}
+
+//export addImage
+func addImage(operations int, goImage int) {
+    ops := OperationsRefs.items[operations]
+    goImageRef := GoImageRefs.items[goImage]
+
+    imageOp := paint.NewImageOp(*goImageRef.image)
+    imageOp.Filter = paint.FilterNearest
+    imageOp.Add(ops)
+
+    paint.PaintOp{}.Add(ops)
+}
+
+//export scale
+func scale(operations int, originX float32, originY float32, factorX float32, factorY float32) {
+    ops := OperationsRefs.items[operations]
+    base := f32.Affine2D{}
+    aff := base.Scale(f32.Pt(originX, originY), f32.Pt(factorX, factorY))
+    op.Affine(aff).Add(ops)
+}
+
+//export rotate
+func rotate(operations int, originX float32, originY float32, radians float32) {
+    ops := OperationsRefs.items[operations]
+    base := f32.Affine2D{}
+    aff := base.Rotate(f32.Pt(originX, originY), radians)
+    op.Affine(aff).Add(ops)
+}
+
+//export offset
+func offset(operations int, originX float32, originY float32) {
+    ops := OperationsRefs.items[operations]
+    base := f32.Affine2D{}
+    aff := base.Offset(f32.Pt(originX, originY))
+    op.Affine(aff).Add(ops)
+}
+
+//export shear
+func shear(operations int, originX float32, originY float32, radiansX float32, radiansY float32) {
+    ops := OperationsRefs.items[operations]
+    base := f32.Affine2D{}
+    aff := base.Shear(f32.Pt(originX, originY), radiansX, radiansY)
+    op.Affine(aff).Add(ops)
+}
+
+//export operations
+func operations() int {
+    var ops op.Ops
+    return OperationsRefs.Add(&ops).key
 }
 
 //export event
@@ -182,14 +265,16 @@ func event(window int) (int, int) {
 }
 
 //export reset
-func reset() {
+func reset(operations int) {
+    ops := OperationsRefs.items[operations]
     ops.Reset()
 }
 
 //export draw
-func draw(frameEvent int) {
+func draw(operations int, frameEvent int) {
+    ops := OperationsRefs.items[operations]
     e := FrameEventRefs.items[frameEvent]
-    e.Frame(&ops)
+    e.Frame(ops)
 }
 
 type Reference[T any] struct {
@@ -235,9 +320,12 @@ const RefContext = 2
 const RefLabel = 3
 const RefRgba = 4
 const RefTheme = 5
+const RefGoFile = 6
+const RefGoImage = 7
+const RefOperations = 8
 
-//export remove
-func remove(refKey int, refType int) {
+//export destroy
+func destroy(refKey int, refType int) {
     switch refType {
     case RefWindow:
         WindowRefs.Remove(refKey)
@@ -251,6 +339,14 @@ func remove(refKey int, refType int) {
         NRGBARefs.Remove(refKey)
     case RefTheme:
         ThemeRefs.Remove(refKey)
+    case RefGoFile:
+        file := GoFileRefs.items[refKey]
+        file.Close()
+        GoFileRefs.Remove(refKey)
+    case RefGoImage:
+        GoImageRefs.Remove(refKey)
+    case RefOperations:
+        OperationsRefs.Remove(refKey)
     }
 }
 
@@ -263,6 +359,9 @@ var NRGBARefs = CreateReference[*color.NRGBA]()
 var ThemeRefs = CreateReference[*material.Theme]()
 var PathRefs = CreateReference[*clip.Path]()
 var PathSpecRefs = CreateReference[*clip.PathSpec]()
+var GoFileRefs = CreateReference[*os.File]()
+var GoImageRefs = CreateReference[*GoImage]()
+var OperationsRefs = CreateReference[*op.Ops]()
 
 func main() {
     //window := window()

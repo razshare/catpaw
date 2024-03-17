@@ -19,6 +19,10 @@ function main() {
     $black  = $lib->rgba(0, 0, 0, 255);
     $window = $lib->window();
     $theme  = $lib->theme();
+    $file   = $lib->openFile(asFileName(__DIR__, '../php-logo.png'));
+    $logo   = $lib->decodeImage($file);
+
+    $operations = $lib->operations();
 
     while (true) {
         $event = $lib->event($window);
@@ -30,26 +34,32 @@ function main() {
         }
 
         if (1 === $t) {
-            $lib->reset();
+            $lib->reset($operations);
+            $context = $lib->context($operations, $event);
 
-            $context = $lib->context($event);
-            $title   = $lib->h1($theme, "Hello from CatPaw");
-            $maroon  = $lib->rgba(127, 0, 0, 255);
+            $lib->addImage($operations, $logo);
 
-            $line = $lib->pathStart(220, 150);
+
+            $title  = $lib->h1($theme, "Hello from CatPaw");
+            $maroon = $lib->rgba(127, 0, 0, 255);
+
+            $line = $lib->pathStart($operations, 220, 150);
             $lib->lineTo($line, 30, 70);
             $lib->arcTo($line, 100, 100, 200, 200, M_PI * 2);
             $lib->lineTo($line, 70, 30);
-            $lib->pathEnd($line, 3, $black);
+            $lib->pathEnd($operations, $line, 3, $black);
 
             $lib->labelSetColor($title, $maroon);
             $lib->labelSetAlignment($title, LABEL_ALIGN_MIDDLE);
-            $lib->labelLayout($title, $context);
-            $lib->draw($event);
 
-            $lib->remove($context, REF_CONTEXT);
-            $lib->remove($title, REF_LABEL);
-            $lib->remove($maroon, REF_RGBA);
+            $lib->labelLayout($title, $context);
+
+
+            $lib->draw($operations, $event);
+
+            $lib->destroy($context, REF_CONTEXT);
+            $lib->destroy($title, REF_LABEL);
+            $lib->destroy($maroon, REF_RGBA);
         } else if (2 === $t) {
             die();
         }
