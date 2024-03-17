@@ -6,7 +6,7 @@ use function CatPaw\Core\goffi;
 use CatPaw\Gui\Contract;
 
 
-function gui_test() {
+function main() {
     $lib = goffi(Contract::class, asFileName(__DIR__, './lib/Gui/lib/main.so')->withPhar())->try($error);
     if ($error) {
         return error($error);

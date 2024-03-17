@@ -4,7 +4,7 @@
 # You can setup pre-commit in your repository by running `pre-commit install` or `composer dev:precommit`
 repos:
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.4
+    rev: v1.5.5
     hooks:
     -   id: remove-tabs
 -   repo: https://github.com/digitalpulp/pre-commit-php

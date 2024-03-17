@@ -5,7 +5,6 @@ package main
 import (
     "C"
     "os"
-    "strconv"
 
     "github.com/therecipe/qt/core"
     "github.com/therecipe/qt/gui"
@@ -63,85 +62,85 @@ func toStringC(value string) stringC {
 
 // Library stuff
 
-var (
-    Scene     *widgets.QGraphicsScene
-    View      *widgets.QGraphicsView
-    Item      *widgets.QGraphicsPixmapItem
-    statusbar *widgets.QStatusBar
-    mp        bool
-)
+// var (
+//  Scene     *widgets.QGraphicsScene
+//  View      *widgets.QGraphicsView
+//  Item      *widgets.QGraphicsPixmapItem
+//  statusbar *widgets.QStatusBar
+//  mp        bool
+// )
 
-func ItemMousePressEvent(event *widgets.QGraphicsSceneMouseEvent) {
-    mp = true
-    mousePosition := event.Pos()
-    x, y := int(mousePosition.X()), int(mousePosition.Y())
-    drawpixel(x, y)
+// func ItemMousePressEvent(event *widgets.QGraphicsSceneMouseEvent) {
+//  mp = true
+//  mousePosition := event.Pos()
+//  x, y := int(mousePosition.X()), int(mousePosition.Y())
+//  drawpixel(x, y)
 
-}
+// }
 
-func ItemMouseReleaseEvent(event *widgets.QGraphicsSceneMouseEvent) {
-    mp = false
+// func ItemMouseReleaseEvent(event *widgets.QGraphicsSceneMouseEvent) {
+//  mp = false
 
-    Item.MousePressEventDefault(event) // absofukinlutely necessary for drag & draw !!
+//  Item.MousePressEventDefault(event) // absofukinlutely necessary for drag & draw !!
 
-    //Item.MouseReleaseEventDefault(event) // worthless
-}
+//  //Item.MouseReleaseEventDefault(event) // worthless
+// }
 
-func ItemMouseMoveEvent(event *widgets.QGraphicsSceneMouseEvent) {
-    mousePosition := event.Pos()
-    x, y := int(mousePosition.X()), int(mousePosition.Y())
+// func ItemMouseMoveEvent(event *widgets.QGraphicsSceneMouseEvent) {
+//  mousePosition := event.Pos()
+//  x, y := int(mousePosition.X()), int(mousePosition.Y())
 
-    drawpixel(x, y)
+//  drawpixel(x, y)
 
-}
+// }
 
-func ItemHoverMoveEvent(event *widgets.QGraphicsSceneHoverEvent) {
-    mousePosition := event.Pos()
-    x, y := int(mousePosition.X()), int(mousePosition.Y())
+// func ItemHoverMoveEvent(event *widgets.QGraphicsSceneHoverEvent) {
+//  mousePosition := event.Pos()
+//  x, y := int(mousePosition.X()), int(mousePosition.Y())
 
-    rgbValue := Item.Pixmap().ToImage().PixelColor2(x, y)
-    r, g, b := rgbValue.Red(), rgbValue.Green(), rgbValue.Blue()
-    statusbar.ShowMessage("x: "+strconv.Itoa(x)+" y: "+strconv.Itoa(y)+" r: "+strconv.Itoa(r)+" g: "+strconv.Itoa(g)+" b: "+strconv.Itoa(b), 0)
+//  rgbValue := Item.Pixmap().ToImage().PixelColor2(x, y)
+//  r, g, b := rgbValue.Red(), rgbValue.Green(), rgbValue.Blue()
+//  statusbar.ShowMessage("x: "+strconv.Itoa(x)+" y: "+strconv.Itoa(y)+" r: "+strconv.Itoa(r)+" g: "+strconv.Itoa(g)+" b: "+strconv.Itoa(b), 0)
 
-}
+// }
 
-func drawpixel(x, y int) {
+// func drawpixel(x, y int) {
 
-    if mp {
-        img := Item.Pixmap().ToImage()
-        img.SetPixelColor2(x, y, gui.NewQColor3(255, 255, 255, 255))
-        Item.SetPixmap(gui.NewQPixmap().FromImage(img, 0))
-    }
+//  if mp {
+//      img := Item.Pixmap().ToImage()
+//      img.SetPixelColor2(x, y, gui.NewQColor3(255, 255, 255, 255))
+//      Item.SetPixmap(gui.NewQPixmap().FromImage(img, 0))
+//  }
 
-}
+// }
 
-func keyPressEvent(e *gui.QKeyEvent) {
+// func keyPressEvent(e *gui.QKeyEvent) {
 
-    switch int32(e.Key()) {
-    case int32(core.Qt__Key_0):
-        View.Scale(1.25, 1.25)
+//  switch int32(e.Key()) {
+//  case int32(core.Qt__Key_0):
+//      View.Scale(1.25, 1.25)
 
-    case int32(core.Qt__Key_9):
-        View.Scale(0.8, 0.8)
-    }
+//  case int32(core.Qt__Key_9):
+//      View.Scale(0.8, 0.8)
+//  }
 
-}
+// }
 
-func wheelEvent(e *widgets.QGraphicsSceneWheelEvent) {
-    if gui.QGuiApplication_QueryKeyboardModifiers()&core.Qt__ShiftModifier != 0 {
-        if e.Delta() > 0 {
-            View.Scale(1.25, 1.25)
-        } else {
-            View.Scale(0.8, 0.8)
-        }
-    }
-}
+// func wheelEvent(e *widgets.QGraphicsSceneWheelEvent) {
+//  if gui.QGuiApplication_QueryKeyboardModifiers()&core.Qt__ShiftModifier != 0 {
+//      if e.Delta() > 0 {
+//          View.Scale(1.25, 1.25)
+//      } else {
+//          View.Scale(0.8, 0.8)
+//      }
+//  }
+// }
 
-func resizeEvent(e *gui.QResizeEvent) {
+// func resizeEvent(e *gui.QResizeEvent) {
 
-    View.FitInView(Scene.ItemsBoundingRect(), core.Qt__KeepAspectRatio)
+//  View.FitInView(Scene.ItemsBoundingRect(), core.Qt__KeepAspectRatio)
 
-}
+// }
 
 const WindowCode = 1
 const StatusBarCode = 2
