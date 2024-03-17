@@ -38,11 +38,16 @@ function main(
     bool $build = false,
     #[Option("--build-optimize")]
     bool $buildOptimize = false,
+
+    // ===> GUI
+    #[Option("--gui")]
+    bool $gui = false,
 ): Unsafe {
     return anyError(fn () => match (true) {
         $build  => build(buildOptimize:$buildOptimize),
         $tips   => tips(),
         $hi     => out()->write("hello\n"),
+        $gui    => gui_test(),
         default => true,
     });
 }

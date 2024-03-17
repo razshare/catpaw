@@ -1,15 +1,12 @@
 <?php
-
 use function Amp\delay;
 use function CatPaw\Core\asFileName;
 use function CatPaw\Core\error;
-
-
 use function CatPaw\Core\goffi;
 use CatPaw\Gui\Contract;
 
 
-function main() {
+function gui_test() {
     $lib = goffi(Contract::class, asFileName(__DIR__, './lib/Gui/lib/main.so')->withPhar())->try($error);
     if ($error) {
         return error($error);
@@ -47,7 +44,6 @@ function main() {
     $button = $lib->button("This is a button that doesn't work... yet.");
     $proxy  = $lib->button_add_to_scene($button, $scene);
     $lib->proxy_widget_set_position($proxy, 0, 50);
-
 
     // ==== END ADDING STUFF ====
 
