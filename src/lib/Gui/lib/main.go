@@ -143,7 +143,6 @@ func resizeEvent(e *gui.QResizeEvent) {
 
 }
 
-const ApplicationCode = 0
 const WindowCode = 1
 const StatusBarCode = 2
 const SceneCode = 3
@@ -151,6 +150,14 @@ const ViewCode = 4
 const KeyEventCode = 5
 const WheelEventCode = 6
 const ResizeEventCode = 7
+const MouseEventCode = 8
+const HoverEventCode = 9
+const PixelMapCode = 10
+const TextCode = 11
+const ImageCode = 12
+const PixmapCode = 13
+const PushButtonCode = 14
+const ProxyWidgetCode = 15
 
 //export destroy
 func destroy(refKey int, refType int) {
@@ -169,6 +176,16 @@ func destroy(refKey int, refType int) {
         WheelEventRefs.Remove(refKey)
     case ResizeEventCode:
         ResizeEventRefs.Remove(refKey)
+    case MouseEventCode:
+        MouseEventRefs.Remove(refKey)
+    case HoverEventCode:
+        HoverEventRefs.Remove(refKey)
+    case PixelMapCode:
+        PixmapItemRefs.Remove(refKey)
+    case TextCode:
+        TextRefs.Remove(refKey)
+    case ImageCode:
+        ImageRefs.Remove(refKey)
     }
 }
 
@@ -181,8 +198,12 @@ var WheelEventRefs = CreateReference[*widgets.QGraphicsSceneWheelEvent]()
 var ResizeEventRefs = CreateReference[*gui.QResizeEvent]()
 var MouseEventRefs = CreateReference[*widgets.QGraphicsSceneMouseEvent]()
 var HoverEventRefs = CreateReference[*widgets.QGraphicsSceneHoverEvent]()
-var PixelMapRefs = CreateReference[*widgets.QGraphicsPixmapItem]()
+var PixmapItemRefs = CreateReference[*widgets.QGraphicsPixmapItem]()
 var TextRefs = CreateReference[*widgets.QGraphicsTextItem]()
+var ImageRefs = CreateReference[*gui.QImage]()
+var PixmapItem = CreateReference[*widgets.QGraphicsPixmapItem]()
+var PushButtonRefs = CreateReference[*widgets.QPushButton]()
+var ProxyWidgetRefs = CreateReference[*widgets.QGraphicsProxyWidget]()
 
 // #################################
 // #################################
@@ -283,6 +304,20 @@ func scene() int {
     return SceneRefs.Add(widgets.NewQGraphicsScene(nil)).key
 }
 
+//export scene_set_rect
+func scene_set_rect(scene int, x float64, y float64, width float64, height float64) {
+    s := SceneRefs.items[scene]
+    s.SetSceneRect2(x, y, width, height)
+}
+
+//export scene_match_window
+func scene_match_window(scene int, window int) {
+    s := SceneRefs.items[scene]
+    w := WindowRefs.items[window]
+    r := w.Rect()
+    s.SetSceneRect2(0, 0, float64(r.Width()), float64(r.Height()))
+}
+
 // #################################
 // #################################
 // #################################
@@ -336,20 +371,199 @@ func view_show(view int) {
     v.Show()
 }
 
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> Image
+//
+//export image
+func image(data stringC, width int, height int) int {
+    img := gui.NewQImage4(toString(data), width, height, gui.QImage__Format_ARGB32)
+    return ImageRefs.Add(img).key
+}
+
+//export image_from_file_name
+func image_from_file_name(file_name stringC, format stringC) int {
+    img := gui.NewQImage9(toString(file_name), toString(format))
+    return ImageRefs.Add(img).key
+}
+
+//export image_add_to_scene
+func image_add_to_scene(image int, scene int) int {
+    img := ImageRefs.items[image]
+    scn := SceneRefs.items[scene]
+    pix := gui.NewQPixmap().FromImage(img, 0)
+    item := scn.AddPixmap(pix)
+    scn.AddItem(item)
+    return PixmapItemRefs.Add(item).key
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> PixmapItem
+//
+//export pixmap_item_set_position
+func pixmap_item_set_position(pixmap_item int, x float64, y float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetPos2(x, y)
+}
+
+//export pixmap_item_set_opacity
+func pixmap_item_set_opacity(pixmap_item int, opacity float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetOpacity(opacity)
+}
+
+//export pixmap_item_set_scale
+func pixmap_item_set_scale(pixmap_item int, scale float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetScale(scale)
+}
+
+//export pixmap_item_set_rotation
+func pixmap_item_set_rotation(pixmap_item int, angle float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetRotation(angle)
+}
+
+//export pixmap_item_set_tooltip
+func pixmap_item_set_tooltip(pixmap_item int, tooltip stringC) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetToolTip(toString(tooltip))
+}
+
+//export pixmap_item_set_visible
+func pixmap_item_set_visible(pixmap_item int, visible bool) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetVisible(visible)
+}
+
+//export pixmap_item_set_z
+func pixmap_item_set_z(pixmap_item int, z float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetZValue(z)
+}
+
+//export pixmap_item_set_x
+func pixmap_item_set_x(pixmap_item int, x float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetX(x)
+}
+
+//export pixmap_item_set_y
+func pixmap_item_set_y(pixmap_item int, y float64) {
+    p := PixmapItemRefs.items[pixmap_item]
+    p.SetX(y)
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> Button
+//
+//export button
+func button(text stringC) int {
+    btn := widgets.NewQPushButton2(toString(text), nil)
+    return PushButtonRefs.Add(btn).key
+}
+
+//export button_add_to_scene
+func button_add_to_scene(button int, scene int) int {
+    b := PushButtonRefs.items[button]
+    s := SceneRefs.items[scene]
+    item := s.AddWidget(b, core.Qt__Widget)
+    return ProxyWidgetRefs.Add(item).key
+}
+
+// #################################
+// #################################
+// #################################
+// #################################
+// #################################
+// ======================[START]===> ProxyWidget
+//
+//export proxy_widget_set_position
+func proxy_widget_set_position(proxy_widget int, x float64, y float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetPos2(x, y)
+}
+
+//export proxy_widget_set_enabled
+func proxy_widget_set_enabled(proxy_widget int, enabled bool) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetEnabled(enabled)
+}
+
+//export proxy_widget_set_visible
+func proxy_widget_set_visible(proxy_widget int, visible bool) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetVisible(visible)
+}
+
+//export proxy_widget_set_opacity
+func proxy_widget_set_opacity(proxy_widget int, opacity float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetOpacity(opacity)
+}
+
+//export proxy_widget_set_x
+func proxy_widget_set_x(proxy_widget int, x float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetX(x)
+}
+
+//export proxy_widget_set_y
+func proxy_widget_set_y(proxy_widget int, y float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetY(y)
+}
+
+//export proxy_widget_set_z
+func proxy_widget_set_z(proxy_widget int, z float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetZValue(z)
+}
+
+//export proxy_widget_set_tooltip
+func proxy_widget_set_tooltip(proxy_widget int, tooltip stringC) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetToolTip(toString(tooltip))
+}
+
+//export proxy_widget_set_scale
+func proxy_widget_set_scale(proxy_widget int, scale float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetScale(scale)
+}
+
+//export proxy_widget_set_rotation
+func proxy_widget_set_rotation(proxy_widget int, angle float64) {
+    p := ProxyWidgetRefs.items[proxy_widget]
+    p.SetRotation(angle)
+}
+
 func main() {
-    widgets.NewQApplication(len(os.Args), os.Args)
+    // gui.NewQIm
+    // widgets.NewQApplication(len(os.Args), os.Args)
 
-    // Main Window
-    var window = widgets.NewQMainWindow(nil, 0)
-    window.SetWindowTitle("Sprite Editor")
-    window.SetMinimumSize2(360, 520)
+    // // Main Window
+    // var window = widgets.NewQMainWindow(nil, 0)
+    // window.SetWindowTitle("Sprite Editor")
+    // window.SetMinimumSize2(360, 520)
 
-    // Statusbar
-    statusbar = widgets.NewQStatusBar(window)
-    window.SetStatusBar(statusbar)
+    // // Statusbar
+    // statusbar = widgets.NewQStatusBar(window)
+    // window.SetStatusBar(statusbar)
 
-    Scene = widgets.NewQGraphicsScene(nil)
-    View = widgets.NewQGraphicsView(nil)
+    // Scene = widgets.NewQGraphicsScene(nil)
+    // View = widgets.NewQGraphicsView(nil)
 
     // Scene.ConnectKeyPressEvent(keyPressEvent)
     // Scene.ConnectWheelEvent(wheelEvent)
@@ -379,16 +593,16 @@ func main() {
 
     // Scene.AddItem(Item)
 
-    View.SetScene(Scene)
-    View.Show()
+    // View.SetScene(Scene)
+    // View.Show()
 
-    statusbar.ShowMessage(core.QCoreApplication_ApplicationDirPath(), 0)
+    // statusbar.ShowMessage(core.QCoreApplication_ApplicationDirPath(), 0)
 
-    // Set Central Widget
-    window.SetCentralWidget(View)
+    // // Set Central Widget
+    // window.SetCentralWidget(View)
 
-    // Run App
-    widgets.QApplication_SetStyle2("fusion")
-    window.Show()
-    widgets.QApplication_Exec()
+    // // Run App
+    // widgets.QApplication_SetStyle2("fusion")
+    // window.Show()
+    // widgets.QApplication_Exec()
 }

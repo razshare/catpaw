@@ -4,6 +4,7 @@ use function Amp\delay;
 use function CatPaw\Core\asFileName;
 use function CatPaw\Core\error;
 
+
 use function CatPaw\Core\goffi;
 use CatPaw\Gui\Contract;
 
@@ -13,6 +14,8 @@ function main() {
     if ($error) {
         return error($error);
     }
+
+    $logo_file_name = asFileName(__DIR__, "../php-logo.png");
 
     $lib->application();
 
@@ -26,8 +29,27 @@ function main() {
     $scene = $lib->scene();
     $view  = $lib->view();
 
+    $lib->scene_match_window($scene, $window);
+
+
+    // ==== START ADDING STUFF ====
+
+    // TEXT
     $text = $lib->text($scene, "hello world");
-    $lib->text_set_position($text, 20, 20);
+    $lib->text_set_position($text, 0, 0);
+
+    // LOGO
+    $logo = $lib->image_from_file_name($logo_file_name, "png");
+    $item = $lib->image_add_to_scene($logo, $scene);
+    $lib->pixmap_item_set_position($item, 100, 100);
+
+    // BUTTON
+    $button = $lib->button("This is a button that doesn't work... yet.");
+    $proxy  = $lib->button_add_to_scene($button, $scene);
+    $lib->proxy_widget_set_position($proxy, 0, 50);
+
+
+    // ==== END ADDING STUFF ====
 
     $lib->view_set_scene($view, $scene);
     $lib->view_show($view);
@@ -42,6 +64,7 @@ function main() {
 
     echo "Started\n";
     while (true) {
+        echo "looping...\n";
         delay(10);
     }
 }
