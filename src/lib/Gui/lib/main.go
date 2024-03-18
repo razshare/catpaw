@@ -13,43 +13,6 @@ import (
 
 // Framework stuff
 
-type Reference[T any] struct {
-    items map[int]T
-    index int
-}
-
-func (reference *Reference[T]) Add(item T) *ReferenceItem[T] {
-    key := reference.index
-    reference.index++
-    reference.items[key] = item
-    referenceItem := ReferenceItem[T]{
-        reference: reference,
-        key:       key,
-    }
-    return &referenceItem
-}
-
-func (reference *Reference[T]) Remove(key int) {
-    delete(reference.items, key)
-}
-
-func CreateReference[T any]() *Reference[T] {
-    return &Reference[T]{
-        items: make(map[int]T),
-        index: 0,
-    }
-}
-
-type ReferenceItem[T any] struct {
-    key       int
-    reference *Reference[T]
-}
-
-func (item *ReferenceItem[T]) Get() *T {
-    result := item.reference.items[item.key]
-    return &result
-}
-
 type stringC = *C.char
 
 func toString(value stringC) string {
@@ -60,7 +23,56 @@ func toStringC(value string) stringC {
     return C.CString(value)
 }
 
+type Global struct {
+    items map[uint64]*any
+    index uint64
+}
+
+var global = &Global{
+    items: make(map[uint64]*any),
+    index: 0,
+}
+
+func ref[T any](item *T) uint64 {
+    key := global.index
+    global.index++
+    payload := any(*item)
+    global.items[key] = &payload
+    return key
+}
+
+func unref[T any](key uint64) *T {
+    item := global.items[key]
+    result := (*item).(T)
+    return &result
+}
+
+func remove(key uint64) {
+    delete(global.items, key)
+}
+
 // Library stuff
+
+//export destroy
+func destroy(key uint64) {
+    remove(key)
+}
+
+// var WindowRefs = CreateReference[*widgets.QMainWindow]()
+// var ViewRefs = CreateReference[*widgets.QGraphicsView]()
+// var SceneRefs = CreateReference[*widgets.QGraphicsScene]()
+// var StatusBarRefs = CreateReference[*widgets.QStatusBar]()
+// var KeyEventRefs = CreateReference[*gui.QKeyEvent]()
+// var WheelEventRefs = CreateReference[*widgets.QGraphicsSceneWheelEvent]()
+// var ResizeEventRefs = CreateReference[*gui.QResizeEvent]()
+// var MouseEventRefs = CreateReference[*widgets.QGraphicsSceneMouseEvent]()
+// var HoverEventRefs = CreateReference[*widgets.QGraphicsSceneHoverEvent]()
+// var PixmapItemRefs = CreateReference[*widgets.QGraphicsPixmapItem]()
+// var TextRefs = CreateReference[*widgets.QGraphicsTextItem]()
+// var ImageRefs = CreateReference[*gui.QImage]()
+// var PixmapItem = CreateReference[*widgets.QGraphicsPixmapItem]()
+// var PushButtonRefs = CreateReference[*widgets.QPushButton]()
+// var ProxyWidgetRefs = CreateReference[*widgets.QGraphicsProxyWidget]()
 
 // var (
 //  Scene     *widgets.QGraphicsScene
@@ -142,68 +154,6 @@ func toStringC(value string) stringC {
 
 // }
 
-const WindowCode = 1
-const StatusBarCode = 2
-const SceneCode = 3
-const ViewCode = 4
-const KeyEventCode = 5
-const WheelEventCode = 6
-const ResizeEventCode = 7
-const MouseEventCode = 8
-const HoverEventCode = 9
-const PixelMapCode = 10
-const TextCode = 11
-const ImageCode = 12
-const PixmapCode = 13
-const PushButtonCode = 14
-const ProxyWidgetCode = 15
-
-//export destroy
-func destroy(refKey int, refType int) {
-    switch refType {
-    case WindowCode:
-        WindowRefs.Remove(refKey)
-    case StatusBarCode:
-        StatusBarRefs.Remove(refKey)
-    case SceneCode:
-        SceneRefs.Remove(refKey)
-    case ViewCode:
-        ViewRefs.Remove(refKey)
-    case KeyEventCode:
-        KeyEventRefs.Remove(refKey)
-    case WheelEventCode:
-        WheelEventRefs.Remove(refKey)
-    case ResizeEventCode:
-        ResizeEventRefs.Remove(refKey)
-    case MouseEventCode:
-        MouseEventRefs.Remove(refKey)
-    case HoverEventCode:
-        HoverEventRefs.Remove(refKey)
-    case PixelMapCode:
-        PixmapItemRefs.Remove(refKey)
-    case TextCode:
-        TextRefs.Remove(refKey)
-    case ImageCode:
-        ImageRefs.Remove(refKey)
-    }
-}
-
-var WindowRefs = CreateReference[*widgets.QMainWindow]()
-var ViewRefs = CreateReference[*widgets.QGraphicsView]()
-var SceneRefs = CreateReference[*widgets.QGraphicsScene]()
-var StatusBarRefs = CreateReference[*widgets.QStatusBar]()
-var KeyEventRefs = CreateReference[*gui.QKeyEvent]()
-var WheelEventRefs = CreateReference[*widgets.QGraphicsSceneWheelEvent]()
-var ResizeEventRefs = CreateReference[*gui.QResizeEvent]()
-var MouseEventRefs = CreateReference[*widgets.QGraphicsSceneMouseEvent]()
-var HoverEventRefs = CreateReference[*widgets.QGraphicsSceneHoverEvent]()
-var PixmapItemRefs = CreateReference[*widgets.QGraphicsPixmapItem]()
-var TextRefs = CreateReference[*widgets.QGraphicsTextItem]()
-var ImageRefs = CreateReference[*gui.QImage]()
-var PixmapItem = CreateReference[*widgets.QGraphicsPixmapItem]()
-var PushButtonRefs = CreateReference[*widgets.QPushButton]()
-var ProxyWidgetRefs = CreateReference[*widgets.QGraphicsProxyWidget]()
-
 // #################################
 // #################################
 // #################################
@@ -236,39 +186,39 @@ func application_execute() {
 // ======================[START]===> Window
 //
 //export window
-func window() int {
-    return WindowRefs.Add(widgets.NewQMainWindow(nil, 0)).key
+func window() uint64 {
+    return ref(widgets.NewQMainWindow(nil, 0))
 }
 
 //export window_show
-func window_show(window int) {
-    w := WindowRefs.items[window]
+func window_show(window uint64) {
+    w := unref[widgets.QMainWindow](window)
     w.Show()
 }
 
 //export window_set_title
-func window_set_title(window int, title stringC) {
-    w := WindowRefs.items[window]
+func window_set_title(window uint64, title stringC) {
+    w := unref[widgets.QMainWindow](window)
     w.SetWindowTitle(toString(title))
 }
 
 //export window_set_minimum_size
-func window_set_minimum_size(window int, width int, height int) {
-    w := WindowRefs.items[window]
+func window_set_minimum_size(window uint64, width int, height int) {
+    w := unref[widgets.QMainWindow](window)
     w.SetMinimumSize2(width, height)
 }
 
 //export window_set_status_bar
-func window_set_status_bar(window int, status_bar int) {
-    w := WindowRefs.items[window]
-    s := StatusBarRefs.items[status_bar]
+func window_set_status_bar(window uint64, status_bar uint64) {
+    w := unref[widgets.QMainWindow](window)
+    s := unref[widgets.QStatusBar](status_bar)
     w.SetStatusBar(s)
 }
 
 //export window_set_central_view
-func window_set_central_view(window int, view int) {
-    w := WindowRefs.items[window]
-    v := ViewRefs.items[view]
+func window_set_central_view(window uint64, view uint64) {
+    w := unref[widgets.QMainWindow](window)
+    v := unref[widgets.QGraphicsView](view)
     w.SetCentralWidget(v)
 }
 
@@ -280,14 +230,14 @@ func window_set_central_view(window int, view int) {
 // ======================[START]===> StatusBar
 //
 //export status_bar
-func status_bar(window int) int {
-    w := WindowRefs.items[window]
-    return StatusBarRefs.Add(widgets.NewQStatusBar(w)).key
+func status_bar(window uint64) uint64 {
+    w := unref[widgets.QMainWindow](window)
+    return ref(widgets.NewQStatusBar(w))
 }
 
 //export status_bar_show_message
-func status_bar_show_message(status_bar int, message stringC) {
-    s := StatusBarRefs.items[status_bar]
+func status_bar_show_message(status_bar uint64, message stringC) {
+    s := unref[widgets.QStatusBar](status_bar)
     s.ShowMessage(toString(message), 0)
 }
 
@@ -299,20 +249,20 @@ func status_bar_show_message(status_bar int, message stringC) {
 // ======================[START]===> Scene
 //
 //export scene
-func scene() int {
-    return SceneRefs.Add(widgets.NewQGraphicsScene(nil)).key
+func scene() uint64 {
+    return ref(widgets.NewQGraphicsScene(nil))
 }
 
 //export scene_set_rect
-func scene_set_rect(scene int, x float64, y float64, width float64, height float64) {
-    s := SceneRefs.items[scene]
+func scene_set_rect(scene uint64, x float64, y float64, width float64, height float64) {
+    s := unref[widgets.QGraphicsScene](scene)
     s.SetSceneRect2(x, y, width, height)
 }
 
 //export scene_match_window
-func scene_match_window(scene int, window int) {
-    s := SceneRefs.items[scene]
-    w := WindowRefs.items[window]
+func scene_match_window(scene uint64, window uint64) {
+    s := unref[widgets.QGraphicsScene](scene)
+    w := unref[widgets.QMainWindow](window)
     r := w.Rect()
     s.SetSceneRect2(0, 0, float64(r.Width()), float64(r.Height()))
 }
@@ -325,22 +275,22 @@ func scene_match_window(scene int, window int) {
 // ======================[START]===> Text
 //
 //export text
-func text(scene int, text stringC) int {
-    s := SceneRefs.items[scene]
+func text(scene uint64, text stringC) uint64 {
+    s := unref[widgets.QGraphicsScene](scene)
     t := s.AddText(toString(text), gui.NewQFont2("Helvetica", -1, -1, false))
     t.SetDefaultTextColor(gui.NewQColor6("black"))
-    return TextRefs.Add(t).key
+    return ref(t)
 }
 
 //export text_set_default_color
-func text_set_default_color(text int, color stringC) {
-    t := TextRefs.items[text]
+func text_set_default_color(text uint64, color stringC) {
+    t := unref[widgets.QGraphicsTextItem](text)
     t.SetDefaultTextColor(gui.NewQColor6(toString(color)))
 }
 
 //export text_set_position
-func text_set_position(text int, x float64, y float64) {
-    t := TextRefs.items[text]
+func text_set_position(text uint64, x float64, y float64) {
+    t := unref[widgets.QGraphicsTextItem](text)
     t.SetPos2(x, y)
 }
 
@@ -352,21 +302,21 @@ func text_set_position(text int, x float64, y float64) {
 // ======================[START]===> View
 //
 //export view
-func view() int {
-    return ViewRefs.Add(widgets.NewQGraphicsView(nil)).key
+func view() uint64 {
+    return ref(widgets.NewQGraphicsView(nil))
 }
 
 //export view_set_scene
-func view_set_scene(view int, scene int) {
-    v := ViewRefs.items[view]
-    s := SceneRefs.items[scene]
+func view_set_scene(view uint64, scene uint64) {
+    v := unref[widgets.QGraphicsView](view)
+    s := unref[widgets.QGraphicsScene](scene)
     v.SetScene(s)
 
 }
 
 //export view_show
-func view_show(view int) {
-    v := ViewRefs.items[view]
+func view_show(view uint64) {
+    v := unref[widgets.QGraphicsView](view)
     v.Show()
 }
 
@@ -378,25 +328,25 @@ func view_show(view int) {
 // ======================[START]===> Image
 //
 //export image
-func image(data stringC, width int, height int) int {
+func image(data stringC, width int, height int) uint64 {
     img := gui.NewQImage4(toString(data), width, height, gui.QImage__Format_ARGB32)
-    return ImageRefs.Add(img).key
+    return ref(img)
 }
 
 //export image_from_file_name
-func image_from_file_name(file_name stringC, format stringC) int {
+func image_from_file_name(file_name stringC, format stringC) uint64 {
     img := gui.NewQImage9(toString(file_name), toString(format))
-    return ImageRefs.Add(img).key
+    return ref(img)
 }
 
 //export image_add_to_scene
-func image_add_to_scene(image int, scene int) int {
-    img := ImageRefs.items[image]
-    scn := SceneRefs.items[scene]
+func image_add_to_scene(image uint64, scene uint64) uint64 {
+    img := unref[gui.QImage](image)
+    scn := unref[widgets.QGraphicsScene](scene)
     pix := gui.NewQPixmap().FromImage(img, 0)
     item := scn.AddPixmap(pix)
     scn.AddItem(item)
-    return PixmapItemRefs.Add(item).key
+    return ref(item)
 }
 
 // #################################
@@ -407,56 +357,56 @@ func image_add_to_scene(image int, scene int) int {
 // ======================[START]===> PixmapItem
 //
 //export pixmap_item_set_position
-func pixmap_item_set_position(pixmap_item int, x float64, y float64) {
-    p := PixmapItemRefs.items[pixmap_item]
+func pixmap_item_set_position(pixmap_item uint64, x float64, y float64) {
+    p := unref[widgets.QGraphicsPixmapItem](pixmap_item)
     p.SetPos2(x, y)
 }
 
 //export pixmap_item_set_opacity
-func pixmap_item_set_opacity(pixmap_item int, opacity float64) {
-    p := PixmapItemRefs.items[pixmap_item]
+func pixmap_item_set_opacity(pixmap_item uint64, opacity float64) {
+    p := unref[widgets.QGraphicsPixmapItem](pixmap_item)
     p.SetOpacity(opacity)
 }
 
 //export pixmap_item_set_scale
-func pixmap_item_set_scale(pixmap_item int, scale float64) {
-    p := PixmapItemRefs.items[pixmap_item]
+func pixmap_item_set_scale(pixmap_item uint64, scale float64) {
+    p := unref[widgets.QGraphicsPixmapItem](pixmap_item)
     p.SetScale(scale)
 }
 
 //export pixmap_item_set_rotation
-func pixmap_item_set_rotation(pixmap_item int, angle float64) {
-    p := PixmapItemRefs.items[pixmap_item]
+func pixmap_item_set_rotation(pixmap_item uint64, angle float64) {
+    p := unref[widgets.QGraphicsPixmapItem](pixmap_item)
     p.SetRotation(angle)
 }
 
 //export pixmap_item_set_tooltip
-func pixmap_item_set_tooltip(pixmap_item int, tooltip stringC) {
-    p := PixmapItemRefs.items[pixmap_item]
+func pixmap_item_set_tooltip(pixmap_item uint64, tooltip stringC) {
+    p := unref[widgets.QGraphicsPixmapItem](pixmap_item)
     p.SetToolTip(toString(tooltip))
 }
 
 //export pixmap_item_set_visible
-func pixmap_item_set_visible(pixmap_item int, visible bool) {
-    p := PixmapItemRefs.items[pixmap_item]
+func pixmap_item_set_visible(pixmap_item uint64, visible bool) {
+    p := unref[widgets.QGraphicsPixmapItem](pixmap_item)
     p.SetVisible(visible)
 }
 
 //export pixmap_item_set_z
-func pixmap_item_set_z(pixmap_item int, z float64) {
-    p := PixmapItemRefs.items[pixmap_item]
+func pixmap_item_set_z(pixmap_item uint64, z float64) {
+    p := unref[widgets.QGraphicsPixmapItem](pixmap_item)
     p.SetZValue(z)
 }
 
 //export pixmap_item_set_x
-func pixmap_item_set_x(pixmap_item int, x float64) {
-    p := PixmapItemRefs.items[pixmap_item]
+func pixmap_item_set_x(pixmap_item uint64, x float64) {
+    p := unref[widgets.QGraphicsPixmapItem](pixmap_item)
     p.SetX(x)
 }
 
 //export pixmap_item_set_y
-func pixmap_item_set_y(pixmap_item int, y float64) {
-    p := PixmapItemRefs.items[pixmap_item]
+func pixmap_item_set_y(pixmap_item uint64, y float64) {
+    p := unref[widgets.QGraphicsPixmapItem](pixmap_item)
     p.SetX(y)
 }
 
@@ -468,17 +418,17 @@ func pixmap_item_set_y(pixmap_item int, y float64) {
 // ======================[START]===> Button
 //
 //export button
-func button(text stringC) int {
+func button(text stringC) uint64 {
     btn := widgets.NewQPushButton2(toString(text), nil)
-    return PushButtonRefs.Add(btn).key
+    return ref(btn)
 }
 
 //export button_add_to_scene
-func button_add_to_scene(button int, scene int) int {
-    b := PushButtonRefs.items[button]
-    s := SceneRefs.items[scene]
+func button_add_to_scene(button uint64, scene uint64) uint64 {
+    b := unref[widgets.QPushButton](button)
+    s := unref[widgets.QGraphicsScene](scene)
     item := s.AddWidget(b, core.Qt__Widget)
-    return ProxyWidgetRefs.Add(item).key
+    return ref(item)
 }
 
 // #################################
@@ -489,62 +439,62 @@ func button_add_to_scene(button int, scene int) int {
 // ======================[START]===> ProxyWidget
 //
 //export proxy_widget_set_position
-func proxy_widget_set_position(proxy_widget int, x float64, y float64) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_position(proxy_widget uint64, x float64, y float64) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetPos2(x, y)
 }
 
 //export proxy_widget_set_enabled
-func proxy_widget_set_enabled(proxy_widget int, enabled bool) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_enabled(proxy_widget uint64, enabled bool) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetEnabled(enabled)
 }
 
 //export proxy_widget_set_visible
-func proxy_widget_set_visible(proxy_widget int, visible bool) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_visible(proxy_widget uint64, visible bool) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetVisible(visible)
 }
 
 //export proxy_widget_set_opacity
-func proxy_widget_set_opacity(proxy_widget int, opacity float64) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_opacity(proxy_widget uint64, opacity float64) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetOpacity(opacity)
 }
 
 //export proxy_widget_set_x
-func proxy_widget_set_x(proxy_widget int, x float64) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_x(proxy_widget uint64, x float64) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetX(x)
 }
 
 //export proxy_widget_set_y
-func proxy_widget_set_y(proxy_widget int, y float64) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_y(proxy_widget uint64, y float64) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetY(y)
 }
 
 //export proxy_widget_set_z
-func proxy_widget_set_z(proxy_widget int, z float64) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_z(proxy_widget uint64, z float64) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetZValue(z)
 }
 
 //export proxy_widget_set_tooltip
-func proxy_widget_set_tooltip(proxy_widget int, tooltip stringC) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_tooltip(proxy_widget uint64, tooltip stringC) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetToolTip(toString(tooltip))
 }
 
 //export proxy_widget_set_scale
-func proxy_widget_set_scale(proxy_widget int, scale float64) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_scale(proxy_widget uint64, scale float64) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetScale(scale)
 }
 
 //export proxy_widget_set_rotation
-func proxy_widget_set_rotation(proxy_widget int, angle float64) {
-    p := ProxyWidgetRefs.items[proxy_widget]
+func proxy_widget_set_rotation(proxy_widget uint64, angle float64) {
+    p := unref[widgets.QGraphicsProxyWidget](proxy_widget)
     p.SetRotation(angle)
 }
 
