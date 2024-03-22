@@ -15,7 +15,7 @@ class FileName implements Stringable {
         return new self($path);
     }
 
-    private bool $checkPhar = false;
+    private bool $usingPhar = true;
 
     /**
      * @param array<string> $path
@@ -45,8 +45,8 @@ class FileName implements Stringable {
      * Lookup the file in in the `.phar` before falling back to the file system.
      * @return self
      */
-    public function withPhar(): self {
-        $this->checkPhar = true;
+    public function withoutPhar(): self {
+        $this->usingPhar = false;
         return $this;
     }
 
@@ -55,7 +55,7 @@ class FileName implements Stringable {
             $phar              = Phar::running();
             $localizedFileName = str_replace("$phar/", '', self::asFileName($this->path));
 
-            if ($this->checkPhar) {
+            if ($this->usingPhar) {
                 $pharFileName = "$phar/$localizedFileName";
                 if (!file_exists($pharFileName)) {
                     return realpath($localizedFileName);

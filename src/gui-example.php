@@ -7,7 +7,7 @@ use CatPaw\Gui\Contract;
 
 
 function main() {
-    $lib = goffi(Contract::class, asFileName(__DIR__, './lib/Gui/lib/main.so')->withPhar())->try($error);
+    $lib = goffi(Contract::class, asFileName(__DIR__, './lib/Gui/lib/main.so'))->try($error);
     if ($error) {
         return error($error);
     }

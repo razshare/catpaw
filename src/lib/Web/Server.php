@@ -141,12 +141,6 @@ class Server {
         if (!str_starts_with($apiPrefix, '/')) {
             $apiPrefix = "/$apiPrefix";
         }
-        if (!str_starts_with($api, './')) {
-            $api = "./$api";
-        }
-        if (!str_starts_with($www, './')) {
-            $www = "./$www";
-        }
         $api = preg_replace('/\/+$/', '', $api);
         $www = preg_replace('/\/+$/', '', $www);
 
@@ -192,6 +186,8 @@ class Server {
     private SocketHttpServer $httpServer;
     private RouteResolver $resolver;
     private FileServerInterface $fileServer;
+    /** @var array<Middleware> */
+    private array $prependMiddleware = [];
     /** @var array<Middleware> */
     private array $appendedMiddleware = [];
     private bool $httpServerStarted   = false;
