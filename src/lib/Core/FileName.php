@@ -41,6 +41,30 @@ class FileName implements Stringable {
         return join($parts)?:'';
     }
 
+    private static function getAbsolutePath(string $path) {
+        $root = match (true) {
+            str_starts_with($path, './')  => './',
+            str_starts_with($path, '../') => '../',
+            str_starts_with($path, '/')   => '/',
+            default                       => '',
+        };
+
+        $path      = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
+        $parts     = array_filter(explode(DIRECTORY_SEPARATOR, $path), strlen(...));
+        $absolutes = [];
+        foreach ($parts as $part) {
+            if ('.' == $part) {
+                continue;
+            }
+            if ('..' == $part) {
+                array_pop($absolutes);
+            } else {
+                $absolutes[] = $part;
+            }
+        }
+        return $root.implode(DIRECTORY_SEPARATOR, $absolutes);
+    }
+
     /**
      * Lookup the file in in the `.phar` before falling back to the file system.
      * @return self
@@ -58,13 +82,13 @@ class FileName implements Stringable {
             if ($this->usingPhar) {
                 $pharFileName = "$phar/$localizedFileName";
                 if (!file_exists($pharFileName)) {
-                    return realpath($localizedFileName);
+                    return self::getAbsolutePath($localizedFileName);
                 }
                 return $pharFileName;
             }
-            return realpath($localizedFileName);
+            return self::getAbsolutePath($localizedFileName);
         } else {
-            return realpath(self::asFileName($this->path));
+            return self::getAbsolutePath(self::asFileName($this->path));
         }
     }
 }
