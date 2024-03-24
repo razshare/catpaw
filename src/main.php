@@ -1,19 +1,17 @@
 <?php
-
 use Amp\ByteStream\ClosedException;
-
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Attributes\Option;
 use function CatPaw\Core\Build\build;
-
+use CatPaw\Core\Container;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
-
 use CatPaw\Core\Unsafe;
+use CatPaw\Cui\C\CuiContract;
+use CatPaw\Cui\Services\CuiService;
 use function CatPaw\Text\foreground;
-
 use function CatPaw\Text\nocolor;
 
 /**
@@ -42,9 +40,41 @@ function main(
     return anyError(fn () => match (true) {
         $build  => build(buildOptimize:$buildOptimize),
         $tips   => tips(),
-        $hi     => out()->write("hello\n"),
+        $hi     => hi(),
         default => true,
     });
+}
+
+function hi():Unsafe {
+    $cui = Container::create(CuiService::class)->try($error);
+    if ($error) {
+        return error($error);
+    }
+
+    $cui->load()->try($error);
+    if ($error) {
+        return error($error);
+    }
+
+    /** @var CuiContract $lib */
+    $cui->loop(function($lib) {
+        $maxX = $lib->MaxX();
+        $maxY = $lib->MaxY();
+
+        $message = "hello";
+        $len     = strlen($message);
+
+        $x0 = ($maxX / 2) - ($len / 2);
+        $y0 = ($maxY / 2) - 1;
+        $x1 = ($maxX / 2) + ($len / 2) + 1;
+        $y1 = ($maxY / 2) + 1;
+        if ($view = $lib->NewView("main", $x0, $y0, $x1, $y1)) {
+            $lib->Fprintln($view, $message);
+        }
+    });
+
+
+    return ok();
 }
 
 function tips() {
