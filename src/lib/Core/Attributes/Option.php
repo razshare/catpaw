@@ -30,13 +30,9 @@ class Option implements AttributeInterface, OnParameterMount {
 
     /**
      * @param string $name
-     * @param string $example
-     * @param string $description
      */
     public function __construct(
         private readonly string $name,
-        private readonly string $example = '',
-        private readonly string $description = '',
     ) {
         if (!str_starts_with($name, '-')) {
             Bootstrap::kill("Options must start with `-`, received `$name`.");
