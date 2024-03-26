@@ -38,8 +38,8 @@ class Body implements AttributeInterface, OnParameterMount {
         $className = ReflectionTypeManager::unwrap($reflection)?->getName() ?? '';
 
         try {
-            $value = match ($className) {
-                "string" => $context->request->getBody()->buffer(),
+            $result = match ($className) {
+                "string" => ok($context->request->getBody()->buffer()),
 
                 "int" => $this->toInteger(
                     body: $context->request->getBody(),
@@ -53,13 +53,18 @@ class Body implements AttributeInterface, OnParameterMount {
                     body: $context->request->getBody(),
                 ),
 
-                RequestBody::class => $context->request->getBody(),
+                RequestBody::class => ok($context->request->getBody()),
 
                 default => $this->toArray(
                     body       : $context->request->getBody(),
                     contentType: $context->request->getHeader("Content-Type") ?? '',
                 ),
             };
+            $temp = $result->try($error);
+            if ($error) {
+                return error($error);
+            }
+            $value = $temp;
         } catch(Throwable $e) {
             return error($e);
         }
@@ -87,11 +92,11 @@ class Body implements AttributeInterface, OnParameterMount {
 
 
     /**
-     * @param  string $body
-     * @return bool
+     * @param  string       $body
+     * @return Unsafe<bool>
      */
-    private function toBool(string $body):bool {
-        return filter_var($body, FILTER_VALIDATE_BOOLEAN);
+    private function toBool(string $body):Unsafe {
+        return ok(filter_var($body, FILTER_VALIDATE_BOOLEAN));
     }
 
     /**
