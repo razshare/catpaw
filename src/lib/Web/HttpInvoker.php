@@ -49,7 +49,11 @@ class HttpInvoker {
         }
 
         foreach ($onRequests as $onRequest) {
-            $onRequest->onRequest($context->request);
+            $onRequest->onRequest($context->request)->try($error);
+            if ($error) {
+                echo $error.PHP_EOL;
+                break;
+            }
         }
 
         $modifier = $function(...$dependencies);
@@ -62,6 +66,10 @@ class HttpInvoker {
 
         foreach ($onResponses as $onResponse) {
             $onResponse->onResponse($context->request, $modifier);
+            if ($error) {
+                echo $error.PHP_EOL;
+                break;
+            }
         }
 
 

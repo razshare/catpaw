@@ -24,7 +24,7 @@ use CatPaw\Web\Attributes\Query;
 use CatPaw\Web\Attributes\Summary;
 use CatPaw\Web\Attributes\Tag;
 use CatPaw\Web\Interfaces\OnRequest;
-use CatPaw\Web\Interfaces\OnResult;
+use CatPaw\Web\Interfaces\OnResponse;
 use CatPaw\Web\Services\OpenApiService;
 
 use Closure;
@@ -135,9 +135,9 @@ readonly class Router {
                 return error($error);
             }
 
-            $onRequest = [];
-            $onResult  = [];
-            $onMount   = [];
+            $onRequest  = [];
+            $onResponse = [];
+            $onMount    = [];
 
             $parameters = $reflectionFunction->getParameters();
 
@@ -162,8 +162,8 @@ readonly class Router {
 
                 if ($attributeInstance instanceof OnRequest) {
                     $onRequest[] = $attributeInstance;
-                } else if ($attributeInstance instanceof OnResult) {
-                    $onResult[] = $attributeInstance;
+                } else if ($attributeInstance instanceof OnResponse) {
+                    $onResponse[] = $attributeInstance;
                 } else if ($attributeInstance instanceof AttributeInterface) {
                     $onMount[] = $attributeInstance;
                 }
@@ -189,7 +189,7 @@ readonly class Router {
                 consumes          : $consumes,
                 produces          : $produces,
                 onRequest         : $onRequest,
-                onResponse          : $onResult,
+                onResponse        : $onResponse,
                 onMount           : $onMount,
                 ignoreOpenApi     : $ignoreOpenApi,
                 ignoreDescribe    : $ignoreDescribe,
