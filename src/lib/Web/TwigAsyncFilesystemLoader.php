@@ -27,9 +27,6 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
      * @return Unsafe
      */
     public function loadFromFile(string $fileName):Unsafe {
-        if (!str_ends_with($fileName, '.twig')) {
-            return error("File name `$fileName` does not end with `.twig`.");
-        }
         $name              = $fileName;
         $key               = $name;
         $this->keys[$name] = $key;
