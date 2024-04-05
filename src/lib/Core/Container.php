@@ -81,7 +81,8 @@ class Container {
                 $defaultArgument = $defaultArguments[$key] ?? null;
                 $isOptional      = $reflectionParameter->isOptional();
                 $defaultValue    = $reflectionParameter->isDefaultValueAvailable()?$reflectionParameter->getDefaultValue():null;
-                $type            = ReflectionTypeManager::unwrap($reflectionParameter)?->getName() ?: '';
+                $unwrappedType   = ReflectionTypeManager::unwrap($reflectionParameter);
+                $type            = $unwrappedType?$unwrappedType->getName():'';
                 $name            = $reflectionParameter->getName();
                 $attributes      = $reflectionParameter->getAttributes();
 
