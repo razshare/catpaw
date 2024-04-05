@@ -96,7 +96,7 @@ function build(
             return error($error);
         }
 
-        $writeAttempt = $file->write(<<<PHP
+        $file->write(<<<PHP
             <?php
             use CatPaw\Core\Attributes\Option;
             use CatPaw\Core\Bootstrap;
@@ -118,7 +118,7 @@ function build(
                 environment: \$environment,
                 dieOnChange: false,
             );
-            PHP)->await()->try($error);
+            PHP)->try($error);
 
         $file->close();
 

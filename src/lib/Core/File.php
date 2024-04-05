@@ -331,7 +331,7 @@ readonly class File {
             while (true) {
                 $step  = $wroteSoFar + $chunkSize;
                 $chunk = substr($content, $wroteSoFar, $step);
-                async(static fn () => $this->ampFile->write($chunk))->await();
+                async(fn () => $this->ampFile->write($chunk))->await();
                 $wroteSoFar = $wroteSoFar + $step;
                 if ($wroteSoFar >= $length) {
                     return ok();
