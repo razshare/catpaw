@@ -10,7 +10,6 @@ use function Amp\File\getModificationTime;
 use function Amp\File\getSize;
 use function Amp\File\getStatus;
 use function Amp\File\openFile;
-use Amp\Future;
 use Dotenv\Dotenv;
 use Error;
 use Throwable;
@@ -66,48 +65,46 @@ readonly class File {
 
     /**
      * Copy a file.
-     * @param  string               $from
-     * @param  string               $to
-     * @return Future<Unsafe<void>>
+     * @param  string       $from
+     * @param  string       $to
+     * @return Unsafe<void>
      */
-    public static function copy(string $from, string $to):Future {
-        return async(static function() use ($from, $to) {
-            $source = File::open($from)->try($error);
+    public static function copy(string $from, string $to):Unsafe {
+        $source = File::open($from)->try($error);
+        if ($error) {
+            return error($error);
+        }
+
+        $toDirectory = dirname($to);
+
+        if (!File::exists($toDirectory)) {
+            Directory::create($toDirectory)->try($error);
             if ($error) {
                 return error($error);
             }
+        }
 
-            $toDirectory = dirname($to);
+        $dirname = dirname($to);
 
-            if (!File::exists($toDirectory)) {
-                Directory::create($toDirectory)->try($error);
-                if ($error) {
-                    return error($error);
-                }
-            }
-
-            $dirname = dirname($to);
-
-            if (false === $dirname) {
-                Directory::create($dirname)->try($error);
-                if ($error) {
-                    return $error;
-                }
-            }
-
-            if (!File::exists($dirname)) {
-            }
-
-            $destination = File::open($to, 'x')->try($error);
-
+        if (false === $dirname) {
+            Directory::create($dirname)->try($error);
             if ($error) {
-                return error($error);
+                return $error;
             }
+        }
 
-            $stream = $source->getAmpFile();
+        if (!File::exists($dirname)) {
+        }
 
-            return $destination->writeStream($stream)->await();
-        });
+        $destination = File::open($to, 'x')->try($error);
+
+        if ($error) {
+            return error($error);
+        }
+
+        $stream = $source->getAmpFile();
+
+        return $destination->writeStream($stream);
     }
 
 
@@ -323,51 +320,46 @@ readonly class File {
     }
 
     /**
-     * @param  string               $content
-     * @param  int                  $chunkSize
-     * @return Future<Unsafe<void>>
+     * @param  string       $content
+     * @param  int          $chunkSize
+     * @return Unsafe<void>
      */
-    public function write(string $content, int $chunkSize = 8192):Future {
-        $ampFile = $this->ampFile;
-        return async(static function() use ($ampFile, $content, $chunkSize) {
-            try {
-                $wroteSoFar = 0;
-                $length     = strlen($content);
-                while (true) {
-                    $step  = $wroteSoFar + $chunkSize;
-                    $chunk = substr($content, $wroteSoFar, $step);
-                    async(static fn () => $ampFile->write($chunk))->await();
-                    $wroteSoFar = $wroteSoFar + $step;
-                    if ($wroteSoFar >= $length) {
-                        return ok();
-                    }
+    public function write(string $content, int $chunkSize = 8192):Unsafe {
+        try {
+            $wroteSoFar = 0;
+            $length     = strlen($content);
+            while (true) {
+                $step  = $wroteSoFar + $chunkSize;
+                $chunk = substr($content, $wroteSoFar, $step);
+                async(static fn () => $this->ampFile->write($chunk))->await();
+                $wroteSoFar = $wroteSoFar + $step;
+                if ($wroteSoFar >= $length) {
+                    return ok();
                 }
-            } catch(Throwable $e) {
-                return error($e);
             }
-        });
+        } catch(Throwable $e) {
+            return error($e);
+        }
     }
 
     /**
-     * @param  ReadableStream       $readableStream
-     * @param  int                  $chunkSize
-     * @return Future<Unsafe<void>>
+     * @param  ReadableStream $readableStream
+     * @param  int            $chunkSize
+     * @return Unsafe<void>
      */
-    public function writeStream(ReadableStream $readableStream, int $chunkSize = 8192):Future {
+    public function writeStream(ReadableStream $readableStream, int $chunkSize = 8192):Unsafe {
         $ampFile = $this->ampFile;
-        return async(function() use ($ampFile, $readableStream, $chunkSize) {
-            try {
-                while (true) {
-                    $chunk = async(static fn () => $readableStream->read(null, $chunkSize))->await();
-                    if (null === $chunk) {
-                        return ok();
-                    }
-                    async(static fn () => $ampFile->write($chunk))->await();
+        try {
+            while (true) {
+                $chunk = async(static fn () => $readableStream->read(null, $chunkSize))->await();
+                if (null === $chunk) {
+                    return ok();
                 }
-            } catch(Throwable $e) {
-                return error($e);
+                async(static fn () => $ampFile->write($chunk))->await();
             }
-        });
+        } catch(Throwable $e) {
+            return error($e);
+        }
     }
 
     /**

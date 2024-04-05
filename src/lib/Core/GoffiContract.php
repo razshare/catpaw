@@ -31,7 +31,7 @@ class GoffiContract {
             $phar                = Phar::running();
             $headerFileName      = './'.basename('.'.str_replace($phar, '', $localHeaderFileName));
             if (!File::exists($headerFileName)) {
-                File::copy($localHeaderFileName, $headerFileName)->await()->try($error);
+                File::copy($localHeaderFileName, $headerFileName)->try($error);
                 if ($error) {
                     return error($error);
                 }
@@ -65,7 +65,7 @@ class GoffiContract {
                 $externalFileName = './'.basename('.'.str_replace($phar, '', $fileName));
 
                 if (!File::exists($externalFileName)) {
-                    File::copy($fileName, $externalFileName)->await()->try($error);
+                    File::copy($fileName, $externalFileName)->try($error);
                     if ($error) {
                         return error($error);
                     }

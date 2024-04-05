@@ -2,11 +2,9 @@
 
 namespace CatPaw\Web;
 
-use function Amp\async;
 use Amp\CompositeException;
 use Amp\DeferredFuture;
 use function Amp\File\isDirectory;
-use Amp\Future;
 use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
@@ -229,82 +227,80 @@ class Server {
      * Start the server.
      *
      * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
-     * @param  false|Signal         $ready the server will trigger this signal whenever it's ready to serve requests.
-     * @return Future<Unsafe<void>>
+     * @param  false|Signal $ready the server will trigger this signal whenever it's ready to serve requests.
+     * @return Unsafe<void>
      */
-    public function start(false|Signal $ready = false):Future {
-        return async(function() use ($ready) {
-            if (isset($this->httpServer)) {
-                if ($this->httpServerStarted) {
-                    return error("Server already started.");
-                }
-                return error("Server already created.");
+    public function start(false|Signal $ready = false):Unsafe {
+        if (isset($this->httpServer)) {
+            if ($this->httpServerStarted) {
+                return error("Server already started.");
             }
-            $endSignal = new DeferredFuture;
-            try {
-                if (!isset($this->fileServer)) {
-                    $fileServer = FileServer::create($this)->try($error);
-                    if ($error) {
-                        return error($error);
-                    }
-                    $this->fileServer = $fileServer;
+            return error("Server already created.");
+        }
+        $endSignal = new DeferredFuture;
+        try {
+            if (!isset($this->fileServer)) {
+                $fileServer = FileServer::create($this)->try($error);
+                if ($error) {
+                    return error($error);
                 }
+                $this->fileServer = $fileServer;
+            }
 
-                $stopper = function(string $callbackId) {
-                    EventLoop::cancel($callbackId);
-                    $this->stop();
-                    Bootstrap::kill();
-                };
+            $stopper = function(string $callbackId) {
+                EventLoop::cancel($callbackId);
+                $this->stop();
+                Bootstrap::kill();
+            };
 
-                EventLoop::onSignal(SIGHUP, $stopper);
-                EventLoop::onSignal(SIGINT, $stopper);
-                EventLoop::onSignal(SIGQUIT, $stopper);
-                EventLoop::onSignal(SIGTERM, $stopper);
+            EventLoop::onSignal(SIGHUP, $stopper);
+            EventLoop::onSignal(SIGINT, $stopper);
+            EventLoop::onSignal(SIGQUIT, $stopper);
+            EventLoop::onSignal(SIGTERM, $stopper);
 
-                $requestHandler   = ServerRequestHandler::create($this->logger, $this->fileServer, $this->resolver);
-                $stackedHandler   = stackMiddleware(...$this->middleware, ...[$requestHandler]);
-                $errorHandler     = ServerErrorHandler::create($this->logger);
-                $this->httpServer = SocketHttpServer::createForDirectAccess(
-                    logger: $this->logger,
-                    enableCompression: $this->enableCompression,
-                    connectionLimit: $this->connectionLimit,
-                    connectionLimitPerIp: $this->connectionLimitPerIp,
-                    concurrencyLimit: $this->concurrencyLimit,
-                    allowedMethods: $this->allowedMethods?:null,
-                );
+            $requestHandler   = ServerRequestHandler::create($this->logger, $this->fileServer, $this->resolver);
+            $stackedHandler   = stackMiddleware(...$this->middleware, ...[$requestHandler]);
+            $errorHandler     = ServerErrorHandler::create($this->logger);
+            $this->httpServer = SocketHttpServer::createForDirectAccess(
+                logger: $this->logger,
+                enableCompression: $this->enableCompression,
+                connectionLimit: $this->connectionLimit,
+                connectionLimitPerIp: $this->connectionLimitPerIp,
+                concurrencyLimit: $this->concurrencyLimit,
+                allowedMethods: $this->allowedMethods?:null,
+            );
 
-                $this->httpServer->onStop(static function() use ($endSignal) {
-                    if (!$endSignal->isComplete()) {
-                        $endSignal->complete();
-                    }
-                });
-                $this->httpServer->expose($this->interface);
-
-                $this->httpServer->start($stackedHandler, $errorHandler);
-                $this->httpServerStarted = true;
-                if ($ready) {
-                    $ready->send();
-                }
-
-                foreach (self::$onStartListeners as $function) {
-                    $result = $function($this->httpServer);
-                    if ($result instanceof Unsafe) {
-                        $result->try($error);
-                        if ($error) {
-                            return error($error);
-                        }
-                    }
-                }
-
-                $endSignal->getFuture()->await();
-                return ok();
-            } catch (Throwable $e) {
+            $this->httpServer->onStop(static function() use ($endSignal) {
                 if (!$endSignal->isComplete()) {
                     $endSignal->complete();
                 }
-                return error($e);
+            });
+            $this->httpServer->expose($this->interface);
+
+            $this->httpServer->start($stackedHandler, $errorHandler);
+            $this->httpServerStarted = true;
+            if ($ready) {
+                $ready->send();
             }
-        });
+
+            foreach (self::$onStartListeners as $function) {
+                $result = $function($this->httpServer);
+                if ($result instanceof Unsafe) {
+                    $result->try($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                }
+            }
+
+            $endSignal->getFuture()->await();
+            return ok();
+        } catch (Throwable $e) {
+            if (!$endSignal->isComplete()) {
+                $endSignal->complete();
+            }
+            return error($e);
+        }
     }
 
     /**

@@ -248,7 +248,7 @@ class ByteRangeService {
                         return error("Trying to send payload but the file is not opened.");
                     }
                     $this->file->seek($start);
-                    return $this->file->read($length)->await();
+                    return $this->file->read($length);
                 }
 
                 public function close():Unsafe {

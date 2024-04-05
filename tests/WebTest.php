@@ -57,7 +57,7 @@ class WebTest extends TestCase {
             }
         });
 
-        $server->start($readySignal)->await()->try($error);
+        $server->start($readySignal)->try($error);
         $this->assertFalse($error);
     }
 
