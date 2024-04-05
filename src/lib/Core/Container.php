@@ -430,14 +430,14 @@ class Container {
     }
 
     /**
-     * Get an instance of the given class.
+     * Create an instance or retrieve a cached instance of the given class.
      * - This method will take care of dependency injections.
-     * - Providers, Services and Singletons are backed by an internal cache, which you can reset by invoking `Container::clearAll()`.
+     * - Services and Singletons are backed by an internal cache, which you can reset by invoking `Container::clear()`.
+     * - Providers' results are not cached.
      * @template T
-     * @param  class-string<T> $name Full name of the class.
-     * @param  mixed           $args Arguments of the provider.
+     * @param  string    $name
+     * @param  mixed     $args
      * @return Unsafe<T>
-     * @return Unsafe
      */
     public static function create(string $name, ...$args):Unsafe {
         if (Singleton::exists($name)) {
