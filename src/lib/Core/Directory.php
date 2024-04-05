@@ -1,13 +1,11 @@
 <?php
 namespace CatPaw\Core;
 
-use function Amp\async;
 use function Amp\File\createDirectoryRecursively;
 use function Amp\File\deleteDirectory;
 use function Amp\File\isDirectory;
 use function Amp\File\isFile;
 use function Amp\File\listFiles;
-use Amp\Future;
 
 use FilesystemIterator;
 use RegexIterator;
@@ -125,45 +123,43 @@ class Directory {
 
     /**
      * Copy a directory.
-     * @param  string               $from
-     * @param  string               $to
-     * @param  false|string         $pattern regex pattern to match while scanning.
-     * @return Future<Unsafe<void>>
+     * @param  string       $from
+     * @param  string       $to
+     * @param  false|string $pattern regex pattern to match while scanning.
+     * @return Unsafe<void>
      */
-    function copy(string $from, string $to, false|string $pattern = false):Future {
-        return async(static function() use ($from, $to, $pattern) {
-            if (!isDirectory($from)) {
-                return error("Directory $from not found.");
-            }
+    function copy(string $from, string $to, false|string $pattern = false):Unsafe {
+        if (!isDirectory($from)) {
+            return error("Directory $from not found.");
+        }
 
-            try {
-                $iterator = new FilesystemIterator($from);
-            } catch(Throwable $e) {
-                return error($e);
-            }
+        try {
+            $iterator = new FilesystemIterator($from);
+        } catch(Throwable $e) {
+            return error($e);
+        }
 
-            if (false !== $pattern) {
-                $iterator = new RegexIterator(
-                    $iterator,
-                    $pattern,
-                    RegexIterator::GET_MATCH
-                );
-            }
+        if (false !== $pattern) {
+            $iterator = new RegexIterator(
+                $iterator,
+                $pattern,
+                RegexIterator::GET_MATCH
+            );
+        }
 
-            $key = str_starts_with($from, './')?substr($from, 1):$from;
+        $key = str_starts_with($from, './')?substr($from, 1):$from;
 
-            for ($iterator->rewind();$iterator->valid();$iterator->next()) {
-                foreach ($iterator->current() as $fileName) {
-                    $parts            = explode($key, $fileName, 2);
-                    $relativeFileName = end($parts);
-                    File::copy($fileName, "$to/$relativeFileName")->await()->try($error);
-                    if ($error) {
-                        return error($error);
-                    }
+        for ($iterator->rewind();$iterator->valid();$iterator->next()) {
+            foreach ($iterator->current() as $fileName) {
+                $parts            = explode($key, $fileName, 2);
+                $relativeFileName = end($parts);
+                File::copy($fileName, "$to/$relativeFileName")->try($error);
+                if ($error) {
+                    return error($error);
                 }
             }
-            return ok();
-        });
+        }
+        return ok();
     }
 
     private function __construct() {
