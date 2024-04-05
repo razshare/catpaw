@@ -128,7 +128,7 @@ class Directory {
      * @param  false|string $pattern regex pattern to match while scanning.
      * @return Unsafe<void>
      */
-    function copy(string $from, string $to, false|string $pattern = false):Unsafe {
+    public static function copy(string $from, string $to, false|string $pattern = false):Unsafe {
         if (!isDirectory($from)) {
             return error("Directory $from not found.");
         }
