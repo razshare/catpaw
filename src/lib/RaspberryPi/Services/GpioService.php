@@ -56,7 +56,7 @@ class GpioService {
         if ($error) {
             return error($error);
         }
-        
+
         $exportFile->write($pin);
         $exportFile->close();
 
@@ -113,13 +113,13 @@ class GpioService {
         return new class($export) implements GpioReader {
             private File|false $file = false;
             /**
-             * 
+             *
              * @param  callable():Unsafe<File> $export
              * @return void
              */
             public function __construct(private $export) {
             }
-            
+
             public function read():Unsafe {
                 if (!$this->file) {
                     $export = $this->export;
@@ -129,7 +129,7 @@ class GpioService {
                     }
                     $this->file = $file;
                 }
-                return $this->file->read()->await();
+                return $this->file->read();
             }
 
             public function close():void {
@@ -148,13 +148,13 @@ class GpioService {
         return new class($export) implements GpioWriter {
             private File|false $file = false;
             /**
-             * 
+             *
              * @param  callable():Unsafe<File> $export
              * @return void
              */
             public function __construct(private $export) {
             }
-            
+
             public function write(string $data):Unsafe {
                 if (!$this->file) {
                     $export = $this->export;

@@ -21,6 +21,7 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\Signal;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\FileServerInterface;
+use CatPaw\Web\Interfaces\SessionInterface;
 use Error;
 use Phar;
 use Psr\Log\LoggerInterface;
@@ -109,16 +110,15 @@ class Server {
 
     /**
      *  Create a new server.
-     * @param  string                          $interface            network interface to bind to.
-     * @param  string                          $secureInterface      same as `$interfaces` but using secure certificates.
-     * @param  string                          $api                  api directory, this is relative to the project directory.
-     * @param  string                          $www                  static assets directory, this is relative to the project directory.
-     * @param  string                          $apiPrefix            a prefix to add to the api path.
-     * @param  bool                            $enableCompression
-     * @param  int                             $connectionLimit
-     * @param  int                             $connectionLimitPerIp
-     * @param  int                             $concurrencyLimit
-     * @param  bool|SessionOperationsInterface $sessionOperations
+     * @param  string         $interface            network interface to bind to.
+     * @param  string         $secureInterface      same as `$interfaces` but using secure certificates.
+     * @param  string         $api                  api directory, this is relative to the project directory.
+     * @param  string         $www                  static assets directory, this is relative to the project directory.
+     * @param  string         $apiPrefix            a prefix to add to the api path.
+     * @param  bool           $enableCompression
+     * @param  int            $connectionLimit
+     * @param  int            $connectionLimitPerIp
+     * @param  int            $concurrencyLimit
      * @throws Error
      * @return Unsafe<Server>
      */
@@ -133,7 +133,6 @@ class Server {
         int $connectionLimitPerIp = 10,
         int $concurrencyLimit = 1000,
         array $allowedMethods = [],
-        false|SessionOperationsInterface $sessionOperations = false,
     ): Unsafe {
         if (isset(self::$singleton)) {
             return error('You can only have one server instance at any time. Use `Server::get()` to get the current instance.');
@@ -158,12 +157,8 @@ class Server {
             $logger->warning("Could not find a valid api directory.");
         }
 
-        if (!$sessionOperations) {
-            $sessionOperations = FileSystemSessionOperations::create(
-                ttl          : 1_440,
-                directoryName: ".sessions",
-                keepAlive    : false,
-            );
+        if (!Container::isProvided(SessionInterface::class)) {
+            Container::provide(SessionInterface::class, SessionWithMemory::create(...));
         }
 
         return ok(self::$singleton = new self(
@@ -179,7 +174,6 @@ class Server {
             allowedMethods: $allowedMethods,
             router           : Router::create(),
             logger           : $logger,
-            sessionOperations: $sessionOperations,
         ));
     }
 
@@ -187,11 +181,8 @@ class Server {
     private RouteResolver $resolver;
     private FileServerInterface $fileServer;
     /** @var array<Middleware> */
-    private array $prependMiddleware = [];
-    /** @var array<Middleware> */
-    private array $appendedMiddleware = [];
-    private bool $httpServerStarted   = false;
-
+    private array $middleware       = [];
+    private bool $httpServerStarted = false;
 
     private function __construct(
         public readonly string $interface,
@@ -206,7 +197,6 @@ class Server {
         public readonly array $allowedMethods,
         public readonly Router $router,
         public readonly LoggerInterface $logger,
-        public readonly SessionOperationsInterface $sessionOperations,
     ) {
         self::initializeRoutes(
             logger: $this->logger,
@@ -226,8 +216,8 @@ class Server {
         $this->resolver = RouteResolver::create($this);
     }
 
-    public function appendMiddleware(Middleware $middleware): void {
-        $this->appendedMiddleware[] = $middleware;
+    public function middleware(Middleware $middleware): void {
+        $this->middleware[] = $middleware;
     }
 
     public function setFileServer(FileServerInterface $fileServer):self {
@@ -271,16 +261,11 @@ class Server {
                 EventLoop::onSignal(SIGQUIT, $stopper);
                 EventLoop::onSignal(SIGTERM, $stopper);
 
-                $logger = Container::create(LoggerInterface::class)->try($error);
-                if ($error) {
-                    return error($error);
-                }
-
-                $requestHandler   = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
-                $stackedHandler   = stackMiddleware($requestHandler, ...$this->appendedMiddleware);
-                $errorHandler     = ServerErrorHandler::create($logger);
+                $requestHandler   = ServerRequestHandler::create($this->logger, $this->fileServer, $this->resolver);
+                $stackedHandler   = stackMiddleware(...$this->middleware, ...[$requestHandler]);
+                $errorHandler     = ServerErrorHandler::create($this->logger);
                 $this->httpServer = SocketHttpServer::createForDirectAccess(
-                    logger: $logger,
+                    logger: $this->logger,
                     enableCompression: $this->enableCompression,
                     connectionLimit: $this->connectionLimit,
                     connectionLimitPerIp: $this->connectionLimitPerIp,

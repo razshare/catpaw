@@ -28,39 +28,6 @@ class Container {
     private function __construct() {
     }
 
-    private static array $singletons = [];
-
-    public static function getSingletons():array {
-        return self::$singletons;
-    }
-
-    /**
-     * Check if a singleton exists in the container.
-     * @param  string $className
-     * @return bool
-     */
-    public static function has(string $className): bool {
-        return Singleton::exists($className);
-    }
-
-    /**
-     * Set a singleton inside the container.
-     * @param  string $name
-     * @param  mixed  $value
-     * @return void
-     */
-    public static function set(string $name, mixed $value): void {
-        Singleton::set($name, $value);
-    }
-
-    /**
-     * Delete all singletons and cache inside the container.
-     * @return void
-     */
-    public static function clearAll():void {
-        Singleton::clearAll();
-    }
-
     /**
      * Run the entry method of an instance of a class.
      * @param  object                  $instance
@@ -79,7 +46,7 @@ class Container {
                     if ($error) {
                         return error($error);
                     }
-    
+
                     if ($method->isStatic()) {
                         $result = $method->invoke(null, ...$arguments);
                     } else {
@@ -177,13 +144,13 @@ class Container {
         foreach ($results as $key => $result) {
             $reflectionParameter = $result->reflectionParameter;
             $type                = $result->type;
-            $name                = $result->name;
-            $defaultValue        = $result->defaultValue;
-            $provide             = $options->provides[$type]   ?? false;
-            $overwrite           = $options->overwrites[$type] ?? false;
-            $fallback            = $options->fallbacks[$type]  ?? false;
-            $attributes          = $result->attributes;
-            $numberOfAttributes  = count($result->attributes);
+            // $name                = $result->name;
+            // $defaultValue        = $result->defaultValue;
+            $provide            = $options->provides[$type]   ?? false;
+            $overwrite          = $options->overwrites[$type] ?? false;
+            $fallback           = $options->fallbacks[$type]  ?? false;
+            $attributes         = $result->attributes;
+            $numberOfAttributes = count($result->attributes);
 
             if ($overwrite) {
                 $parameters[$key] = $overwrite($result);
@@ -223,7 +190,7 @@ class Container {
                     $findByParameter          = $attributeReflectionClass->getMethod('findByParameter')->getClosure();
                     /** @var AttributeInterface $attributeInstanceAttempt */
                     $attributeInstance = $findByParameter($reflectionParameter)->try($error);
-                    
+
                     if ($error) {
                         return error($error);
                     }
@@ -241,7 +208,7 @@ class Container {
                             return error($error);
                         }
                     }
-                    
+
                     if ($parameters[$key] instanceof StorageInterface) {
                         $parameters[$key] = &$parameters[$key]->getStorage();
                     }
@@ -265,22 +232,22 @@ class Container {
         bool $append = false,
     ):Unsafe {
         if (!$append) {
-            Container::clearAll();
+            Container::clear();
         }
 
-        if (!Container::has(LoggerInterface::class)) {
+        if (!Container::isProvided(LoggerInterface::class)) {
             $logger = LoggerFactory::create()->try($error);
             if ($error) {
                 return error($error);
             }
-            Container::set(LoggerInterface::class, $logger);
+            Container::provide(LoggerInterface::class, $logger);
         } else {
             $logger = Container::create(LoggerInterface::class)->try($error);
             if ($error) {
                 return error($error);
             }
         }
-        
+
         /** @var LoggerInterface $logger */
 
         $isPhar = isPhar();
@@ -298,7 +265,7 @@ class Container {
         } else if (!isDirectory($path)) {
             return ok([]);
         }
-        
+
         $flatList = Directory::flat($path)->try($error);
         if ($error) {
             return  error($error);
@@ -317,7 +284,7 @@ class Container {
 
     /**
      * Execute all attributes attached to the function.
-     * 
+     *
      * Will not execute the function itself and parameter attributes will not be instantiated at all.
      * @param  Closure|ReflectionFunction $function
      * @return Unsafe<void>
@@ -359,7 +326,7 @@ class Container {
      * Inject dependencies into a function and invoke it.
      * @template T
      * @param  Closure|ReflectionFunction $function
-     * @param  bool                       $touch    if true, Container::touch will be 
+     * @param  bool                       $touch    if true, Container::touch will be
      *                                              called automatically on the function
      * @return Unsafe<T>
      */
@@ -385,7 +352,7 @@ class Container {
             }
 
             $result = $function(...$arguments);
-            
+
             if ($result instanceof Unsafe) {
                 return $result;
             }
@@ -397,7 +364,6 @@ class Container {
     }
 
     /**
-     * 
      * @param  ReflectionClass        $reflectionClass
      * @return ReflectionMethod|false
      */
@@ -416,38 +382,77 @@ class Container {
     }
 
     /**
-     * Make a new instance of the given class.<br />
-     * This method will take care of dependency injections.
-     * @template T
-     * @param  class-string<T> $className full name of the class.
-     * @return Unsafe<T>
+     * Check if a name is provided by the container by either a singleton or a provider function (in that order).
+     * @param  string $name
+     * @return bool
      */
-    public static function create(string $className):Unsafe {
-        if ('callable' === $className) {
-            return error("Cannot instantiate callables.");
-        } else if ('object' === $className || 'stdClass' === $className) {
-            return ok((object)[]);
-        }
-        
+    public static function isProvided(string $name): bool {
+        return Singleton::exists($name) || Provider::exists($name);
+    }
 
-        if (Singleton::exists($className)) {
-            return ok(Singleton::get($className));
+    /**
+     * Set a provider or a singleton.
+     * @param  string          $name
+     * @param  callable|object $value
+     * @return void
+     */
+    public static function provide(string $name, callable|object $value): void {
+        if (is_callable($value)) {
+            Singleton::unset($name);
+            Provider::set($name, $value);
+            return;
+        }
+        Provider::unset($name);
+        Singleton::set($name, $value);
+    }
+
+    /**
+     * Remove all providers and cached services and singletons.
+     * @return void
+     */
+    public static function clear(): void {
+        Singleton::clear();
+        Provider::clear();
+    }
+
+    /**
+     * Get an instance of the given class.
+     * - This method will take care of dependency injections.
+     * - Providers, Services and Singletons are backed by an internal cache, which you can reset by invoking `Container::clearAll()`.
+     * @template T
+     * @param  class-string<T> $name Full name of the class.
+     * @param  mixed           $args Arguments of the provider.
+     * @return Unsafe<T>
+     * @return Unsafe
+     */
+    public static function create(string $name, ...$args):Unsafe {
+        if (Singleton::exists($name)) {
+            return ok(Singleton::get($name));
+        }
+        if (Provider::exists($name)) {
+            return ok(Provider::get($name)(...$args));
+        }
+
+        if ('callable' === $name) {
+            return error("Cannot instantiate callables.");
+        } else if ('object' === $name || 'stdClass' === $name) {
+            return ok((object)[]);
         }
 
         try {
-            $reflection = new ReflectionClass($className);
+            $reflection = new ReflectionClass($name);
         } catch(Throwable $e) {
             return error($e);
         }
 
         if ($reflection->isInterface()) {
-            return error("Cannot instantiate $className because it's an interface.");
+            return error("Interfaces cannot be created through `Container::create`, consider using `Container::provide` and `Container::provider` in order to resolve interfaces as dependencies.");
         }
 
         if (AttributeResolver::issetClassAttribute($reflection, Attribute::class)) {
-            return error("Cannot instantiate $className because it's meant to be an attribute.");
+            return error("Cannot instantiate $name because it's meant to be an attribute.");
         }
-        
+
         /** @var Singleton $singleton */
         $singleton = Singleton::findByClass($reflection)->try($error);
         if ($error) {
@@ -481,19 +486,19 @@ class Container {
                 }
             }
         } else {
-            return error("Cannot instantiate $className because it's not marked as a service or a singleton.");
+            return error("Cannot instantiate $name because it's not marked as a service or a singleton.");
         }
-        
+
         if (!$instance) {
-            return error("Instance of $className is null.");
+            return error("Instance of $name is null.");
         }
 
         self::entry($instance, $reflection->getMethods())->try($error);
-        
+
         if ($error) {
             return error($error);
         }
-            
+
         return ok($instance);
     }
 }

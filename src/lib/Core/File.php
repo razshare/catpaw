@@ -48,12 +48,12 @@ readonly class File {
         }
 
 
-        $contentA = $fileA->readAll()->await()->try($error);
+        $contentA = $fileA->readAll()->try($error);
         if ($error) {
             return error($error);
         }
 
-        $contentB = $fileB->readAll()->await()->try($error);
+        $contentB = $fileB->readAll()->try($error);
         if ($error) {
             return error($error);
         }
@@ -221,7 +221,7 @@ readonly class File {
                     if ($error) {
                         return error($error);
                     }
-                    $contents = $file->readAll()->await()->try($error);
+                    $contents = $file->readAll()->try($error);
                     if ($error) {
                         return error($error);
                     }
@@ -248,7 +248,7 @@ readonly class File {
         if ($error) {
             return error($error);
         }
-        $contents = $file->readAll()->await()->try($error);
+        $contents = $file->readAll()->try($error);
         if ($error) {
             return error($error);
         }
@@ -271,7 +271,7 @@ readonly class File {
         if ($error) {
             return error($error);
         }
-        $contents = $file->readAll()->await()->try($error);
+        $contents = $file->readAll()->try($error);
         if ($error) {
             return error($error);
         }
@@ -294,7 +294,7 @@ readonly class File {
         if ($error) {
             return error($error);
         }
-        $contents = $file->readAll()->await()->try($error);
+        $contents = $file->readAll()->try($error);
         if ($error) {
             return error($error);
         }
@@ -381,56 +381,52 @@ readonly class File {
 
     /**
      * Read content from the file in chunks.
-     * @param  int                    $length    how much content to read.
-     * @param  int                    $chunkSize size of each chunk.
-     * @return Future<Unsafe<string>>
+     * @param  int            $length    how much content to read.
+     * @param  int            $chunkSize size of each chunk.
+     * @return Unsafe<string>
      */
-    public function read(int $length = 8192, int $chunkSize = 8192):Future {
+    public function read(int $length = 8192, int $chunkSize = 8192):Unsafe {
         $ampFile = $this->ampFile;
-        return async(static function() use ($ampFile, $length, $chunkSize) {
-            try {
-                $readSoFar = 0;
-                $buffer    = '';
-                while (true) {
-                    if ($length < $readSoFar + $chunkSize) {
-                        $step = $length - $readSoFar;
-                    } else {
-                        $step = $chunkSize;
-                    }
-                    $chunk     = async(static fn () => $ampFile->read(null, $step))->await();
-                    $readSoFar = $readSoFar + $step;
-                    if (null === $chunk) {
-                        return ok($buffer);
-                    }
-                    $buffer = $buffer.$chunk;
-                    if ($readSoFar >= $length) {
-                        return ok($buffer);
-                    }
+        try {
+            $readSoFar = 0;
+            $buffer    = '';
+            while (true) {
+                if ($length < $readSoFar + $chunkSize) {
+                    $step = $length - $readSoFar;
+                } else {
+                    $step = $chunkSize;
                 }
-            } catch(Throwable $e) {
-                return error($e);
+                $chunk     = async(static fn () => $ampFile->read(null, $step))->await();
+                $readSoFar = $readSoFar + $step;
+                if (null === $chunk) {
+                    return ok($buffer);
+                }
+                $buffer = $buffer.$chunk;
+                if ($readSoFar >= $length) {
+                    return ok($buffer);
+                }
             }
-        });
+        } catch(Throwable $e) {
+            return error($e);
+        }
     }
 
     /**
      * Read the whole file in chunks.
-     * @param  int                    $chunkSize size of each chunk.
-     * @return Future<Unsafe<string>>
+     * @param  int            $chunkSize size of each chunk.
+     * @return Unsafe<string>
      */
-    public function readAll(int $chunkSize = 8192):Future {
+    public function readAll(int $chunkSize = 8192):Unsafe {
         $fileName = $this->fileName;
-        return async(function() use ($fileName, $chunkSize) {
-            try {
-                $fileSize = getSize($fileName);
-                if (0 == $fileSize) {
-                    return ok('');
-                }
-                return $this->read($fileSize, $chunkSize)->await();
-            } catch (Throwable $e) {
-                return error($e);
+        try {
+            $fileSize = getSize($fileName);
+            if (0 == $fileSize) {
+                return ok('');
             }
-        });
+            return $this->read($fileSize, $chunkSize);
+        } catch (Throwable $e) {
+            return error($e);
+        }
     }
 
     /**

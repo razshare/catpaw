@@ -4,9 +4,13 @@ namespace CatPaw\Store;
 use Closure;
 use SplDoublyLinkedList;
 
+/**
+ * @template T
+ * @package CatPaw\Store
+ */
 class Writable {
     /**
-     * @param  mixed $value The initial value of the store
+     * @param  T    $value The initial value of the store
      * @return self
      */
     public static function create(mixed $value):self {
@@ -16,16 +20,18 @@ class Writable {
     /** @var SplDoublyLinkedList<Closure> */
     protected SplDoublyLinkedList $functions;
 
-    private function __construct(
-        protected mixed $value
-    ) {
+    /**
+     * @param  T    $value
+     * @return void
+     */
+    private function __construct(protected mixed $value) {
         $this->functions = new SplDoublyLinkedList();
         $this->functions->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
     }
 
     /**
      * Get the value of the store.
-     * @return mixed
+     * @return T
      */
     public function get(): mixed {
         return $this->value;
@@ -33,7 +39,7 @@ class Writable {
 
     /**
      * Set the value of the store.
-     * @param  mixed $value
+     * @param  T    $value
      * @return void
      */
     public function set(mixed $value): void {
@@ -46,7 +52,7 @@ class Writable {
     }
 
     /**
-     * @param  callable(mixed):mixed $function
+     * @param  callable(T):T $function
      * @return void
      */
     public function update(callable $function):void {
@@ -57,9 +63,9 @@ class Writable {
 
     /**
      * Subscribe to this store and get notified of every update.
-     * @param  callable(mixed $value):void $function callback executed whenever there's an update,
-     *                                               it takes 1 parameter, the new value of the store.
-     * @return callable():void             a function that cancels this subscription.
+     * @param  callable(T $value):void $function callback executed whenever there's an update,
+     *                                           it takes 1 parameter, the new value of the store.
+     * @return callable():void         a function that cancels this subscription.
      */
     public function subscribe(callable $function): callable {
         $this->functions->push($function);

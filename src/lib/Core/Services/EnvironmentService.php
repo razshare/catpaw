@@ -73,7 +73,7 @@ class EnvironmentService {
             return error($error);
         }
 
-        $content = $file->readAll()->await()->try($error);
+        $content = $file->readAll()->try($error);
         if ($error) {
             return error($error);
         }

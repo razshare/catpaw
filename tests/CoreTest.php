@@ -45,7 +45,7 @@ class CoreTest extends TestCase {
         $this->assertFalse($error);
 
         // read contents
-        $contents = $file->readAll()->await()->try($error);
+        $contents = $file->readAll()->try($error);
         $this->assertFalse($error);
 
         $this->assertEquals("hello\n", $contents);
@@ -63,7 +63,7 @@ class CoreTest extends TestCase {
                 or yield $error;
 
             // read contents
-            $contents = $file->readAll()->await()->try($error)
+            $contents = $file->readAll()->try($error)
             or yield $error;
 
             // close file

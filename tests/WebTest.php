@@ -1,11 +1,8 @@
 <?php
 namespace Tests;
 
-use Amp\ByteStream\BufferException;
-use Amp\ByteStream\StreamException;
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\HttpClientBuilder;
-use Amp\Http\Client\HttpException;
 use Amp\Http\Client\Request;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
@@ -16,16 +13,18 @@ use const CatPaw\Web\APPLICATION_JSON;
 use const CatPaw\Web\APPLICATION_XML;
 use CatPaw\Web\Attributes\Param;
 use CatPaw\Web\Server;
+
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
 use const CatPaw\Web\TEXT_PLAIN;
 use function json_decode;
 use PHPUnit\Framework\TestCase;
+
 class WebTest extends TestCase {
     public function testAll() {
         Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
         $this->assertFalse($error);
-        Container::set(HttpClient::class, HttpClientBuilder::buildDefault());
+        Container::provide(HttpClient::class, HttpClientBuilder::buildDefault());
         $server = Server::create(
             interface: '127.0.0.1:5858',
             api      : 'tests/api',
@@ -34,12 +33,13 @@ class WebTest extends TestCase {
         )->try($error);
         $this->assertFalse($error);
 
-        Container::set(Server::class, $server);
+        Container::provide(Server::class, $server);
 
         $readySignal = Signal::create();
 
         $readySignal->listen(function() use ($server) {
             anyError(function() {
+                yield Container::run($this->makeSureSessionWorks(...));
                 yield Container::run($this->makeSureXmlConversionWorks(...));
                 yield Container::run($this->makeSureJsonConversionWorks(...));
                 yield Container::run($this->makeSureProducesHintsWork(...));
@@ -61,12 +61,24 @@ class WebTest extends TestCase {
         $this->assertFalse($error);
     }
 
+    public function makeSureSessionWorks(HttpClient $http) {
+        $request  = new Request("http://127.0.0.1:5858/api/session", "GET");
+        $response = $http->request($request);
+        $actual   = $response->getBody()->buffer();
+        $this->assertEquals('0', $actual);
+        $header = $response->getHeader('set-cookie') ?? '';
+        $this->assertNotEmpty($header);
+        $this->assertNotFalse(preg_match('/=([\w-]+);?/', $header, $matches));
+        $id = $matches[1];
+        $this->assertNotEmpty($id);
 
-    /**
-     * @throws BufferException
-     * @throws HttpException
-     * @throws StreamException
-     */
+        $request = new Request("http://127.0.0.1:5858/api/session", "GET");
+        $request->setHeader('cookie', "session-id=$id");
+        $response = $http->request($request);
+        $actual   = $response->getBody()->buffer();
+        $this->assertEquals('1', $actual);
+    }
+
     private function makeSureXmlConversionWorks(HttpClient $http): void {
         $request = new Request("http://127.0.0.1:5858/api/object/user1", "GET");
         $request->setHeader("Accept", APPLICATION_XML);
@@ -77,11 +89,6 @@ class WebTest extends TestCase {
         $this->assertStringStartsWith("<?xml version=\"1.0\"", $actualBody);
     }
 
-    /**
-     * @throws BufferException
-     * @throws StreamException
-     * @throws HttpException
-     */
     private function makeSureJsonConversionWorks(HttpClient $http): void {
         $request = new Request("http://127.0.0.1:5858/api/object/user1", "GET");
         $request->setHeader("Accept", APPLICATION_JSON);
@@ -111,12 +118,6 @@ class WebTest extends TestCase {
         }
     }
 
-    /**
-     * @param  HttpClient      $http
-     * @throws BufferException
-     * @throws HttpException
-     * @throws StreamException
-     */
     private function makeSureContentNegotiationWorks(HttpClient $http): void {
         $response1 = $http->request(new Request("http://127.0.0.1:5858/api", "GET"));
         $actual    = $response1->getBody()->buffer();
@@ -129,11 +130,6 @@ class WebTest extends TestCase {
         $this->assertEquals("text/html", $response2->getHeader("Content-Type"));
     }
 
-    /**
-     * @throws HttpException
-     * @throws BufferException
-     * @throws StreamException
-     */
     private function makeSureParamHintsWork(Server $server, HttpClient $http): void {
         $server->router->get("/get-with-params/{name}", fn (#[Param] string $name) => success("hello $name"));
         $response = $http->request(new Request("http://127.0.0.1:5858/get-with-params/user1"));
@@ -142,12 +138,6 @@ class WebTest extends TestCase {
         $this->assertEquals("hello user2", $response->getBody()->buffer());
     }
 
-    /**
-     * @param  HttpClient      $http
-     * @throws BufferException
-     * @throws HttpException
-     * @throws StreamException
-     */
     private function makeSureOpenApiDataIsGeneratedCorrectly(HttpClient $http): void {
         $response = $http->request(new Request("http://127.0.0.1:5858/api/openapi", "GET"));
         $text     = $response->getBody()->buffer();

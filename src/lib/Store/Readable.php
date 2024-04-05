@@ -3,10 +3,13 @@ namespace CatPaw\Store;
 
 use function CatPaw\Core\tick;
 use SplDoublyLinkedList;
-
+/**
+ * @template T
+ * @package CatPaw\Store
+ */
 class Readable {
     /**
-     * @param mixed                   $value   initial value of the store
+     * @param T                       $value   initial value of the store
      * @param callable(callable):void $onStart a function that will be executed when the
      *                                         first subscriber subscribes to the store.
      *
@@ -25,7 +28,8 @@ class Readable {
     private bool $firstSubscriber = true;
     /**
      *
-     * @param  mixed                   $value
+     * @template T
+     * @param  T                       $value
      * @param  callable(callable):void $onStart
      * @return void
      */
@@ -41,7 +45,7 @@ class Readable {
 
     /**
      * Get the value of the store.
-     * @return mixed
+     * @return T
      */
     public function get(): mixed {
         return $this->value;
@@ -49,7 +53,7 @@ class Readable {
 
     /**
      * Set the value of the store.
-     * @param  mixed $value
+     * @param  T    $value
      * @return void
      */
     private function set(mixed $value): void {
@@ -64,9 +68,9 @@ class Readable {
 
     /**
      * Subscribe to this store and get notified of every update.
-     * @param  callable(mixed $value):void $function a function that's executed whenever there's an update,
-     *                                               it takes 1 parameter, the new value of the store.
-     * @return callable():void             a function that cancels this subscription.
+     * @param  callable(T $value):void $function a function that's executed whenever there's an update,
+     *                                           it takes 1 parameter, the new value of the store.
+     * @return callable():void         a function that cancels this subscription.
      */
     public function subscribe($function) {
         $this->functions->push($function);

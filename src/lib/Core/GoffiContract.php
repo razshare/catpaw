@@ -47,7 +47,7 @@ class GoffiContract {
                 return error($error);
             }
         }
-        $cdefComplex = $headerFile->readAll()->await()->try($error);
+        $cdefComplex = $headerFile->readAll()->try($error);
 
 
         if ($error) {

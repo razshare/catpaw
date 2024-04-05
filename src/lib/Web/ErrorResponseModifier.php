@@ -1,6 +1,7 @@
 <?php
 namespace CatPaw\Web;
 
+use Amp\Http\Cookie\ResponseCookie;
 use Amp\Http\Server\Response;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
@@ -25,12 +26,23 @@ class ErrorResponseModifier implements ResponseModifier {
     // private RequestContext $context;
     private mixed $body         = false;
     private string $contentType = TEXT_PLAIN;
+    /** @var array<ResponseCookie> */
+    private array $cookies = [];
 
     private function __construct(
         private int $status,
         private string $message,
         private array $headers,
     ) {
+    }
+
+
+    public function setCookies(ResponseCookie ...$cookies) {
+        $this->cookies = $cookies;
+    }
+
+    public function addCookies(ResponseCookie ...$cookies) {
+        $this->cookies = [...$this->cookies, ...$cookies];
     }
 
     public function setData(mixed $data) {
@@ -101,6 +113,10 @@ class ErrorResponseModifier implements ResponseModifier {
             $response->setHeader('Content-Type', $this->contentType);
         } catch(Throwable $error) {
             return error($error);
+        }
+
+        foreach ($this->cookies as $cookie) {
+            $response->setCookie($cookie);
         }
 
         return ok($response);

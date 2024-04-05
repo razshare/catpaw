@@ -26,17 +26,17 @@ class Singleton implements AttributeInterface, OnClassInstantiation {
     private static array $cache = [];
 
     /**
-     * Clear all cached singletons.<br/>
+     * Clear all cached singletons.\
      * Next time you create a new instance the cache will miss.
      * @return void
      * @internal
      */
-    public static function clearAll():void {
+    public static function clear():void {
         self::$cache = [];
     }
 
     /**
-     * Manually cache the instance of a class.<br/>
+     * Manually cache the instance of a class.\
      * Next time you try create an instance of given class the cache will hit.
      * @param  string $className
      * @param  mixed  $value
@@ -45,6 +45,10 @@ class Singleton implements AttributeInterface, OnClassInstantiation {
      */
     public static function set(string $className, mixed $value):void {
         self::$cache[$className] = $value;
+    }
+
+    public static function unset(string $name) {
+        unset(self::$cache[$name]);
     }
 
     /**
@@ -58,7 +62,7 @@ class Singleton implements AttributeInterface, OnClassInstantiation {
     }
 
     /**
-     * Get the instance of a given class.<br/>
+     * Get the instance of a given class.\
      * The created instance is cached, which means all classes are singletons.
      * @param  string $className
      * @return mixed

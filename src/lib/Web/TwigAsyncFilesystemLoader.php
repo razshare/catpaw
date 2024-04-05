@@ -34,7 +34,7 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
         if ($error) {
             return error($error);
         }
-        $code = $file->readAll()->await()->try($error);
+        $code = $file->readAll()->try($error);
         if ($error) {
             return error($error);
         }

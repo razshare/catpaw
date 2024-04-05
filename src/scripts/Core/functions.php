@@ -235,7 +235,7 @@ function get(string $command): Future {
  *  $file = File::open('file.txt')->try($error)
  *  or yield $error;
  *
- *  $content = $file->readAll()->await()->try($error)
+ *  $content = $file->readAll()->try($error)
  *  or yield $error;
  *
  *  return $content;

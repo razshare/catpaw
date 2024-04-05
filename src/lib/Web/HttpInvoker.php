@@ -12,6 +12,7 @@ use function CatPaw\Core\ok;
 
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Interfaces\SessionInterface;
 
 class HttpInvoker {
     public static function create(Server $server):self {
@@ -42,6 +43,7 @@ class HttpInvoker {
 
         $options = $this->createDependenciesOptions($context);
 
+
         $dependencies = Container::dependencies($reflectionFunction, $options)->try($error);
 
         if ($error) {
@@ -64,17 +66,18 @@ class HttpInvoker {
 
         $modifier->setRequestContext($context);
 
+        foreach ($dependencies as $dependency) {
+            if ($dependency instanceof SessionInterface) {
+                $dependency->apply($modifier);
+            }
+        }
+
         foreach ($onResponses as $onResponse) {
             $onResponse->onResponse($context->request, $modifier);
             if ($error) {
                 echo $error.PHP_EOL;
                 break;
             }
-        }
-
-
-        if ($sessionIdCookie = $context->request->getCookie('session-id') ?? false) {
-            $this->server->sessionOperations->persistSession($sessionIdCookie->getValue());
         }
 
         return $modifier->getResponse();
@@ -85,6 +88,21 @@ class HttpInvoker {
         return DependenciesOptions::create(
             key: $key,
             overwrites: [
+                SessionInterface::class => function() use ($context) {
+                    $result = Container::create(SessionInterface::class, $context->request)->try($error);
+                    if ($error) {
+                        $this->server->logger->error($error);
+                        return false;
+                    }
+                    if ($result instanceof Unsafe) {
+                        $result = $result->try($error);
+                        if ($error) {
+                            $this->server->logger->error($error);
+                            return false;
+                        }
+                    }
+                    return $result;
+                },
                 Server::class  => static fn () => $context->server,
                 Request::class => static fn () => $context->request,
                 Accepts::class => static fn () => Accepts::createFromRequest($context->request),

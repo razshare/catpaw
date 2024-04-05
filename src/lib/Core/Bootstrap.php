@@ -100,7 +100,7 @@ class Bootstrap {
                 self::kill((string)$error);
             }
 
-            Container::set(LoggerInterface::class, $logger);
+            Container::provide(LoggerInterface::class, $logger);
             /** @var array<string> $librariesList */
             $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
 
@@ -108,7 +108,7 @@ class Bootstrap {
             $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
 
             $env = new EnvironmentService($logger);
-            Container::set(EnvironmentService::class, $env);
+            Container::provide(EnvironmentService::class, $env);
 
             $env->set('ENTRY', $entry);
             $env->set('LIBRARIES', $librariesList);
@@ -240,12 +240,12 @@ class Bootstrap {
                 $libraries,
                 $resources,
             ) {
-                if (!Container::has(LoggerInterface::class)) {
+                if (!Container::isProvided(LoggerInterface::class)) {
                     $logger = LoggerFactory::create()->try($error);
                     if ($error) {
                         return error($error);
                     }
-                    Container::set(LoggerInterface::class, $logger);
+                    Container::provide(LoggerInterface::class, $logger);
                 } else {
                     $logger = Container::create(LoggerInterface::class)->try($error);
                     if ($error) {

@@ -17,7 +17,7 @@ class Search {
             $file = File::open($fileName)->try($error)
             or yield $error;
 
-            $source = $file->readAll()->await()->try($error)
+            $source = $file->readAll()->try($error)
             or yield $error;
 
             return self::fromSource($source);

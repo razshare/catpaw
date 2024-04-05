@@ -33,6 +33,7 @@
     "prod:fix": "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix .",
     "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
     "dev:build": "@dev:start --build --environment='./build.yaml'",
+    "dev:test:raw": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit",
     "dev:test": [
       "go build -o ./tests/main.so -buildmode=c-shared ./tests/main.go",
       "cpp -P ./tests/main.h ./tests/main.static.h",
