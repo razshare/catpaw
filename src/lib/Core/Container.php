@@ -405,7 +405,9 @@ class Container {
     /**
      * Set a provider or a singleton.
      * @param  string          $name
-     * @param  callable|object $value
+     * @param  callable|object $value The value to set.\
+     *                                If the value is a `callable` then the container treats it as a provider,
+     *                                other wise it treats it as a cached singleton.
      * @return void
      */
     public static function provide(string $name, callable|object $value): void {
