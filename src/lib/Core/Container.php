@@ -396,6 +396,17 @@ class Container {
      * @param  string          $name
      * @param  callable|object $value
      * @return void
+     * @deprecated Use In favor of `Container::provide`.
+     */
+    public static function set(string $name, callable|object $value): void {
+        self::provide($name, $value);
+    }
+
+    /**
+     * Set a provider or a singleton.
+     * @param  string          $name
+     * @param  callable|object $value
+     * @return void
      */
     public static function provide(string $name, callable|object $value): void {
         if (is_callable($value)) {
