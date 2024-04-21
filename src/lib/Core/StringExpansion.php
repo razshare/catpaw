@@ -13,23 +13,21 @@ class StringExpansion {
      * @return Unsafe<string>
      */
     public static function variable(string $content, array $parameters): Unsafe {
-        $result = '';
-
+        $result      = '';
         $stack       = StringStack::of($content);
-        $occurrences = $stack->expect("{{", "}}");
-
-        $tokenFound = false;
+        $occurrences = $stack->expect("{", "}");
+        $tokenFound  = false;
 
         for ($occurrences->rewind(); $occurrences->valid(); $occurrences->next()) {
             [$prev, $token] = $occurrences->current();
 
-            if ('{{' === $token) {
+            if ('{' === $token) {
                 $tokenFound = true;
             }
 
-            if ($tokenFound && '}}' === $token) {
+            if ($tokenFound && '}' === $token) {
                 if (!isset($parameters[$prev])) {
-                    return error("Parameter $prev it not valid.");
+                    return error("Parameter `$prev` it not valid.");
                 }
                 $result .= $parameters[$prev];
                 $tokenFound = false;

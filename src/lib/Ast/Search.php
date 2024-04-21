@@ -3,7 +3,10 @@ namespace CatPaw\Ast;
 
 use CatPaw\Ast\Interfaces\CStyleDetector;
 use function CatPaw\Core\anyError;
+use function CatPaw\Core\error;
 use CatPaw\Core\File;
+
+use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 
 class Search {
@@ -63,15 +66,16 @@ class Search {
 
     /**
      * Parse source code as C style.
-     * @param  bool|Block                          $parent
-     * @param  callable(Block $block):void         $on_block
-     * @param  false|(callable(string $rule):void) $on_global_rule
-     * @return void
+     * @param  CStyleDetector $detector
+     * @param  bool|Block     $parent
+     * @param  int            $depth
+     * @return Unsafe<void>
      */
     public function cStyle(
         CStyleDetector $detector,
         false|Block $parent = false,
-    ):void {
+        int $depth = 0,
+    ):Unsafe {
         $uncommented = '';
         $search      = Search::fromSource(preg_replace('/^\s*\/\/.*/m', '', $this->source));
 
@@ -91,7 +95,7 @@ class Search {
             } else if ('*/' === $result->token) {
                 $comment_closed++;
                 if ($comment_closed > $comment_opened) {
-                    return;
+                    return ok();
                 }
             }
         }
@@ -110,7 +114,7 @@ class Search {
 
         while (true) {
             if (!$result = $search->next('"', '\'', '\\', '{', '}', ';')) {
-                return;
+                return ok();
             }
 
             if ($opened_braces < 2) {
@@ -160,14 +164,20 @@ class Search {
                     if ('' !== $missed) {
                         $missed .= $result->before;
                         if ('' === $name) {
-                            $detector->on_global(trim($missed));
+                            $detector->onGlobal(trim($missed))->try($error);
+                            if ($error) {
+                                return error($error);
+                            }
                         } else {
                             $rules[] = trim($missed);
                         }
                         $missed = '';
                     } else {
                         if ('' === $name) {
-                            $detector->on_global(trim($result->before));
+                            $detector->onGlobal(trim($result->before))->try($error);
+                            if ($error) {
+                                return error($error);
+                            }
                         } else {
                             $rules[] = trim($result->before);
                         }
@@ -188,7 +198,7 @@ class Search {
             }
 
             if (0 === $opened_braces) {
-                return;
+                return ok();
             }
 
             if ('}' === $result->token) {
@@ -202,24 +212,26 @@ class Search {
                         name: $name,
                         parent: $parent,
                         rules: $rules,
+                        depth: $depth,
                     );
 
-                    $detector->on_block($block);
+                    if ($parent) {
+                        $parent->addChild($block);
+                    }
 
-                    // $this->blocks($function, $block);
-
+                    $detector->onBlock($block, false, $depth + 1);
 
                     if ($block->body) {
                         $search = Search::fromSource($block->body);
-                        $search->cStyle($detector, $block);
+                        $search->cStyle($detector, $block, $depth + 1);
                     }
 
                     if ($this->source) {
                         $search = Search::fromSource($this->source);
-                        $search->cStyle($detector, $parent);
+                        $search->cStyle($detector, $parent, $depth + 1);
                     }
 
-                    return;
+                    return ok();
                 } else {
                     $body .= $missed.$result->before.$result->token;
                     $missed = '';
@@ -230,5 +242,6 @@ class Search {
             $body .= $missed.$result->before.$result
             ->token;
         }
+        return ok();
     }
 }

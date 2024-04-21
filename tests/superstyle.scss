@@ -1,0 +1,10 @@
+@tailwind components;
+@tailwind base;
+@tailwind utilities;
+
+main {
+  @apply fixed;
+  button {
+    content: "click me {value}";
+  }
+}

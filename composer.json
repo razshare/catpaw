@@ -54,6 +54,9 @@
       "CatPaw\\Core\\": [
         "src/lib/Core"
       ],
+      "CatPaw\\Superstyle\\": [
+        "src/lib/Superstyle"
+      ],
       "CatPaw\\Cui\\": [
         "src/lib/Cui"
       ],

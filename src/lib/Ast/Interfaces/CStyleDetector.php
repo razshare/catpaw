@@ -2,8 +2,21 @@
 namespace CatPaw\Ast\Interfaces;
 
 use CatPaw\Ast\Block;
+use CatPaw\Core\Unsafe;
 
 interface CStyleDetector {
-    public function on_block(Block $block):void;
-    public function on_global(string $global):void;
+    /**
+     *
+     * @param  Block        $block
+     * @param  int          $depth
+     * @return Unsafe<void>
+     */
+    public function onBlock(Block $block, int $depth):Unsafe;
+
+    /**
+     *
+     * @param  string       $global
+     * @return Unsafe<void>
+     */
+    public function onGlobal(string $global):Unsafe;
 }

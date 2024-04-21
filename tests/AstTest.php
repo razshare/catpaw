@@ -8,6 +8,8 @@ use CatPaw\Ast\Search;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
+
+use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use PHPUnit\Framework\TestCase;
 
@@ -38,12 +40,15 @@ class AstTest extends TestCase {
                     private array &$globals,
                 ) {
                 }
-                public function on_block(Block $block):void {
+                public function onBlock(Block $block, int $depth):Unsafe {
                     $this->blocks[] = $block;
+                    return ok();
                 }
 
-                public function on_global(string $global):void {
+                public function onGlobal(string $global):Unsafe {
                     $this->globals[] = $global;
+
+                    return ok();
                 }
             });
 
