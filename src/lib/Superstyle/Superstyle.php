@@ -13,8 +13,9 @@ use CatPaw\Core\Unsafe;
 class Superstyle {
     /**
      *
-     * @param  string       $source
-     * @return Unsafe<void>
+     * @param  string                           $fileName
+     * @param  array                            $parameters
+     * @return Unsafe<SuperstyleExecutorResult>
      */
     public static function parse(string $fileName, array $parameters = []):Unsafe {
         $search = Search::fromFile($fileName)->try($error);
@@ -41,7 +42,7 @@ class Superstyle {
             }
 
             public function onBlock(Block $block, int $depth):Unsafe {
-                if (0 === $block->depth && 'main' === $block->name) {
+                if (0 === $block->depth && 'main' === $block->signature) {
                     if ($this->main) {
                         return error("Error multiple top level main blocks are not allowed.");
                     }

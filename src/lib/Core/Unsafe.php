@@ -26,7 +26,7 @@ readonly class Unsafe {
         }
     }
 
-    public function toResponseModifier():ResponseModifier {
+    public function toResponseModifier(): ResponseModifier {
         if ($this->error) {
             return failure($this->error->getMessage());
         }

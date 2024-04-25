@@ -1,4 +1,5 @@
 <?php
+
 namespace CatPaw\Ast;
 
 use CatPaw\Ast\Interfaces\CStyleDetector;
@@ -15,7 +16,7 @@ class Search {
      * @param  string         $fileName
      * @return Unsafe<Search>
      */
-    public static function fromFile(string $fileName):Unsafe {
+    public static function fromFile(string $fileName): Unsafe {
         return anyError(function() use ($fileName) {
             $file = File::open($fileName)->try($error)
             or yield $error;
@@ -26,10 +27,13 @@ class Search {
             return self::fromSource($source);
         });
     }
-    public static function fromSource(string $source):self {
+
+    public static function fromSource(string $source): self {
         return new self(source: $source);
     }
+
     private string $previousSource;
+
     private function __construct(
         public string $source,
     ) {
@@ -45,7 +49,7 @@ class Search {
      * @param  string             ...$tokens
      * @return false|SearchResult
      */
-    public function next(string ...$tokens):false|SearchResult {
+    public function next(string ...$tokens): false|SearchResult {
         $length = strlen($this->source);
         $before = '';
         for ($i = 0; $i < $length; $i++) {
@@ -55,7 +59,7 @@ class Search {
                     $this->previousSource = $this->source;
                     $this->source         = substr($this->source, $i + 1);
                     return new SearchResult(
-                        token: $token,
+                        token : $token,
                         before: substr($before, 0, -strlen($token)),
                     );
                 }
@@ -75,7 +79,7 @@ class Search {
         CStyleDetector $detector,
         false|Block $parent = false,
         int $depth = 0,
-    ):Unsafe {
+    ): Unsafe {
         $uncommented = '';
         $search      = Search::fromSource(preg_replace('/^\s*\/\/.*/m', '', $this->source));
 
@@ -105,6 +109,8 @@ class Search {
         $name              = '';
         $opened_braces     = 0;
         $closed_braces     = 0;
+        $opened_brackets   = 0;
+        $closed_brackets   = 0;
         $double_quotes     = 0;
         $single_quotes     = 0;
         $escaped_character = false;
@@ -113,8 +119,21 @@ class Search {
         $missed            = '';
 
         while (true) {
-            if (!$result = $search->next('"', '\'', '\\', '{', '}', ';')) {
+            if (!$result = $search->next( '[', ']', '"', '\'', '\\', '{', '}', ';')) {
                 return ok();
+            }
+
+            if ('[' === $result->token) {
+                $opened_brackets++;
+                $missed .= $result->before.$result->token;
+                continue;
+            } else if (']' === $result->token) {
+                $closed_brackets++;
+                $missed .= $result->before.$result->token;
+                continue;
+            } else if ($opened_brackets !== $closed_brackets) {
+                $missed .= $result->before.$result->token;
+                continue;
             }
 
             if ($opened_braces < 2) {
@@ -127,6 +146,7 @@ class Search {
                     }
                     continue;
                 }
+
 
                 if (0 !== $double_quotes % 2) {
                     if ('\\' === $result->token) {
@@ -188,7 +208,8 @@ class Search {
 
             if ('{' === $result->token) {
                 if (0 === $opened_braces) {
-                    $name = trim($result->before);
+                    $name   = trim($missed.$result->before);
+                    $missed = '';
                 } else {
                     $body .= $missed.$result->before.$result->token;
                     $missed = '';
@@ -208,11 +229,11 @@ class Search {
                     $missed       = '';
                     $this->source = $search->source;
                     $block        = new Block(
-                        body: trim($body),
-                        name: $name,
-                        parent: $parent,
-                        rules: $rules,
-                        depth: $depth,
+                        signature: $name,
+                        body     : trim($body),
+                        rules    : $rules,
+                        parent   : $parent,
+                        depth    : $depth,
                     );
 
                     if ($parent) {
@@ -240,7 +261,7 @@ class Search {
             }
 
             $body .= $missed.$result->before.$result
-            ->token;
+                    ->token;
         }
         return ok();
     }

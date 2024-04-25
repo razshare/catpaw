@@ -28,10 +28,10 @@ class AstTest extends TestCase {
         return anyError(function() {
             $search = Search::fromFile(asFileName(__DIR__, './app.scss'))->try($error) or yield $error;
 
-            /** @var array<Block> */
+            /** @var array<Block> $blocks */
             $blocks = [];
 
-            /** @var array<string> */
+            /** @var array<string> $globals */
             $globals = [];
 
             $search->cStyle(new class($blocks, $globals) implements CStyleDetector {
@@ -58,11 +58,11 @@ class AstTest extends TestCase {
             $this->assertEquals('@import url("./button.scss")', $globals[0]);
 
             $block1 = $blocks[0];
-            $this->assertEquals('component::app', $block1->name);
+            $this->assertEquals('.app.component', $block1->signature);
             $this->assertEquals(3, count($block1->rules));
 
             $block2 = $blocks[1];
-            $this->assertEquals('component::test', $block2->name);
+            $this->assertEquals('.test.component', $block2->signature);
             $this->assertEquals(1, count($block2->rules));
         });
     }

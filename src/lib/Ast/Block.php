@@ -6,14 +6,14 @@ class Block {
     private array $children = [];
     /**
      *
-     * @param string      $name
+     * @param string      $signature
      * @param string      $body
      * @param array       $rules
      * @param false|Block $parent
      * @param int         $depth
      */
     public function __construct(
-        public readonly string $name,
+        public readonly string $signature,
         public readonly string $body,
         public readonly array $rules,
         public readonly false|Block $parent,

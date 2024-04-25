@@ -23,7 +23,8 @@ class SuperstyleTest extends TestCase {
     private function makeSureSuperstyleServiceWorks(): Unsafe {
         return anyError(function() {
             $result = Superstyle::parse(asFileName(__DIR__, './superstyle.scss'), ["value" => "world"])->try($error) or yield $error;
-            $this->assertEquals("<main><button>click me world</button></main>", $result);
+            $this->assertEquals('<main><button class="btn" x-post="">click me world</button></main>', $result->html);
+            $this->assertEquals('main { @apply fixed; button.btn[x-post=""] {   } }', $result->css);
             print_r($result);
         });
     }

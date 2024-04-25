@@ -1,12 +1,11 @@
 @import url("./button.scss");
 
-component::app {
+.app.component {
   color: #fff;
   background: #000;
-
   content: "hello";
 }
 
-component::test {
+.test.component {
   content: "hello";
 }
