@@ -47,8 +47,6 @@ function main(
     });
 }
 
-$test = ok()->try();
-
 /**
  *
  * @return Unsafe<None>
