@@ -17,10 +17,10 @@ use Closure;
 use Phar;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
-
 use ReflectionFunction;
 
 use ReflectionMethod;
+use ReflectionParameter;
 use Throwable;
 use function trim;
 
@@ -65,9 +65,9 @@ class Container {
     }
 
     /**
-     * @param  ReflectionFunction|ReflectionMethod $reflection
-     * @param  DependenciesOptions                 $options
-     * @return Unsafe<array>
+     * @param  ReflectionFunction|ReflectionMethod           $reflection
+     * @param  DependenciesOptions                           $options
+     * @return Unsafe<array<int,DependencySearchResultItem>>
      */
     private static function findFunctionDependencies(
         ReflectionFunction|ReflectionMethod $reflection,
@@ -120,7 +120,7 @@ class Container {
     /**
      * @param  ReflectionFunction|ReflectionMethod $reflection
      * @param  false|DependenciesOptions           $options
-     * @return Unsafe<array>
+     * @return Unsafe<array<int,mixed>>
      */
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
@@ -172,6 +172,7 @@ class Container {
                 && Writable::class !== $type
                 && Readable::class !== $type
             ) {
+                // @phpstan-ignore-next-line
                 $instance = Container::create($type)->try($error);
                 if ($error) {
                     return error($error);
@@ -189,7 +190,10 @@ class Container {
                 foreach ($attributes as $attribute) {
                     $attributeReflectionClass = new ReflectionClass($attribute->getName());
                     $findByParameter          = $attributeReflectionClass->getMethod('findByParameter')->getClosure();
-                    /** @var AttributeInterface $attributeInstanceAttempt */
+
+                    /** @var callable(ReflectionParameter):(Unsafe<null|AttributeInterface>) $findByParameter */
+                    /** @var null|AttributeInterface $attributeInstance */
+
                     $attributeInstance = $findByParameter($reflectionParameter)->try($error);
 
                     if ($error) {
@@ -253,6 +257,7 @@ class Container {
 
         $isPhar = isPhar();
         if ('' === trim($path)) {
+            /** @var Unsafe<array<string>> */
             return ok([]);
         }
 
@@ -262,8 +267,10 @@ class Container {
 
         if (isFile($path)) {
             require_once($path);
+            /** @var Unsafe<array<string>> */
             return ok([$path]);
         } else if (!isDirectory($path)) {
+            /** @var Unsafe<array<string>> */
             return ok([]);
         }
 
@@ -280,6 +287,7 @@ class Container {
             }
             $phpFileNames[] = $fileName;
         }
+        /** @var Unsafe<array<string>> */
         return ok($phpFileNames);
     }
 
@@ -288,7 +296,7 @@ class Container {
      *
      * Will not execute the function itself and parameter attributes will not be instantiated at all.
      * @param  Closure|ReflectionFunction $function
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public static function touch(Closure|ReflectionFunction $function): Unsafe {
         try {
@@ -325,11 +333,10 @@ class Container {
 
     /**
      * Inject dependencies into a function and invoke it.
-     * @template T
      * @param  Closure|ReflectionFunction $function
      * @param  bool                       $touch    if true, Container::touch will be
      *                                              called automatically on the function
-     * @return Unsafe<T>
+     * @return Unsafe<mixed>
      */
     public static function run(
         Closure|ReflectionFunction $function,
@@ -368,12 +375,11 @@ class Container {
      * @param  ReflectionClass        $reflectionClass
      * @return ReflectionMethod|false
      */
+    // @phpstan-ignore-next-line
     private static function findEntryMethod(ReflectionClass $reflectionClass): ReflectionMethod|false {
         foreach ($reflectionClass->getMethods() as $method) {
             if (($attributes = $method->getAttributes(Entry::class))) {
-                /**
-                 * @psalm-suppress RedundantConditionGivenDocblockType
-                 */
+                // @phpstan-ignore-next-line
                 if (count($attributes) > 0) {
                     return $method;
                 }
@@ -435,8 +441,8 @@ class Container {
      * - Services and Singletons are backed by an internal cache, which you can reset by invoking `Container::clear()`.
      * - Providers' results are not cached.
      * @template T
-     * @param  string    $name
-     * @param  mixed     $args
+     * @param  class-string<T> $name
+     * @param  mixed           $args
      * @return Unsafe<T>
      */
     public static function create(string $name, ...$args):Unsafe {
@@ -450,14 +456,11 @@ class Container {
         if ('callable' === $name) {
             return error("Cannot instantiate callables.");
         } else if ('object' === $name || 'stdClass' === $name) {
+            /** @var Unsafe<T> */
             return ok((object)[]);
         }
 
-        try {
-            $reflection = new ReflectionClass($name);
-        } catch(Throwable $e) {
-            return error($e);
-        }
+        $reflection = new ReflectionClass($name);
 
         if ($reflection->isInterface()) {
             return error("Interfaces cannot be created through `Container::create`, consider using `Container::provide` and `Container::provider` in order to resolve interfaces as dependencies.");
@@ -492,7 +495,9 @@ class Container {
 
         $instance = null;
 
+        // @phpstan-ignore-next-line
         if ($singleton || $service) {
+            // @phpstan-ignore-next-line
             if ($service) {
                 $service->onClassInstantiation($reflection, $instance, $dependencies)->try($error);
                 if ($error) {

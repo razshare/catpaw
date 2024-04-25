@@ -8,25 +8,30 @@ use CatPaw\Ast\Search;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
+use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use PHPUnit\Framework\TestCase;
 
 class AstTest extends TestCase {
-    public function testAll() {
+    public function testAll():void {
         Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->makeSureCStyleParserWorks(...));
         })->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
     }
 
 
+    /**
+     *
+     * @return Unsafe<None>
+     */
     private function makeSureCStyleParserWorks(): Unsafe {
         return anyError(function() {
-            $search = Search::fromFile(asFileName(__DIR__, './app.scss'))->try($error) or yield $error;
+            $search = Search::fromFile(asFileName(__DIR__, './app.scss'))->unwrap();
 
             /** @var array<Block> $blocks */
             $blocks = [];
@@ -35,8 +40,15 @@ class AstTest extends TestCase {
             $globals = [];
 
             $search->cStyle(new class($blocks, $globals) implements CStyleDetector {
+                /**
+                 * @param  array<Block>  $blocks
+                 * @param  array<string> $globals
+                 * @return void
+                 */
                 public function __construct(
+                    // @phpstan-ignore-next-line
                     private array &$blocks,
+                    // @phpstan-ignore-next-line
                     private array &$globals,
                 ) {
                 }
@@ -64,6 +76,8 @@ class AstTest extends TestCase {
             $block2 = $blocks[1];
             $this->assertEquals('.test.component', $block2->signature);
             $this->assertEquals(1, count($block2->rules));
+
+            return ok();
         });
     }
 }

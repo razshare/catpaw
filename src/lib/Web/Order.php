@@ -5,8 +5,8 @@ use Stringable;
 
 readonly class Order implements Stringable {
     /**
-     * 
-     * @param  array       $items
+     *
+     * @param  array<mixed> $items
      * @return false|Order
      */
     public static function fromArrayKeys(array $items):false|self {
@@ -14,8 +14,8 @@ readonly class Order implements Stringable {
     }
 
     /**
-     * 
-     * @param  string[]    $items
+     *
+     * @param  string      ...$items
      * @return false|Order
      */
     public static function fromFirstValidString(string ...$items):false|self {
@@ -28,7 +28,7 @@ readonly class Order implements Stringable {
     }
 
     /**
-     * 
+     *
      * @param  string      $items
      * @return false|Order
      */
@@ -44,14 +44,14 @@ readonly class Order implements Stringable {
                 direction: $direction,
                 items: $items,
             );
-        } 
-        
+        }
+
         return false;
     }
 
     /**
-     * 
-     * @param  array|string $items
+     *
+     * @param  array<string>|string $items
      * @return Order
      */
     public static function of(array|string $items):self {
@@ -62,9 +62,9 @@ readonly class Order implements Stringable {
     }
 
     /**
-     * 
-     * @param  string       $direction 'asc' or 'desc'
-     * @param  array|string $items
+     *
+     * @param  string               $direction 'asc' or 'desc'
+     * @param  array<string>|string $items
      * @return self
      */
     private static function by(
@@ -78,9 +78,9 @@ readonly class Order implements Stringable {
     }
 
     /**
-     * 
-     * @param  string $direction
-     * @param  array  $items
+     *
+     * @param  string        $direction
+     * @param  array<string> $items
      * @return void
      */
     private function __construct(
@@ -103,6 +103,10 @@ readonly class Order implements Stringable {
         );
     }
 
+    /**
+     *
+     * @return array<string>
+     */
     public function getItems():array {
         return $this->items;
     }

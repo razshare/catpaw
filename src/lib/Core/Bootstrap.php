@@ -25,7 +25,7 @@ class Bootstrap {
     /**
      * Initialize an application from a source file (that usually defines a global "main" function).
      * @param  string        $fileName
-     * @param  array         $libraries
+     * @param  array<string> $libraries
      * @return Unsafe<mixed>
      */
     public static function init(
@@ -193,7 +193,7 @@ class Bootstrap {
         }
 
         if ($error) {
-            echo ($error?:'').PHP_EOL;
+            echo $error.PHP_EOL;
             if (false === $code) {
                 die(CommandStatus::OPERATION_CANCELED);
             } else {
@@ -202,7 +202,7 @@ class Bootstrap {
         }
 
         if (false === $code) {
-            die($code?:CommandStatus::SUCCESS);
+            die(CommandStatus::SUCCESS);
         } else {
             die($code);
         }
@@ -211,7 +211,7 @@ class Bootstrap {
     /**
      * @param  string                      $binary
      * @param  string                      $fileName
-     * @param  array                       $arguments
+     * @param  array<string>               $arguments
      * @param  string                      $entry
      * @param  string                      $libraries
      * @param  string                      $resources
@@ -285,11 +285,12 @@ class Bootstrap {
                     },
                 );
 
+                // @phpstan-ignore-next-line
                 while (true) {
                     if ($ready) {
                         $ready->getFuture()->await();
                     }
-                    $code = execute($instruction, out())->await()->try($error);
+                    $code = execute($instruction, out())->try($error);
                     if ($error || $code > 0) {
                         echo $error.PHP_EOL;
                         $ready = new DeferredFuture;

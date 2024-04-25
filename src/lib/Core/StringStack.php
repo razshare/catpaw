@@ -23,8 +23,8 @@ readonly class StringStack {
     /**
      * Find token within a string and resolve them into a list containing items in the form of <i>[<b>$preceding</b>, <b>$token</b>]</i>,
      * where <b>$token</b> is the matching token and <b>$preceding</b> is the value that $precedes the current token.
-     * @param  string              ...$tokens
-     * @return SplDoublyLinkedList
+     * @param  string                                                ...$tokens
+     * @return SplDoublyLinkedList<array{false|string,false|string}>
      */
     public function expect(string ...$tokens): SplDoublyLinkedList {
         $name  = $this->content;

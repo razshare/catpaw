@@ -13,7 +13,6 @@ use CatPaw\Web\Interfaces\SessionInterface;
 
 /**
  * In memory session.
- * @template T
  * @package CatPaw\Web
  */
 class SessionWithMemory implements SessionInterface {
@@ -55,13 +54,14 @@ class SessionWithMemory implements SessionInterface {
 
     /**
      *
-     * @param  array  $data Session data.
-     * @param  int    $ttl  Time to live in seconds.
-     * @param  string $id   Session id.
+     * @param  array<mixed> $data Session data.
+     * @param  int          $ttl  Time to live in seconds.
+     * @param  string       $id   Session id.
      * @return void
      */
     private function __construct(
         private array $data,
+        // @phpstan-ignore-next-line
         private int $ttl,
         private string $id,
     ) {
@@ -69,6 +69,10 @@ class SessionWithMemory implements SessionInterface {
         $this->expiration = $this->started + $ttl;
     }
 
+    /**
+     * @param  ResponseModifier $modifier
+     * @return void
+     */
     public function apply(ResponseModifier $modifier):void {
         $modifier->setCookies(new ResponseCookie('session-id', $this->id));
     }

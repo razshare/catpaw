@@ -2,7 +2,6 @@
 
 namespace CatPaw\Core;
 
-use function Amp\async;
 use function Amp\ByteStream\buffer;
 use function Amp\ByteStream\getStdin;
 use function Amp\ByteStream\getStdout;
@@ -36,8 +35,9 @@ function milliseconds(): float {
 
 /**
  * Check if an array is associative.
- * @param  array $arr
- * @return bool  true if the array is associative, false otherwise.
+ * @template T
+ * @param  array<T> $arr
+ * @return bool     true if the array is associative, false otherwise.
  */
 function isAssoc(array $arr): bool {
     if ([] === $arr) {
@@ -107,9 +107,10 @@ function readLineSilent(string $prompt): Unsafe {
 
 
 /**
- * @param  array $array
- * @param  bool  $completely if true, flatten the array completely
- * @return array
+ * @template T
+ * @param  array<T> $array
+ * @param  bool     $completely if true, flatten the array completely
+ * @return array<T>
  */
 function flatten(array $array, bool $completely = false): array {
     if ($completely) {
@@ -138,85 +139,81 @@ function in(): ReadableResourceStream {
  * @param  T         $value
  * @return Unsafe<T>
  */
-function ok(mixed $value = true): Unsafe {
-    return new Unsafe($value, false);
+function ok(mixed $value = NONE): Unsafe {
+    return new Unsafe($value, null);
 }
 
 /**
- * @param  string|Error $message
- * @return Unsafe<void>
+ * @param  string|Error  $message
+ * @return Unsafe<mixed>
  */
 function error(string|Error $message): Unsafe {
     if (is_string($message)) {
-        return new Unsafe(null, new Error($message));
+        /** @var Unsafe<mixed> */
+        $error = new Unsafe(null, new Error($message));
+        return $error;
     }
-
+    /** @var Unsafe<mixed> */
     return new Unsafe(null, $message);
 }
 
 
 /**
  * Execute a command.
- * @param  string              $command       Command to run.
- * @param  bool|WritableStream $output        Send the output of the process to this stream.
- * @param  bool|string         $workDirectory Work directory of the command.
- * @param  bool|Signal         $kill          When this signal is triggered the process is killed.
- * @return Future<Unsafe<int>>
+ * @param  string               $command       Command to run.
+ * @param  false|WritableStream $output        Send the output of the process to this stream.
+ * @param  false|string         $workDirectory Work directory of the command.
+ * @param  false|Signal         $kill          When this signal is triggered the process is killed.
+ * @return Unsafe<int>
  */
 function execute(
     string $command,
     false|WritableStream $output = false,
     false|string $workDirectory = false,
     false|Signal $kill = false,
-): Future {
-    return async(static function() use ($command, $output, $kill, $workDirectory) {
-        try {
-            $logger = Container::create(LoggerInterface::class)->try($error);
-            if ($error) {
-                return error($error);
-            }
-            $process = Process::start($command, $workDirectory?:null);
-            pipe($process->getStdout(), $output);
-            pipe($process->getStderr(), $output);
-            $code = $process->join();
-        } catch(Throwable $error) {
+): Unsafe {
+    try {
+        $logger = Container::create(LoggerInterface::class)->try($error);
+        if ($error) {
             return error($error);
         }
+        $process = Process::start($command, $workDirectory?:null);
+        pipe($process->getStdout(), $output);
+        pipe($process->getStderr(), $output);
+        $code = $process->join();
+    } catch(Throwable $error) {
+        return error($error);
+    }
 
-        if ($kill) {
-            $kill->listen(static function(int $code) use ($process, $output, $logger) {
-                if (!$process->isRunning()) {
-                    return ok();
-                }
+    if ($kill) {
+        $kill->listen(static function(int $code) use ($process, $logger) {
+            if (!$process->isRunning()) {
+                return;
+            }
 
-                try {
-                    $process->signal($code);
-                    return ok();
-                } catch(Throwable $error) {
-                    $logger->error($error);
-                    return error($error);
-                }
-            });
-        }
+            try {
+                $process->signal($code);
+            } catch(Throwable $error) {
+                $logger->error($error);
+            }
+        });
+    }
 
-        return ok($code);
-    });
+    return ok($code);
 }
 
 /**
  * Execute a command and return its output.
- * @param  string                 $command command to run
- * @return Future<Unsafe<string>>
+ * @param  string         $command command to run
+ * @return Unsafe<string>
  */
-function get(string $command): Future {
-    return async(static function() use ($command) {
-        [$reader, $writer] = duplex();
-        execute($command, $writer)->await()->try($error);
-        if ($error) {
-            return error($error);
-        }
-        return ok(buffer($reader));
-    });
+function get(string $command): Unsafe {
+    [$reader, $writer] = duplex();
+    execute($command, $writer)->try($error);
+    if ($error) {
+        return error($error);
+    }
+    return ok(buffer($reader));
 }
 
 /**
@@ -242,22 +239,21 @@ function get(string $command): Future {
  * });
  * ```
  * @template T
- * @param  callable():Generator<Unsafe|Error|T> $function
+ * @param  callable():(Generator<string>|Unsafe<T>|T) $function
  * @return Unsafe<T>
  */
 function anyError(callable $function): Unsafe {
-    /** @var Generator<Unsafe<mixed>> $result */
     $result = $function();
 
     if (!($result instanceof Generator)) {
         if ($result instanceof Unsafe) {
             return $result;
         }
+        /** @var Unsafe<T> */
         return ok($result);
     }
 
     for ($result->rewind(); $result->valid(); $result->next()) {
-        /** @var Unsafe<Error|Unsafe> $value */
         $value = $result->current();
         if ($value instanceof Error) {
             return error($value);
@@ -272,7 +268,7 @@ function anyError(callable $function): Unsafe {
         if ($return instanceof Error) {
             return error($return);
         } else if ($return instanceof Unsafe) {
-            return $result;
+            return $return;
         }
 
         return ok($return);
@@ -299,10 +295,16 @@ function duplex(int $bufferSize = 8192): array {
  * @return Future<void>
  */
 function tick(): Future {
+    /** @var Future<void> */
     return (new DeferredFuture)->getFuture()->complete();
 }
 
+
+/**
+ * @return DeferredFuture<mixed>
+ */
 function deferred(): DeferredFuture {
+    /** @var DeferredFuture<mixed> */
     return new DeferredFuture;
 }
 
@@ -316,9 +318,8 @@ function deferred(): DeferredFuture {
  * // or better even
  * $service->$findByName("server.www");
  * ```
- * @template T
  * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
- * @return T      value of the variable.
+ * @return mixed  value of the variable.
  */
 function env(string $query): mixed {
     /** @var false|EnvironmentService */
@@ -405,17 +406,20 @@ function asFileName(string ...$path):FileName {
  * }
  * ```
  * @template T
- * @param  class-string<T>         $interface Interface of the shared object.\
- *                                            This will give you intellisense.\
- *                                            Methods of this interface must all return `Unsafe`.\
- *                                            Remember you cal always use php-poc to specify `Unsafe<T>` instead of just `Unsafe`, in order to get proper intellisense.
- * @param  string                  $fileName  Name of the shared object file, for example `lib.so`.\
- *                                            The shared object's equivalent C definition file must be located in the same directory as `$fileName` and have the `.h` or `.static.h` extension.\
- *                                            This header file must not contain any C preprocessor directives.\
- *                                            You can resolve C preprocessor directives in a header file by running `cpp -P ./lib.h ./lib.static.h`.\
- *                                            You can read more about this [here](https://www.php.net/manual/en/ffi.cdef.php).
- * @return Unsafe<GoffiContract&T>
+ * @param  class-string<T>            $interface Interface of the shared object.\
+ *                                               This will give you intellisense.\
+ *                                               Methods of this interface must all return `Unsafe`.\
+ *                                               Remember you cal always use php-poc to specify `Unsafe<T>` instead of just `Unsafe`, in order to get proper intellisense.
+ * @param  string                     $fileName  Name of the shared object file, for example `lib.so`.\
+ *                                               The shared object's equivalent C definition file must be located in the same directory as `$fileName` and have the `.h` or `.static.h` extension.\
+ *                                               This header file must not contain any C preprocessor directives.\
+ *                                               You can resolve C preprocessor directives in a header file by running `cpp -P ./lib.h ./lib.static.h`.\
+ *                                               You can read more about this [here](https://www.php.net/manual/en/ffi.cdef.php).
+ * @return Unsafe<GoffiContract<T>&T>
  */
 function goffi(string $interface, string $fileName) {
-    return GoffiContract::create($interface, $fileName);
+    /** @var Unsafe<GoffiContract<T>&T> */
+    $result = GoffiContract::create($interface, $fileName);
+
+    return $result;
 }

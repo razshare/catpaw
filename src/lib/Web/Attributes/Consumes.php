@@ -5,6 +5,8 @@ use Attribute;
 use CatPaw\Core\Attributes\Entry;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
@@ -59,6 +61,11 @@ class Consumes implements AttributeInterface {
         );
     }
 
+    /**
+     *
+     * @param  OpenApiService $oa
+     * @return Unsafe<None>
+     */
     #[Entry] public function setup(OpenApiService $oa):Unsafe {
         foreach ($this->request as $request) {
             $request->setup($oa)->try($error);

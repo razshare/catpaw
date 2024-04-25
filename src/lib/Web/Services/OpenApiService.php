@@ -7,6 +7,8 @@ use CatPaw\Core\Attributes\HashMap;
 use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\error;
 
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Unsafe;
@@ -15,6 +17,11 @@ use Throwable;
 
 #[Service]
 class OpenApiService {
+    /**
+     *
+     * @param  string       $className
+     * @return array<mixed>
+     */
     public static function templateForObjectComponent(string $className):array {
         return [
             'type' => 'object',
@@ -22,6 +29,12 @@ class OpenApiService {
         ];
     }
 
+    /**
+     *
+     * @param  string       $className
+     * @param  bool         $dataIsObject
+     * @return array<mixed>
+     */
     public static function templateForItem(string $className, bool $dataIsObject = true):array {
         if ($dataIsObject) {
             $data = [
@@ -51,6 +64,12 @@ class OpenApiService {
         ];
     }
 
+    /**
+     *
+     * @param  string       $className
+     * @param  bool         $dataIsObject
+     * @return array<mixed>
+     */
     public static function templateForPage(string $className, bool $dataIsObject = true):array {
         if ($dataIsObject) {
             $data = [
@@ -117,6 +136,7 @@ class OpenApiService {
         ];
     }
 
+    /** @var array<mixed> */
     private array $json = [
         'openapi' => '3.0.3',
         'info'    => [
@@ -132,7 +152,7 @@ class OpenApiService {
     /**
      * Get the current OpenAPI data.
      * You can safely expose this through a rest api.
-     * @return array
+     * @return array<mixed>
      */
     public function getData():array {
         return $this->json;
@@ -146,6 +166,12 @@ class OpenApiService {
         $this->json['info']['version'] = $title;
     }
 
+    /**
+     *
+     * @param  string       $path
+     * @param  array<mixed> $pathContent
+     * @return void
+     */
     public function setPath(string $path, array $pathContent):void {
         if (isset($this->json['paths'][$path])) {
             $this->json['paths'][$path] = [
@@ -175,7 +201,7 @@ class OpenApiService {
     /**
      *
      * @param  string       $className
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function setComponentObject(string $className):Unsafe {
         try {
@@ -186,7 +212,7 @@ class OpenApiService {
                 $propertyName = $reflectionProperty->getName();
 
                 $reflectionNamedType = ReflectionTypeManager::unwrap($reflectionProperty);
-                $type                = $reflectionNamedType?$reflectionNamedType->getName() ?? 'string':'string';
+                $type                = $reflectionNamedType?$reflectionNamedType->getName():'string';
 
                 if (class_exists($type)) {
                     $this->setComponentObject($type)->try($error);
@@ -204,7 +230,6 @@ class OpenApiService {
                         return error($error);
                     }
 
-                    /** @var false|HashMap $hashMapAttribute */
                     $hashMapAttribute = HashMap::findByProperty($reflectionProperty)->try($error);
                     if ($error) {
                         return error($error);
@@ -214,7 +239,7 @@ class OpenApiService {
                     if ($arrayListAttribute || $hashMapAttribute) {
                         if ($arrayListAttribute) {
                             $subType = $arrayListAttribute->className;
-                        } else if ($hashMapAttribute) {
+                        } else {
                             $subType = $hashMapAttribute->className;
                         }
 
@@ -230,7 +255,7 @@ class OpenApiService {
                                         '$ref' => "#/components/schemas/{$subType}",
                                     ],
                                 ];
-                            } else if ($hashMapAttribute) {
+                            } else {
                                 $resolvedProperties[$propertyName] = [
                                     'type'  => 'array',
                                     'items' => [
@@ -256,7 +281,7 @@ class OpenApiService {
                                 if ('integer' === $resolvedProperties[$propertyName]['items']['type']) {
                                     $resolvedProperties[$propertyName]['items']['format'] = 'int32';
                                 }
-                            } else if ($hashMapAttribute) {
+                            } else {
                                 $resolvedProperties[$propertyName] = [
                                     'type'  => 'array',
                                     'items' => [
@@ -307,9 +332,9 @@ class OpenApiService {
      * Create a deterministic ID for an operation.
      * Given the same inputs this function will always return the same ID.
      *
-     * @param  string $method     http method
-     * @param  array  $parameters operation parameters
-     * @param  array  $responses  operation responses
+     * @param  string       $method     http method
+     * @param  array<mixed> $parameters operation parameters
+     * @param  array<mixed> $responses  operation responses
      * @return string
      */
     public function createOperationID(
@@ -330,20 +355,14 @@ class OpenApiService {
 
     /**
      *
-     * @param array<string> $tags
-     * @param string        $method
-     * @param string        $operationId
-     * @param string        $summary
-     * @param array         $parameters
-     * @param array         $requestBody
-     * @param array         $responses
-     * @return array<string,array{
-     *      summary: string,
-     *      operationId: string,
-     *      parameters: array,
-     *      requestBody: array,
-     *      responses: array,
-     * }>
+     * @param  array<string> $tags
+     * @param  string        $method
+     * @param  string        $operationId
+     * @param  string        $summary
+     * @param  array<mixed>  $parameters
+     * @param  array<mixed>  $requestBody
+     * @param  array<mixed>  $responses
+     * @return array<mixed>
      */
     public function createPathContent(
         array $tags,
@@ -382,20 +401,13 @@ class OpenApiService {
 
     /**
      *
-     * @param string                             $name
-     * @param string                             $in
-     * @param string                             $description
-     * @param bool                               $required
-     * @param array                              $schema
-     * @param array<array|string|int|float|bool> $examples
-     * @return array<int,array{
-     *      name: string,
-     *      in: string,
-     *      description: string,
-     *      required: bool,
-     *      schema: array,
-     *      examples: array<array|string|int|float|bool>,
-     * }>
+     * @param  string                                    $name
+     * @param  string                                    $in
+     * @param  string                                    $description
+     * @param  bool                                      $required
+     * @param  array<mixed>                              $schema
+     * @param  array<array<mixed>|string|int|float|bool> $examples
+     * @return array<mixed>
      */
     public function createParameter(
         string $name,
@@ -417,17 +429,12 @@ class OpenApiService {
 
     /**
      *
-     * @param int                         $status
-     * @param string                      $description
-     * @param string                      $contentType
-     * @param array                       $schema
-     * @param array|string|int|float|bool $example
-     * @return array<string, array{
-     *      content: array<string, array{
-     *          example: array<array-key, mixed>|scalar, schema: array<array-key, mixed>
-     *      }>,
-     *      description: string
-     * }>
+     * @param  int                                $status
+     * @param  string                             $description
+     * @param  string                             $contentType
+     * @param  array<mixed>                       $schema
+     * @param  array<mixed>|string|int|float|bool $example
+     * @return array<mixed>
      */
     public function createResponse(
         int $status,
@@ -448,13 +455,15 @@ class OpenApiService {
             ],
         ];
 
-        // if (is_array($example) && \count($example) === 0) {
-        //     unset($response[(string)$status]["content"][$contentType]["example"]);
-        // }
-
         return $response;
     }
 
+    /**
+     *
+     * @param  string       $type
+     * @param  array<mixed> $properties
+     * @return array<mixed>
+     */
     public function createSchema(
         string $type,
         array $properties = [],
@@ -471,6 +480,13 @@ class OpenApiService {
         return $schema;
     }
 
+    /**
+     *
+     * @param  string       $name
+     * @param  string       $type
+     * @param  string       $description
+     * @return array<mixed>
+     */
     public function createProperty(
         string $name,
         string $type,
@@ -484,6 +500,13 @@ class OpenApiService {
         ];
     }
 
+    /**
+     *
+     * @param  string                             $title
+     * @param  array<mixed>|string|int|float|bool $value
+     * @param  string                             $summary
+     * @return array<mixed>
+     */
     public function createExample(
         string $title,
         array|string|int|float|bool $value,
@@ -505,14 +528,10 @@ class OpenApiService {
 
     /**
      *
-     * @param string $description
-     * @param bool   $required
-     * @param array  $content
-     * @return array{}|array{
-     *  description: string,
-     *  required: bool,
-     *  content: array<array-key,mixed>,
-     * }
+     * @param  string       $description
+     * @param  bool         $required
+     * @param  array<mixed> $content
+     * @return array<mixed>
      */
     public function createRequestBody(
         string $description,
@@ -531,13 +550,10 @@ class OpenApiService {
 
     /**
      *
-     * @param string                      $contentType
-     * @param array                       $schema
-     * @param array|string|int|float|bool $example
-     * @return array<string,array{
-     *      schema: array,
-     *      example: array|string|int|float|bool
-     * }>
+     * @param  string                             $contentType
+     * @param  array<mixed>                       $schema
+     * @param  array<mixed>|string|int|float|bool $example
+     * @return array<string,array<mixed>>
      */
     public function createRequestBodyContent(
         string $contentType,

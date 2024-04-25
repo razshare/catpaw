@@ -17,7 +17,8 @@ use SplObjectStorage;
 use Throwable;
 
 trait CoreAttributeDefinition {
-    private static SplObjectStorage|false $coreDefinitionCache = false;
+    /** @var SplObjectStorage<object,object> */
+    private static false|SplObjectStorage $coreDefinitionCache = false;
     /**
      * @return void
      */
@@ -35,10 +36,12 @@ trait CoreAttributeDefinition {
     public static function findAllByFunction(ReflectionFunction $reflectionFunction): Unsafe {
         self::initializeCache();
         if (!($trueClassNames = AttributeResolver::issetFunctionAttributes($reflectionFunction, static::class))) {
+            /** @var Unsafe<array<self>> */
             return ok([]);
         }
 
         try {
+            /** @var array<self> $instances */
             $instances = [];
 
             $allAttributesArguments = AttributeResolver::getFunctionAllAttributesArguments($reflectionFunction, static::class);
@@ -46,14 +49,14 @@ trait CoreAttributeDefinition {
             foreach ($trueClassNames as $key => $trueClassName) {
                 $attributeArguments = $allAttributesArguments[$key];
                 $klass              = new ReflectionClass($trueClassName);
-                /** @var object $instance */
-                $instance = $klass->newInstance(...$attributeArguments);
+                $instance           = $klass->newInstance(...$attributeArguments);
                 Container::entry($instance, $klass->getMethods())->try($error);
                 if ($error) {
                     return error($error);
                 }
                 $instances[] = $instance;
             }
+            /** @var Unsafe<array<self>> */
             return ok($instances);
         } catch(Throwable $e) {
             return error($e);
@@ -66,17 +69,20 @@ trait CoreAttributeDefinition {
      */
     public static function findByFunction(ReflectionFunction $reflectionFunction): Unsafe {
         self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionFunction) && $instance = self::$coreDefinitionCache->offsetGet($reflectionFunction)) {
+        if (self::$coreDefinitionCache->contains($reflectionFunction)) {
+            $instance = self::$coreDefinitionCache->offsetGet($reflectionFunction);
+            /** @var Unsafe<false|self> */
             return ok($instance);
         }
         if (!($trueClassName = AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class))) {
+            /** @var Unsafe<false|self> */
             return ok(false);
         }
 
         try {
             $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object $instance */
+            /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             Container::entry($instance, $klass->getMethods())->try($error);
             if ($error) {
@@ -86,6 +92,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionFunction,
                 info: $instance,
             );
+            /** @var Unsafe<false|self> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -98,18 +105,21 @@ trait CoreAttributeDefinition {
      */
     public static function findByMethod(ReflectionMethod $reflectionMethod):Unsafe {
         self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionMethod) && $instance = self::$coreDefinitionCache->offsetGet($reflectionMethod)) {
+        if (self::$coreDefinitionCache->contains($reflectionMethod)) {
+            $instance = self::$coreDefinitionCache->offsetGet($reflectionMethod);
+            /** @var Unsafe<self|false> */
             return ok($instance);
         }
 
         if (!($trueClassName = AttributeResolver::issetMethodAttribute($reflectionMethod, static::class))) {
+            /** @var Unsafe<self|false> */
             return ok(false);
         }
 
         try {
             $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object $instance */
+            /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             Container::entry($instance, $klass->getMethods())->try($error);
             if ($error) {
@@ -119,6 +129,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionMethod,
                 info: $instance,
             );
+            /** @var Unsafe<self|false> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -126,23 +137,26 @@ trait CoreAttributeDefinition {
     }
 
     /**
-     * @param  ReflectionClass    $reflectionClass
+     * @param  ReflectionClass<object> $reflectionClass
      * @return Unsafe<self|false>
      */
     public static function findByClass(ReflectionClass $reflectionClass):Unsafe {
         self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionClass) && $instance = self::$coreDefinitionCache->offsetGet($reflectionClass)) {
+        if (self::$coreDefinitionCache->contains($reflectionClass)) {
+            $instance = self::$coreDefinitionCache->offsetGet($reflectionClass);
+            /** @var Unsafe<self|false> */
             return ok($instance);
         }
 
         if (!($trueClassName = AttributeResolver::issetClassAttribute($reflectionClass, static::class))) {
+            /** @var Unsafe<self|false> */
             return ok(false);
         }
 
         try {
             $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object $instance */
+            /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             Container::entry($instance, $klass->getMethods())->try($error);
             if ($error) {
@@ -152,6 +166,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionClass,
                 info: $instance,
             );
+            /** @var Unsafe<self|false> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -164,18 +179,21 @@ trait CoreAttributeDefinition {
      */
     public static function findByProperty(ReflectionProperty $reflectionProperty):Unsafe {
         self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionProperty) && $instance = self::$coreDefinitionCache->offsetGet($reflectionProperty)) {
+        if (self::$coreDefinitionCache->contains($reflectionProperty)) {
+            $instance = self::$coreDefinitionCache->offsetGet($reflectionProperty);
+            /** @var Unsafe<self|false> */
             return ok($instance);
         }
 
         if (!($trueClassName = AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class))) {
+            /** @var Unsafe<self|false> */
             return ok(false);
         }
 
         try {
             $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object $instance */
+            /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             Container::entry($instance, $klass->getMethods())->try($error);
             if ($error) {
@@ -185,6 +203,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionProperty,
                 info: $instance,
             );
+            /** @var Unsafe<self|false> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -197,18 +216,21 @@ trait CoreAttributeDefinition {
      */
     public static function findByParameter(ReflectionParameter $reflectionParameter):Unsafe {
         self::initializeCache();
-        if (self::$coreDefinitionCache->contains($reflectionParameter) && $instance = self::$coreDefinitionCache->offsetGet($reflectionParameter)) {
+        if (self::$coreDefinitionCache->contains($reflectionParameter)) {
+            $instance = self::$coreDefinitionCache->offsetGet($reflectionParameter);
+            /** @var Unsafe<self|false> */
             return ok($instance);
         }
 
         if (!($trueClassName = AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))) {
+            /** @var Unsafe<self|false> */
             return ok(false);
         }
 
         try {
             $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
             $klass              = new ReflectionClass($trueClassName);
-            /** @var object $instance */
+            /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
             Container::entry($instance, $klass->getMethods())->try($error);
             if ($error) {
@@ -218,6 +240,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionParameter,
                 info: $instance,
             );
+            /** @var Unsafe<self|false> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -225,12 +248,13 @@ trait CoreAttributeDefinition {
     }
 
     /**
-     * @param  ReflectionFunction  $reflectionFunction
+     * @param  ReflectionParameter $reflectionParameter
      * @return Unsafe<array<self>>
      */
     public static function findAllByParameter(ReflectionParameter $reflectionParameter): Unsafe {
         self::initializeCache();
         if (!($trueClassNames = AttributeResolver::issetParameterAttributes($reflectionParameter, static::class))) {
+            /** @var Unsafe<array<self>> */
             return ok([]);
         }
 
@@ -242,7 +266,7 @@ trait CoreAttributeDefinition {
             foreach ($trueClassNames as $key => $trueClassName) {
                 $attributeArguments = $allAttributesArguments[$key];
                 $klass              = new ReflectionClass($trueClassName);
-                /** @var object $instance */
+                /** @var self $instance */
                 $instance = $klass->newInstance(...$attributeArguments);
                 Container::entry($instance, $klass->getMethods())->try($error);
                 if ($error) {
@@ -250,6 +274,7 @@ trait CoreAttributeDefinition {
                 }
                 $instances[] = $instance;
             }
+            /** @var Unsafe<array<self>> */
             return ok($instances);
         } catch(Throwable $e) {
             return error($e);

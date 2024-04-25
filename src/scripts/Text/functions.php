@@ -44,7 +44,7 @@ function foreground(
     return "\033[38;2;$red;$green;{$blue}m";
 }
 
-/** 
+/**
  * Returns a combination of string that will clear the terminal.
  * @return string
  */
@@ -54,9 +54,9 @@ function clear():string {
 
 /**
  * Create some colorful text.
- * @param  string      $value
- * @param  array|false $foregroundRGB
- * @param  array|false $backgroundRGB
+ * @param  string           $value
+ * @param  array<int>|false $foregroundRGB
+ * @param  array<int>|false $backgroundRGB
  * @return string
  */
 function text(string $value, array|false $foregroundRGB = false, array|false $backgroundRGB = false):string {

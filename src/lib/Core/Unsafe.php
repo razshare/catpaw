@@ -14,16 +14,13 @@ use Error;
  */
 readonly class Unsafe {
     /**
-     * @param T           $value
-     * @param false|Error $error
+     * @param T          $value
+     * @param null|Error $error
      */
     public function __construct(
         public mixed $value,
-        public false|Error $error
+        public null|Error $error
     ) {
-        if ($error && !($error instanceof Error)) {
-            $this->error = new Error($error);
-        }
     }
 
     public function toResponseModifier(): ResponseModifier {
@@ -39,15 +36,29 @@ readonly class Unsafe {
     }
 
     /**
+     *
      * @param  Error $error
      * @return T
      */
-    public function try(&$error = false) {
+    public function try(&$error = null) {
         if ($this->error) {
             $error = $this->error;
-            return;
+            /** @var T */
+            return null;
         }
-        $error = false;
+        $error = null;
+        return $this->value;
+    }
+
+    /**
+     * Get the value or throw the exception if present.
+     * @throws Error
+     * @return T
+     */
+    public function unwrap() {
+        if ($this->error) {
+            throw $this->error;
+        }
         return $this->value;
     }
 }

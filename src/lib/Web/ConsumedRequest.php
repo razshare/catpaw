@@ -4,6 +4,7 @@ namespace CatPaw\Web;
 use CatPaw\Core\Attributes\Entry;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
@@ -17,6 +18,14 @@ class ConsumedRequest implements AttributeInterface {
     use CoreAttributeDefinition;
     use SchemaEncoder;
 
+    /**
+     *
+     * @param  array<string>|string $className
+     * @param  string               $type
+     * @param  string               $description
+     * @param  mixed                $example
+     * @return ConsumedRequest
+     */
     public static function create(
         array|string $className = '',
         string $type = 'text/plain',
@@ -31,10 +40,11 @@ class ConsumedRequest implements AttributeInterface {
         );
     }
 
+    /** @var array<mixed> */
     private array $request = [];
 
     /**
-     * 
+     *
      * @param  string $className   a class name or an array 1 one single element, which must be a class name.
      * @param  string $type        http content-type, when passed to #[Consumes], this content-type will be enforced
      * @param  string $description
@@ -44,20 +54,22 @@ class ConsumedRequest implements AttributeInterface {
     private function __construct(
         private string $className = '',
         private string $type = 'text/plain',
+        // @phpstan-ignore-next-line
         private string $description = '',
         private mixed $example = [],
     ) {
     }
-    
+
     /**
-     * @param  string       $schema
-     * @return string|array
+     * @param  string              $schema
+     * @return string|array<mixed>
      */
+    // @phpstan-ignore-next-line
     private static function adaptClassToSchema(string $schema):string|array {
         if (class_exists($schema)) {
             $composed   = [];
             $reflection = new ReflectionClass($schema);
-            
+
             foreach ($reflection->getProperties() as $property) {
                 $name = $property->getName();
                 if (!$type = ReflectionTypeManager::unwrap($property)) {
@@ -95,6 +107,10 @@ class ConsumedRequest implements AttributeInterface {
         return $this->type;
     }
 
+    /**
+     *
+     * @return array<mixed>
+     */
     public function getValue():array {
         return $this->request;
     }
@@ -104,9 +120,9 @@ class ConsumedRequest implements AttributeInterface {
     }
 
     /**
-     * 
+     *
      * @param  OpenApiService $oa
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     #[Entry] public function setup(OpenApiService $oa):Unsafe {
         $isClass = class_exists($this->className);

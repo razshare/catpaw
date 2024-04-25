@@ -15,6 +15,8 @@ use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use function CatPaw\Core\isPhar;
+
+use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Signal;
 use CatPaw\Core\Unsafe;
@@ -34,7 +36,7 @@ class Server {
     /**
      * Invoke a function when the server starts.
      * @param  callable(HttpServer):(void|Unsafe<void>) $function the function to invoke, with the http server as parameter.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public static function onStart(callable $function):Unsafe {
         self::$onStartListeners[] = $function;
@@ -50,6 +52,12 @@ class Server {
         return ok();
     }
 
+    /**
+     *
+     * @param  array<string> $www
+     * @throws Error
+     * @return string
+     */
     private static function findFirstValidWebDirectory(array $www):string {
         if (isPhar()) {
             $phar = Phar::running();
@@ -72,6 +80,12 @@ class Server {
     }
 
 
+    /**
+     *
+     * @param  array<string> $api
+     * @throws Error
+     * @return string
+     */
     private static function findFirstValidRoutesDirectory(array $api) : string {
         foreach ($api as $directory) {
             if (File::exists($directory)) {
@@ -117,6 +131,7 @@ class Server {
      * @param  int            $connectionLimit
      * @param  int            $connectionLimitPerIp
      * @param  int            $concurrencyLimit
+     * @param  array<string>  $allowedMethods
      * @throws Error
      * @return Unsafe<Server>
      */
@@ -182,6 +197,21 @@ class Server {
     private array $middleware       = [];
     private bool $httpServerStarted = false;
 
+    /**
+     *
+     * @param string          $interface
+     * @param string          $secureInterface
+     * @param string          $apiPrefix
+     * @param string          $api
+     * @param string          $www
+     * @param bool            $enableCompression
+     * @param int             $connectionLimit
+     * @param int             $connectionLimitPerIp
+     * @param int             $concurrencyLimit
+     * @param array<string>   $allowedMethods
+     * @param Router          $router
+     * @param LoggerInterface $logger
+     */
     private function __construct(
         public readonly string $interface,
         public readonly string $secureInterface,
@@ -228,7 +258,7 @@ class Server {
      *
      * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
      * @param  false|Signal $ready the server will trigger this signal whenever it's ready to serve requests.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function start(false|Signal $ready = false):Unsafe {
         if (isset($this->httpServer)) {
@@ -259,7 +289,7 @@ class Server {
             EventLoop::onSignal(SIGTERM, $stopper);
 
             $requestHandler   = ServerRequestHandler::create($this->logger, $this->fileServer, $this->resolver);
-            $stackedHandler   = stackMiddleware(...$this->middleware, ...[$requestHandler]);
+            $stackedHandler   = stackMiddleware($requestHandler, $this->middleware);
             $errorHandler     = ServerErrorHandler::create($this->logger);
             $this->httpServer = SocketHttpServer::createForDirectAccess(
                 logger: $this->logger,
@@ -305,7 +335,7 @@ class Server {
 
     /**
      * Stop the server.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function stop(): Unsafe {
         if (isset($this->httpServer)) {
@@ -325,7 +355,7 @@ class Server {
      * @param  Router          $router
      * @param  string          $apiPrefix
      * @param  string          $api
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     private static function initializeRoutes(
         LoggerInterface $logger,
@@ -360,7 +390,7 @@ class Server {
                             continue;
                         }
 
-                        $symbolicPath   = $apiPrefix.$matches[1] ?? '';
+                        $symbolicPath   = $apiPrefix.$matches[1];
                         $symbolicPath   = preg_replace(['/^\/+/','/\/index$/'], ['/',''], $symbolicPath);
                         $symbolicMethod = strtoupper($matches[3] ?? 'get');
 

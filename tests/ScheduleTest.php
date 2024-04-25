@@ -12,15 +12,15 @@ use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 
 class ScheduleTest extends TestCase {
-    public function testAll() {
+    public function testAll():void {
         Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->scheduleDaily(...));
             yield Container::run($this->scheduleAfter1Second(...));
             yield Container::run($this->scheduleEvery1Second3Times(...));
         })->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         EventLoop::run();
     }
 
@@ -34,7 +34,7 @@ class ScheduleTest extends TestCase {
                 $cancel();
             }
         )->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         $schedule->future->await();
         $this->assertTrue($value);
     }
@@ -56,7 +56,7 @@ class ScheduleTest extends TestCase {
             $logger->info("Function executed after 1 second.");
             $signal->send();
         })->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         EventLoop::delay(1.1, function() use (&$checked) {
             $this->assertTrue($checked);
         });
@@ -73,7 +73,7 @@ class ScheduleTest extends TestCase {
                 $cancel();
             }
         })->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         $schedule->future->await();
         $logger->info("Done executing.");
         $this->assertEquals(3, $value);

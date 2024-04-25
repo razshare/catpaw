@@ -7,6 +7,7 @@ use CatPaw\Core\Attributes\Service;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
+use CatPaw\Core\None;
 use CatPaw\Core\Unsafe;
 use CatPaw\RaspberryPi\Interfaces\GpioReader;
 use CatPaw\RaspberryPi\Interfaces\GpioWriter;
@@ -57,7 +58,7 @@ class GpioService {
             return error($error);
         }
 
-        $exportFile->write($pin);
+        $exportFile->write((string)$pin);
         $exportFile->close();
 
         if (!File::exists("/sys/class/gpio/gpio$pin/direction")) {
@@ -69,7 +70,7 @@ class GpioService {
             if ($error) {
                 return error($error);
             }
-            $directionFile->write('')->await()->try($error);
+            $directionFile->write('')->try($error);
             if ($error) {
                 return error($error);
             }
@@ -93,7 +94,7 @@ class GpioService {
             if ($error) {
                 return error($error);
             }
-            $valueFile->write('')->await()->try($error);
+            $valueFile->write('')->try($error);
             if ($error) {
                 return error($error);
             }
@@ -155,6 +156,11 @@ class GpioService {
             public function __construct(private $export) {
             }
 
+            /**
+             *
+             * @param  string       $data
+             * @return Unsafe<None>
+             */
             public function write(string $data):Unsafe {
                 if (!$this->file) {
                     $export = $this->export;
@@ -164,7 +170,7 @@ class GpioService {
                     }
                     $this->file = $file;
                 }
-                return $this->file->write($data)->await();
+                return $this->file->write($data);
             }
 
             public function close():void {

@@ -38,6 +38,18 @@ class RequestContext {
 
     /** @var array<ResponseCookie> */
     public array $cookies = [];
+
+    /**
+     *
+     * @param  string              $key
+     * @param  Route               $route
+     * @param  Server              $server
+     * @param  Request             $request
+     * @param  array<string>       $requestQueries
+     * @param  array<string>       $requestPathParameters
+     * @param  false|array<string> $badRequestEntries
+     * @return void
+     */
     private function __construct(
         public readonly string $key,
         public readonly Route $route,

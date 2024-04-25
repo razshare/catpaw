@@ -67,7 +67,7 @@ readonly class File {
      * Copy a file.
      * @param  string       $from
      * @param  string       $to
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public static function copy(string $from, string $to):Unsafe {
         $source = File::open($from)->try($error);
@@ -86,6 +86,7 @@ readonly class File {
 
         $dirname = dirname($to);
 
+        // @phpstan-ignore-next-line
         if (false === $dirname) {
             Directory::create($dirname)->try($error);
             if ($error) {
@@ -109,8 +110,8 @@ readonly class File {
 
 
     /**
-     * @param  string        $fileName
-     * @return Unsafe<array>
+     * @param  string               $fileName
+     * @return Unsafe<array<mixed>>
      */
     public static function getStatus(string $fileName):Unsafe {
         $status = getStatus($fileName);
@@ -143,7 +144,7 @@ readonly class File {
 
     /**
      * @param  string       $fileName
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public static function delete(string $fileName):Unsafe {
         try {
@@ -189,8 +190,7 @@ readonly class File {
      * @template T
      * @param  class-string<T> $interface Interface of the resulting object.
      * @param  string          $fileName
-     * @throws Error
-     * @return Unsafe
+     * @return Unsafe<T>
      */
     public static function readYaml(string $interface, string $fileName):Unsafe {
         if (!File::exists($fileName)) {
@@ -227,6 +227,7 @@ readonly class File {
                     if (false === $parsed) {
                         return error("Couldn't parse yaml file.");
                     }
+                    /** @var Unsafe<T> */
                     return ok((object)$parsed);
                 }
 
@@ -253,6 +254,7 @@ readonly class File {
         if (false === $parsed) {
             return error("Couldn't parse yaml file.");
         }
+        /** @var Unsafe<T> */
         return ok((object)$parsed);
     }
 
@@ -300,6 +302,7 @@ readonly class File {
         } catch(Throwable $error) {
             return error($error);
         }
+        /** @var Unsafe<T> */
         return ok((object)$parsed);
     }
 
@@ -310,19 +313,20 @@ readonly class File {
      */
     private function __construct(
         private AmpFile $ampFile,
+        // @phpstan-ignore-next-line
         private string $mode,
         public readonly string $fileName,
     ) {
     }
 
-    public function truncate(int $size) {
+    public function truncate(int $size):void {
         $this->ampFile->truncate($size);
     }
 
     /**
      * @param  string       $content
      * @param  int          $chunkSize
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function write(string $content, int $chunkSize = 8192):Unsafe {
         try {
@@ -344,14 +348,13 @@ readonly class File {
 
     /**
      * @param  ReadableStream $readableStream
-     * @param  int            $chunkSize
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
-    public function writeStream(ReadableStream $readableStream, int $chunkSize = 8192):Unsafe {
+    public function writeStream(ReadableStream $readableStream):Unsafe {
         $ampFile = $this->ampFile;
         try {
             while (true) {
-                $chunk = async(static fn () => $readableStream->read(null, $chunkSize))->await();
+                $chunk = async(static fn () => $readableStream->read(null))->await();
                 if (null === $chunk) {
                     return ok();
                 }

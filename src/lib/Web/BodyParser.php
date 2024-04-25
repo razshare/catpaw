@@ -6,9 +6,10 @@ use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 
 use CatPaw\Core\Unsafe;
-use Exception;
 use function json_decode;
+
 use function mb_parse_str;
+use Throwable;
 
 class BodyParser {
     private function __construct() {
@@ -23,7 +24,7 @@ class BodyParser {
     ): Unsafe {
         if ('' === $contentType) {
             return error("No Content-Type specified. Could not parse body.");
-        } 
+        }
 
         try {
             if (str_starts_with($contentType, "application/x-www-form-urlencoded")) {
@@ -36,13 +37,10 @@ class BodyParser {
                 [,$result] = FormParser::parse($contentType, $body);
                 return ok($result);
             } else {
-                $result = [];
-                return $result;
+                return ok([]);
             }
-        } catch (Exception) {
-            $result = [];
-            return $result;
+        } catch (Throwable $error) {
+            return error($error);
         }
-        return ok($body);
     }
 }

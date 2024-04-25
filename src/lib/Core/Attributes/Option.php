@@ -20,12 +20,14 @@ class Option implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
 
     private static bool $initialized = false;
-    private static array $cache      = [];
+    /** @var array<Option> */
+    private static array $cache = [];
     /** @var array<int,string> */
     private static array $options = [];
     /** @var array<bool> */
     private static array $exists = [];
     /** @var array<string,OptionDocumentation> */
+    // @phpstan-ignore-next-line
     private static array $linuxManual = [];
 
     /**

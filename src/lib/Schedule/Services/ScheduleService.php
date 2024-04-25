@@ -5,7 +5,9 @@ namespace CatPaw\Schedule\Services;
 use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\deferred;
+
 use function CatPaw\Core\error;
+use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use CatPaw\Schedule\ScheduleConfiguration;
@@ -20,11 +22,17 @@ use Throwable;
 readonly class ScheduleService {
     private const PATTERN_AFTER = '/\s*after\s+([0-9])+\s+(minutes|seconds|hours|months|years|minute|second|hour|month|year)\s*/i';
     private const PATTERN_DAILY = '/\s*daily\s+at\s+([0-9]{1,2})[:.]?([0-9]{0,2})[:.]?([0-9]{0,2})(\s+AM|PM)?\s*/i';
+    // @phpstan-ignore-next-line
     private DateTimeZone $timezone;
 
+    /**
+     *
+     * @return Unsafe<None>
+     */
     #[Entry] public function start(): Unsafe {
         try {
             $systemTimeZone = system('date +%Z');
+            // @phpstan-ignore-next-line
             $this->timezone = new DateTimeZone($systemTimeZone);
             return ok();
         } catch(Throwable $e) {
@@ -142,10 +150,12 @@ readonly class ScheduleService {
             }
 
             if ($am) {
+                // @phpstan-ignore-next-line
                 if (12 === $hour && $minute <= 59) {
                     $hour = 0;
                 }
             } else if ($pm) {
+                // @phpstan-ignore-next-line
                 if ($hour >= 1 && $hour <= 12 && $minute <= 59) {
                     $hour = $hour + 12;
                 }
@@ -171,21 +181,22 @@ readonly class ScheduleService {
      * Schedule a function to execute.
      * @param  callable(callable):void $function              the function to execute.
      * @param  ScheduleConfiguration   $scheduleConfiguration
-     * @return Unsafe<callable>
+     * @return Unsafe<ScheduleEntry>
      */
     private function schedule(
         callable $function,
         ScheduleConfiguration $scheduleConfiguration,
     ):Unsafe {
-        $delta     = $scheduleConfiguration->value;
-        $semaphore = deferred();
+        $delta      = $scheduleConfiguration->value;
+        $semaphore  = deferred();
+        $callbackId = '';
 
-        $cancel = static function() use (&$callbackId, &$scheduleConfiguration, $semaphore) {
+        $cancel = static function() use (&$callbackId, $semaphore) {
             EventLoop::cancel($callbackId);
             $semaphore->complete();
         };
 
-        $runner = static function() use ($function, $cancel, $semaphore) {
+        $runner = static function() use ($function, $cancel) {
             $function($cancel);
         };
 

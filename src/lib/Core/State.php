@@ -48,7 +48,12 @@ class State implements Stringable {
         StateContext::unset($this);
     }
 
-    public function __get($key) {
+    /**
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function __get(string $key):mixed {
         /** @var false|stdClass */
         static $state = false;
         if (!$state) {
@@ -57,7 +62,13 @@ class State implements Stringable {
         return $state->data->$key ?? null;
     }
 
-    public function __set($key, $value) {
+    /**
+     *
+     * @param  string $key
+     * @param  mixed  $value
+     * @return void
+     */
+    public function __set($key, $value):void {
         /** @var false|stdClass */
         static $state = false;
         if (!$state) {
@@ -67,7 +78,12 @@ class State implements Stringable {
         $this->activate();
     }
 
-    public function __isset($key) {
+    /**
+     *
+     * @param  string $key
+     * @return bool
+     */
+    public function __isset(string $key) {
         /** @var false|stdClass */
         static $state = false;
         if (!$state) {
@@ -76,6 +92,11 @@ class State implements Stringable {
         return isset($state->data->$key);
     }
 
+    /**
+     *
+     * @param  string $key
+     * @return void
+     */
     public function __unset($key) {
         /** @var false|stdClass */
         static $state = false;
@@ -131,6 +152,7 @@ class State implements Stringable {
         if ($result instanceof Unsafe) {
             $result->try($error);
             if ($error) {
+                // @phpstan-ignore-next-line
                 if (!$this->logger) {
                     $this->logger = Container::create(LoggerInterface::class)->try($error);
                 }

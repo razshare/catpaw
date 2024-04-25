@@ -6,10 +6,12 @@ use function CatPaw\Core\Build\build;
 use CatPaw\Core\Container;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
 use CatPaw\Core\Unsafe;
-use CatPaw\Cui\C\CuiContract;
+use CatPaw\Cui\Contracts\CuiContract;
 use CatPaw\Cui\Services\CuiService;
 use function CatPaw\Text\foreground;
 use function CatPaw\Text\nocolor;
@@ -20,7 +22,7 @@ use function CatPaw\Text\nocolor;
  * @param  bool            $build
  * @param  bool            $buildOptimize
  * @throws ClosedException
- * @return Unsafe<void>
+ * @return Unsafe<None>
  */
 function main(
     // ===> TIPS
@@ -45,6 +47,10 @@ function main(
     });
 }
 
+/**
+ *
+ * @return Unsafe<None>
+ */
 function hi():Unsafe {
     $cui = Container::create(CuiService::class)->try($error);
     if ($error) {
@@ -56,8 +62,7 @@ function hi():Unsafe {
         return error($error);
     }
 
-    /** @var CuiContract $lib */
-    $cui->loop(function($lib) {
+    $cui->loop(function(CuiContract $lib) {
         $maxX = $lib->MaxX();
         $maxY = $lib->MaxY();
 
@@ -68,16 +73,20 @@ function hi():Unsafe {
         $y0 = ($maxY / 2) - 1;
         $x1 = ($maxX / 2) + ($len / 2) + 1;
         $y1 = ($maxY / 2) + 1;
-        if ($view = $lib->NewView("main", $x0, $y0, $x1, $y1)) {
-            $lib->Fprintln($view, $message);
-        }
+
+        $view = $lib->NewView("main", (int)$x0, (int)$y0, (int)$x1, (int)$y1);
+        $lib->Fprintln($view, $message);
     });
 
 
     return ok();
 }
 
-function tips() {
+/**
+ *
+ * @return Unsafe<None>
+ */
+function tips():Unsafe {
     try {
         $message = '';
 

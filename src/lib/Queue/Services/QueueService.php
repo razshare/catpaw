@@ -31,7 +31,7 @@ class QueueService {
         if ($this->consuming) {
             $this->consumer->await();
         }
-            
+
         if (!isset($this->queues[$tag])) {
             $this->queues[$tag] = new SplQueue;
         }
@@ -40,6 +40,7 @@ class QueueService {
 
     private bool $consuming = false;
 
+    /** @var Future<mixed> */
     private null|Future $consumer = null;
 
     /**

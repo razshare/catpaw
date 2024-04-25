@@ -5,6 +5,7 @@ use SplObjectStorage;
 use stdClass;
 
 class StateContext {
+    /** @var SplObjectStorage<object, stdClass> */
     private static SplObjectStorage $items;
 
     public static function get(object $key):stdClass {

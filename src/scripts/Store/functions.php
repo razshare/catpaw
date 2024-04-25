@@ -2,28 +2,32 @@
 
 namespace CatPaw\Store;
 
-use Closure;
-
 /**
- * @param  mixed    $value The initial value of the store
- * @return Writable
+ * @template T
+ * @param  T           $value The initial value of the store
+ * @return Writable<T>
  */
-function writable(mixed $value): Writable {
+function writable($value): Writable {
     return Writable::create($value);
 }
 
-
 /**
- * @param  mixed         $value initial value of the store
- * @param  false|Closure $start
- * @return Readable
+ *
+ * @template T
+ * @param  T                                        $value initial value of the store
+ * @param  false|callable(callable):(void|callable) $start
+ * @return Readable<T>
  */
 function readable(
-    mixed $value,
-    false|Closure $start = false,
+    $value,
+    false|callable $start = false,
 ): Readable {
     if (!$start) {
-        $start = fn ():callable => fn () => null;
+        $start = function() {
+            return function() {
+            };
+        };
     }
+    /** @var Readable<T> */
     return Readable::create($value, $start);
 }

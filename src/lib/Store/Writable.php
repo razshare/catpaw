@@ -10,8 +10,8 @@ use SplDoublyLinkedList;
  */
 class Writable {
     /**
-     * @param  T    $value The initial value of the store
-     * @return self
+     * @param  T       $value The initial value of the store
+     * @return self<T>
      */
     public static function create(mixed $value):self {
         return new self($value);

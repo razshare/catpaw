@@ -24,6 +24,11 @@ function download(Response $response):Response {
     return $response;
 }
 
+/**
+ *
+ * @param  string                          $to
+ * @return SuccessResponseModifier<string>
+ */
 function redirect(string $to):SuccessResponseModifier {
     return success(
         status: HttpStatus::FOUND,
@@ -35,11 +40,12 @@ function redirect(string $to):SuccessResponseModifier {
 
 /**
  * Success response.
- * @param  mixed                   $data
- * @param  int                     $status
- * @param  array                   $headers
- * @param  false|string            $message
- * @return SuccessResponseModifier
+ * @template T
+ * @param  T                          $data
+ * @param  int                        $status
+ * @param  array<string,string>       $headers
+ * @param  false|string               $message
+ * @return SuccessResponseModifier<T>
  */
 function success(
     mixed $data = '',
@@ -71,7 +77,7 @@ function badRequest(string $message):ErrorResponseModifier {
  * Something is wrong, notify the client with a code and a message.
  * @param  false|string          $message
  * @param  int                   $status
- * @param  array                 $headers
+ * @param  array<string,string>  $headers
  * @return ErrorResponseModifier
  */
 function failure(
@@ -97,7 +103,7 @@ function failure(
 function queries(UriInterface $uri):array {
     /** @var array<string,string|bool|int|float> $queries */
     $queries     = [];
-    $queryString = $uri->getQuery() ?? '';
+    $queryString = $uri->getQuery();
     foreach (explode('&', $queryString) as $option) {
         $result = explode('=', $option, 2);
         $key    = $result[0] ?? '';

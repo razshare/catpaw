@@ -7,16 +7,22 @@ abstract class Mime {
     }
 
     /**
-     * 
+     *
      * @param  string $path
      * @return string
      */
     private static function findExtension(string $path):string {
-        return ($len = count($pieces = explode('.', basename($path)))) < 1?'':$pieces[$len - 1];
+        $pieces = explode('.', basename($path));
+        /** @var int */
+        $count = count($pieces);
+        if (0 === $count) {
+            return '';
+        }
+        return $pieces[$count - 1];
     }
 
     /**
-     * 
+     *
      * @param  string $path
      * @return bool
      */

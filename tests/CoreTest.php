@@ -6,17 +6,19 @@ use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use function CatPaw\Core\env;
 use CatPaw\Core\File;
-
 use function CatPaw\Core\goffi;
-
+use CatPaw\Core\None;
+use function CatPaw\Core\ok;
 use CatPaw\Core\Services\EnvironmentService;
 use CatPaw\Core\Signal;
+use CatPaw\Core\Unsafe;
+
 use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
-    public function testAll() {
+    public function testAll():void {
         Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->makeSureEnvWorks(...));
             yield Container::run($this->makeSureUnsafeWorks(...));
@@ -24,14 +26,14 @@ class CoreTest extends TestCase {
             yield Container::run($this->makeSureSignalsWork(...));
             yield Container::run($this->makeSureGoffiWorks(...));
         })->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
     }
 
 
     private function makeSureEnvWorks(EnvironmentService $service): void {
         $service->setFileName(asFileName(__DIR__, 'env.yaml'));
         $service->load()->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         $sayHello = env("say.hello");
         $this->assertEquals('hello world', $sayHello);
         $service->set("test-key", "test-value");
@@ -39,14 +41,14 @@ class CoreTest extends TestCase {
         $this->assertEquals('test-value', $test);
     }
 
-    public function makeSureUnsafeWorks() {
+    public function makeSureUnsafeWorks():void {
         // open file
         $file = File::open(asFileName(__DIR__, 'file.txt'))->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
 
         // read contents
         $contents = $file->readAll()->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
 
         $this->assertEquals("hello\n", $contents);
 
@@ -56,15 +58,13 @@ class CoreTest extends TestCase {
         echo $contents.PHP_EOL;
     }
 
-    public function makeSureUnsafeWorksWithAnyError() {
+    public function makeSureUnsafeWorksWithAnyError():void {
         $contents = anyError(function() {
             // open file
-            $file = File::open(asFileName(__DIR__, 'file.txt'))->try($error)
-                or yield $error;
+            $file = File::open(asFileName(__DIR__, 'file.txt'))->unwrap();
 
             // read contents
-            $contents = $file->readAll()->try($error)
-            or yield $error;
+            $contents = $file->readAll()->unwrap();
 
             // close file
             $file->close();
@@ -72,14 +72,14 @@ class CoreTest extends TestCase {
             return $contents;
         })->try($error);
 
-        $this->assertFalse($error);
+        $this->assertNull($error);
 
         $this->assertEquals("hello\n", $contents);
 
         echo $contents.PHP_EOL;
     }
 
-    public function makeSureSignalsWork() {
+    public function makeSureSignalsWork():void {
         $signal  = Signal::create();
         $counter = 0;
         $signal->listen(function() use (&$counter) {
@@ -89,13 +89,15 @@ class CoreTest extends TestCase {
         $this->assertEquals(1, $counter);
     }
 
-    public function makeSureGoffiWorks() {
+    /**
+     * @return Unsafe<None>
+     */
+    public function makeSureGoffiWorks():Unsafe {
         return anyError(function() {
-            $lib = goffi(Contract::class, asFileName(__DIR__, './main.so'))
-                ->try($error) or yield $error;
-
+            $lib    = goffi(Contract::class, asFileName(__DIR__, './main.so'))->unwrap();
             $result = $lib->hello("world");
             $this->assertEquals("hello world", $result);
+            return ok();
         });
     }
 }

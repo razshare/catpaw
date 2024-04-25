@@ -5,6 +5,8 @@ use Attribute;
 use CatPaw\Core\Attributes\Entry;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
@@ -33,6 +35,7 @@ use CatPaw\Web\Services\OpenApiService;
 #[Attribute(flags:Attribute::TARGET_FUNCTION | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 class ProducesError implements AttributeInterface {
     use CoreAttributeDefinition;
+    // @phpstan-ignore-next-line
     private static string $errorClassName = ErrorItem::class;
     /** @var array<ProducesError> */
     private static array $producers = [];
@@ -69,6 +72,11 @@ class ProducesError implements AttributeInterface {
         );
     }
 
+    /**
+     *
+     * @param  OpenApiService $oa
+     * @return Unsafe<None>
+     */
     #[Entry] public function setup(OpenApiService $oa): Unsafe {
         foreach ($this->produces->getResponse() as $response) {
             $response->setup($oa)->try($error);

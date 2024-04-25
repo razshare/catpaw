@@ -5,6 +5,7 @@ use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
@@ -49,7 +50,7 @@ readonly class Router {
      * @param  string           $symbolicPath
      * @param  callable|Closure $function
      * @param  string           $workDirectory
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function initialize(
         string $symbolicMethod,
@@ -80,6 +81,7 @@ readonly class Router {
                 $errorType   = ErrorResponseModifier::class;
                 $returnType  = $reflectionFunction->getReturnType();
 
+                // @phpstan-ignore-next-line
                 if ($successType !== $returnType && $errorType !== $errorType) {
                     return error("All route handlers must return either `{$successType}` or `{$errorType}`, but route `$key` returns `$returnType`.");
                 }
@@ -154,8 +156,10 @@ readonly class Router {
                 }
 
                 /** @var false|AttributeInterface $attributeInstance */
+
                 $attributeInstance = $attributeName::findByFunction($reflectionFunction)->try($error);
 
+                // @phpstan-ignore-next-line
                 if ($error) {
                     return error($error);
                 }
@@ -223,12 +227,13 @@ readonly class Router {
 
 
     /**
-     * @return Unsafe<array>
+     * @return Unsafe<array<mixed>>
      */
     private function findRouteOpenApiQueries(
         ReflectionFunction $reflection,
         OpenApiService $api,
     ):Unsafe {
+        /** @var array<mixed> */
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
             /** @var false|Query $queryAttribute */
@@ -302,17 +307,17 @@ readonly class Router {
                 ),
             ];
         }
-
         return ok($result);
     }
 
     /**
-     * @return Unsafe<array>
+     * @return Unsafe<array<mixed>>
      */
     private function findRouteOpenApiHeaders(
         ReflectionFunction $reflection,
         OpenApiService $api,
     ):Unsafe {
+        /** @var array<mixed> */
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
             /** @var false|Header $headerAttribute */
@@ -388,10 +393,10 @@ readonly class Router {
 
     /**
      *
-     * @param  ReflectionFunction $reflectionFunction
-     * @param  string             $path
-     * @param  OpenApiService     $oa
-     * @return Unsafe<array>
+     * @param  ReflectionFunction   $reflectionFunction
+     * @param  string               $path
+     * @param  OpenApiService       $oa
+     * @return Unsafe<array<mixed>>
      */
     private function findRouteOpenApiPathParameters(
         ReflectionFunction $reflectionFunction,
@@ -399,12 +404,12 @@ readonly class Router {
         OpenApiService $oa,
     ):Unsafe {
         $parametersReflections = $reflectionFunction->getParameters();
-        /** @var PathResolver $configurations */
-        $configurations = PathResolver::findMatchingPathConfigurations($path, $parametersReflections)->try($error);
+        $configurations        = PathResolver::findMatchingPathConfigurations($path, $parametersReflections)->try($error);
         if ($error) {
             return error($error);
         }
 
+        /** @var array<mixed> */
         $result = [];
 
 
@@ -478,10 +483,15 @@ readonly class Router {
                 ),
             ];
         }
-
         return ok($result);
     }
 
+    /**
+     *
+     * @param  ReflectionFunction $reflectionFunction
+     * @param  OpenApiService     $oa
+     * @return array<mixed>
+     */
     private function findRouteOpenApiPageQueries(
         ReflectionFunction $reflectionFunction,
         OpenApiService $oa,
@@ -532,7 +542,7 @@ readonly class Router {
 
     /**
      * @param  Route        $route
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     private function registerRouteForOpenApi(Route $route):Unsafe {
         $responses = [];
@@ -564,12 +574,12 @@ readonly class Router {
         }
 
         if ($produces) {
-            /** @var array<Produces> $produces */
             foreach ($produces as $producesLocal) {
                 foreach ($producesLocal->getResponse() as $response) {
                     foreach ($response->getValue() as $status => $value) {
                         if ($responses[$status] ?? false) {
                             $content = [
+                                // @phpstan-ignore-next-line
                                 ...($responses[$status]['content'] ?? []),
                                 ...$value['content'] ?? [],
                             ];
@@ -580,6 +590,7 @@ readonly class Router {
                             $responses[$status] = [
                                 "description" => $value['description'] ?? '',
                                 "content"     => [
+                                    // @phpstan-ignore-next-line
                                     ...$responses[$status]['content'] ?? [],
                                     ...$content,
                                 ],
@@ -673,8 +684,8 @@ readonly class Router {
     }
 
     /**
-     * @param  ReflectionMethod $reflection_method
-     * @return array
+     * @param  ReflectionMethod     $reflection_method
+     * @return array{string,string}
      */
     public function getMappedParameters(ReflectionMethod $reflection_method): array {
         $reflectionParameters = $reflection_method->getParameters();
@@ -736,7 +747,7 @@ readonly class Router {
      * @param  string       $originalSymbolicMethod http method of the 2 parameters.
      * @param  string       $originalSymbolicPath   path name to capture.
      * @param  string       $aliasSymbolicPath      alias path name.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function alias(string $originalSymbolicMethod, string $originalSymbolicPath, string $aliasSymbolicPath):Unsafe {
         if ($this->context->routeExists($originalSymbolicMethod, $originalSymbolicPath)) {
@@ -753,7 +764,7 @@ readonly class Router {
      * @param  string           $method   the name of the http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function custom(string $method, string $path, callable|Closure $function):Unsafe {
         return $this->initialize($method, $path, $function);
@@ -763,7 +774,7 @@ readonly class Router {
      * Define an event callback for the "COPY" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function copy(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('COPY', $path, $function);
@@ -773,7 +784,7 @@ readonly class Router {
      * Define an event callback for the "DELETE" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function delete(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('DELETE', $path, $function);
@@ -783,7 +794,7 @@ readonly class Router {
      * Define an event callback for the "GET" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function get(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('GET', $path, $function);
@@ -793,7 +804,7 @@ readonly class Router {
      * Define an event callback for the "HEAD" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function head(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('HEAD', $path, $function);
@@ -803,7 +814,7 @@ readonly class Router {
      * Define an event callback for the "LINK" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function link(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('LINK', $path, $function);
@@ -814,7 +825,7 @@ readonly class Router {
      *
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function lock(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('LOCK', $path, $function);
@@ -824,7 +835,7 @@ readonly class Router {
      * Define an event callback for the "OPTIONS" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function options(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('OPTIONS', $path, $function);
@@ -834,7 +845,7 @@ readonly class Router {
      * Define an event callback for the "PATCH" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function patch(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('PATCH', $path, $function);
@@ -844,7 +855,7 @@ readonly class Router {
      * Define an event callback for the "POST" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function post(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('POST', $path, $function);
@@ -854,7 +865,7 @@ readonly class Router {
      * Define an event callback for the "PROPFIND" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function propfind(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('PROPFIND', $path, $function);
@@ -864,7 +875,7 @@ readonly class Router {
      * Define an event callback for the "PURGE" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function purge(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('PURGE', $path, $function);
@@ -874,7 +885,7 @@ readonly class Router {
      * Define an event callback for the "PUT" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function put(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('PUT', $path, $function);
@@ -884,7 +895,7 @@ readonly class Router {
      * Define an event callback for the "UNKNOWN" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function unknown(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('UNKNOWN', $path, $function);
@@ -894,7 +905,7 @@ readonly class Router {
      * Define an event callback for the "UNLINK" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function unlink(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('UNLINK', $path, $function);
@@ -904,7 +915,7 @@ readonly class Router {
      * Define an event callback for the "UNLOCK" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function unlock(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('UNLOCK', $path, $function);
@@ -914,7 +925,7 @@ readonly class Router {
      * Define an event callback for the "VIEW" http method.
      * @param  string           $path     the path the event should listen to.
      * @param  callable|Closure $function the callback to execute.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function view(string $path, callable|Closure $function):Unsafe {
         return $this->initialize('VIEW', $path, $function);

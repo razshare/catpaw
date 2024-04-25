@@ -10,6 +10,12 @@ use function preg_split;
 class FormParser {
     private function __construct() {
     }
+    /**
+     *
+     * @param  string              $contentType
+     * @param  string              $input
+     * @return object|array<mixed>
+     */
     public static function parse(string $contentType, string $input): object|array {
         // grab multipart boundary from content type header
         if (!preg_match('/boundary=(.*)$/', $contentType, $matches)) {

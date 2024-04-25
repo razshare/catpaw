@@ -8,7 +8,6 @@ use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
-use function CatPaw\Core\ok;
 
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\ResponseModifier;
@@ -34,7 +33,8 @@ class HttpInvoker {
     public function invoke(RequestContext $context):Unsafe {
         $badRequestEntries = $context->badRequestEntries;
         if ($badRequestEntries) {
-            return ok(failure(join("\n", $badRequestEntries), HttpStatus::BAD_REQUEST));
+            $modifier = failure(join("\n", $badRequestEntries), HttpStatus::BAD_REQUEST);
+            return $modifier->getResponse();
         }
         $onRequests         = $context->route->onRequest;
         $onResponses        = $context->route->onResponse;

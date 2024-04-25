@@ -7,11 +7,14 @@ use CatPaw\Core\DependenciesOptions;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Interfaces\OnParameterMount;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\RequestContext;
+use ReflectionException;
 use ReflectionParameter;
 
 /**
@@ -42,6 +45,14 @@ class Query implements AttributeInterface, OnParameterMount {
         return $this->name;
     }
 
+    /**
+     *
+     * @param  ReflectionParameter $reflection
+     * @param  mixed               $value
+     * @param  DependenciesOptions $options
+     * @throws ReflectionException
+     * @return Unsafe<None>
+     */
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
         /** @var RequestContext $context */
         $context = $options->context;
@@ -53,10 +64,10 @@ class Query implements AttributeInterface, OnParameterMount {
         $typeName = $type->getName();
 
         $result = match ($typeName) {
-            "string" => $this->toString($context, $key),
-            "int"    => $this->toInteger($context, $key),
-            "float"  => $this->toFloat($context, $key),
-            "bool"   => $this->toBool($context, $key),
+            "int"   => $this->toInteger($context, $key),
+            "float" => $this->toFloat($context, $key),
+            "bool"  => $this->toBool($context, $key),
+            default => $this->toString($context, $key),
         };
 
         if ($result->error) {
@@ -85,7 +96,7 @@ class Query implements AttributeInterface, OnParameterMount {
         if (isset($http->requestQueries[$key])) {
             return ok(urldecode($http->requestQueries[$key]));
         }
-        return ok(null);
+        return ok('');
     }
 
 
@@ -103,7 +114,7 @@ class Query implements AttributeInterface, OnParameterMount {
                 return error("Query $key was expected to be numeric, but non numeric value has been provided instead:$value.");
             }
         }
-        return ok(null);
+        return ok(0);
     }
 
 
@@ -116,7 +127,7 @@ class Query implements AttributeInterface, OnParameterMount {
         if (isset($http->requestQueries[$key])) {
             return ok(filter_var(urldecode($http->requestQueries[$key]), FILTER_VALIDATE_BOOLEAN));
         }
-        return ok(null);
+        return ok(false);
     }
 
     /**
@@ -133,6 +144,6 @@ class Query implements AttributeInterface, OnParameterMount {
                 return error("Query $key was expected to be numeric, but non numeric value has been provided instead:$value.");
             }
         }
-        return ok(null);
+        return ok(0.0);
     }
 }

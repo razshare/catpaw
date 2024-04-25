@@ -14,6 +14,7 @@ use ReflectionFunction;
 use Throwable;
 
 class RouteResolver {
+    /** @var array<string,PathResolver> */
     private static array $cache = [];
 
     /**
@@ -34,6 +35,8 @@ class RouteResolver {
         /** @var false|array<string> */
         $badRequestEntries = false;
 
+        $symbolicPath = '';
+        $route        = '';
         foreach ($routes as $symbolicPath => $route) {
             $key         = "$requestMethod:$symbolicPath";
             $function    = $route->function;
@@ -66,7 +69,7 @@ class RouteResolver {
             $pathResolver = PathResolver::findResolver(
                 symbolicMethod: $symbolicMethod,
                 symbolicPath: $symbolicPath,
-                parameters: $reflectionParameters,
+                reflectionParameters: $reflectionParameters,
             )->try($error);
             if ($error) {
                 return error($error);
@@ -88,6 +91,7 @@ class RouteResolver {
         }
 
         if (false === $requestPathParameters && !$badRequestEntries) {
+            /** @var Unsafe<false|Response> */
             return ok(false);
         }
 
@@ -111,9 +115,15 @@ class RouteResolver {
             return error($error);
         }
 
+        /** @var Unsafe<false|Response> */
         return ok($result);
     }
 
+    /**
+     *
+     * @param  Request            $request
+     * @return array<string|true>
+     */
     private function findQueriesFromRequest(Request $request):array {
         $queries     = [];
         $queryString = $request->getUri()->getQuery();
@@ -131,6 +141,7 @@ class RouteResolver {
         return $queries;
     }
 
+    // @phpstan-ignore-next-line
     private function respondWithRedirectToHttps(UriInterface $uri):Response {
         return new Response(HttpStatus::FOUND, [
             "Location" => preg_replace('/^http/', 'https', (string)$uri),

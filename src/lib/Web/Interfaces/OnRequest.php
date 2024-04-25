@@ -3,6 +3,7 @@ namespace CatPaw\Web\Interfaces;
 
 use Amp\Http\Server\Request;
 use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\None;
 use CatPaw\Core\Unsafe;
 
 /**
@@ -15,7 +16,7 @@ interface OnRequest extends AttributeInterface {
      * @see https://github.com/tncrazvan/catpaw/blob/main/docs/1.RouteHandlers.md
      * @see https://github.com/tncrazvan/catpaw/blob/main/docs/9.Filters.md
      * @param  Request      $request this is the incoming request.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function onRequest(Request $request):Unsafe;
 }

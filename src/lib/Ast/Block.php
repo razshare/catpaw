@@ -6,11 +6,11 @@ class Block {
     private array $children = [];
     /**
      *
-     * @param string      $signature
-     * @param string      $body
-     * @param array       $rules
-     * @param false|Block $parent
-     * @param int         $depth
+     * @param string        $signature
+     * @param string        $body
+     * @param array<string> $rules
+     * @param false|Block   $parent
+     * @param int           $depth
      */
     public function __construct(
         public readonly string $signature,
@@ -28,7 +28,7 @@ class Block {
         return $this->children;
     }
 
-    public function addChild(Block $block) {
+    public function addChild(Block $block):void {
         $this->children[] = $block;
     }
 }

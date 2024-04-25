@@ -2,32 +2,34 @@
 namespace CatPaw\Web;
 
 use CatPaw\Core\DependenciesOptions;
+use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Web\Attributes\Consumes;
 use CatPaw\Web\Attributes\IgnoreDescribe;
 use CatPaw\Web\Attributes\IgnoreOpenApi;
 use CatPaw\Web\Attributes\Produces;
 use CatPaw\Web\Attributes\Tag;
 use CatPaw\Web\Interfaces\OnRequest;
-use CatPaw\Web\Interfaces\OnResult;
+use CatPaw\Web\Interfaces\OnResponse;
 use ReflectionFunction;
 
 readonly class Route {
+    // @phpstan-ignore-next-line
     public DependenciesOptions $options;
 
     /**
-     * @param ReflectionFunction   $reflectionFunction
-     * @param string               $workDirectory
-     * @param string               $symbolicMethod
-     * @param string               $symbolicPath
-     * @param callable             $function
-     * @param array<Consumes>      $consumes
-     * @param array<Produces>      $produces
-     * @param array<OnRequest>     $onRequest
-     * @param array<OnResult>      $onResponse
-     * @param array<OnMount>       $onMount
-     * @param array<Tag>           $tags
-     * @param false|IgnoreOpenApi  $ignoreOpenApi
-     * @param false|IgnoreDescribe $ignoreDescribe
+     * @param ReflectionFunction        $reflectionFunction
+     * @param string                    $workDirectory
+     * @param string                    $symbolicMethod
+     * @param string                    $symbolicPath
+     * @param callable                  $function
+     * @param array<Consumes>           $consumes
+     * @param array<Produces>           $produces
+     * @param array<OnRequest>          $onRequest
+     * @param array<OnResponse>         $onResponse
+     * @param array<AttributeInterface> $onMount
+     * @param array<Tag>                $tags
+     * @param false|IgnoreOpenApi       $ignoreOpenApi
+     * @param false|IgnoreDescribe      $ignoreDescribe
      */
     public static function create(
         ReflectionFunction $reflectionFunction,
@@ -63,19 +65,19 @@ readonly class Route {
 
     /**
      *
-     * @param ReflectionFunction   $reflectionFunction
-     * @param string               $symbolicMethod
-     * @param string               $symbolicPath
-     * @param string               $workDirectory
-     * @param mixed                $function
-     * @param array                $consumes
-     * @param array                $produces
-     * @param array                $onRequest
-     * @param array                $onResponse
-     * @param array                $onMount
-     * @param array                $tags
-     * @param false|IgnoreOpenApi  $ignoreOpenApi
-     * @param false|IgnoreDescribe $ignoreDescribe
+     * @param ReflectionFunction        $reflectionFunction
+     * @param string                    $symbolicMethod
+     * @param string                    $symbolicPath
+     * @param string                    $workDirectory
+     * @param mixed                     $function
+     * @param array<Consumes>           $consumes
+     * @param array<Produces>           $produces
+     * @param array<OnRequest>          $onRequest
+     * @param array<OnResponse>         $onResponse
+     * @param array<AttributeInterface> $onMount
+     * @param array<Tag>                $tags
+     * @param false|IgnoreOpenApi       $ignoreOpenApi
+     * @param false|IgnoreDescribe      $ignoreDescribe
      */
     private function __construct(
         public ReflectionFunction $reflectionFunction,
@@ -94,6 +96,7 @@ readonly class Route {
     ) {
     }
     public function setOptions(DependenciesOptions $options):void {
+        // @phpstan-ignore-next-line
         $this->options = $options;
     }
 }

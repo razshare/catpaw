@@ -26,7 +26,7 @@ class RouterContext {
     }
 
     /**
-     * @return array<Route>
+     * @return array<array<Route>>
      */
     public function findAllRoutes():array {
         return array_values(array_values($this->routes));
@@ -72,7 +72,7 @@ class RouterContext {
         if ($this->routes[$symbolicMethod][$symbolicPath] ?? false) {
             $this->logger->warning("Overwriting route handler $symbolicMethod $symbolicPath.");
         }
-        
+
         $this->routes[$symbolicMethod][$symbolicPath] = $route;
     }
 }

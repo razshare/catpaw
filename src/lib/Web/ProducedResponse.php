@@ -4,6 +4,7 @@ namespace CatPaw\Web;
 use CatPaw\Core\Attributes\Entry;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
@@ -36,6 +37,7 @@ class ProducedResponse implements AttributeInterface {
         );
     }
 
+    /** @var array<mixed> */
     private array $response = [];
 
     /**
@@ -106,6 +108,10 @@ class ProducedResponse implements AttributeInterface {
         return $this->type;
     }
 
+    /**
+     *
+     * @return array<mixed>
+     */
     public function getValue():array {
         return $this->response;
     }
@@ -117,7 +123,7 @@ class ProducedResponse implements AttributeInterface {
     /**
      *
      * @param  OpenApiService $oa
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     #[Entry] public function setup(OpenApiService $oa):Unsafe {
         $isClass   = class_exists($this->className);

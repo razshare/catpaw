@@ -5,13 +5,13 @@ namespace CatPaw\Core\Interfaces;
 interface StorageInterface {
     /**
      * Get the storage by reference.
-     * @return array
+     * @return array<mixed>
      */
     public function &getStorage():array;
 
     /**
      * Set the storage by reference.
-     * @param  array $value
+     * @param  array<mixed> $value
      * @return void
      */
     public function setStorage(array &$value):void;

@@ -19,7 +19,8 @@ class Arguments implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
 
     private static bool $initialized = false;
-    private static array $cache      = [];
+    /** @var array<mixed> */
+    private static array $cache = [];
 
     public function __construct() {
         self::init();
@@ -50,7 +51,6 @@ class Arguments implements AttributeInterface, OnParameterMount {
      */
     public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
         /** @var array<string|int|bool|float> $value */
-        /** @var false $context */
 
         $wrap = ReflectionTypeManager::wrap($reflection, 'array');
 

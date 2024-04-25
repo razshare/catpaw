@@ -6,6 +6,11 @@ use Amp\Http\Server\Request;
 use Stringable;
 
 class Accepts implements Stringable {
+    /**
+     *
+     * @param  array<string> $accepts
+     * @return void
+     */
     private function __construct(private array $accepts) {
     }
 

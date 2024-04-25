@@ -11,16 +11,16 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class QueueTest extends TestCase {
-    public function testAll() {
+    public function testAll():void {
         Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->execution(...));
             yield Container::run($this->tag(...));
             yield Container::run($this->order(...));
             yield Container::run($this->timedQueue(...));
         })->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
     }
 
     private function execution(QueueService $queue): void {
@@ -41,6 +41,7 @@ class QueueTest extends TestCase {
     }
 
     private function order(QueueService $queue): void {
+        /** @var array<mixed> */
         $stack = [];
         $queue->queue("my-tag-1", function($tag) use (&$stack) {
             $stack[] = $tag;

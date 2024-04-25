@@ -8,6 +8,7 @@ use function CatPaw\Core\env;
 use function CatPaw\Core\error;
 use function CatPaw\Core\execute;
 use CatPaw\Core\File;
+use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
@@ -18,24 +19,13 @@ use Phar;
 /**
  *
  * @param  bool         $buildOptimize
- * @param  false|string $buildConfig
- * @param  bool         $buildConfigInit
- * @return Unsafe<void>
+ * @return Unsafe<None>
  */
-function build(
-    bool $buildOptimize = false,
-):Unsafe {
+function build(bool $buildOptimize = false):Unsafe {
     if (ini_get('phar.readonly')) {
         return error('Cannot build using readonly phar, please disable the phar.readonly flag by running the builder with "php -dphar.readonly=0"'.PHP_EOL);
     }
 
-    /**
-     * @var string $name
-     * @var string $entry
-     * @var string $libraries
-     * @var string $match
-     * @var string $environment
-     */
     $name        = env('name')        ?? 'app.phar';
     $entry       = env('entry')       ?? '';
     $libraries   = env('libraries')   ?? '';
@@ -85,6 +75,7 @@ function build(
         }
 
         Directory::create($dirnameStart)->try($error);
+
         if ($error) {
             return error($error);
         }
@@ -144,7 +135,7 @@ function build(
         }
 
         if ($buildOptimize) {
-            execute("composer update --no-dev", out())->await()->try($error);
+            execute("composer update --no-dev", out())->try($error);
             if ($error) {
                 return error($error);
             }
@@ -180,7 +171,7 @@ function build(
         }
 
         if ($buildOptimize) {
-            execute("composer update", out())->await()->try($error);
+            execute("composer update", out())->try($error);
             if ($error) {
                 return error($error);
             }

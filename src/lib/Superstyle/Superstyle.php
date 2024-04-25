@@ -4,8 +4,9 @@ namespace CatPaw\Superstyle;
 use CatPaw\Ast\Block;
 use CatPaw\Ast\Interfaces\CStyleDetector;
 use CatPaw\Ast\Search;
-
 use function CatPaw\Core\error;
+
+use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 
 use CatPaw\Core\Unsafe;
@@ -14,7 +15,7 @@ class Superstyle {
     /**
      *
      * @param  string                           $fileName
-     * @param  array                            $parameters
+     * @param  array<string,mixed>              $parameters
      * @return Unsafe<SuperstyleExecutorResult>
      */
     public static function parse(string $fileName, array $parameters = []):Unsafe {
@@ -36,11 +37,18 @@ class Superstyle {
              * @return void
              */
             public function __construct(
+                // @phpstan-ignore-next-line
                 private array &$globals,
                 private null|Block &$main,
             ) {
             }
 
+            /**
+             *
+             * @param  Block        $block
+             * @param  int          $depth
+             * @return Unsafe<None>
+             */
             public function onBlock(Block $block, int $depth):Unsafe {
                 if (0 === $block->depth && 'main' === $block->signature) {
                     if ($this->main) {

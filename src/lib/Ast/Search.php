@@ -6,6 +6,7 @@ use CatPaw\Ast\Interfaces\CStyleDetector;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
+use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
@@ -18,6 +19,7 @@ class Search {
      */
     public static function fromFile(string $fileName): Unsafe {
         return anyError(function() use ($fileName) {
+            // @phpstan-ignore-next-line
             $file = File::open($fileName)->try($error)
             or yield $error;
 
@@ -40,7 +42,7 @@ class Search {
         $this->previousSource = $this->source;
     }
 
-    public function resetToPreviousSource() {
+    public function resetToPreviousSource():void {
         $this->source = $this->previousSource;
     }
 
@@ -71,9 +73,9 @@ class Search {
     /**
      * Parse source code as C style.
      * @param  CStyleDetector $detector
-     * @param  bool|Block     $parent
+     * @param  false|Block    $parent
      * @param  int            $depth
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function cStyle(
         CStyleDetector $detector,
@@ -240,7 +242,7 @@ class Search {
                         $parent->addChild($block);
                     }
 
-                    $detector->onBlock($block, false, $depth + 1);
+                    $detector->onBlock($block, $depth + 1);
 
                     if ($block->body) {
                         $search = Search::fromSource($block->body);
@@ -263,6 +265,5 @@ class Search {
             $body .= $missed.$result->before.$result
                     ->token;
         }
-        return ok();
     }
 }

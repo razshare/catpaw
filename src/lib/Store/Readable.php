@@ -9,15 +9,15 @@ use SplDoublyLinkedList;
  */
 class Readable {
     /**
-     * @param T                       $value   initial value of the store
-     * @param callable(callable):void $onStart a function that will be executed when the
-     *                                         first subscriber subscribes to the store.
+     * @param T                                  $value   initial value of the store
+     * @param callable(callable):(void|callable) $onStart a function that will be executed when the
+     *                                                    first subscriber subscribes to the store.
      *
      *                                              The function should (but it's not required to) return another function, which
      *                                              will be executed when the last subscriber of the store unsubscribes.
-     * @return self
+     * @return self<T>
      */
-    public static function create(mixed $value, mixed $onStart):self {
+    public static function create($value, $onStart):self {
         return new self($value, $onStart);
     }
 
@@ -27,15 +27,13 @@ class Readable {
     private mixed $stop           = false;
     private bool $firstSubscriber = true;
     /**
-     *
-     * @template T
-     * @param  T                       $value
-     * @param  callable(callable):void $onStart
+     * @param  T                                  $value
+     * @param  callable(callable):(void|callable) $onStart
      * @return void
      */
     private function __construct(
-        protected mixed $value,
-        private readonly mixed $onStart,
+        protected $value,
+        private $onStart,
     ) {
         $this->functions = new SplDoublyLinkedList();
         $this->functions->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
@@ -59,7 +57,7 @@ class Readable {
     private function set(mixed $value): void {
         $this->value = $value;
         for ($this->functions->rewind(); $this->functions->valid(); $this->functions->next()) {
-            /** @var callable $function */
+            /** @var callable(T) $function */
             $function = $this->functions->current();
             ($function)($this->value);
         }

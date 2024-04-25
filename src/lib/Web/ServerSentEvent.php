@@ -13,6 +13,13 @@ use Closure;
 use Throwable;
 
 class ServerSentEvent {
+    /**
+     *
+     * @param  ReadableIterableStream $reader
+     * @param  WritableIterableStream $writer
+     * @param  array<string,string>   $headers
+     * @return void
+     */
     private function __construct(
         private readonly ReadableIterableStream $reader,
         private readonly WritableIterableStream $writer,
@@ -88,10 +95,10 @@ class ServerSentEvent {
         $this->headers[$name] = $value;
         return $this;
     }
-    
+
     /**
      * Unset a response header.
-     * 
+     *
      * ### Note
      * The following headers are set by default for all events:
      * ```json

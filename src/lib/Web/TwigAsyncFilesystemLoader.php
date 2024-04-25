@@ -4,6 +4,8 @@ namespace CatPaw\Web;
 
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use Twig\Loader\LoaderInterface;
@@ -11,9 +13,8 @@ use Twig\Source;
 
 class TwigAsyncFilesystemLoader implements LoaderInterface {
     /**
-     * @param  string                            $directoryName
-     * @param  callable(string):string           $mapNames
-     * @return Unsafe<TwigAsyncFilesystemLoader>
+     *
+     * @return TwigAsyncFilesystemLoader
      */
     public static function create():self {
         return new self();
@@ -23,8 +24,8 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
     }
 
     /**
-     * @param  string ...$path
-     * @return Unsafe
+     * @param  string       $fileName
+     * @return Unsafe<None>
      */
     public function loadFromFile(string $fileName):Unsafe {
         $name              = $fileName;

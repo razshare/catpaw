@@ -38,6 +38,7 @@ interface AttributeInterface {
      * @param  ReflectionClass    $reflectionClass
      * @return Unsafe<false|self>
      */
+    // @phpstan-ignore-next-line
     public static function findByClass(ReflectionClass $reflectionClass):Unsafe;
 
     /**

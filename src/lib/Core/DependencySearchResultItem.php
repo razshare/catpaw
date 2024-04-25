@@ -6,13 +6,13 @@ use ReflectionParameter;
 
 class DependencySearchResultItem {
     /**
-     * @param ReflectionParameter        $reflectionParameter
-     * @param mixed                      $defaultArgument
-     * @param bool                       $isOptional
-     * @param mixed                      $defaultValue
-     * @param string                     $type
-     * @param string                     $name
-     * @param array<ReflectionAttribute> $attributes
+     * @param ReflectionParameter                $reflectionParameter
+     * @param mixed                              $defaultArgument
+     * @param bool                               $isOptional
+     * @param mixed                              $defaultValue
+     * @param string                             $type
+     * @param string                             $name
+     * @param array<ReflectionAttribute<object>> $attributes
      */
     public function __construct(
         public ReflectionParameter $reflectionParameter,

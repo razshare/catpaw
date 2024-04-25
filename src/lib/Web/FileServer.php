@@ -17,7 +17,7 @@ use Psr\Log\LoggerInterface;
 
 readonly class FileServer implements FileServerInterface {
     /**
-     * Create a file server that serves static files as requested by the 
+     * Create a file server that serves static files as requested by the
      * client and return 404 responses whenever a static file is not found.
      * @return Unsafe<self>
      */
@@ -89,9 +89,9 @@ readonly class FileServer implements FileServerInterface {
 
     /**
      * Success response.
-     * @param  mixed    $data
-     * @param  int      $status
-     * @param  array    $headers
+     * @param  mixed                $data
+     * @param  int                  $status
+     * @param  array<string,string> $headers
      * @return Response
      */
     private function success(
@@ -108,9 +108,9 @@ readonly class FileServer implements FileServerInterface {
 
     /**
      * Something is wrong, notify the client with a code and a message.
-     * @param  false|string $message
-     * @param  int          $status
-     * @param  array        $headers
+     * @param  false|string         $message
+     * @param  int                  $status
+     * @param  array<string,string> $headers
      * @return Response
      */
     private function failure(
@@ -121,7 +121,7 @@ readonly class FileServer implements FileServerInterface {
         if (false === $message) {
             $message = HttpStatus::getReason($status);
         }
-        
+
         return new Response(
             status : $status,
             headers: $headers,
@@ -140,7 +140,7 @@ readonly class FileServer implements FileServerInterface {
         if (!$server->www || strpos($path, '../')) {
             return $this->notFound();
         }
-        
+
         $fileName = $server->www.$path;
 
         if ($overwrite) {
@@ -157,7 +157,7 @@ readonly class FileServer implements FileServerInterface {
                 return $this->redirect(to:"$path/$fallback");
             }
         }
-        
+
         if (!isFile($fileName)) {
             return $this->failure(status:HttpStatus::NOT_FOUND);
         }

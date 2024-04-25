@@ -11,8 +11,8 @@ class FileName implements Stringable {
      * @param  array<string> $base
      * @return FileName
      */
-    public static function create(array $path):self {
-        return new self($path);
+    public static function create(array $base):self {
+        return new self($base);
     }
 
     private bool $usingPhar = true;
@@ -41,7 +41,7 @@ class FileName implements Stringable {
         return join($parts)?:'';
     }
 
-    private static function getAbsolutePath(string $path) {
+    private static function getAbsolutePath(string $path):string {
         $root = match (true) {
             str_starts_with($path, './')  => './',
             str_starts_with($path, '../') => '../',
@@ -49,8 +49,10 @@ class FileName implements Stringable {
             default                       => '',
         };
 
-        $path      = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
-        $parts     = array_filter(explode(DIRECTORY_SEPARATOR, $path), strlen(...));
+        $path  = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
+        $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), function($item) {
+            return (bool)strlen($item);
+        });
         $absolutes = [];
         foreach ($parts as $part) {
             if ('.' == $part) {

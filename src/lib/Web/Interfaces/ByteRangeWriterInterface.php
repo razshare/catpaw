@@ -2,6 +2,7 @@
 
 namespace CatPaw\Web\Interfaces;
 
+use CatPaw\Core\None;
 use CatPaw\Core\Unsafe;
 
 interface ByteRangeWriterInterface {
@@ -16,7 +17,7 @@ interface ByteRangeWriterInterface {
      * @return Unsafe<string>
      */
     public function getRangeQuery():Unsafe;
-    
+
     /**
      * Get the content type of the response.
      * @return Unsafe<string>
@@ -26,23 +27,23 @@ interface ByteRangeWriterInterface {
     /**
      * This method will be invoked before `send`.
      * You can set required streams and variables in here.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function start():Unsafe;
 
     /**
      * This method provides `callable $emit`, which you can use to send data to the response stream.
-     * 
+     *
      * This method is called multiple times, once for every requested range.
      * @param  int            $start  beginning of the requested range.
      * @param  int            $length length of the requested range.
      * @return Unsafe<string>
      */
     public function send(int $start, int $length):Unsafe;
-    
+
     /**
      * This will method will be invoked after `send`.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function close():Unsafe;
 }

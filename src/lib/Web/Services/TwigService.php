@@ -15,11 +15,12 @@ use Twig\Error\SyntaxError;
 class TwigService {
     private Environment $environment;
     private TwigAsyncFilesystemLoader $loader;
+    /** @var array<string> */
     private array $realFileNamesMap = [];
 
     /**
-     * @param  string         $fileName
-     * @param  array          $properties
+     * @param  string              $fileName
+     * @param  array<string,mixed> $properties
      * @return Unsafe<string>
      */
     public function render(string $fileName, array $properties): Unsafe {

@@ -11,13 +11,16 @@ use CatPaw\Store\Attributes\Store;
 use function CatPaw\Store\readable;
 use CatPaw\Store\Writable;
 use function CatPaw\Store\writable;
+
+use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use Revolt\EventLoop;
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 class StoreTest extends TestCase {
-    public function testAll() {
+    public function testAll():void {
         Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->basic(...));
             yield Container::run($this->multipleSubscribers(...));
@@ -28,7 +31,7 @@ class StoreTest extends TestCase {
             yield Container::run($this->attribute(...));
             yield Container::run($this->makingSureCleanUpFunctionIsInvoked(...));
         })->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         EventLoop::run();
     }
 
@@ -62,6 +65,7 @@ class StoreTest extends TestCase {
         $counter = writable(0);
 
         $unsubscribeAll = function() use (&$unsubscribers) {
+            // @phpstan-ignore-next-line
             foreach ($unsubscribers as $unsubscribe) {
                 $unsubscribe();
             }
@@ -108,7 +112,7 @@ class StoreTest extends TestCase {
         $counter->subscribe(fn ($counter) => $counter >= 6?$unsubscribeAll():false);
     }
 
-    private function makingSureCleanUpFunctionIsInvoked() {
+    private function makingSureCleanUpFunctionIsInvoked():void {
         $cleanedUp = false;
         $store     = readable("default", function($set) use (&$cleanedUp) {
             $set("hello world");
@@ -211,6 +215,14 @@ class StoreTest extends TestCase {
         $unsubscribe();
     }
 
+    /**
+     *
+     * @param  Writable<mixed>            $handler1
+     * @param  Writable<mixed>            $handler2
+     * @throws InvalidArgumentException
+     * @throws ExpectationFailedException
+     * @return void
+     */
     private function attribute(
         #[Store("test")]
         Writable $handler1,

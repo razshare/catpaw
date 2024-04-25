@@ -15,7 +15,7 @@ class Directory {
     /**
      * Delete a directory recursively.
      * @param  string       $directoryName name of the directory to delete.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public static function delete(string $directoryName):Unsafe {
         if (!$directoryName) {
@@ -56,7 +56,7 @@ class Directory {
      * Create a directory recursively.
      * @param  string       $directoryName the directory path.
      * @param  int          $mode          the permissions are 0777 by default, which means the widest possible access. For more information on permissions, read the details on the [chmod()](https://www.php.net/manual/en/function.chmod.php) page.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public static function create(string $directoryName, int $mode = 0777):Unsafe {
         try {
@@ -98,17 +98,15 @@ class Directory {
 
     /**
      * List files and directories in a directory.
-     * @param  string                $directoryName the directory path.
-     * @return Unsafe<array<string>>
+     * @param  string                    $directoryName the directory path.
+     * @return Unsafe<array<int,string>>
      */
     public static function list(string $directoryName):Unsafe {
         try {
             if (!str_ends_with($directoryName, DIRECTORY_SEPARATOR)) {
                 $directoryName = $directoryName.DIRECTORY_SEPARATOR;
             }
-            if (!$directoryName) {
-                return error("Directory $directoryName not found.");
-            }
+
             $list   = listFiles($directoryName);
             $result = [];
             foreach ($list as $fileName) {
@@ -126,7 +124,7 @@ class Directory {
      * @param  string       $from
      * @param  string       $to
      * @param  false|string $pattern regex pattern to match while scanning.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public static function copy(string $from, string $to, false|string $pattern = false):Unsafe {
         if (!isDirectory($from)) {

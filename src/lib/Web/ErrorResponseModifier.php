@@ -11,6 +11,13 @@ use CatPaw\Web\Interfaces\ResponseModifier;
 use Throwable;
 
 class ErrorResponseModifier implements ResponseModifier {
+    /**
+     *
+     * @param  int                   $status
+     * @param  string                $message
+     * @param  array<string,string>  $headers
+     * @return ErrorResponseModifier
+     */
     public static function create(
         int $status,
         string $message,
@@ -29,6 +36,13 @@ class ErrorResponseModifier implements ResponseModifier {
     /** @var array<ResponseCookie> */
     private array $cookies = [];
 
+    /**
+     *
+     * @param  int                  $status
+     * @param  string               $message
+     * @param  array<string,string> $headers
+     * @return void
+     */
     private function __construct(
         private int $status,
         private string $message,
@@ -37,26 +51,26 @@ class ErrorResponseModifier implements ResponseModifier {
     }
 
 
-    public function setCookies(ResponseCookie ...$cookies) {
+    public function setCookies(ResponseCookie ...$cookies):void {
         $this->cookies = $cookies;
     }
 
-    public function addCookies(ResponseCookie ...$cookies) {
+    public function addCookies(ResponseCookie ...$cookies):void {
         $this->cookies = [...$this->cookies, ...$cookies];
     }
 
-    public function setData(mixed $data) {
+    public function setData(mixed $data):void {
     }
 
-    public function setRequestContext(RequestContext $context) {
+    public function setRequestContext(RequestContext $context):void {
         // $this->context = $context;
     }
 
-    public function setHeaders(array $headers) {
+    public function setHeaders(array $headers):void {
         $this->headers = $headers;
     }
 
-    public function setStatus(int $status) {
+    public function setStatus(int $status):void {
         $this->status = $status;
     }
 
@@ -87,7 +101,7 @@ class ErrorResponseModifier implements ResponseModifier {
 
     /**
      *
-     * @return Unsafe<Error>
+     * @return Unsafe<Response>
      */
     public function getResponse():Unsafe {
         if (APPLICATION_JSON === $this->contentType) {

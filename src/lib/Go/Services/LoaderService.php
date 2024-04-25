@@ -10,6 +10,8 @@ use function CatPaw\Core\error;
 use function CatPaw\Core\execute;
 use CatPaw\Core\File;
 use function CatPaw\Core\goffi;
+
+use CatPaw\Core\GoffiContract;
 use function CatPaw\Core\out;
 
 use CatPaw\Core\Unsafe;
@@ -19,9 +21,9 @@ class LoaderService {
     /**
      * Load the library using cached binaries (if possible).
      * @template T
-     * @param  class-string<T>         $interface     Interface of the shared object.
-     * @param  string                  $directoryName
-     * @return Unsafe<GoffiContract&T>
+     * @param  class-string<T>            $interface     Interface of the shared object.
+     * @param  string                     $directoryName
+     * @return Unsafe<GoffiContract<T>&T>
      */
     public function load(string $interface, string $directoryName, bool $clear = false):Unsafe {
         if ($clear) {
@@ -41,7 +43,7 @@ class LoaderService {
         }
 
         if (!isFile("$directoryName/main.so") || !isFile("$directoryName/main.h")) {
-            execute("go build -o $directoryName/main.so -buildmode=c-shared $directoryName/main.go", out(), $directoryName)->await()->try($error);
+            execute("go build -o $directoryName/main.so -buildmode=c-shared $directoryName/main.go", out(), $directoryName)->try($error);
             if ($error) {
                 return error($error);
             }
@@ -49,7 +51,7 @@ class LoaderService {
         }
 
         if (!isFile("$directoryName/main.static.h")) {
-            execute("cpp -P $directoryName/main.h $directoryName/main.static.h", out(), $directoryName)->await()->try($error);
+            execute("cpp -P $directoryName/main.h $directoryName/main.static.h", out(), $directoryName)->try($error);
             if ($error) {
                 return error($error);
             }

@@ -22,6 +22,7 @@ class LoggerFactory {
             // $handler->setFormatter(new ConsoleFormatter());
             $logger = new Logger($loggerName);
             $logger->pushHandler($handler);
+            // @phpstan-ignore-next-line
             return ok($logger);
         } catch(Throwable $e) {
             return error($e);

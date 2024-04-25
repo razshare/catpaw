@@ -30,9 +30,7 @@ class ReflectionTypeManager {
         if ($rtype instanceof ReflectionUnionType || $rtype instanceof ReflectionIntersectionType) {
             $classNames = $rtype->getTypes();
             foreach ($classNames as $t) {
-                /**
-                 * @psalm-suppress PossiblyUndefinedMethod
-                 */
+                // @phpstan-ignore-next-line
                 $classNames[] = $t->getName();
             }
         }
@@ -76,6 +74,7 @@ class ReflectionTypeManager {
             $types = $type->getTypes();
             $type  = $types[0];
             foreach ($types as $t) {
+                // @phpstan-ignore-next-line
                 if ('null' !== $t && 'false' !== $t) {
                     /** @var ReflectionNamedType */
                     return $t;

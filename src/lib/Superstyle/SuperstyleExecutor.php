@@ -4,6 +4,8 @@ namespace CatPaw\Superstyle;
 
 use CatPaw\Ast\Block;
 use function CatPaw\Core\error;
+
+use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 
 use CatPaw\Core\StringExpansion;
@@ -22,7 +24,7 @@ readonly class SuperstyleExecutor {
     /**
      *
      * @param  string                           $text
-     * @param  array                            $delimiters
+     * @param  array<string>                    $delimiters
      * @return Unsafe<SuperstyleExecutorResult>
      */
     private function unwrapString(string $text, array $delimiters): Unsafe {
@@ -44,6 +46,7 @@ readonly class SuperstyleExecutor {
                             $actualString = substr($actualString, 0, -1).$previous;
                         } else {
                             $actualString .= $previous;
+                            // @phpstan-ignore-next-line
                             return ok($actualString);
                         }
                         continue;
@@ -64,7 +67,7 @@ readonly class SuperstyleExecutor {
     private function separateAttributesFromSignature(string $signature): AttributesAndCleanSignature {
         $cleanSignature   = '';
         $stack            = StringStack::of($signature)->expect('[', ']');
-        $readingAttribute = true;
+        $readingAttribute = false;
         /** @var array<string> $attributes */
         $attributes = [];
         for ($stack->rewind(); $stack->valid(); $stack->next()) {
@@ -133,14 +136,13 @@ readonly class SuperstyleExecutor {
 
     /**
      * @param  string       $signature
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     private function validateSignature(string $signature): Unsafe {
         $stack = StringStack::of($signature)->expect('::', ':', '@', '^', '/', '(', ')');
         for ($stack->rewind(); $stack->valid(); $stack->next()) {
             /**
-             * @var string $previous
-             * @var string $current
+             * @var false|string $current
              */
             [, $current] = $stack->current();
             $outcome     = match ($current) {
@@ -167,7 +169,7 @@ readonly class SuperstyleExecutor {
 
     /**
      *
-     * @param  array                            $parameters
+     * @param  array<string,mixed>              $parameters
      * @return Unsafe<SuperstyleExecutorResult>
      */
     public function execute(array $parameters = []): Unsafe {
@@ -218,7 +220,7 @@ readonly class SuperstyleExecutor {
         $innerCss  = '';
 
         foreach ($this->block->getChildren() as $childBlock) {
-            $executor = new SuperstyleExecutor($childBlock, $parameters);
+            $executor = new SuperstyleExecutor($childBlock);
             $result   = $executor->execute($parameters)->try($error);
             if ($error) {
                 return error($error);

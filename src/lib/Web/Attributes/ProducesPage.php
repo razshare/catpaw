@@ -5,6 +5,8 @@ use Attribute;
 use CatPaw\Core\Attributes\Entry;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
@@ -47,10 +49,15 @@ class ProducesPage implements AttributeInterface {
      * @param mixed  $example
      */
     public function __construct(
+        // @phpstan-ignore-next-line
         private int $status,
+        // @phpstan-ignore-next-line
         private string $contentType,
+        // @phpstan-ignore-next-line
         private string $description,
+        // @phpstan-ignore-next-line
         private string $className,
+        // @phpstan-ignore-next-line
         private mixed $example = []
     ) {
         $this->produces = new Produces(
@@ -63,6 +70,11 @@ class ProducesPage implements AttributeInterface {
         );
     }
 
+    /**
+     *
+     * @param  OpenApiService $oa
+     * @return Unsafe<None>
+     */
     #[Entry] public function setup(OpenApiService $oa): Unsafe {
         foreach ($this->produces->getResponse() as $response) {
             $response->setup($oa)->try($error);

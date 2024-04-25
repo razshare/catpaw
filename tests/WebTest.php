@@ -21,9 +21,9 @@ use function json_decode;
 use PHPUnit\Framework\TestCase;
 
 class WebTest extends TestCase {
-    public function testAll() {
+    public function testAll():void {
         Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
         Container::provide(HttpClient::class, HttpClientBuilder::buildDefault());
         $server = Server::create(
             interface: '127.0.0.1:5858',
@@ -31,7 +31,7 @@ class WebTest extends TestCase {
             www      : 'tests/www',
             apiPrefix: 'api'
         )->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
 
         Container::provide(Server::class, $server);
 
@@ -48,20 +48,20 @@ class WebTest extends TestCase {
                 yield Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...));
             })->try($error);
             if ($error) {
-                $this->assertFalse($error);
+                $this->assertNull($error);
                 $server->stop()->try($error);
-                $this->assertFalse($error);
+                $this->assertNull($error);
             } else {
                 $server->stop()->try($error);
-                $this->assertFalse($error);
+                $this->assertNull($error);
             }
         });
 
         $server->start($readySignal)->try($error);
-        $this->assertFalse($error);
+        $this->assertNull($error);
     }
 
-    public function makeSureSessionWorks(HttpClient $http) {
+    public function makeSureSessionWorks(HttpClient $http):void {
         $request  = new Request("http://127.0.0.1:5858/api/session", "GET");
         $response = $http->request($request);
         $actual   = $response->getBody()->buffer();

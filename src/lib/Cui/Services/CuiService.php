@@ -7,6 +7,8 @@ use function CatPaw\Core\asFileName;
 use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\error;
 
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 
 use CatPaw\Core\Unsafe;
@@ -15,9 +17,8 @@ use CatPaw\Go\Services\LoaderService;
 
 #[Service]
 class CuiService {
-    /** @var CuiContract */
-    private mixed $lib;
-    private float $delay = 0.1;
+    private false|CuiContract $lib = false;
+    private float $delay           = 0.1;
 
     public function __construct(
         private LoaderService $loader,
@@ -26,8 +27,8 @@ class CuiService {
 
     /**
      * Load the library using cached binaries (if possible).
-     * @param  bool         $rebuild
-     * @return Unsafe<void>
+     * @param  bool         $clear
+     * @return Unsafe<None>
      */
     public function load(bool $clear = false):Unsafe {
         $directoryName = asFileName(__DIR__, '../../Go/lib');
@@ -41,6 +42,11 @@ class CuiService {
         return ok();
     }
 
+    /**
+     *
+     * @param  float        $delay
+     * @return Unsafe<None>
+     */
     public function setDelay(float $delay):Unsafe {
         if ($delay < 0.001) {
             return error("Delay cannot be lower than `0.001`.");
@@ -52,7 +58,7 @@ class CuiService {
     /**
      *
      * @param  callable(CuiContract):void $function
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function loop(callable $function):Unsafe {
         if (!$this->lib) {
@@ -61,6 +67,7 @@ class CuiService {
         $lastUpdate = time();
         $function($this->lib);
         $previous = 0;
+        // @phpstan-ignore-next-line
         while (true) {
             $now         = time();
             $delta       = $now - $lastUpdate;

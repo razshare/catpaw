@@ -7,6 +7,8 @@ use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\duplex;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use function CatPaw\Core\uuid;
@@ -14,7 +16,6 @@ use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\ByteRangeWriterInterface;
 use CatPaw\Web\Mime;
 use InvalidArgumentException;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use SplFixedArray;
@@ -26,8 +27,8 @@ class ByteRangeService {
 
     /**
      *
-     * @param  string                     $rangeQuery
-     * @return Unsafe<SplFixedArray<int>>
+     * @param  string                                $rangeQuery
+     * @return Unsafe<SplFixedArray<array{int,int}>>
      */
     private function parse(string $rangeQuery): Unsafe {
         $rangeQuery = str_replace('bytes=', '', $rangeQuery);
@@ -37,6 +38,7 @@ class ByteRangeService {
             return error("Byte range query does not include any ranges.");
         }
 
+        /** @var SplFixedArray<array{int,int}> */
         $parsedRanges = new SplFixedArray($cranges);
 
         if (1 === $cranges) {
@@ -60,6 +62,13 @@ class ByteRangeService {
         return ok($parsedRanges);
     }
 
+    /**
+     *
+     * @param  int            $start
+     * @param  int            $end
+     * @param  int            $contentLength
+     * @return array{int,int}
+     */
     private function fixClientAmbiguity(int $start, int $end, int $contentLength):array {
         if (-1 === $end) {
             if (0 === $start) {
@@ -79,8 +88,8 @@ class ByteRangeService {
 
     /**
      *
-     * @param  ByteRangeWriterInterface  $interface
-     * @return Unsafe<ResponseInterface>
+     * @param  ByteRangeWriterInterface $interface
+     * @return Unsafe<Response>
      */
     public function response(ByteRangeWriterInterface $interface): Unsafe {
         $headers    = [];
@@ -164,7 +173,7 @@ class ByteRangeService {
             return error($e);
         }
 
-        EventLoop::defer(function() use (
+        EventLoop::defer(function(string $id) use (
             $writer,
             $interface,
             $ranges,
@@ -184,7 +193,9 @@ class ByteRangeService {
                 }
                 $data = $interface->send($start, $end - $start + 1)->try($error);
                 if ($error) {
-                    return error($error);
+                    $this->logger->error("Unexpected error in execution callback $id.");
+                    $this->logger->error($error);
+                    return;
                 }
                 $writer->write($data);
                 $writer->write("\r\n");
@@ -192,7 +203,6 @@ class ByteRangeService {
             $writer->write("--$boundary--");
             $writer->close();
             $interface->close();
-            return ok();
         });
 
         return ok($response);
@@ -234,6 +244,10 @@ class ByteRangeService {
                     return ok($size);
                 }
 
+                /**
+                 *
+                 * @return Unsafe<None>
+                 */
                 public function start():Unsafe {
                     $file = File::open($this->fileName)->try($error);
                     if ($error) {

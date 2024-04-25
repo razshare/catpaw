@@ -3,21 +3,30 @@
 namespace CatPaw\Web;
 
 use function CatPaw\Core\error;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Attributes\Param;
+use ReflectionParameter;
 
 class PathResolver {
-    /** @var array<string,array<PathResolver>> */
+    /** @var array<string,PathResolver> */
     private static array $cache = [];
 
+
     /**
-     * @return Unsafe<void>
+     *
+     * @param  string                     $symbolicMethod
+     * @param  string                     $symbolicPath
+     * @param  array<ReflectionParameter> $parameters
+     * @return Unsafe<None>
      */
-    public static function cacheResolver(string $symbolicMethod, string $symbolicPath, array $parameters):Unsafe {
-        self::findResolver($symbolicMethod, $symbolicPath, $parameters)->try($error);
+    // @phpstan-ignore-next-line
+    public static function cacheResolver(string $symbolicMethod, string $symbolicPath, array $reflectionParameters):Unsafe {
+        self::findResolver($symbolicMethod, $symbolicPath, $reflectionParameters)->try($error);
         if ($error) {
             return error($error);
         }
@@ -26,25 +35,34 @@ class PathResolver {
     }
 
     /**
-     * @return Unsafe<array<PathResolver>>
+     *
+     * @param  string                     $symbolicMethod
+     * @param  string                     $symbolicPath
+     * @param  array<ReflectionParameter> $reflectionParameters
+     * @return Unsafe<PathResolver>
      */
-    public static function findResolver(string $symbolicMethod, string $symbolicPath, array $parameters):Unsafe {
+    public static function findResolver(string $symbolicMethod, string $symbolicPath, array $reflectionParameters):Unsafe {
         $key = "$symbolicMethod:$symbolicPath";
         if (isset(self::$cache[$key])) {
             return ok(self::$cache[$key]);
         }
 
-        $configurations = self::findMatchingPathConfigurations($symbolicPath, $parameters)->try($error);
+        $configurations = self::findMatchingPathConfigurations($symbolicPath, $reflectionParameters)->try($error);
         if ($error) {
             return error($error);
         }
+        $resolver = self::$cache[$key] = new PathResolver($configurations);
 
-        return ok(self::$cache[$key] = new PathResolver($configurations));
+        return ok($resolver);
     }
 
 
 
+
     /**
+     *
+     * @param  string                                   $path
+     * @param  array<ReflectionParameter>               $reflectionParameters
      * @return Unsafe<array<MatchingPathConfiguration>>
      */
     public static function findMatchingPathConfigurations(string $path, array $reflectionParameters):Unsafe {
@@ -53,7 +71,7 @@ class PathResolver {
 
         foreach ($reflectionParameters as $reflectionParameter) {
             $reflectionParameterName = $reflectionParameter->getName();
-            /** @var Param $param */
+            /** @var false|Param $param */
             $param = Param::findByParameter($reflectionParameter)->try($error);
             if ($error) {
                 return error($error);
@@ -63,7 +81,7 @@ class PathResolver {
                 continue;
             }
 
-            $typeName = ReflectionTypeManager::unwrap($reflectionParameter) ?? 'string';
+            $typeName = ReflectionTypeManager::unwrap($reflectionParameter) ?: 'string';
 
             if ('' === $param->getRegex()) {
                 switch ($typeName) {
@@ -89,7 +107,7 @@ class PathResolver {
                 isStatic: false,
             );
         }
-        
+
         $result = [];
 
         if (preg_match_all('/{([^{}]+)}/', $path, $matches)) {
@@ -121,7 +139,7 @@ class PathResolver {
     }
 
     /**
-     * 
+     *
      * @param  array<MatchingPathConfiguration> $configurations
      * @return void
      */

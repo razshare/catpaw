@@ -23,7 +23,6 @@ class Signal {
 
     /**
      * Send signal and trigger listeners.
-     *
      */
     public function send():self {
         if ($this->busy) {
@@ -42,6 +41,7 @@ class Signal {
      * @param callable(int):void $function
      */
     public function listen(callable $function):self {
+        // @phpstan-ignore-next-line
         $this->list->push($function);
         return $this;
     }

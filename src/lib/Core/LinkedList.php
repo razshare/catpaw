@@ -7,14 +7,13 @@ use SplDoublyLinkedList;
 /**
  * @template T
  * @package CatPaw
+ * @extends SplDoublyLinkedList<T>
  */
-/** @psalm-suppress MissingTemplateParam */
 class LinkedList extends SplDoublyLinkedList {
     private function __construct() {
     }
 
     /**
-     * @template T
      * @return LinkedList<T>
      */
     public static function create():self {

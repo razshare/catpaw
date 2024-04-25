@@ -7,7 +7,7 @@ class DependenciesOptions {
      * @param array<callable> $overwrites,
      * @param array<callable> $provides,
      * @param array<callable> $fallbacks,
-     * @param array           $defaultArguments,
+     * @param array<mixed>    $defaultArguments,
      * @param mixed           $context,
      */
     public static function create(
@@ -33,7 +33,8 @@ class DependenciesOptions {
      * @param array<callable> $overwrites,
      * @param array<callable> $provides,
      * @param array<callable> $fallbacks,
-     * @param array           $defaultArguments,
+     * @param array<mixed>    $defaultArguments,
+     *                                           $defaultArguments,
      * @param mixed           $context,
      */
     private function __construct(

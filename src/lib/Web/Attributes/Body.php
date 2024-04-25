@@ -75,14 +75,19 @@ class Body implements AttributeInterface, OnParameterMount {
     }
 
     /**
-     * @@return Unsafe<mixed>
+     *
+     * @param  string        $body
+     * @param  string        $contentType
+     * @return Unsafe<mixed>
      */
     private function toArray(string $body, string $contentType): Unsafe {
         return BodyParser::parse($body, $contentType);
     }
 
     /**
-     * @@return Unsafe<int>
+     *
+     * @param  string      $body
+     * @return Unsafe<int>
      */
     private function toInteger(string $body):Unsafe {
         if (is_numeric($body)) {
@@ -102,7 +107,9 @@ class Body implements AttributeInterface, OnParameterMount {
     }
 
     /**
-     * @@return Unsafe<float>
+     *
+     * @param  string        $body
+     * @return Unsafe<float>
      */
     private function toFloat(string $body):Unsafe {
         if (is_numeric($body)) {

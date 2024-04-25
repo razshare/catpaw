@@ -8,8 +8,8 @@ use function filter_var;
 
 class StringExpansion {
     /**
-     * @param  string         $content
-     * @param  array          $parameters
+     * @param  string              $content
+     * @param  array<string,mixed> $parameters
      * @return Unsafe<string>
      */
     public static function variable(string $content, array $parameters): Unsafe {
@@ -57,7 +57,8 @@ class StringExpansion {
     private const OP_BINARY_AND         = 13;
     private const OP_BINARY_OR          = 14;
     private const OP_BINARY_XOR         = 15;
-    private const OP_BINARY_NOT         = 16;
+    // @phpstan-ignore-next-line
+    private const OP_BINARY_NOT = 16;
 
     /**
      * @param  string $content
@@ -120,7 +121,8 @@ class StringExpansion {
                     self::OP_BINARY_AND         => $previousValue & $value,
                     self::OP_BINARY_OR          => $previousValue | $value,
                     self::OP_BINARY_XOR         => $previousValue ^ $value,
-                    default                     => false
+                    // @phpstan-ignore-next-line
+                    default => false
                 };
                 if (!$token) {
                     return $previousValue;
@@ -222,8 +224,8 @@ class StringExpansion {
     }
 
     /**
-     * @param  string       $content
-     * @param  array        $parameters
+     * @param  string              $content
+     * @param  array<string,mixed> $parameters
      * @throws Exception
      * @return Unsafe<bool>
      */

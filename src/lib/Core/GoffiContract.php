@@ -16,10 +16,10 @@ use Throwable;
 class GoffiContract {
     /**
      * Create a Goffi contract.
-     * @template T
-     * @param  class-string<T>         $interface
-     * @param  string                  $fileName
-     * @return Unsafe<GoffiContract&T>
+     * @template TContract
+     * @param  class-string<TContract>                    $interface
+     * @param  string                                     $fileName
+     * @return Unsafe<GoffiContract<TContract>&TContract>
      */
     public static function create(string $interface, string $fileName):Unsafe {
         $isPharFileName = str_starts_with($fileName, 'phar://');
@@ -85,17 +85,26 @@ class GoffiContract {
             return error($error);
         }
 
-        return ok(new self($lib, $methods));
+        /** @var GoffiContract<TContract>&TContract */
+        $item = new self($lib, $methods);
+
+        return ok($item);
     }
 
     /**
      *
-     * @param  FFI&T $ffi
+     * @param  FFI                               $lib
+     * @param  array<callable(mixed...):mixed[]> $methods
      * @return void
      */
     private function __construct(readonly public FFI $lib, readonly private array $methods) {
     }
 
+    /**
+     * @param  string  $name
+     * @param  mixed   $arguments
+     * @return mixed[]
+     */
     public function __call(string $name, mixed $arguments) {
         return $this->methods[$name](...$arguments);
     }
@@ -113,10 +122,12 @@ class GoffiContract {
      * Php's FFI api will not convert php `string`s into `_GoString_`s (understandably so), which means you would need to do it by hand, which is not the best experience.
      *
      * This method will create the necessary _contract methods_ that will automate your Go calls, converting php strings and other primitives to their correct Go counterparts.
-     * @param FFI    $lib
-     * @param string $interface
+     * @param  FFI                                      $lib
+     * @param  string                                   $interface
+     * @throws Error
+     * @return array<callable(mixed ...$args): mixed[]>
      */
-    private static function loadContract(FFI $lib, string $interface) {
+    private static function loadContract(FFI $lib, string $interface):array {
         $reflectionClass = new ReflectionClass($interface);
         $methods         = [];
         foreach ($reflectionClass->getMethods() as $reflectionMethod) {
@@ -201,11 +212,13 @@ class GoffiContract {
      * @return CData|null      the Go string.
      */
     private static function goString(FFI $lib, string $phpString) {
-        $struct    = $lib->new('_GoString_');
-        $count     = strlen($phpString);
+        $struct = $lib->new('_GoString_');
+        $count  = strlen($phpString);
+        // @phpstan-ignore-next-line
         $struct->p = $lib->new('char['.$count.']', 0);
 
         FFI::memcpy($struct->p, $phpString, $count);
+        // @phpstan-ignore-next-line
         $struct->n = $count;
 
         return $struct;

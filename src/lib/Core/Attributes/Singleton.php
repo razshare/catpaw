@@ -5,6 +5,7 @@ use Attribute;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Interfaces\OnClassInstantiation;
+use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
@@ -23,6 +24,7 @@ class Singleton implements AttributeInterface, OnClassInstantiation {
     public function __construct() {
     }
 
+    /** @var array<string,mixed> */
     private static array $cache = [];
 
     /**
@@ -47,7 +49,7 @@ class Singleton implements AttributeInterface, OnClassInstantiation {
         self::$cache[$className] = $value;
     }
 
-    public static function unset(string $name) {
+    public static function unset(string $name):void {
         unset(self::$cache[$name]);
     }
 
@@ -74,10 +76,10 @@ class Singleton implements AttributeInterface, OnClassInstantiation {
 
     /**
      * Invoked whenever the instance is created.
-     * @param  ReflectionClass $reflection
-     * @param  mixed           $instance
-     * @param  array           $dependencies
-     * @return Unsafe
+     * @param  ReflectionClass<object> $reflection
+     * @param  mixed                   $instance
+     * @param  array<int,mixed>        $dependencies
+     * @return Unsafe<None>
      * @internal
      */
     public function onClassInstantiation(ReflectionClass $reflection, mixed &$instance, array $dependencies): Unsafe {

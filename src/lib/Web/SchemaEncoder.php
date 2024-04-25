@@ -7,6 +7,12 @@ use function explode;
 use function is_array;
 
 trait SchemaEncoder {
+    /**
+     *
+     * @param  OpenApiService $api
+     * @param  array<mixed>   $schema
+     * @return array<mixed>
+     */
     private function unwrap(OpenApiService $api, array $schema):array {
         $properties = [];
         $len        = count($schema);

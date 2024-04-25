@@ -13,11 +13,11 @@ class Provider {
      * @return void
      * @internal
      */
-    public static function set(string $name, callable $function) {
+    public static function set(string $name, callable $function):void {
         self::$items[$name] = $function;
     }
 
-    public static function unset(string $name) {
+    public static function unset(string $name):void {
         unset(self::$items[$name]);
     }
 

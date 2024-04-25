@@ -18,11 +18,11 @@ use Throwable;
 class SuccessResponseModifier implements ResponseModifier {
     /**
      *
-     * @param  T                       $data
-     * @param  array                   $headers
-     * @param  false|int               $status
-     * @param  string                  $message
-     * @return SuccessResponseModifier
+     * @param  T                          $data
+     * @param  array<string,string>       $headers
+     * @param  false|int                  $status
+     * @param  string                     $message
+     * @return SuccessResponseModifier<T>
      */
     public static function create(
         mixed $data,
@@ -38,21 +38,20 @@ class SuccessResponseModifier implements ResponseModifier {
         );
     }
 
-    private RequestContext $context;
-    private false|Page $page = false;
-    public mixed $body;
-    private bool $bodyIsResponse = false;
-    private string $contentType  = TEXT_PLAIN;
+    private false|RequestContext $context = false;
+    private false|Page $page              = false;
+    private bool $bodyIsResponse          = false;
+    private string $contentType           = TEXT_PLAIN;
     /** @var array<ResponseCookie> */
     private array $cookies = [];
+    public mixed $body;
 
     /**
      *
-     * @param  T         $data
-     * @param  array     $headers
-     * @param  false|int $status
-     * @param  string    $message
-     * @return void
+     * @param T                    $data
+     * @param array<string,string> $headers
+     * @param false|int            $status
+     * @param string               $message
      */
     private function __construct(
         private mixed $data,
@@ -63,29 +62,39 @@ class SuccessResponseModifier implements ResponseModifier {
         $this->update();
     }
 
-    public function setCookies(ResponseCookie ...$cookies) {
+    public function setCookies(ResponseCookie ...$cookies):void {
         $this->cookies = $cookies;
     }
 
-    public function addCookies(ResponseCookie ...$cookies) {
+    public function addCookies(ResponseCookie ...$cookies):void {
         $this->cookies = [...$this->cookies, ...$cookies];
     }
 
-    public function setData(mixed $data) {
+    /**
+     *
+     * @param  T    $data
+     * @return void
+     */
+    public function setData(mixed $data):void {
         $this->data = $data;
         $this->update();
     }
 
-    public function setRequestContext(RequestContext $context) {
+    public function setRequestContext(RequestContext $context):void {
         $this->context = $context;
     }
 
-    public function setHeaders(array $headers) {
+    /**
+     *
+     * @param  array<string,string> $headers
+     * @return void
+     */
+    public function setHeaders(array $headers):void {
         $this->headers = $headers;
         $this->update();
     }
 
-    public function setStatus(int $status) {
+    public function setStatus(int $status):void {
         $this->status = $status;
         $this->update();
     }
@@ -94,6 +103,10 @@ class SuccessResponseModifier implements ResponseModifier {
         return $this->data;
     }
 
+    /**
+     *
+     * @return array<string,string>
+     */
     public function getHeaders():array {
         return $this->headers;
     }
@@ -103,7 +116,7 @@ class SuccessResponseModifier implements ResponseModifier {
     }
 
 
-    private function update() {
+    private function update():void {
         if ($this->data instanceof Response) {
             $this->bodyIsResponse = true;
             foreach ($this->headers as $key => $value) {
@@ -123,11 +136,19 @@ class SuccessResponseModifier implements ResponseModifier {
         $this->body = $this->data;
     }
 
+    /**
+     *
+     * @param  string                     $contentType
+     * @return SuccessResponseModifier<T>
+     */
     public function as(string $contentType):self {
         $this->contentType = $contentType;
         return $this;
     }
 
+    /**
+     * @return SuccessResponseModifier<T>
+     */
     public function item():self {
         $this->body = SuccessItem::create(
             data: $this->data,
@@ -139,9 +160,8 @@ class SuccessResponseModifier implements ResponseModifier {
 
     /**
      * Page the response.
-     * @param  Page                    $page
-     * @param  string                  $contentType
-     * @return SuccessResponseModifier
+     * @param  Page                       $page
+     * @return SuccessResponseModifier<T>
      */
     public function page(Page $page):self {
         $this->page = $page;

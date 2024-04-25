@@ -4,6 +4,8 @@ namespace CatPaw\Core\Services;
 use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 
@@ -15,9 +17,11 @@ use function yaml_parse;
 
 #[Service]
 class EnvironmentService {
+    /** @var array<mixed> */
     private array $variables = [];
 
     public function __construct(
+        // @phpstan-ignore-next-line
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -63,7 +67,7 @@ class EnvironmentService {
      * Parse the first valid environment file and update all variables in memory.
      * Multiple calls are allowed.\
      * This function is invoked automatically when the application starts.
-     * @return Unsafe<void>
+     * @return Unsafe<None>
      */
     public function load():Unsafe {
         $fileName = $this->fileName;
@@ -106,11 +110,11 @@ class EnvironmentService {
 
     /**
      *
+     * @param  string $query
      * @param  mixed  $value
-     * @param  string $key
      * @return void
      */
-    public function set(string $query, $value) {
+    public function set(string $query, mixed $value) {
         $reference = &$this->variables;
         foreach (explode('.', $query) as $key) {
             if (!isset($reference[$key])) {
@@ -137,9 +141,8 @@ class EnvironmentService {
      * // or better even
      * $service->$get("server.www");
      * ```
-     * @template T
      * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
-     * @return T      value of the variable.
+     * @return mixed  value of the variable.
      */
     public function get(string $query):mixed {
         if (isset($this->variables[$query])) {
