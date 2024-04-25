@@ -135,6 +135,7 @@ function in(): ReadableResourceStream {
 }
 
 /**
+ * Create an unsafe object with a value.
  * @template T
  * @param  T         $value
  * @return Unsafe<T>
@@ -144,6 +145,7 @@ function ok(mixed $value = NONE): Unsafe {
 }
 
 /**
+ * Create an unsafe object with an error.
  * @param  string|Error  $message
  * @return Unsafe<mixed>
  */
@@ -229,12 +231,8 @@ function get(string $command): Unsafe {
  * ## Example
  * ```php
  * $content = anyError(function(){
- *  $file = File::open('file.txt')->try($error)
- *  or yield $error;
- *
- *  $content = $file->readAll()->try($error)
- *  or yield $error;
- *
+ *  $file = File::open('file.txt')->unwrap();
+ *  $content = $file->readAll()->unwrap();
  *  return $content;
  * });
  * ```

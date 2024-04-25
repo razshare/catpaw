@@ -19,13 +19,8 @@ class Search {
      */
     public static function fromFile(string $fileName): Unsafe {
         return anyError(function() use ($fileName) {
-            // @phpstan-ignore-next-line
-            $file = File::open($fileName)->try($error)
-            or yield $error;
-
-            $source = $file->readAll()->try($error)
-            or yield $error;
-
+            $file   = File::open($fileName)->unwrap();
+            $source = $file->readAll()->unwrap();
             return self::fromSource($source);
         });
     }
