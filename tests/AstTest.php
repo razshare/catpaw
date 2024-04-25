@@ -16,11 +16,11 @@ use PHPUnit\Framework\TestCase;
 
 class AstTest extends TestCase {
     public function testAll():void {
-        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->makeSureCStyleParserWorks(...));
-        })->try($error);
+        })->unwrap($error);
         $this->assertNull($error);
     }
 
@@ -31,7 +31,7 @@ class AstTest extends TestCase {
      */
     private function makeSureCStyleParserWorks(): Unsafe {
         return anyError(function() {
-            $search = Search::fromFile(asFileName(__DIR__, './app.scss'))->unwrap();
+            $search = Search::fromFile(asFileName(__DIR__, './app.scss'))->try();
 
             /** @var array<Block> $blocks */
             $blocks = [];

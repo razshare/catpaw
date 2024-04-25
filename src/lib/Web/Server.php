@@ -43,7 +43,7 @@ class Server {
         if (isset(self::$singleton) && isset(self::$singleton->httpServer) && self::$singleton->httpServerStarted) {
             $result = $function(self::$singleton->httpServer);
             if ($result instanceof Unsafe) {
-                $result->try($error);
+                $result->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -157,7 +157,7 @@ class Server {
         $www = preg_replace('/\/+$/', '', $www);
 
 
-        $logger = Container::create(LoggerInterface::class)->try($error);
+        $logger = Container::create(LoggerInterface::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -231,7 +231,7 @@ class Server {
             router: $router,
             apiPrefix: $this->apiPrefix,
             api: $this->api,
-        )->try($error);
+        )->unwrap($error);
 
         if ($error) {
             $logger->error((string)$error);
@@ -270,7 +270,7 @@ class Server {
         $endSignal = new DeferredFuture;
         try {
             if (!isset($this->fileServer)) {
-                $fileServer = FileServer::create($this)->try($error);
+                $fileServer = FileServer::create($this)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -316,7 +316,7 @@ class Server {
             foreach (self::$onStartListeners as $function) {
                 $result = $function($this->httpServer);
                 if ($result instanceof Unsafe) {
-                    $result->try($error);
+                    $result->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -364,7 +364,7 @@ class Server {
         string $api,
     ): Unsafe {
         if ($api) {
-            $flatList = Directory::flat($api)->try($error);
+            $flatList = Directory::flat($api)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -398,7 +398,7 @@ class Server {
 
                         if (!$routeExists) {
                             $cwd = dirname($api.$fileName)?:'';
-                            $router->initialize($symbolicMethod, $symbolicPath, $handler, $cwd)->try($error);
+                            $router->initialize($symbolicMethod, $symbolicPath, $handler, $cwd)->unwrap($error);
                             if ($error) {
                                 return error($error);
                             }

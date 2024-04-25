@@ -13,13 +13,13 @@ use Revolt\EventLoop;
 
 class ScheduleTest extends TestCase {
     public function testAll():void {
-        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->scheduleDaily(...));
             yield Container::run($this->scheduleAfter1Second(...));
             yield Container::run($this->scheduleEvery1Second3Times(...));
-        })->try($error);
+        })->unwrap($error);
         $this->assertNull($error);
         EventLoop::run();
     }
@@ -33,7 +33,7 @@ class ScheduleTest extends TestCase {
                 $value = true;
                 $cancel();
             }
-        )->try($error);
+        )->unwrap($error);
         $this->assertNull($error);
         $schedule->future->await();
         $this->assertTrue($value);
@@ -55,7 +55,7 @@ class ScheduleTest extends TestCase {
         $schedule->after('1 second', static function() use ($signal, $logger) {
             $logger->info("Function executed after 1 second.");
             $signal->send();
-        })->try($error);
+        })->unwrap($error);
         $this->assertNull($error);
         EventLoop::delay(1.1, function() use (&$checked) {
             $this->assertTrue($checked);
@@ -72,7 +72,7 @@ class ScheduleTest extends TestCase {
             if (3 === $value) {
                 $cancel();
             }
-        })->try($error);
+        })->unwrap($error);
         $this->assertNull($error);
         $schedule->future->await();
         $logger->info("Done executing.");

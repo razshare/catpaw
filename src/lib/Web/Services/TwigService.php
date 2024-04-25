@@ -41,7 +41,7 @@ class TwigService {
             }
 
             if (!$this->loader->exists($realFileName)) {
-                $this->loader->loadFromFile($realFileName)->try($error);
+                $this->loader->loadFromFile($realFileName)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }

@@ -55,7 +55,7 @@ readonly class ScheduleService {
      * @return Unsafe<ScheduleEntry>
      */
     public function after(string $due, callable $function):Unsafe {
-        $scheduleConfiguration = $this->configure(format: "after $due", repeat: false)->try($error);
+        $scheduleConfiguration = $this->configure(format: "after $due", repeat: false)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -72,7 +72,7 @@ readonly class ScheduleService {
      * @return Unsafe<ScheduleEntry>
      */
     public function every(string $due, callable $function):Unsafe {
-        $scheduleConfiguration = $this->configure(format: "after $due", repeat: true)->try($error);
+        $scheduleConfiguration = $this->configure(format: "after $due", repeat: true)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -87,7 +87,7 @@ readonly class ScheduleService {
      * @return Unsafe<ScheduleEntry>
      */
     public function daily(string $due, callable $function):Unsafe {
-        $scheduleConfiguration = $this->configure(format: "daily $due", repeat: true)->try($error);
+        $scheduleConfiguration = $this->configure(format: "daily $due", repeat: true)->unwrap($error);
         if ($error) {
             return error($error);
         }

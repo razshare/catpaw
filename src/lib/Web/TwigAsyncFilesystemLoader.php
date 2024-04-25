@@ -31,11 +31,11 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
         $name              = $fileName;
         $key               = $name;
         $this->keys[$name] = $key;
-        $file              = File::open($fileName)->try($error);
+        $file              = File::open($fileName)->unwrap($error);
         if ($error) {
             return error($error);
         }
-        $code = $file->readAll()->try($error);
+        $code = $file->readAll()->unwrap($error);
         if ($error) {
             return error($error);
         }

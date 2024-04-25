@@ -179,7 +179,7 @@ readonly class SuperstyleExecutor {
         $attributes                  = $attributesAndCleanSignature->attributes;
         $cleanSignature              = $attributesAndCleanSignature->cleanSignature;
 
-        $this->validateSignature($cleanSignature)->try($error);
+        $this->validateSignature($cleanSignature)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -198,13 +198,13 @@ readonly class SuperstyleExecutor {
                 $result = StringExpansion::variable(
                     content   : $matches[1] ?? "",
                     parameters: $parameters,
-                )->try($error);
+                )->unwrap($error);
 
                 if ($error) {
                     return error($error);
                 }
 
-                $actualString = $this->unwrapString(trim($result), ['"', "'"])->try($error);
+                $actualString = $this->unwrapString(trim($result), ['"', "'"])->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -221,7 +221,7 @@ readonly class SuperstyleExecutor {
 
         foreach ($this->block->getChildren() as $childBlock) {
             $executor = new SuperstyleExecutor($childBlock);
-            $result   = $executor->execute($parameters)->try($error);
+            $result   = $executor->execute($parameters)->unwrap($error);
             if ($error) {
                 return error($error);
             }

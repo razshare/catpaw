@@ -32,7 +32,7 @@ class CuiService {
      */
     public function load(bool $clear = false):Unsafe {
         $directoryName = asFileName(__DIR__, '../../Go/lib');
-        $this->lib     = $this->loader->load(CuiContract::class, $directoryName, $clear)->try($error);
+        $this->lib     = $this->loader->load(CuiContract::class, $directoryName, $clear)->unwrap($error);
         if ($error) {
             return error($error);
         }

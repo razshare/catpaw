@@ -120,10 +120,10 @@ class State implements Stringable {
         foreach ($state->functions as $function) {
             $result = $function();
             if ($result instanceof Unsafe) {
-                $result->try($error);
+                $result->unwrap($error);
                 if ($error) {
                     if (!$state->logger) {
-                        $state->logger = Container::create(LoggerInterface::class)->try($error);
+                        $state->logger = Container::create(LoggerInterface::class)->unwrap($error);
                     }
                     if ($error) {
                         echo (string)$error;
@@ -150,11 +150,11 @@ class State implements Stringable {
         $state->functions[] = $function;
         $result             = $function();
         if ($result instanceof Unsafe) {
-            $result->try($error);
+            $result->unwrap($error);
             if ($error) {
                 // @phpstan-ignore-next-line
                 if (!$this->logger) {
-                    $this->logger = Container::create(LoggerInterface::class)->try($error);
+                    $this->logger = Container::create(LoggerInterface::class)->unwrap($error);
                 }
                 if ($error) {
                     echo (string)$error;

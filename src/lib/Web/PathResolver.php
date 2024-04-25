@@ -26,7 +26,7 @@ class PathResolver {
      */
     // @phpstan-ignore-next-line
     public static function cacheResolver(string $symbolicMethod, string $symbolicPath, array $reflectionParameters):Unsafe {
-        self::findResolver($symbolicMethod, $symbolicPath, $reflectionParameters)->try($error);
+        self::findResolver($symbolicMethod, $symbolicPath, $reflectionParameters)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -47,7 +47,7 @@ class PathResolver {
             return ok(self::$cache[$key]);
         }
 
-        $configurations = self::findMatchingPathConfigurations($symbolicPath, $reflectionParameters)->try($error);
+        $configurations = self::findMatchingPathConfigurations($symbolicPath, $reflectionParameters)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -72,7 +72,7 @@ class PathResolver {
         foreach ($reflectionParameters as $reflectionParameter) {
             $reflectionParameterName = $reflectionParameter->getName();
             /** @var false|Param $param */
-            $param = Param::findByParameter($reflectionParameter)->try($error);
+            $param = Param::findByParameter($reflectionParameter)->unwrap($error);
             if ($error) {
                 return error($error);
             }

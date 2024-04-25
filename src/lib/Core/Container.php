@@ -37,12 +37,12 @@ class Container {
     public static function entry(object $instance, array $methods):Unsafe {
         try {
             foreach ($methods as $method) {
-                $entry = Entry::findByMethod($method)->try($error);
+                $entry = Entry::findByMethod($method)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
                 if ($entry) {
-                    $arguments = Container::dependencies($method)->try($error);
+                    $arguments = Container::dependencies($method)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -137,7 +137,7 @@ class Container {
             );
         }
         $parameters = [];
-        $results    = self::findFunctionDependencies($reflection, $options)->try($error);
+        $results    = self::findFunctionDependencies($reflection, $options)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -173,7 +173,7 @@ class Container {
                 && Readable::class !== $type
             ) {
                 // @phpstan-ignore-next-line
-                $instance = Container::create($type)->try($error);
+                $instance = Container::create($type)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -194,7 +194,7 @@ class Container {
                     /** @var callable(ReflectionParameter):(Unsafe<null|AttributeInterface>) $findByParameter */
                     /** @var null|AttributeInterface $attributeInstance */
 
-                    $attributeInstance = $findByParameter($reflectionParameter)->try($error);
+                    $attributeInstance = $findByParameter($reflectionParameter)->unwrap($error);
 
                     if ($error) {
                         return error($error);
@@ -208,7 +208,7 @@ class Container {
                     }
 
                     if ($attributeInstance instanceof OnParameterMount) {
-                        $attributeInstance->onParameterMount($reflectionParameter, $parameters[$key], $options)->try($error);
+                        $attributeInstance->onParameterMount($reflectionParameter, $parameters[$key], $options)->unwrap($error);
                         if ($error) {
                             return error($error);
                         }
@@ -241,13 +241,13 @@ class Container {
         }
 
         if (!Container::isProvided(LoggerInterface::class)) {
-            $logger = LoggerFactory::create()->try($error);
+            $logger = LoggerFactory::create()->unwrap($error);
             if ($error) {
                 return error($error);
             }
             Container::provide(LoggerInterface::class, $logger);
         } else {
-            $logger = Container::create(LoggerInterface::class)->try($error);
+            $logger = Container::create(LoggerInterface::class)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -274,7 +274,7 @@ class Container {
             return ok([]);
         }
 
-        $flatList = Directory::flat($path)->try($error);
+        $flatList = Directory::flat($path)->unwrap($error);
         if ($error) {
             return  error($error);
         }
@@ -318,7 +318,7 @@ class Container {
                 $entry  = self::findEntryMethod($klass);
                 $object = $klass->newInstance(...$attributeArguments);
                 if ($entry) {
-                    $arguments = Container::dependencies($entry)->try($error);
+                    $arguments = Container::dependencies($entry)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -354,7 +354,7 @@ class Container {
                 self::touch($function);
             }
 
-            $arguments = Container::dependencies($reflection)->try($error);
+            $arguments = Container::dependencies($reflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -471,13 +471,13 @@ class Container {
         }
 
         /** @var Singleton $singleton */
-        $singleton = Singleton::findByClass($reflection)->try($error);
+        $singleton = Singleton::findByClass($reflection)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
         /** @var Service $service */
-        $service = Service::findByClass($reflection)->try($error);
+        $service = Service::findByClass($reflection)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -485,7 +485,7 @@ class Container {
         $constructor = $reflection->getConstructor() ?? false;
 
         if ($constructor) {
-            $dependencies = self::dependencies($constructor)->try($error);
+            $dependencies = self::dependencies($constructor)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -499,7 +499,7 @@ class Container {
         if ($singleton || $service) {
             // @phpstan-ignore-next-line
             if ($service) {
-                $service->onClassInstantiation($reflection, $instance, $dependencies)->try($error);
+                $service->onClassInstantiation($reflection, $instance, $dependencies)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -512,7 +512,7 @@ class Container {
             return error("Instance of $name is null.");
         }
 
-        self::entry($instance, $reflection->getMethods())->try($error);
+        self::entry($instance, $reflection->getMethods())->unwrap($error);
 
         if ($error) {
             return error($error);

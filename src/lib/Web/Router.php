@@ -87,37 +87,37 @@ readonly class Router {
                 }
             }
 
-            $consumes = Consumes::findAllByFunction($reflectionFunction)->try($error);
+            $consumes = Consumes::findAllByFunction($reflectionFunction)->unwrap($error);
             if ($error) {
                 return error($error);
             }
             $consumes = $consumes?:[];
 
-            $producesBase = Produces::findAllByFunction($reflectionFunction)->try($error);
+            $producesBase = Produces::findAllByFunction($reflectionFunction)->unwrap($error);
             if ($error) {
                 return error($error);
             }
             $producesBase = $producesBase?:[];
 
-            $producesItem = ProducesItem::findAllByFunction($reflectionFunction)->try($error);
+            $producesItem = ProducesItem::findAllByFunction($reflectionFunction)->unwrap($error);
             if ($error) {
                 return error($error);
             }
             $producesItem = $producesItem?:[];
 
-            $producesError = ProducesError::findAllByFunction($reflectionFunction)->try($error);
+            $producesError = ProducesError::findAllByFunction($reflectionFunction)->unwrap($error);
             if ($error) {
                 return error($error);
             }
             $producesError = $producesError?:[];
 
-            $producesErrorItem = ProducesErrorItem::findAllByFunction($reflectionFunction)->try($error);
+            $producesErrorItem = ProducesErrorItem::findAllByFunction($reflectionFunction)->unwrap($error);
             if ($error) {
                 return error($error);
             }
             $producesErrorItem = $producesErrorItem?:[];
 
-            $producesPage = ProducesPage::findAllByFunction($reflectionFunction)->try($error);
+            $producesPage = ProducesPage::findAllByFunction($reflectionFunction)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -132,7 +132,7 @@ readonly class Router {
             ];
 
             /** @var array<Tag> $tags */
-            $tags = Tag::findAllByFunction($reflectionFunction)->try($error);
+            $tags = Tag::findAllByFunction($reflectionFunction)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -144,7 +144,7 @@ readonly class Router {
             $parameters = $reflectionFunction->getParameters();
 
             // This will cache the path resolver so that it will be ready for the first request.
-            PathResolver::findResolver($symbolicMethod, $symbolicPath, $parameters)->try($error);
+            PathResolver::findResolver($symbolicMethod, $symbolicPath, $parameters)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -173,13 +173,13 @@ readonly class Router {
                 }
             }
 
-            $ignoreOpenApi = IgnoreOpenApi::findByFunction($reflectionFunction)->try($error);
+            $ignoreOpenApi = IgnoreOpenApi::findByFunction($reflectionFunction)->unwrap($error);
 
             if ($error) {
                 return error($error);
             }
 
-            $ignoreDescribe = IgnoreDescribe::findByFunction($reflectionFunction)->try($error);
+            $ignoreDescribe = IgnoreDescribe::findByFunction($reflectionFunction)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -214,7 +214,7 @@ readonly class Router {
             $route->setOptions($options);
 
             if (!$ignoreOpenApi) {
-                $this->registerRouteForOpenApi($route)->try($error);
+                $this->registerRouteForOpenApi($route)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -237,7 +237,7 @@ readonly class Router {
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
             /** @var false|Query $queryAttribute */
-            $queryAttribute = Query::findByParameter($paramReflection)->try($error);
+            $queryAttribute = Query::findByParameter($paramReflection)->unwrap($error);
 
             if ($error) {
                 return error($error);
@@ -248,19 +248,19 @@ readonly class Router {
             }
 
             /** @var false|Summary $summaryAttribute */
-            $summaryAttribute = Summary::findByParameter($paramReflection)->try($error);
+            $summaryAttribute = Summary::findByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
 
             /** @var array<Example> $exampleAttributes */
-            $exampleAttributes = Example::findAllByParameter($paramReflection)->try($error);
+            $exampleAttributes = Example::findAllByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
 
             /** @var false|Example $exampleAttribute */
-            $exampleAttribute = Example::findByParameter($paramReflection)->try($error);
+            $exampleAttribute = Example::findByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -321,7 +321,7 @@ readonly class Router {
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
             /** @var false|Header $headerAttribute */
-            $headerAttribute = Header::findByParameter($paramReflection)->try($error);
+            $headerAttribute = Header::findByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -330,19 +330,19 @@ readonly class Router {
             }
 
             /** @var false|Summary $summaryAttribute */
-            $summaryAttribute = Summary::findByParameter($paramReflection)->try($error);
+            $summaryAttribute = Summary::findByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
 
             /** @var array<Example> $exampleAttributes */
-            $exampleAttributes = Example::findAllByParameter($paramReflection)->try($error);
+            $exampleAttributes = Example::findAllByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
 
             /** @var false|Example $exampleAttribute */
-            $exampleAttribute = Example::findByParameter($paramReflection)->try($error);
+            $exampleAttribute = Example::findByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -404,7 +404,7 @@ readonly class Router {
         OpenApiService $oa,
     ):Unsafe {
         $parametersReflections = $reflectionFunction->getParameters();
-        $configurations        = PathResolver::findMatchingPathConfigurations($path, $parametersReflections)->try($error);
+        $configurations        = PathResolver::findMatchingPathConfigurations($path, $parametersReflections)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -433,20 +433,20 @@ readonly class Router {
             $reflectionType = ReflectionTypeManager::unwrap($paramReflection);
 
             /** @var false|Summary $summaryAttribute */
-            $summaryAttribute = Summary::findByParameter($paramReflection)->try($error);
+            $summaryAttribute = Summary::findByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
 
 
             /** @var array<Example> $exampleAttributes */
-            $exampleAttributes = Example::findAllByParameter($paramReflection)->try($error);
+            $exampleAttributes = Example::findAllByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
 
             /** @var false|Example $exampleAttribute */
-            $exampleAttribute = Example::findByParameter($paramReflection)->try($error);
+            $exampleAttribute = Example::findByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -606,23 +606,23 @@ readonly class Router {
             }
         }
 
-        $openApi = Container::create(OpenApiService::class)->try($error);
+        $openApi = Container::create(OpenApiService::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $headers = $this->findRouteOpenApiHeaders($reflectionFunction, $openApi)->try($error);
+        $headers = $this->findRouteOpenApiHeaders($reflectionFunction, $openApi)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $queries = $this->findRouteOpenApiQueries($reflectionFunction, $openApi)->try($error);
+        $queries = $this->findRouteOpenApiQueries($reflectionFunction, $openApi)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
         try {
-            $parameters = $this->findRouteOpenApiPathParameters($reflectionFunction, $symbolicPath, $openApi)->try($error);
+            $parameters = $this->findRouteOpenApiPathParameters($reflectionFunction, $symbolicPath, $openApi)->unwrap($error);
         } catch(Throwable $e) {
             return error($e);
         }
@@ -641,7 +641,7 @@ readonly class Router {
 
 
         /** @var false|Summary $summary */
-        $summary = Summary::findByFunction($reflectionFunction)->try($error);
+        $summary = Summary::findByFunction($reflectionFunction)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -650,7 +650,7 @@ readonly class Router {
         $crequests = count($requests);
 
         /** @var false|OperationId $operationId */
-        $operationId = OperationId::findByFunction($reflectionFunction)->try($error);
+        $operationId = OperationId::findByFunction($reflectionFunction)->unwrap($error);
         if ($error) {
             return error($error);
         }

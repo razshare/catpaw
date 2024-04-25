@@ -44,14 +44,14 @@ class HttpInvoker {
         $options = $this->createDependenciesOptions($context);
 
 
-        $dependencies = Container::dependencies($reflectionFunction, $options)->try($error);
+        $dependencies = Container::dependencies($reflectionFunction, $options)->unwrap($error);
 
         if ($error) {
             return error($error);
         }
 
         foreach ($onRequests as $onRequest) {
-            $onRequest->onRequest($context->request)->try($error);
+            $onRequest->onRequest($context->request)->unwrap($error);
             if ($error) {
                 echo $error.PHP_EOL;
                 break;
@@ -89,13 +89,13 @@ class HttpInvoker {
             key: $key,
             overwrites: [
                 SessionInterface::class => function() use ($context) {
-                    $result = Container::create(SessionInterface::class, $context->request)->try($error);
+                    $result = Container::create(SessionInterface::class, $context->request)->unwrap($error);
                     if ($error) {
                         $this->server->logger->error($error);
                         return false;
                     }
                     if ($result instanceof Unsafe) {
-                        $result = $result->try($error);
+                        $result = $result->unwrap($error);
                         if ($error) {
                             $this->server->logger->error($error);
                             return false;

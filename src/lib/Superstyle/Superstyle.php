@@ -19,7 +19,7 @@ class Superstyle {
      * @return Unsafe<SuperstyleExecutorResult>
      */
     public static function parse(string $fileName, array $parameters = []):Unsafe {
-        $search = Search::fromFile($fileName)->try($error);
+        $search = Search::fromFile($fileName)->unwrap($error);
         if ($error) {
             return error($error);
         }

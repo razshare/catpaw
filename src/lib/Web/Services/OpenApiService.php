@@ -215,7 +215,7 @@ class OpenApiService {
                 $type                = $reflectionNamedType?$reflectionNamedType->getName():'string';
 
                 if (class_exists($type)) {
-                    $this->setComponentObject($type)->try($error);
+                    $this->setComponentObject($type)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -225,12 +225,12 @@ class OpenApiService {
                     ];
                 } else {
                     /** @var false|ArrayList $arrayListAttribute */
-                    $arrayListAttribute = ArrayList::findByProperty($reflectionProperty)->try($error);
+                    $arrayListAttribute = ArrayList::findByProperty($reflectionProperty)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
 
-                    $hashMapAttribute = HashMap::findByProperty($reflectionProperty)->try($error);
+                    $hashMapAttribute = HashMap::findByProperty($reflectionProperty)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -244,7 +244,7 @@ class OpenApiService {
                         }
 
                         if (class_exists($subType)) {
-                            $this->setComponentObject($subType)->try($error);
+                            $this->setComponentObject($subType)->unwrap($error);
                             if ($error) {
                                 return error($error);
                             }

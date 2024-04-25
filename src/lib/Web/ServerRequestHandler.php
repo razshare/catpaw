@@ -38,7 +38,7 @@ readonly class ServerRequestHandler implements RequestHandler {
 
     public function handleRequest(Request $request): Response {
         try {
-            $response = $this->resolver->resolve($request)->try($error);
+            $response = $this->resolver->resolve($request)->unwrap($error);
             if ($error) {
                 return $this->createResponseFromError($error);
             }

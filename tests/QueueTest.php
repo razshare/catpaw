@@ -12,14 +12,14 @@ use Psr\Log\LoggerInterface;
 
 class QueueTest extends TestCase {
     public function testAll():void {
-        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->execution(...));
             yield Container::run($this->tag(...));
             yield Container::run($this->order(...));
             yield Container::run($this->timedQueue(...));
-        })->try($error);
+        })->unwrap($error);
         $this->assertNull($error);
     }
 

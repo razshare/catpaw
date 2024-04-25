@@ -72,12 +72,12 @@ class EnvironmentService {
     public function load():Unsafe {
         $fileName = $this->fileName;
 
-        $file = File::open($fileName)->try($error);
+        $file = File::open($fileName)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $content = $file->readAll()->try($error);
+        $content = $file->readAll()->unwrap($error);
         if ($error) {
             return error($error);
         }

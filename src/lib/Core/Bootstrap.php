@@ -51,7 +51,7 @@ class Bootstrap {
         Container::touch($main);
 
         foreach ($libraries as $path) {
-            Container::load(path:$path, append:true)->try($error);
+            Container::load(path:$path, append:true)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -95,7 +95,7 @@ class Bootstrap {
             }
 
             /** @var LoggerInterface $logger */
-            $logger = LoggerFactory::create($name)->try($error);
+            $logger = LoggerFactory::create($name)->unwrap($error);
             if ($error) {
                 self::kill((string)$error);
             }
@@ -117,7 +117,7 @@ class Bootstrap {
 
             if ($environment) {
                 $env->setFileName($environment);
-                $env->load()->try($error);
+                $env->load()->unwrap($error);
                 if ($error) {
                     self::kill((string)$error);
                 }
@@ -159,7 +159,7 @@ class Bootstrap {
                 );
             }
 
-            self::init($entry, $librariesList)->try($error);
+            self::init($entry, $librariesList)->unwrap($error);
 
             if ($error) {
                 self::kill((string)$error);
@@ -241,13 +241,13 @@ class Bootstrap {
                 $resources,
             ) {
                 if (!Container::isProvided(LoggerInterface::class)) {
-                    $logger = LoggerFactory::create()->try($error);
+                    $logger = LoggerFactory::create()->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
                     Container::provide(LoggerInterface::class, $logger);
                 } else {
-                    $logger = Container::create(LoggerInterface::class)->try($error);
+                    $logger = Container::create(LoggerInterface::class)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -290,7 +290,7 @@ class Bootstrap {
                     if ($ready) {
                         $ready->getFuture()->await();
                     }
-                    $code = execute($instruction, out())->try($error);
+                    $code = execute($instruction, out())->unwrap($error);
                     if ($error || $code > 0) {
                         echo $error.PHP_EOL;
                         $ready = new DeferredFuture;
@@ -348,7 +348,7 @@ class Bootstrap {
 
                     $directory = $file;
 
-                    $flatList = Directory::flat(realpath($directory))->try($error);
+                    $flatList = Directory::flat(realpath($directory))->unwrap($error);
 
                     if ($error) {
                         return error($error);

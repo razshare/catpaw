@@ -19,7 +19,7 @@ class RouterContext {
      * @param array<string,array<Route>> $routes,
      */
     private function __construct(private array $routes) {
-        $logger = Container::create(LoggerInterface::class)->try($error);
+        $logger = Container::create(LoggerInterface::class)->unwrap($error);
         if (!$error) {
             $this->logger = $logger;
         }

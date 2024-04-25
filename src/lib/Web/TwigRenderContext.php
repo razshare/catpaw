@@ -62,9 +62,9 @@ class TwigRenderContext {
      * @return ResponseModifier
      */
     public function render(int $status = 200, array $headers = []):ResponseModifier {
-        $twig = Container::create(TwigService::class)->try($errorService);
+        $twig = Container::create(TwigService::class)->unwrap($errorService);
         if ($errorService) {
-            $logger = Container::create(LoggerInterface::class)->try($errorLogger);
+            $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
             if ($errorLogger) {
                 echo $errorLogger.PHP_EOL;
                 echo $errorService.PHP_EOL;
@@ -76,10 +76,10 @@ class TwigRenderContext {
         $data = $twig->render(
             fileName  : $this->fileName,
             properties: $this->properties,
-        )->try($errorTwig);
+        )->unwrap($errorTwig);
 
         if ($errorTwig) {
-            $logger = Container::create(LoggerInterface::class)->try($errorLogger);
+            $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
             if ($errorLogger) {
                 echo $errorLogger.PHP_EOL;
                 echo $errorTwig.PHP_EOL;

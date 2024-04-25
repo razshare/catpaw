@@ -53,7 +53,7 @@ class GpioService {
         }
 
         // execute('echo "'.$pin.'" > /sys/class/gpio/export');
-        $exportFile = File::open('/sys/class/gpio/export', 'a')->try($error);
+        $exportFile = File::open('/sys/class/gpio/export', 'a')->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -62,22 +62,22 @@ class GpioService {
         $exportFile->close();
 
         if (!File::exists("/sys/class/gpio/gpio$pin/direction")) {
-            Directory::create("/sys/class/gpio/gpio$pin")->try($error);
+            Directory::create("/sys/class/gpio/gpio$pin")->unwrap($error);
             if ($error) {
                 return error($error);
             }
-            $directionFile = File::open("/sys/class/gpio/gpio$pin/direction", 'w')->try($error);
+            $directionFile = File::open("/sys/class/gpio/gpio$pin/direction", 'w')->unwrap($error);
             if ($error) {
                 return error($error);
             }
-            $directionFile->write('')->try($error);
+            $directionFile->write('')->unwrap($error);
             if ($error) {
                 return error($error);
             }
             $directionFile->close();
         }
 
-        $directionFile = File::open("/sys/class/gpio/gpio$pin/direction", 'a')->try($error);
+        $directionFile = File::open("/sys/class/gpio/gpio$pin/direction", 'a')->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -86,15 +86,15 @@ class GpioService {
 
 
         if (!File::exists("/sys/class/gpio/gpio$pin/value")) {
-            Directory::create("/sys/class/gpio/gpio$pin")->try($error);
+            Directory::create("/sys/class/gpio/gpio$pin")->unwrap($error);
             if ($error) {
                 return error($error);
             }
-            $valueFile = File::open("/sys/class/gpio/gpio$pin/value", 'w')->try($error);
+            $valueFile = File::open("/sys/class/gpio/gpio$pin/value", 'w')->unwrap($error);
             if ($error) {
                 return error($error);
             }
-            $valueFile->write('')->try($error);
+            $valueFile->write('')->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -124,7 +124,7 @@ class GpioService {
             public function read():Unsafe {
                 if (!$this->file) {
                     $export = $this->export;
-                    $file   = $export()->try($error);
+                    $file   = $export()->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -164,7 +164,7 @@ class GpioService {
             public function write(string $data):Unsafe {
                 if (!$this->file) {
                     $export = $this->export;
-                    $file   = $export()->try($error);
+                    $file   = $export()->unwrap($error);
                     if ($error) {
                         return error($error);
                     }

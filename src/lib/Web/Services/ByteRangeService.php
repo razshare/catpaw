@@ -93,18 +93,18 @@ class ByteRangeService {
      */
     public function response(ByteRangeWriterInterface $interface): Unsafe {
         $headers    = [];
-        $rangeQuery = $interface->getRangeQuery()->try($error);
+        $rangeQuery = $interface->getRangeQuery()->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $ranges = $this->parse($rangeQuery)->try($error);
+        $ranges = $this->parse($rangeQuery)->unwrap($error);
 
         if ($error) {
             return error($error);
         }
 
-        $contentLength = $interface->getContentLength()->try($error);
+        $contentLength = $interface->getContentLength()->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -113,7 +113,7 @@ class ByteRangeService {
             return error("Could not retrieve file size.");
         }
 
-        $contentType = $interface->getContentType()->try($error);
+        $contentType = $interface->getContentType()->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -143,7 +143,7 @@ class ByteRangeService {
             }
 
             EventLoop::defer(function() use ($writer, $start, $end, $interface) {
-                $data = $interface->send($start, $end - $start + 1)->try($error);
+                $data = $interface->send($start, $end - $start + 1)->unwrap($error);
                 if ($error) {
                     $this->logger->error((string)$error);
                     $writer->close();
@@ -191,7 +191,7 @@ class ByteRangeService {
                 if ($end < 0) {
                     $end = $contentLength - 1;
                 }
-                $data = $interface->send($start, $end - $start + 1)->try($error);
+                $data = $interface->send($start, $end - $start + 1)->unwrap($error);
                 if ($error) {
                     $this->logger->error("Unexpected error in execution callback $id.");
                     $this->logger->error($error);
@@ -237,7 +237,7 @@ class ByteRangeService {
                 }
 
                 public function getContentLength():Unsafe {
-                    $size = File::getSize($this->fileName)->try($error);
+                    $size = File::getSize($this->fileName)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -249,7 +249,7 @@ class ByteRangeService {
                  * @return Unsafe<None>
                  */
                 public function start():Unsafe {
-                    $file = File::open($this->fileName)->try($error);
+                    $file = File::open($this->fileName)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }

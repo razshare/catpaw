@@ -22,12 +22,12 @@ readonly class FileServer implements FileServerInterface {
      * @return Unsafe<self>
      */
     public static function create(Server $server):Unsafe {
-        $logger = Container::create(LoggerInterface::class)->try($error);
+        $logger = Container::create(LoggerInterface::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $byteRangeService = Container::create(ByteRangeService::class)->try($error);
+        $byteRangeService = Container::create(ByteRangeService::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -45,12 +45,12 @@ readonly class FileServer implements FileServerInterface {
      * @return Unsafe<self>
      */
     public static function createForSpa(Server $server):Unsafe {
-        $logger = Container::create(LoggerInterface::class)->try($error);
+        $logger = Container::create(LoggerInterface::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $byteRangeService = Container::create(ByteRangeService::class)->try($error);
+        $byteRangeService = Container::create(ByteRangeService::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -174,13 +174,13 @@ readonly class FileServer implements FileServerInterface {
         $rangedResponse = $byteRangeService->file(
             fileName  : $fileName,
             rangeQuery: $request->getHeader("Range") ?? '',
-        )->try($error);
+        )->unwrap($error);
 
         if (!$error) {
             return $rangedResponse;
         }
 
-        $file = File::open($fileName, 'r')->try($error);
+        $file = File::open($fileName, 'r')->unwrap($error);
         if ($error) {
             $logger->error($error);
             return $this->failure();
@@ -188,7 +188,7 @@ readonly class FileServer implements FileServerInterface {
 
         $stream = $file->getAmpFile();
 
-        $fileSize = File::getSize($fileName)->try($error);
+        $fileSize = File::getSize($fileName)->unwrap($error);
         if ($error) {
             $logger->error($error);
             return $this->failure();

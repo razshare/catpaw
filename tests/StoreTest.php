@@ -19,7 +19,7 @@ use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 class StoreTest extends TestCase {
     public function testAll():void {
-        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->basic(...));
@@ -30,7 +30,7 @@ class StoreTest extends TestCase {
             yield Container::run($this->update(...));
             yield Container::run($this->attribute(...));
             yield Container::run($this->makingSureCleanUpFunctionIsInvoked(...));
-        })->try($error);
+        })->unwrap($error);
         $this->assertNull($error);
         EventLoop::run();
     }

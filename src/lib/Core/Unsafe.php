@@ -40,7 +40,7 @@ readonly class Unsafe {
      * @param  Error $error
      * @return T
      */
-    public function try(&$error = null) {
+    public function unwrap(&$error = null) {
         if ($this->error) {
             $error = $this->error;
             /** @var T */
@@ -55,7 +55,7 @@ readonly class Unsafe {
      * @throws Error
      * @return T
      */
-    public function unwrap() {
+    public function try() {
         if ($this->error) {
             throw $this->error;
         }

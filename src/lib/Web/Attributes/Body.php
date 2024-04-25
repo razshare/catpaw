@@ -62,7 +62,7 @@ class Body implements AttributeInterface, OnParameterMount {
                     contentType: $context->request->getHeader("Content-Type") ?? '',
                 ),
             };
-            $temp = $result->try($error);
+            $temp = $result->unwrap($error);
             if ($error) {
                 return error($error);
             }

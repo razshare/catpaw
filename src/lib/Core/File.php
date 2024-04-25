@@ -36,23 +36,23 @@ readonly class File {
      * @return Unsafe<bool>
      */
     public static function checksum(string $fileNameA, string $fileNameB, bool $binary = false):Unsafe {
-        $fileA = File::open($fileNameA)->try($error);
+        $fileA = File::open($fileNameA)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $fileB = File::open($fileNameB)->try($error);
+        $fileB = File::open($fileNameB)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
 
-        $contentA = $fileA->readAll()->try($error);
+        $contentA = $fileA->readAll()->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $contentB = $fileB->readAll()->try($error);
+        $contentB = $fileB->readAll()->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -70,7 +70,7 @@ readonly class File {
      * @return Unsafe<None>
      */
     public static function copy(string $from, string $to):Unsafe {
-        $source = File::open($from)->try($error);
+        $source = File::open($from)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -78,7 +78,7 @@ readonly class File {
         $toDirectory = dirname($to);
 
         if (!File::exists($toDirectory)) {
-            Directory::create($toDirectory)->try($error);
+            Directory::create($toDirectory)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -88,7 +88,7 @@ readonly class File {
 
         // @phpstan-ignore-next-line
         if (false === $dirname) {
-            Directory::create($dirname)->try($error);
+            Directory::create($dirname)->unwrap($error);
             if ($error) {
                 return $error;
             }
@@ -97,7 +97,7 @@ readonly class File {
         if (!File::exists($dirname)) {
         }
 
-        $destination = File::open($to, 'x')->try($error);
+        $destination = File::open($to, 'x')->unwrap($error);
 
         if ($error) {
             return error($error);
@@ -214,11 +214,11 @@ readonly class File {
 
                 if (File::exists($variant)) {
                     $fileName = $variant;
-                    $file     = File::open($fileName, 'r')->try($error);
+                    $file     = File::open($fileName, 'r')->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
-                    $contents = $file->readAll()->try($error);
+                    $contents = $file->readAll()->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -242,11 +242,11 @@ readonly class File {
             return error("Couldn't find yaml file, tried `$fileName` and different variants $stringifiedVariants.");
         }
 
-        $file = File::open($fileName, 'r')->try($error);
+        $file = File::open($fileName, 'r')->unwrap($error);
         if ($error) {
             return error($error);
         }
-        $contents = $file->readAll()->try($error);
+        $contents = $file->readAll()->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -266,11 +266,11 @@ readonly class File {
      * @return Unsafe<T>
      */
     public static function readJson(string $interface, string $fileName):Unsafe {
-        $file = File::open($fileName, 'r')->try($error);
+        $file = File::open($fileName, 'r')->unwrap($error);
         if ($error) {
             return error($error);
         }
-        $contents = $file->readAll()->try($error);
+        $contents = $file->readAll()->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -289,11 +289,11 @@ readonly class File {
      * @return Unsafe<T>
      */
     public static function readEnv(string $interface, string $fileName):Unsafe {
-        $file = File::open($fileName, 'r')->try($error);
+        $file = File::open($fileName, 'r')->unwrap($error);
         if ($error) {
             return error($error);
         }
-        $contents = $file->readAll()->try($error);
+        $contents = $file->readAll()->unwrap($error);
         if ($error) {
             return error($error);
         }

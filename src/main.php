@@ -47,17 +47,19 @@ function main(
     });
 }
 
+$test = ok()->try();
+
 /**
  *
  * @return Unsafe<None>
  */
 function hi():Unsafe {
-    $cui = Container::create(CuiService::class)->try($error);
+    $cui = Container::create(CuiService::class)->unwrap($error);
     if ($error) {
         return error($error);
     }
 
-    $cui->load()->try($error);
+    $cui->load()->unwrap($error);
     if ($error) {
         return error($error);
     }

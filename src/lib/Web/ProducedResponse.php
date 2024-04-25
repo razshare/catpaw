@@ -134,7 +134,7 @@ class ProducedResponse implements AttributeInterface {
             } else if ($this->isItem) {
                 $reference = $oa->setComponentReferenceItem($this->className);
             }
-            $oa->setComponentObject($this->className)->try($error);
+            $oa->setComponentObject($this->className)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -164,7 +164,7 @@ class ProducedResponse implements AttributeInterface {
                     $schema = OpenApiService::templateForItem(className:$type, dataIsObject:false);
                 } else if ($this->isErrorItem) {
                     $oa->setComponentReference(ErrorItem::class);
-                    $oa->setComponentObject(ErrorItem::class)->try($error);
+                    $oa->setComponentObject(ErrorItem::class)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }

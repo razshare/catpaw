@@ -153,9 +153,9 @@ function queries(UriInterface $uri):array {
  * @return ResponseModifier
  */
 function websocket(Request $request, WebsocketClientHandler $handler): ResponseModifier {
-    $websocketService = Container::create(WebsocketService::class)->try($errorWebsocket);
+    $websocketService = Container::create(WebsocketService::class)->unwrap($errorWebsocket);
     if ($errorWebsocket) {
-        $logger = Container::create(LoggerInterface::class)->try($errorLogger);
+        $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
         if ($errorLogger) {
             echo $errorLogger.PHP_EOL;
             echo $errorWebsocket.PHP_EOL;

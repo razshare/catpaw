@@ -31,12 +31,12 @@ class Directory {
         foreach ($list as $fileNameLocal) {
             $fileName = "$directoryName/$fileNameLocal";
             if (isFile($fileName)) {
-                File::delete($fileName)->try($error);
+                File::delete($fileName)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
             } else {
-                self::delete($fileName)->try($error);
+                self::delete($fileName)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -75,7 +75,7 @@ class Directory {
     public static function flat(string $directoryName):Unsafe {
         try {
             $result = [];
-            $list   = Directory::list($directoryName)->try($error);
+            $list   = Directory::list($directoryName)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -83,7 +83,7 @@ class Directory {
                 if (isFile($fileName)) {
                     $result[] = $fileName;
                 } else {
-                    $flatList = Directory::flat($fileName)->try($error);
+                    $flatList = Directory::flat($fileName)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -151,7 +151,7 @@ class Directory {
             foreach ($iterator->current() as $fileName) {
                 $parts            = explode($key, $fileName, 2);
                 $relativeFileName = end($parts);
-                File::copy($fileName, "$to/$relativeFileName")->try($error);
+                File::copy($fileName, "$to/$relativeFileName")->unwrap($error);
                 if ($error) {
                     return error($error);
                 }

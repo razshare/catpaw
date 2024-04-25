@@ -175,7 +175,7 @@ function execute(
     false|Signal $kill = false,
 ): Unsafe {
     try {
-        $logger = Container::create(LoggerInterface::class)->try($error);
+        $logger = Container::create(LoggerInterface::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -211,7 +211,7 @@ function execute(
  */
 function get(string $command): Unsafe {
     [$reader, $writer] = duplex();
-    execute($command, $writer)->try($error);
+    execute($command, $writer)->unwrap($error);
     if ($error) {
         return error($error);
     }
@@ -324,7 +324,7 @@ function env(string $query): mixed {
     static $env = false;
 
     if (!$env) {
-        $env = Container::create(EnvironmentService::class)->try($error);
+        $env = Container::create(EnvironmentService::class)->unwrap($error);
         if ($error) {
             Bootstrap::kill("Couldn't load environment service.\n$error", CommandStatus::NO_DATA_AVAILABLE);
         }

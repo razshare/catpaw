@@ -13,11 +13,11 @@ use PHPUnit\Framework\TestCase;
 
 class SuperstyleTest extends TestCase {
     public function testAll():void {
-        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->makeSureSuperstyleServiceWorks(...));
-        })->try($error);
+        })->unwrap($error);
         $this->assertNull($error);
     }
 
@@ -28,7 +28,7 @@ class SuperstyleTest extends TestCase {
      */
     private function makeSureSuperstyleServiceWorks(): Unsafe {
         return anyError(function() {
-            $result = Superstyle::parse(asFileName(__DIR__, './superstyle.scss'), ["value" => "world"])->unwrap();
+            $result = Superstyle::parse(asFileName(__DIR__, './superstyle.scss'), ["value" => "world"])->try();
             $this->assertEquals('<main><button class="btn" x-post="">click me world</button></main>', $result->html);
             $this->assertEquals('main { @apply fixed; button.btn[x-post=""] {   } }', $result->css);
             print_r($result);

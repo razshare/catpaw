@@ -127,7 +127,7 @@ class ConsumedRequest implements AttributeInterface {
     #[Entry] public function setup(OpenApiService $oa):Unsafe {
         $isClass = class_exists($this->className);
         if ($isClass) {
-            $oa->setComponentObject($this->className)->try($error);
+            $oa->setComponentObject($this->className)->unwrap($error);
             if ($error) {
                 return error($error);
             }

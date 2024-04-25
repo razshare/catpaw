@@ -22,7 +22,7 @@ use PHPUnit\Framework\TestCase;
 
 class WebTest extends TestCase {
     public function testAll():void {
-        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         Container::provide(HttpClient::class, HttpClientBuilder::buildDefault());
         $server = Server::create(
@@ -30,7 +30,7 @@ class WebTest extends TestCase {
             api      : 'tests/api',
             www      : 'tests/www',
             apiPrefix: 'api'
-        )->try($error);
+        )->unwrap($error);
         $this->assertNull($error);
 
         Container::provide(Server::class, $server);
@@ -46,18 +46,18 @@ class WebTest extends TestCase {
                 yield Container::run($this->makeSureContentNegotiationWorks(...));
                 yield Container::run($this->makeSureParamHintsWork(...));
                 yield Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...));
-            })->try($error);
+            })->unwrap($error);
             if ($error) {
                 $this->assertNull($error);
-                $server->stop()->try($error);
+                $server->stop()->unwrap($error);
                 $this->assertNull($error);
             } else {
-                $server->stop()->try($error);
+                $server->stop()->unwrap($error);
                 $this->assertNull($error);
             }
         });
 
-        $server->start($readySignal)->try($error);
+        $server->start($readySignal)->unwrap($error);
         $this->assertNull($error);
     }
 

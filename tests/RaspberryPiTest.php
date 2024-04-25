@@ -18,11 +18,11 @@ use Revolt\EventLoop;
 class RaspberryPiTest extends TestCase {
     public function testAll(): void {
         $this->assertTrue(true);
-        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->blink(...));
-        })->try($error);
+        })->unwrap($error);
         $this->assertNull($error);
         EventLoop::run();
     }

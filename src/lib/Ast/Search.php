@@ -19,8 +19,8 @@ class Search {
      */
     public static function fromFile(string $fileName): Unsafe {
         return anyError(function() use ($fileName) {
-            $file   = File::open($fileName)->unwrap();
-            $source = $file->readAll()->unwrap();
+            $file   = File::open($fileName)->try();
+            $source = $file->readAll()->try();
             return self::fromSource($source);
         });
     }
@@ -181,7 +181,7 @@ class Search {
                     if ('' !== $missed) {
                         $missed .= $result->before;
                         if ('' === $name) {
-                            $detector->onGlobal(trim($missed))->try($error);
+                            $detector->onGlobal(trim($missed))->unwrap($error);
                             if ($error) {
                                 return error($error);
                             }
@@ -191,7 +191,7 @@ class Search {
                         $missed = '';
                     } else {
                         if ('' === $name) {
-                            $detector->onGlobal(trim($result->before))->try($error);
+                            $detector->onGlobal(trim($result->before))->unwrap($error);
                             if ($error) {
                                 return error($error);
                             }

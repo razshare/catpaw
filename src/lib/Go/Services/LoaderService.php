@@ -27,12 +27,12 @@ class LoaderService {
      */
     public function load(string $interface, string $directoryName, bool $clear = false):Unsafe {
         if ($clear) {
-            File::delete("$directoryName/main.so")->try($error);
-            File::delete("$directoryName/main.h")->try($error);
+            File::delete("$directoryName/main.so")->unwrap($error);
+            File::delete("$directoryName/main.h")->unwrap($error);
         }
 
         if (!isDirectory($directoryName)) {
-            Directory::create($directoryName)->try($error);
+            Directory::create($directoryName)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -43,15 +43,15 @@ class LoaderService {
         }
 
         if (!isFile("$directoryName/main.so") || !isFile("$directoryName/main.h")) {
-            execute("go build -o $directoryName/main.so -buildmode=c-shared $directoryName/main.go", out(), $directoryName)->try($error);
+            execute("go build -o $directoryName/main.so -buildmode=c-shared $directoryName/main.go", out(), $directoryName)->unwrap($error);
             if ($error) {
                 return error($error);
             }
-            File::delete("$directoryName/main.static.h")->try($error);
+            File::delete("$directoryName/main.static.h")->unwrap($error);
         }
 
         if (!isFile("$directoryName/main.static.h")) {
-            execute("cpp -P $directoryName/main.h $directoryName/main.static.h", out(), $directoryName)->try($error);
+            execute("cpp -P $directoryName/main.h $directoryName/main.static.h", out(), $directoryName)->unwrap($error);
             if ($error) {
                 return error($error);
             }

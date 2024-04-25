@@ -230,7 +230,7 @@ class StringExpansion {
      * @return Unsafe<bool>
      */
     public static function condition(string $content, array $parameters): Unsafe {
-        $variable = self::variable($content, $parameters)->try($error);
+        $variable = self::variable($content, $parameters)->unwrap($error);
         if ($error) {
             return error($error);
         }

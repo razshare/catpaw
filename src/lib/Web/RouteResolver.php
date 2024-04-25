@@ -70,7 +70,7 @@ class RouteResolver {
                 symbolicMethod: $symbolicMethod,
                 symbolicPath: $symbolicPath,
                 reflectionParameters: $reflectionParameters,
-            )->try($error);
+            )->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -107,7 +107,7 @@ class RouteResolver {
         );
 
         try {
-            $result = $this->invoker->invoke($context)->try($error);
+            $result = $this->invoker->invoke($context)->unwrap($error);
         } catch(Throwable $error) {
             return error($error);
         }

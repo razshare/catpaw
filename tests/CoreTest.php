@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
     public function testAll():void {
-        Container::load(asFileName(__DIR__, '../src/lib'))->try($error);
+        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->makeSureEnvWorks(...));
@@ -25,14 +25,14 @@ class CoreTest extends TestCase {
             yield Container::run($this->makeSureUnsafeWorksWithAnyError(...));
             yield Container::run($this->makeSureSignalsWork(...));
             yield Container::run($this->makeSureGoffiWorks(...));
-        })->try($error);
+        })->unwrap($error);
         $this->assertNull($error);
     }
 
 
     private function makeSureEnvWorks(EnvironmentService $service): void {
         $service->setFileName(asFileName(__DIR__, 'env.yaml'));
-        $service->load()->try($error);
+        $service->load()->unwrap($error);
         $this->assertNull($error);
         $sayHello = env("say.hello");
         $this->assertEquals('hello world', $sayHello);
@@ -43,11 +43,11 @@ class CoreTest extends TestCase {
 
     public function makeSureUnsafeWorks():void {
         // open file
-        $file = File::open(asFileName(__DIR__, 'file.txt'))->try($error);
+        $file = File::open(asFileName(__DIR__, 'file.txt'))->unwrap($error);
         $this->assertNull($error);
 
         // read contents
-        $contents = $file->readAll()->try($error);
+        $contents = $file->readAll()->unwrap($error);
         $this->assertNull($error);
 
         $this->assertEquals("hello\n", $contents);
@@ -61,16 +61,16 @@ class CoreTest extends TestCase {
     public function makeSureUnsafeWorksWithAnyError():void {
         $contents = anyError(function() {
             // open file
-            $file = File::open(asFileName(__DIR__, 'file.txt'))->unwrap();
+            $file = File::open(asFileName(__DIR__, 'file.txt'))->try();
 
             // read contents
-            $contents = $file->readAll()->unwrap();
+            $contents = $file->readAll()->try();
 
             // close file
             $file->close();
 
             return $contents;
-        })->try($error);
+        })->unwrap($error);
 
         $this->assertNull($error);
 
@@ -94,7 +94,7 @@ class CoreTest extends TestCase {
      */
     public function makeSureGoffiWorks():Unsafe {
         return anyError(function() {
-            $lib    = goffi(Contract::class, asFileName(__DIR__, './main.so'))->unwrap();
+            $lib    = goffi(Contract::class, asFileName(__DIR__, './main.so'))->try();
             $result = $lib->hello("world");
             $this->assertEquals("hello world", $result);
             return ok();

@@ -68,13 +68,13 @@ function build(bool $buildOptimize = false):Unsafe {
 
     try {
         if (File::exists($dirnameStart)) {
-            Directory::delete($dirnameStart)->try($error);
+            Directory::delete($dirnameStart)->unwrap($error);
             if ($error) {
                 return error($error);
             }
         }
 
-        Directory::create($dirnameStart)->try($error);
+        Directory::create($dirnameStart)->unwrap($error);
 
         if ($error) {
             return error($error);
@@ -82,7 +82,7 @@ function build(bool $buildOptimize = false):Unsafe {
 
         $environmentFallbackStringified = $environment ? "\Phar::running().'/'.'$environment'":"''";
 
-        $file = File::open($start, 'w+')->try($error);
+        $file = File::open($start, 'w+')->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -109,7 +109,7 @@ function build(bool $buildOptimize = false):Unsafe {
                 environment: \$environment,
                 dieOnChange: false,
             );
-            PHP)->try($error);
+            PHP)->unwrap($error);
 
         $file->close();
 
@@ -121,28 +121,28 @@ function build(bool $buildOptimize = false):Unsafe {
         // die($output.PHP_EOL);
 
         if (File::exists($app)) {
-            File::delete($app)->try($error);
+            File::delete($app)->unwrap($error);
             if ($error) {
                 return error($error);
             }
         }
 
         if (File::exists($app.'.gz')) {
-            File::delete($app.'.gz')->try($error);
+            File::delete($app.'.gz')->unwrap($error);
             if ($error) {
                 return error($error);
             }
         }
 
         if ($buildOptimize) {
-            execute("composer update --no-dev", out())->try($error);
+            execute("composer update --no-dev", out())->unwrap($error);
             if ($error) {
                 return error($error);
             }
         }
 
         if (isDirectory("./vendor/bin")) {
-            Directory::delete("./vendor/bin")->try($error);
+            Directory::delete("./vendor/bin")->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -165,13 +165,13 @@ function build(bool $buildOptimize = false):Unsafe {
         # Make the file executable
         chmod($app, 0770);
 
-        Directory::delete($dirnameStart)->try($error);
+        Directory::delete($dirnameStart)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
         if ($buildOptimize) {
-            execute("composer update", out())->try($error);
+            execute("composer update", out())->unwrap($error);
             if ($error) {
                 return error($error);
             }

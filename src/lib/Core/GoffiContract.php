@@ -31,7 +31,7 @@ class GoffiContract {
             $phar                = Phar::running();
             $headerFileName      = './'.basename('.'.str_replace($phar, '', $localHeaderFileName));
             if (!File::exists($headerFileName)) {
-                File::copy($localHeaderFileName, $headerFileName)->try($error);
+                File::copy($localHeaderFileName, $headerFileName)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -40,14 +40,14 @@ class GoffiContract {
             $headerFileName = "$strippedFileName.static.h";
         }
 
-        $headerFile = File::open($headerFileName)->try($error);
+        $headerFile = File::open($headerFileName)->unwrap($error);
         if ($error) {
-            $headerFile = File::open("$strippedFileName.h")->try($error);
+            $headerFile = File::open("$strippedFileName.h")->unwrap($error);
             if ($error) {
                 return error($error);
             }
         }
-        $cdefComplex = $headerFile->readAll()->try($error);
+        $cdefComplex = $headerFile->readAll()->unwrap($error);
 
 
         if ($error) {
@@ -65,7 +65,7 @@ class GoffiContract {
                 $externalFileName = './'.basename('.'.str_replace($phar, '', $fileName));
 
                 if (!File::exists($externalFileName)) {
-                    File::copy($fileName, $externalFileName)->try($error);
+                    File::copy($fileName, $externalFileName)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -183,7 +183,7 @@ class GoffiContract {
                     $resolver = $resolvers[$key];
                     /** @var Unsafe<mixed> $result */
                     $result = $resolver($arg);
-                    $value  = $result->try($error);
+                    $value  = $result->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
