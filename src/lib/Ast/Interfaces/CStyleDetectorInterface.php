@@ -5,7 +5,7 @@ use CatPaw\Ast\Block;
 use CatPaw\Core\None;
 use CatPaw\Core\Unsafe;
 
-interface CStyleDetector {
+interface CStyleDetectorInterface {
     /**
      *
      * @param  Block        $block

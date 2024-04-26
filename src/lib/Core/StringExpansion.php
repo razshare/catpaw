@@ -1,8 +1,5 @@
 <?php
-
 namespace CatPaw\Core;
-
-use Exception;
 
 use function filter_var;
 
@@ -41,30 +38,30 @@ class StringExpansion {
     }
 
 
-    private const OP_NONE               = 0;
-    private const OP_AND                = 1;
-    private const OP_OR                 = 2;
-    private const OP_GT                 = 3;
-    private const OP_GTE                = 4;
-    private const OP_LT                 = 5;
-    private const OP_LTE                = 6;
-    private const OP_EQUALS_ISH         = 7;
-    private const OP_EQUALS             = 8;
-    private const OP_NOT_EQUALS_ISH     = 9;
-    private const OP_NOT_EQUALS         = 10;
-    private const OP_LEFT_BINARY_SHIFT  = 11;
-    private const OP_RIGHT_BINARY_SHIFT = 12;
-    private const OP_BINARY_AND         = 13;
-    private const OP_BINARY_OR          = 14;
-    private const OP_BINARY_XOR         = 15;
-    // @phpstan-ignore-next-line
-    private const OP_BINARY_NOT = 16;
+    public const OP_NONE               = 0;
+    public const OP_AND                = 1;
+    public const OP_OR                 = 2;
+    public const OP_GT                 = 3;
+    public const OP_GTE                = 4;
+    public const OP_LT                 = 5;
+    public const OP_LTE                = 6;
+    public const OP_EQUALS_ISH         = 7;
+    public const OP_EQUALS             = 8;
+    public const OP_NOT_EQUALS_ISH     = 9;
+    public const OP_NOT_EQUALS         = 10;
+    public const OP_LEFT_BINARY_SHIFT  = 11;
+    public const OP_RIGHT_BINARY_SHIFT = 12;
+    public const OP_BINARY_AND         = 13;
+    public const OP_BINARY_OR          = 14;
+    public const OP_BINARY_XOR         = 15;
+    public const OP_BINARY_NOT         = 16;
 
     /**
-     * @param  string $content
-     * @return bool
+     * @param  string                                             $content
+     * @param  false|callable(string,int,string):Unsafe<bool|int> $validator
+     * @return Unsafe<bool>
      */
-    public static function linearCondition(string $content): bool {
+    public static function linearCondition(string $content, false|callable $validator = false): Unsafe {
         $previousValue = false;
 
         $stack       = StringStack::of($content);
@@ -105,27 +102,36 @@ class StringExpansion {
                 };
 
 
-                $previousValue = match ($previousOperator) {
-                    self::OP_AND                => $previousValue && $value,
-                    self::OP_OR                 => $previousValue || $value,
-                    self::OP_GT                 => $previousValue > $value,
-                    self::OP_GTE                => $previousValue >= $value,
-                    self::OP_LT                 => $previousValue < $value,
-                    self::OP_LTE                => $previousValue <= $value,
-                    self::OP_EQUALS_ISH         => $previousValue == $value,
-                    self::OP_EQUALS             => $previousValue === $value,
-                    self::OP_NOT_EQUALS_ISH     => $previousValue != $value,
-                    self::OP_NOT_EQUALS         => $previousValue !== $value,
-                    self::OP_LEFT_BINARY_SHIFT  => $previousValue << $value,
-                    self::OP_RIGHT_BINARY_SHIFT => $previousValue >> $value,
-                    self::OP_BINARY_AND         => $previousValue & $value,
-                    self::OP_BINARY_OR          => $previousValue | $value,
-                    self::OP_BINARY_XOR         => $previousValue ^ $value,
-                    // @phpstan-ignore-next-line
-                    default => false
-                };
+                if ($validator) {
+                    $previousValue = $validator($previousValue, $previousOperator, $value)->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                } else {
+                    $previousValue = match ($previousOperator) {
+                        self::OP_AND                => $previousValue && $value,
+                        self::OP_OR                 => $previousValue || $value,
+                        self::OP_GT                 => $previousValue > $value,
+                        self::OP_GTE                => $previousValue >= $value,
+                        self::OP_LT                 => $previousValue < $value,
+                        self::OP_LTE                => $previousValue <= $value,
+                        self::OP_EQUALS_ISH         => $previousValue == $value,
+                        self::OP_EQUALS             => $previousValue === $value,
+                        self::OP_NOT_EQUALS_ISH     => $previousValue != $value,
+                        self::OP_NOT_EQUALS         => $previousValue !== $value,
+                        self::OP_LEFT_BINARY_SHIFT  => $previousValue << $value,
+                        self::OP_RIGHT_BINARY_SHIFT => $previousValue >> $value,
+                        self::OP_BINARY_AND         => $previousValue & $value,
+                        self::OP_BINARY_OR          => $previousValue | $value,
+                        self::OP_BINARY_XOR         => $previousValue ^ $value,
+                        // @phpstan-ignore-next-line
+                        default => false
+                    };
+                }
+
+                
                 if (!$token) {
-                    return $previousValue;
+                    return ok((bool)$previousValue);
                 }
             } else {
                 if (!$token) {
@@ -160,15 +166,16 @@ class StringExpansion {
             };
         }
 
-        return -1 === $previousValue ? false : $previousValue;
+        return ok(-1 === $previousValue ? false : (bool)$previousValue);
     }
 
     /**
-     * @param  string       $content
-     * @param  int          $depth
+     * @param  string                                             $content
+     * @param  int                                                $depth
+     * @param  false|callable(string,int,string):Unsafe<bool|int> $validator
      * @return Unsafe<bool>
      */
-    public static function groupCondition(string $content, int $depth = 0): Unsafe {
+    public static function groupCondition(string $content, int $depth = 0, false|callable $validator = false): Unsafe {
         if ($depth > 10) {
             return error("Too many nested groups in the condition (max 10).");
         }
@@ -191,7 +198,7 @@ class StringExpansion {
         for ($occurrences->rewind(); $occurrences->valid(); $occurrences->next()) {
             [$previous, $token] = $occurrences->current();
             if (false === $token && '' === $result) {
-                return ok(self::linearCondition($content));
+                return self::linearCondition($content, $validator);
             }
             if (false === $previous) {
                 continue;
@@ -205,7 +212,11 @@ class StringExpansion {
                 $result .= "$previous(";
             } else {
                 if (")" === $token) {
-                    $result .= (self::linearCondition($previous) ? 'true' : 'false').')';
+                    $chunk = self::linearCondition($previous, $validator)->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                    $result .= ($chunk ? 'true' : 'false').')';
                 }
             }
         }
@@ -217,16 +228,15 @@ class StringExpansion {
 
 
         if (str_contains($result, '(') && str_contains($result, ')')) {
-            return self::groupCondition($result, ++$depth);
+            return self::groupCondition($result, ++$depth, $validator);
         }
 
-        return ok(self::linearCondition($result));
+        return self::linearCondition($result, $validator);
     }
 
     /**
      * @param  string              $content
      * @param  array<string,mixed> $parameters
-     * @throws Exception
      * @return Unsafe<bool>
      */
     public static function condition(string $content, array $parameters): Unsafe {
@@ -235,5 +245,62 @@ class StringExpansion {
             return error($error);
         }
         return self::groupCondition($variable);
+    }
+
+    /**
+     * @param  string                                     $content
+     * @param  array<string,mixed>                        $parameters
+     * @param  callable(mixed,int,mixed):Unsafe<bool|int> $validator
+     * @return Unsafe<bool>
+     */
+    public static function conditionCustomized(string $content, array $parameters, callable $validator): Unsafe {
+        $variable = self::variable($content, $parameters)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        return self::groupCondition($variable, 0, $validator);
+    }
+
+
+    /**
+     * Parse text surrounded by `$delimiters` as a string.
+     * @param  string         $text
+     * @param  array<string>  $delimiters
+     * @return Unsafe<string>
+     */
+    public static function delimit(string $text, array $delimiters): Unsafe {
+        foreach ($delimiters as $delimiter) {
+            $stack         = StringStack::of($text);
+            $occurrences   = $stack->expect($delimiter, '\\');
+            $readingString = false;
+            $actualString  = '';
+            for ($occurrences->rewind(); $occurrences->valid(); $occurrences->next()) {
+                /**
+                 * @var string $previous
+                 * @var string $current
+                 */
+                [$previous, $current] = $occurrences->current();
+
+                if ($readingString) {
+                    if ($delimiter === $current) {
+                        if ('\\' === $previous) {
+                            $actualString = substr($actualString, 0, -1).$previous;
+                        } else {
+                            $actualString .= $previous;
+                            return ok($actualString);
+                        }
+                        continue;
+                    }
+                    $actualString .= $previous;
+                    continue;
+                }
+
+                if ($delimiter === $current) {
+                    $readingString = true;
+                }
+            }
+        }
+
+        return error("Invalid string found `$text`.");
     }
 }

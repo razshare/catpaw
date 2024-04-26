@@ -2,7 +2,8 @@
 
 namespace CatPaw\Ast;
 
-use CatPaw\Ast\Interfaces\CStyleDetector;
+use CatPaw\Ast\Interfaces\AstSearchInterface;
+use CatPaw\Ast\Interfaces\CStyleDetectorInterface;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
@@ -11,11 +12,11 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 
-class Search {
+class CStyleAstSearch implements AstSearchInterface {
     /**
      *
      * @param  string         $fileName
-     * @return Unsafe<Search>
+     * @return Unsafe<CStyleAstSearch>
      */
     public static function fromFile(string $fileName): Unsafe {
         return anyError(function() use ($fileName) {
@@ -67,18 +68,18 @@ class Search {
 
     /**
      * Parse source code as C style.
-     * @param  CStyleDetector $detector
-     * @param  false|Block    $parent
-     * @param  int            $depth
+     * @param  CStyleDetectorInterface $detector
+     * @param  false|Block             $parent
+     * @param  int                     $depth
      * @return Unsafe<None>
      */
-    public function cStyle(
-        CStyleDetector $detector,
-        false|Block $parent = false,
-        int $depth = 0,
+    public function detect(
+        CStyleDetectorInterface $detector,
+        false|Block             $parent = false,
+        int                     $depth = 0,
     ): Unsafe {
         $uncommented = '';
-        $search      = Search::fromSource(preg_replace('/^\s*\/\/.*/m', '', $this->source));
+        $search      = CStyleAstSearch::fromSource(preg_replace('/^\s*\/\/.*/m', '', $this->source));
 
         $comment_opened = 0;
         $comment_closed = 0;
@@ -101,7 +102,7 @@ class Search {
             }
         }
 
-        $search = Search::fromSource($uncommented);
+        $search = CStyleAstSearch::fromSource($uncommented);
 
         $name              = '';
         $opened_braces     = 0;
@@ -240,13 +241,13 @@ class Search {
                     $detector->onBlock($block, $depth + 1);
 
                     if ($block->body) {
-                        $search = Search::fromSource($block->body);
-                        $search->cStyle($detector, $block, $depth + 1);
+                        $search = CStyleAstSearch::fromSource($block->body);
+                        $search->detect($detector, $block, $depth + 1);
                     }
 
                     if ($this->source) {
-                        $search = Search::fromSource($this->source);
-                        $search->cStyle($detector, $parent, $depth + 1);
+                        $search = CStyleAstSearch::fromSource($this->source);
+                        $search->detect($detector, $parent, $depth + 1);
                     }
 
                     return ok();

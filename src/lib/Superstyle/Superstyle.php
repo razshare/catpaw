@@ -2,8 +2,8 @@
 namespace CatPaw\Superstyle;
 
 use CatPaw\Ast\Block;
-use CatPaw\Ast\Interfaces\CStyleDetector;
-use CatPaw\Ast\Search;
+use CatPaw\Ast\Interfaces\CStyleDetectorInterface;
+use CatPaw\Ast\CStyleAstSearch;
 use function CatPaw\Core\error;
 
 use CatPaw\Core\None;
@@ -19,7 +19,7 @@ class Superstyle {
      * @return Unsafe<SuperstyleExecutorResult>
      */
     public static function parse(string $fileName, array $parameters = []):Unsafe {
-        $search = Search::fromFile($fileName)->unwrap($error);
+        $search = CStyleAstSearch::fromFile($fileName)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -29,7 +29,7 @@ class Superstyle {
         /** @var null|Block $main */
         $main = null;
 
-        $search->cStyle(new class(globals: $globals, main: $main) implements CStyleDetector {
+        $search->detect(new class(globals: $globals, main: $main) implements CStyleDetectorInterface {
             /**
              *
              * @param  array<string> $globals

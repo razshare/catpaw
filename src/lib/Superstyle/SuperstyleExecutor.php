@@ -21,48 +21,6 @@ readonly class SuperstyleExecutor {
     public function __construct(public Block $block) {
     }
 
-    /**
-     *
-     * @param  string                           $text
-     * @param  array<string>                    $delimiters
-     * @return Unsafe<SuperstyleExecutorResult>
-     */
-    private function unwrapString(string $text, array $delimiters): Unsafe {
-        foreach ($delimiters as $delimiter) {
-            $stack         = StringStack::of($text);
-            $occurrences   = $stack->expect($delimiter, '\\');
-            $readingString = false;
-            $actualString  = '';
-            for ($occurrences->rewind(); $occurrences->valid(); $occurrences->next()) {
-                /**
-                 * @var string $previous
-                 * @var string $current
-                 */
-                [$previous, $current] = $occurrences->current();
-
-                if ($readingString) {
-                    if ('"' === $current) {
-                        if ('\\' === $previous) {
-                            $actualString = substr($actualString, 0, -1).$previous;
-                        } else {
-                            $actualString .= $previous;
-                            // @phpstan-ignore-next-line
-                            return ok($actualString);
-                        }
-                        continue;
-                    }
-                    $actualString .= $previous;
-                    continue;
-                }
-
-                if ('"' === $current) {
-                    $readingString = true;
-                }
-            }
-        }
-
-        return error("Invalid string found `$text`.");
-    }
 
     private function separateAttributesFromSignature(string $signature): AttributesAndCleanSignature {
         $cleanSignature   = '';
@@ -168,6 +126,255 @@ readonly class SuperstyleExecutor {
     }
 
     /**
+     * @param  SuperstyleExecutor               $executor
+     * @param  string                           $name
+     * @param  string                           $attributes
+     * @param  string                           $signature
+     * @param  string                           $cleanSignature
+     * @param  array<string,mixed>              $parameters
+     * @return Unsafe<SuperstyleExecutorResult>
+     */
+    private static function createSuperstyleExecutorResult(SuperstyleExecutor $executor, string $name, string $attributes, string $signature, string $cleanSignature, array $parameters): Unsafe {
+        $classes = $executor->findClassesFromSignature($cleanSignature);
+        $class   = match ($classes) {
+            ""      => "",
+            default => " class=\"$classes\"",
+        };
+        $rules   = "";
+        $content = "";
+
+        foreach ($executor->block->rules as $rule) {
+            if (preg_match('/^content:(.*)/', $rule, $matches)) {
+                $result = StringExpansion::variable(
+                    content   : $matches[1] ?? "",
+                    parameters: $parameters,
+                )->unwrap($error);
+
+                if ($error) {
+                    return error($error);
+                }
+
+                $actualString = StringExpansion::delimit(trim($result), ['"', "'"])->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+
+                $content .= $actualString;
+            } else {
+                $rules .= "$rule;";
+            }
+        }
+
+
+        $innerHtml = '';
+        $innerCss  = '';
+
+        foreach ($executor->block->getChildren() as $childBlock) {
+            $executorLocal = new SuperstyleExecutor($childBlock);
+            $result        = $executorLocal->execute($parameters)->unwrap($error);
+            if ($error) {
+                return error($error);
+            }
+            $innerHtml .= $result->html;
+            $innerCss  .= $result->css;
+        }
+
+        return ok(
+            new SuperstyleExecutorResult(
+                html: <<<HTML
+                    <$name$class$attributes>$content$innerHtml</$name>
+                    HTML,
+                css : "$signature { $rules $innerCss }",
+            )
+        );
+    }
+
+    
+    /**
+     * 
+     * @param  array<string>    $delimiters
+     * @param  mixed            $left
+     * @param  int              $operator
+     * @param  mixed            $right
+     * @return Unsafe<bool|int>
+     */
+    private static function customValidator(array $delimiters, mixed $left, int $operator, mixed $right):Unsafe {
+        if (is_string($left)) {
+            $leftDelimited = StringExpansion::delimit($left, $delimiters)->unwrap($error);
+            if (null !== $leftDelimited) {
+                $left = $leftDelimited;
+            }
+        }
+
+        if (is_string($right)) {
+            $rightDelimited = StringExpansion::delimit($right, $delimiters)->unwrap($error);
+            if (null !== $rightDelimited) {
+                $right = $rightDelimited;
+            }
+        }
+
+        return ok(match ($operator) {
+            StringExpansion::OP_AND                => $left && $right,
+            StringExpansion::OP_OR                 => $left || $right,
+            StringExpansion::OP_GT                 => $left > $right,
+            StringExpansion::OP_GTE                => $left >= $right,
+            StringExpansion::OP_LT                 => $left < $right,
+            StringExpansion::OP_LTE                => $left <= $right,
+            StringExpansion::OP_EQUALS_ISH         => $left == $right,
+            StringExpansion::OP_EQUALS             => $left === $right,
+            StringExpansion::OP_NOT_EQUALS_ISH     => $left != $right,
+            StringExpansion::OP_NOT_EQUALS         => $left !== $right,
+            StringExpansion::OP_LEFT_BINARY_SHIFT  => $left << $right,
+            StringExpansion::OP_RIGHT_BINARY_SHIFT => $left >> $right,
+            StringExpansion::OP_BINARY_AND         => $left & $right,
+            StringExpansion::OP_BINARY_OR          => $left | $right,
+            StringExpansion::OP_BINARY_XOR         => $left ^ $right,
+            default                                => false,
+        });
+    }
+
+    /**
+     * @param  string                                                                                                        $query
+     * @return callable(SuperstyleExecutor,string,string,string,string,array<string,mixed>):Unsafe<SuperstyleExecutorResult>
+     */
+    private static function createServerFunction(string $query): callable {
+        $stack = StringStack::of($query)->expect('=', '\\', '"', '\'', ' ');
+        /** @var array<string,string> $properties */
+        $properties = [];
+
+        $readingString       = false;
+        $usingDoubleQuotes   = false;
+        $usingSingleQuotes   = false;
+        $previousIsBackslash = false;
+        $propertyName        = '';
+        $propertyValue       = '';
+        for ($stack->rewind(); $stack->valid(); $stack->next()) {
+            /**
+             * @var false|string $previous
+             * @var false|string $current
+             */
+            [$previous, $current] = $stack->current();
+
+            if ($readingString) {
+                if ('\\' === $current) {
+                    $propertyValue .= $previous;
+                    $previousIsBackslash = true;
+                }
+
+                if ($usingDoubleQuotes) {
+                    if ('"' === $current) {
+                        if ($previousIsBackslash) {
+                            $propertyValue .= '\\"';
+                            continue;
+                        }
+    
+                        $readingString = false;
+                        $propertyValue .= $previous;
+                        $properties[trim($propertyName)] = $propertyValue;
+                        $propertyValue                   = '';
+                        $propertyName                    = '';
+                        continue;
+                    } else {
+                        $propertyValue .= $previous.$current;
+                        continue;
+                    }
+                } else if ($usingSingleQuotes) {
+                    if ('\'' === $current) {
+                        if ($previousIsBackslash) {
+                            $propertyValue .= "\\'";
+                            continue;
+                        }
+    
+                        $readingString = false;
+                        $propertyValue .= $previous;
+                        $properties[trim($propertyName)] = $propertyValue;
+                        $propertyValue                   = '';
+                        $propertyName                    = '';
+                        continue;
+                    } else {
+                        $propertyValue .= $previous.$current;
+                        continue;
+                    }
+                } else {
+                    $propertyValue .= $previous.$current;
+                    continue;
+                }
+            }
+
+            if (!$usingSingleQuotes && '"' === $current) {
+                $usingDoubleQuotes = true;
+                $usingSingleQuotes = false;
+                $readingString     = true;
+                $propertyName .= $previous;
+                continue;
+            } else if (!$usingDoubleQuotes && '\'' === $current) {
+                $usingDoubleQuotes = false;
+                $usingSingleQuotes = true;
+                $readingString     = true;
+                $propertyName .= $previous;
+                continue;
+            }
+
+            if ('=' === $current) {
+                $propertyName .= $previous;
+                continue;
+            }
+
+            $propertyName .= $current;
+        }
+
+        $delimiters = match (true) {
+            $usingDoubleQuotes => ["'","\""],
+            $usingSingleQuotes => ["\"","'"],
+            default            => ["'","\""],
+        };
+
+
+        return 
+            /**
+             * @param  SuperstyleExecutor               $executor
+             * @param  string                           $name
+             * @param  string                           $attributes
+             * @param  string                           $signature
+             * @param  string                           $cleanSignature
+             * @param  array<string,mixed>              $parameters
+             * @return Unsafe<SuperstyleExecutorResult>
+             */
+            function(
+                SuperstyleExecutor $executor,
+                string $name,
+                string $attributes,
+                string $signature,
+                string $cleanSignature,
+                array $parameters,
+            ) use ($properties, $delimiters): Unsafe {
+                return match (true) {
+                    isset($properties['if']) => match (
+                        StringExpansion::conditionCustomized(
+                            content: $properties['if'],
+                            parameters: $parameters,
+                            validator: fn ($left, $operator, $right) => self::customValidator($delimiters, $left, $operator, $right)
+                        )->unwrap($error)
+                    ) {
+                        true => self::createSuperstyleExecutorResult(
+                            executor      : $executor,
+                            name          : $name,
+                            attributes    : $attributes,
+                            signature     : $signature,
+                            cleanSignature: $cleanSignature,
+                            parameters    : $parameters,
+                        ),
+                        default => match (true) {
+                            (bool)$error => error($error),
+                            default      => ok(new SuperstyleExecutorResult(html: '', css: ''))
+                        },
+                    },
+                    default => ok(new SuperstyleExecutorResult(html: '', css: '')),
+                };
+            };
+    }
+
+    /**
      *
      * @param  array<string,mixed>              $parameters
      * @return Unsafe<SuperstyleExecutorResult>
@@ -184,58 +391,28 @@ readonly class SuperstyleExecutor {
             return error($error);
         }
 
-        $name    = $this->findNameFromSignature($cleanSignature);
-        $classes = $this->findClassesFromSignature($cleanSignature);
-        $class   = match ($classes) {
-            ""      => "",
-            default => " class=\"$classes\"",
-        };
-        $rules   = "";
-        $content = "";
+        $name = $this->findNameFromSignature($cleanSignature);
 
-        foreach ($this->block->rules as $rule) {
-            if (preg_match('/^content:(.*)/', $rule, $matches)) {
-                $result = StringExpansion::variable(
-                    content   : $matches[1] ?? "",
-                    parameters: $parameters,
-                )->unwrap($error);
-
-                if ($error) {
-                    return error($error);
-                }
-
-                $actualString = $this->unwrapString(trim($result), ['"', "'"])->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-
-                $content .= $actualString;
-            } else {
-                $rules .= "$rule;";
-            }
+        if ('server' === $name) {
+            echo "is server element";
+            $serverFunction = $this->createServerFunction($attributes);
+            return $serverFunction(
+                $this,
+                $name,
+                $attributes,
+                $signature,
+                $cleanSignature,
+                $parameters,
+            );
         }
 
-
-        $innerHtml = '';
-        $innerCss  = '';
-
-        foreach ($this->block->getChildren() as $childBlock) {
-            $executor = new SuperstyleExecutor($childBlock);
-            $result   = $executor->execute($parameters)->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
-            $innerHtml .= $result->html;
-            $innerCss  .= $result->css;
-        }
-
-        return ok(
-            new SuperstyleExecutorResult(
-                html: <<<HTML
-                    <$name$class$attributes>$content$innerHtml</$name>
-                    HTML,
-                css : "$signature { $rules $innerCss }",
-            )
+        return self::createSuperstyleExecutorResult(
+            executor      : $this,
+            name          : $name,
+            attributes    : $attributes,
+            signature     : $signature,
+            cleanSignature: $cleanSignature,
+            parameters    : $parameters,
         );
     }
 }

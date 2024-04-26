@@ -4,7 +4,9 @@
 
 main {
   @apply fixed;
-  button.btn[x-post=""] {
-    content: "click me {value}";
+  server[if="{value} === 'world'"] {
+    button.btn[x-post=""] {
+      content: "click me {value}";
+    }
   }
 }
