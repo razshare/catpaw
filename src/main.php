@@ -1,5 +1,6 @@
 <?php
 use Amp\ByteStream\ClosedException;
+
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Attributes\Option;
 use function CatPaw\Core\Build\build;

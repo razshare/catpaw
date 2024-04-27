@@ -7,8 +7,7 @@ use CatPaw\Core\Container;
 use CatPaw\Core\None;
 use const CatPaw\Core\NONE;
 use CatPaw\Core\Unsafe;
-use CatPaw\Superstyle\Superstyle;
-
+use CatPaw\Superstyle\Services\SuperstyleService;
 use PHPUnit\Framework\TestCase;
 
 class SuperstyleTest extends TestCase {
@@ -26,11 +25,18 @@ class SuperstyleTest extends TestCase {
      *
      * @return Unsafe<None>
      */
-    private function makeSureSuperstyleServiceWorks(): Unsafe {
-        return anyError(function() {
-            $result = Superstyle::parse(asFileName(__DIR__, './superstyle.scss'))->try();
-            $this->assertEquals('<main><button class="btn" x-post="">click me</button></main>', $result->html);
-            $this->assertEquals('main { @apply fixed; button.btn[x-post=""] {   } }', $result->css);
+    private function makeSureSuperstyleServiceWorks(SuperstyleService $style): Unsafe {
+        return anyError(function() use ($style) {
+            $result = $style->file(asFileName(__DIR__, './superstyle.hbs'), [
+                "items" => [
+                    "item-1",
+                    "item-2",
+                    "item-3",
+                    "item-4",
+                ],
+            ])->try();
+            $this->assertEquals('<main><ul><li>item-1</li><li>item-2</li><li>item-3</li><li>item-4</li></ul></main>', $result->html);
+            $this->assertEquals('main {  ul { position: relative; li {   }li {   }li {   }li {   } } }', $result->css);
             print_r($result);
             return NONE;
         });

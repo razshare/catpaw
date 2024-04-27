@@ -24,12 +24,12 @@ class TwigRenderContext {
     /**
      *
      * @param  string       $fileName
-     * @param  array<mixed> $properties
+     * @param  array<mixed> $context
      * @return void
      */
     private function __construct(
         private readonly string $fileName,
-        private array $properties = [],
+        private array $context = [],
     ) {
     }
 
@@ -39,20 +39,20 @@ class TwigRenderContext {
      * @return TwigRenderContext
      */
     public function setProperties(array $properties):self {
-        $this->properties = $properties;
+        $this->context = $properties;
         return $this;
     }
 
     public function setProperty(string $key, mixed $value):self {
-        $this->properties[$key] = $value;
+        $this->context[$key] = $value;
         return $this;
     }
 
     public function unsetProperty(string $key):self {
-        if (!isset($this->properties[$key])) {
+        if (!isset($this->context[$key])) {
             return $this;
         }
-        unset($this->properties[$key]);
+        unset($this->context[$key]);
         return $this;
     }
     /**
@@ -73,9 +73,9 @@ class TwigRenderContext {
             return failure();
         }
 
-        $data = $twig->render(
+        $data = $twig->file(
             fileName  : $this->fileName,
-            properties: $this->properties,
+            context: $this->context,
         )->unwrap($errorTwig);
 
         if ($errorTwig) {

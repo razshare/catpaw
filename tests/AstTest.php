@@ -2,9 +2,9 @@
 namespace Tests;
 
 use CatPaw\Ast\Block;
-use CatPaw\Ast\Interfaces\CStyleDetectorInterface;
+use CatPaw\Ast\CStyleAstDetector;
 
-use CatPaw\Ast\CStyleAstSearch;
+use CatPaw\Ast\Interfaces\CStyleDetectorInterface;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
@@ -31,7 +31,7 @@ class AstTest extends TestCase {
      */
     private function makeSureCStyleParserWorks(): Unsafe {
         return anyError(function() {
-            $search = CStyleAstSearch::fromFile(asFileName(__DIR__, './app.scss'))->try();
+            $search = CStyleAstDetector::fromFile(asFileName(__DIR__, './app.scss'))->try();
 
             /** @var array<Block> $blocks */
             $blocks = [];
@@ -57,8 +57,11 @@ class AstTest extends TestCase {
                     return ok();
                 }
 
-                public function onGlobal(string $global):Unsafe {
-                    $this->globals[] = $global;
+                public function onRule(false|Block $block, string $rule):Unsafe {
+                    if ($block) {
+                        return ok();
+                    }
+                    $this->globals[] = $rule;
 
                     return ok();
                 }

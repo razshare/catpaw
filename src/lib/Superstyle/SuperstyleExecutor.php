@@ -3,6 +3,7 @@
 namespace CatPaw\Superstyle;
 
 use CatPaw\Ast\Block;
+
 use function CatPaw\Core\error;
 
 use CatPaw\Core\None;
@@ -144,12 +145,20 @@ readonly class SuperstyleExecutor {
 
         foreach ($executor->block->rules as $rule) {
             if (preg_match('/^content:(.*)/', $rule, $matches)) {
-                $actualString = StringExpansion::delimit(trim($matches[1]), ['"', "'"])->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
+                $trimmed = trim($matches[1]);
+                if (
+                    (str_starts_with($trimmed, '"') && str_ends_with($trimmed, '"'))
+                    || (str_starts_with($trimmed, '\'') && str_ends_with($trimmed, '\''))
+                ) {
+                    $actualString = StringExpansion::delimit(trim($matches[1]), ['"', "'"])->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
 
-                $content .= $actualString;
+                    $content .= $actualString;
+                    continue;
+                }
+                return error("Rule `content` must always use a string value, non string value received `$rule`.");
             } else {
                 $rules .= "$rule;";
             }
@@ -159,7 +168,40 @@ readonly class SuperstyleExecutor {
         $innerHtml = '';
         $innerCss  = '';
 
-        foreach ($executor->block->getChildren() as $childBlock) {
+        if (str_starts_with($signature, 'for')) {
+            if (!preg_match('/^\s*for\s+(\w+)\s+in\s+(\w+)\s*$/', $signature, $matches)) {
+                return error("Invalid `for` statement.");
+            }
+
+            $item = $matches[1];
+            $list = $matches[2];
+
+
+            $innerHtml .= "{% for $item in $list %}";
+
+            foreach ($executor->block->children as $innerChildBlock) {
+                $executorLocal = new SuperstyleExecutor($innerChildBlock);
+                $result        = $executorLocal->execute()->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+                $innerHtml .= $result->html;
+                $innerCss  .= $result->css;
+            }
+
+            $innerHtml .= "{% endfor %}";
+
+            return ok(
+                new SuperstyleExecutorResult(
+                    html: <<<HTML
+                        $content$innerHtml
+                        HTML,
+                    css : "$rules $innerCss",
+                )
+            );
+        }
+
+        foreach ($executor->block->children as $childBlock) {
             $executorLocal = new SuperstyleExecutor($childBlock);
             $result        = $executorLocal->execute()->unwrap($error);
             if ($error) {

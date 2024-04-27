@@ -16,8 +16,10 @@ interface CStyleDetectorInterface {
 
     /**
      *
-     * @param  string       $global
+     * @param  Block        $block Owner of the rule.\
+     *                             If set to `false`, then the rule is global.
+     * @param  string       $rule
      * @return Unsafe<None>
      */
-    public function onGlobal(string $global):Unsafe;
+    public function onRule(false|Block $block, string $rule):Unsafe;
 }
