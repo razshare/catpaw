@@ -36,7 +36,7 @@ class SuperstyleTest extends TestCase {
                 ],
             ])->try();
             $this->assertEquals('<main><ul><li>item-1</li><li>item-2</li><li>item-3</li><li>item-4</li></ul></main>', $result->html);
-            $this->assertEquals('main {  ul { position: relative; li {   }li {   }li {   }li {   } } }', $result->css);
+            $this->assertEquals('main {  ul { position: relative; li {   } } }', $result->css);
             print_r($result);
             return NONE;
         });

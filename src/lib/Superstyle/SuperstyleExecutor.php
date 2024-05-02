@@ -179,14 +179,25 @@ readonly class SuperstyleExecutor {
 
             $innerHtml .= "{% for $item in $list %}";
 
+
+            $previousSignature = '';
+            $ignoreCss         = false;
+
             foreach ($executor->block->children as $innerChildBlock) {
+                if ($previousSignature === $innerChildBlock->signature) {
+                    $ignoreCss = true;
+                } else {
+                    $previousSignature = $innerChildBlock->signature;
+                }
                 $executorLocal = new SuperstyleExecutor($innerChildBlock);
                 $result        = $executorLocal->execute()->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
                 $innerHtml .= $result->html;
-                $innerCss  .= $result->css;
+                if (!$ignoreCss) {
+                    $innerCss .= $result->css;
+                }
             }
 
             $innerHtml .= "{% endfor %}";
@@ -201,14 +212,24 @@ readonly class SuperstyleExecutor {
             );
         }
 
+        $previousSignature = '';
+        $ignoreCss         = false;
+
         foreach ($executor->block->children as $childBlock) {
+            if ($previousSignature === $childBlock->signature) {
+                $ignoreCss = true;
+            } else {
+                $previousSignature = $childBlock->signature;
+            }
             $executorLocal = new SuperstyleExecutor($childBlock);
             $result        = $executorLocal->execute()->unwrap($error);
             if ($error) {
                 return error($error);
             }
             $innerHtml .= $result->html;
-            $innerCss  .= $result->css;
+            if (!$ignoreCss) {
+                $innerCss .= $result->css;
+            }
         }
 
         return ok(

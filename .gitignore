@@ -13,6 +13,7 @@
 /.release
 /.cache
 /.svelte-kit
+/.tmp
 /dist
 /vendor
 /tmp
@@ -23,4 +24,3 @@
 /package-lock.json
 /.php-cs-fixer.cache
 /.phpunit.result.cache
-qtbox
