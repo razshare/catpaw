@@ -12,6 +12,7 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
 use function CatPaw\Core\Precommit\installPreCommit as installPreCommit;
+use function CatPaw\Core\Precommit\uninstallPreCommit;
 
 use CatPaw\Core\Unsafe;
 use CatPaw\Cui\Contracts\CuiContract;
@@ -28,9 +29,13 @@ use function CatPaw\Text\nocolor;
  * @return Unsafe<None>
  */
 function main(
-    // ===> PRE-COMMIT-USING
+    // ===> INSTALL PRE-COMMIT
     #[Option("--install-pre-commit")]
-    string $installPreCommit = '',
+    false|string $installPreCommit = false,
+
+    // ===> UNINSTALL PRE-COMMIT
+    #[Option("--uninstall-pre-commit")]
+    bool $uninstallPreCommit = false,
 
     // ===> TIPS
     #[Option("--tips")]
@@ -47,11 +52,12 @@ function main(
     bool $buildOptimize = false,
 ): Unsafe {
     return anyError(fn () => match (true) {
-        $build                  => build(buildOptimize:$buildOptimize),
-        $tips                   => tips(),
-        $hi                     => hi(),
-        (bool)$installPreCommit => installPreCommit($installPreCommit),
-        default                 => print("No valid options provided."),
+        $build                       => build(buildOptimize:$buildOptimize),
+        $tips                        => tips(),
+        $hi                          => hi(),
+        is_string($installPreCommit) => installPreCommit($installPreCommit),
+        $uninstallPreCommit          => uninstallPreCommit(),
+        default                      => print("No valid options provided."),
     });
 }
 

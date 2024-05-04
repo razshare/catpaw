@@ -14,6 +14,12 @@ use CatPaw\Core\Unsafe;
  * @return Unsafe<None>
  */
 function installPreCommit(string $command):Unsafe {
+    if ('' === trim($command)) {
+        echo "The `--install-pre-commit` options requires a value.\n";
+        echo "The value should be whatever command you want to execute before the commit, for example: php catpaw.phar --install-pre-commit=\"echo 'this is a message before the commit.'\"\n";
+        return ok();
+    }
+
     $fileName = '.git/hooks/pre-commit';
 
     $file = File::open($fileName, 'w+')->unwrap($error);
@@ -32,6 +38,28 @@ function installPreCommit(string $command):Unsafe {
     }
 
     echo "Installed pre-commit hook.\n";
+
+    return ok();
+}
+
+/**
+ * Uninstall the git pre-commit hook.
+ * @return Unsafe<None>
+ */
+function uninstallPreCommit():Unsafe {
+    $fileName = '.git/hooks/pre-commit';
+
+    if (!File::exists($fileName)) {
+        echo "The pre-commit hook is not installed.\n";
+        return ok();
+    }
+
+    File::delete($fileName)->unwrap($error);
+    if ($error) {
+        return error($error);
+    }
+
+    echo "Uninstalled pre-commit hook.\n";
 
     return ok();
 }
