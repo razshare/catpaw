@@ -6,16 +6,16 @@ use CatPaw\Ast\CStyleAstDetector;
 use CatPaw\Ast\Interfaces\CStyleDetectorInterface;
 use CatPaw\Core\Attributes\Service;
 use CatPaw\Core\Container;
+use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use CatPaw\Core\None;
+use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use CatPaw\Superstyle\SuperstyleExecutor;
 use CatPaw\Superstyle\SuperstyleExecutorResult;
 use CatPaw\Web\Services\HandlebarsService;
 use DOMDocument;
 use DOMElement;
-use function CatPaw\Core\error;
-use function CatPaw\Core\ok;
 
 #[Service]
 class SuperstyleService {
