@@ -21,27 +21,21 @@
     }
   ],
   "scripts": {
-    "load": "composer dump-autoload -o && pre-commit autoupdate",
+    "load": "composer dump-autoload -o",
     "prod:build:go": "./prod_build_go.sh",
     "prod:start": "php -dphar.readonly=0 -dopcache.enable_cli=1 -dopcache.jit_buffer_size=100M ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
     "prod:build": "@prod:start --build --environment='./build.yaml' --build-optimize",
+    "prod:fix": "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix .",
     "prod:test": [
       "go build -o ./tests/main.so -buildmode=c-shared ./tests/main.go",
       "cpp -P ./tests/main.h ./tests/main.static.h",
       "php vendor/bin/phpunit tests"
     ],
-    "prod:fix": "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix .",
     "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
-    "dev:build": "@dev:start --build --environment='./build.yaml'",
     "dev:test:raw": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit",
-    "dev:test": [
-      "go build -o ./tests/main.so -buildmode=c-shared ./tests/main.go",
-      "cpp -P ./tests/main.h ./tests/main.static.h",
-      "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests"
-    ],
-    "dev:fix": "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix .",
-    "dev:precommit": "pre-commit install && pre-commit autoupdate",
+    "dev:build": "@dev:start --build --environment='./build.yaml'",
     "dev:tips": "[ ! -f catpaw.phar ] && echo '' || php catpaw.phar --tips",
+    "dev:install-pre-commit": "@prod:start --install-pre-commit='composer prod:fix && composer prod:test'",
     "post-autoload-dump": [
       "@dev:tips"
     ],
@@ -88,9 +82,10 @@
     "files": [
       "src/scripts/Core/constants.php",
       "src/scripts/Core/functions.php",
+      "src/scripts/Core/Build/functions.php",
+      "src/scripts/Core/Precommit/functions.php",
       "src/scripts/Web/constants.php",
       "src/scripts/Web/functions.php",
-      "src/scripts/Build/functions.php",
       "src/scripts/Store/functions.php",
       "src/scripts/Text/functions.php"
     ]
