@@ -5,6 +5,7 @@
 Install `^php8.2` and the following extenstions:
 - `php8.2-yaml`
 - `php8.2-xml`
+- `php8.2-mbstring`
 
 > **Note** I suggest you also install the following optional extensions:
 > - `php8.2-curl`
@@ -22,7 +23,7 @@ Install dependencies with
 composer update
 ```
 
-This will also download [build.phar](https://github.com/tncrazvan/catpaw-build/releases).
+This will also download [catpaw.phar](https://github.com/tncrazvan/catpaw/releases).
 
 
 ## Writing the changes
@@ -32,10 +33,8 @@ This will also download [build.phar](https://github.com/tncrazvan/catpaw-build/r
 - Whenever possible, convert all methods into functions or at least 
   all classes into [services](https://github.com/tncrazvan/catpaw/blob/master/docs/13.Services.md).
 - Avoid exposing `__construct` to the end user.
-- Avoid returning `\Generator` to the end user.
 - Avoid returning `null` to the end user, return `false` or a proper default value instead.
-- Document the source code with [psalm](https://psalm.dev).
-- Many small commits are enouraged.
+- Avoid throwing exceptions to the end user, follow the error [management guide](./docs/0.error-managament.md).
 
 ## Submitting your changes
 
