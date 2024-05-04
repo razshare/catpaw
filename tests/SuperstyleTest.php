@@ -22,7 +22,6 @@ class SuperstyleTest extends TestCase {
 
 
     /**
-     *
      * @return Unsafe<None>
      */
     private function makeSureSuperstyleServiceWorks(SuperstyleService $style): Unsafe {

@@ -4,16 +4,16 @@ namespace CatPaw\Web;
 
 use CatPaw\Core\Container;
 use CatPaw\Core\Interfaces\RenderContextInterface;
+use CatPaw\Superstyle\Services\SuperstyleService;
 use CatPaw\Web\Interfaces\ResponseModifier;
-use CatPaw\Web\Services\TwigService;
 use Psr\Log\LoggerInterface;
 
-class TwigRenderContext implements RenderContextInterface {
+class SuperstyleRenderContext implements RenderContextInterface {
     /**
      *
-     * @param  string            $fileName
-     * @param  array<mixed>      $properties
-     * @return TwigRenderContext
+     * @param  string                  $fileName
+     * @param  array<mixed>            $properties
+     * @return SuperstyleRenderContext
      */
     public static function create(
         string $fileName,
@@ -36,8 +36,8 @@ class TwigRenderContext implements RenderContextInterface {
 
     /**
      *
-     * @param  array<mixed>      $properties
-     * @return TwigRenderContext
+     * @param  array<mixed>            $properties
+     * @return SuperstyleRenderContext
      */
     public function setProperties(array $properties):self {
         $this->context = $properties;
@@ -63,7 +63,7 @@ class TwigRenderContext implements RenderContextInterface {
      * @return ResponseModifier
      */
     public function render(int $status = 200, array $headers = []):ResponseModifier {
-        $twig = Container::create(TwigService::class)->unwrap($errorService);
+        $superstyle = Container::create(SuperstyleService::class)->unwrap($errorService);
         if ($errorService) {
             $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
             if ($errorLogger) {
@@ -74,7 +74,7 @@ class TwigRenderContext implements RenderContextInterface {
             return failure();
         }
 
-        $data = $twig->file(
+        $data = $superstyle->file(
             fileName  : $this->fileName,
             context: $this->context,
         )->unwrap($errorTwig);

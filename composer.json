@@ -36,6 +36,7 @@
     "dev:build": "@dev:start --build --environment='./build.yaml'",
     "dev:tips": "[ ! -f catpaw.phar ] && echo '' || php catpaw.phar --tips",
     "dev:install-pre-commit": "@prod:start --install-pre-commit='composer prod:fix && composer prod:test'",
+    "dev:testone": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit",
     "post-autoload-dump": [
       "@dev:tips"
     ],

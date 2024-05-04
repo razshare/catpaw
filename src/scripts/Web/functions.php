@@ -168,9 +168,9 @@ function websocket(Request $request, WebsocketClientHandler $handler): ResponseM
 
 /**
  * Render twig a file.
- * @param  string            ...$name Path to the twig file.
+ * @param  string            ...$fileName Path to the twig file.
  * @return TwigRenderContext
  */
-function twig(string ...$name):TwigRenderContext {
-    return TwigRenderContext::create(asFileName(...$name));
+function twig(string ...$fileName):TwigRenderContext {
+    return TwigRenderContext::create(asFileName(...$fileName));
 }
