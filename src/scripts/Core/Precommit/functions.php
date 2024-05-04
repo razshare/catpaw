@@ -2,6 +2,8 @@
 namespace CatPaw\Core\Precommit;
 
 use function CatPaw\Core\error;
+use function CatPaw\Core\execute;
+
 use CatPaw\Core\File;
 
 use CatPaw\Core\None;
@@ -37,7 +39,18 @@ function installPreCommit(string $command):Unsafe {
         return error($error);
     }
 
+    
     echo "Installed pre-commit hook.\n";
+    
+    $code = execute("chmod +x $fileName")->unwrap($error);
+    if ($error) {
+        return error($error);
+    }
+
+    if (0 !== $code) {
+        return error("Could not set the pre-commit hook as executable, the attempt to do so returned a `$code` code.");
+    }
+
 
     return ok();
 }

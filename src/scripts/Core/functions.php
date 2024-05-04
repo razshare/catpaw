@@ -180,8 +180,10 @@ function execute(
             return error($error);
         }
         $process = Process::start($command, $workDirectory?:null);
-        pipe($process->getStdout(), $output);
-        pipe($process->getStderr(), $output);
+        if ($output) {
+            pipe($process->getStdout(), $output);
+            pipe($process->getStderr(), $output);
+        }
         $code = $process->join();
     } catch(Throwable $error) {
         return error($error);
