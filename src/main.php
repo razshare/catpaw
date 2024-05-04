@@ -11,7 +11,7 @@ use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
-use function CatPaw\Core\Precommit\installPreCommit as installPreCommit;
+use function CatPaw\Core\Precommit\installPreCommit;
 use function CatPaw\Core\Precommit\uninstallPreCommit;
 
 use CatPaw\Core\Unsafe;
