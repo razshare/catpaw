@@ -55,8 +55,8 @@ function main(
         $build                       => build(buildOptimize:$buildOptimize),
         $tips                        => tips(),
         $hi                          => hi(),
-        is_string($installPreCommit) => installPreCommit($installPreCommit),
         $uninstallPreCommit          => uninstallPreCommit(),
+        is_string($installPreCommit) => installPreCommit($installPreCommit),
         default                      => print("No valid options provided."),
     });
 }
