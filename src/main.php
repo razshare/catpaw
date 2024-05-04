@@ -106,7 +106,7 @@ function tips():Unsafe {
                 foreground(170, 140, 40),
                 "Remember to run `",
                 foreground(140, 170, 40),
-                "composer dev:precommit",
+                "php catpaw.phar --install-pre-commit='your pre-commit command goes here.'",
                 foreground(170, 140, 40),
                 "` if you want to sanitize your code before committing.",
                 nocolor(),
