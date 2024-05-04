@@ -17,7 +17,7 @@ use function CatPaw\Core\out;
 use CatPaw\Core\Unsafe;
 
 #[Service]
-class LoaderService {
+class GoLoaderService {
     /**
      * Load the library using cached binaries (if possible).
      * @template T

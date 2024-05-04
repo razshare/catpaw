@@ -13,7 +13,7 @@ use function CatPaw\Core\ok;
 
 use CatPaw\Core\Unsafe;
 use CatPaw\Cui\Contracts\CuiContract;
-use CatPaw\Go\Services\LoaderService;
+use CatPaw\Go\Services\GoLoaderService;
 
 #[Service]
 class CuiService {
@@ -21,7 +21,7 @@ class CuiService {
     private float $delay           = 0.1;
 
     public function __construct(
-        private LoaderService $loader,
+        private GoLoaderService $loader,
     ) {
     }
 
