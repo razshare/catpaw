@@ -27,6 +27,10 @@ class SuperstyleRenderContext implements RenderContextInterface {
         return new self($fileName, $properties);
     }
 
+
+    /** @var false|(callable(SuperstyleExecutorResult):string) $templateBuilder */
+    private mixed $templateBuilder = false;
+
     /**
      *
      * @param  string       $fileName
@@ -61,6 +65,36 @@ class SuperstyleRenderContext implements RenderContextInterface {
         unset($this->context[$key]);
         return $this;
     }
+
+    /**
+     * Build the template template yourself.
+     * @param callable(SuperstyleExecutorResult):string $builder A function that takes the 
+     *                                                           superstyle result and returns a string, which should be the structure of your HTML document.\
+     * 
+     *                                                            It should looks something like this
+     *                                                            ```php
+     *                                                            superstyle('my-file.hbs')->template(
+     *                                                            fn (SuperstyleExecutorResult $result) => <<<HTML
+     *                                                            <!DOCTYPE html>
+     *                                                            <html lang="en">
+     *                                                            <head>
+     *                                                            <meta charset="UTF-8">
+     *                                                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     *                                                            <title>Document</title>
+     *                                                            <style>{$result->getGlobals()}{$result->css}</style>
+     *                                                            </head>
+     *                                                            <body>{$result->html}</body>
+     *                                                            </html>
+     *                                                            HTML
+     *                                                            )
+     *                                                            ```
+     * @return self
+     */
+    public function template(callable $builder):self {
+        $this->templateBuilder = $builder;
+        return $this;
+    }
+
     /**
      *
      * @param  int                  $status
@@ -94,18 +128,21 @@ class SuperstyleRenderContext implements RenderContextInterface {
             return failure();
         }
 
-        $document = <<<HTML
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Document</title>
-                <style>{$result->getGlobals()}{$result->css}</style>
-            </head>
-            <body>{$result->html}</body>
-            </html>
-            HTML;
+        $document = match ((bool)$this->templateBuilder) {
+            true  => ($this->templateBuilder)($result),
+            false => <<<HTML
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Document</title>
+                    <style>{$result->getGlobals()}{$result->css}</style>
+                </head>
+                <body>{$result->html}</body>
+                </html>
+                HTML,
+        };
 
         return success($document, $status, $headers)->as(TEXT_HTML);
     }

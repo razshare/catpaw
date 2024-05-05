@@ -1,4 +1,9 @@
 <style is="super">
+    .spacer-x {
+        display: inline-block;
+        padding-left: 1rem;
+    }
+
     main {
         font-family: 'Courier New', Courier, monospace;
         position: fixed;
@@ -9,30 +14,60 @@
         display: grid;
         background: #000000;
 
-        {{#each items}}
-            button {
-                content: "{{.}}";
-                border: 0;
+        form[hx-boost="true"][action="/form"][method="post"] {
+            justify-self: center;
+            align-self: center;
+
+            input[name="email"][type="email"][placeholder="Enter email..."] {
+                outline: 0;
+                border: 1px solid transparent;
                 font-size: 1.3rem;
-                justify-self: center;
-                align-self: center;
-                background: rgb(234, 40, 5);
-                color: rgb(233, 166, 155);
-                border-radius: 3rem;
                 padding: 1rem;
-                cursor: pointer;
-                box-shadow: 0;
-                transition: 200ms transform;
+                border-radius: 3rem;
+                background: #383232;
+                color: #f1f1f1;
 
-                &:hover {
-                    transform: scale(1.1);
-                }
-
-                &:active {
-                    box-shadow: 0;
-                    transform: scale(0.9);
+                &:focus {
+                    border-color: rgb(234, 40, 5);
                 }
             }
-        {{/each}}
+
+            /* Spacing thins out a bit */
+            .spacer-x {}
+
+            {{#if done}}
+                span {
+                    font-size: 1.3rem;
+                    content: "Submitted!";
+                }
+            {{/if}}
+
+            {{#unless done}}
+               
+                button {
+                    content: "Submit";
+                    border: 0;
+                    font-size: 1.3rem;
+                    justify-self: center;
+                    align-self: center;
+                    background: rgb(234, 40, 5);
+                    color: rgb(233, 166, 155);
+                    border-radius: 3rem;
+                    padding: 1rem;
+                    cursor: pointer;
+                    box-shadow: 0;
+                    transition: 200ms transform;
+
+                    &:hover {
+                        transform: scale(1.1);
+                    }
+
+                    &:active {
+                        box-shadow: 0;
+                        transform: scale(0.9);
+                    }
+                }
+            {{/unless}}
+        }
     }
 </style>
