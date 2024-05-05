@@ -13,11 +13,11 @@ class SuperstyleExecutorResult {
 
     /**
      * 
-     * @param  array<string>            $globals
+     * @param  string                   $globals
      * @return SuperstyleExecutorResult
      */
-    public function withGlobals(array $globals):self {
-        $this->globals = join($globals);
+    public function withGlobals(string $globals):self {
+        $this->globals = $globals;
         return $this;
     }
 

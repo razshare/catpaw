@@ -340,18 +340,21 @@ class CStyleAstDetector implements AstSearchInterface {
                     $inject_mode    = false;
                     $previous_token = $result->token;
                     
+                    $block = new Block(
+                        signature: '',
+                        body     : trim("{$missed}{$result->before}{$result->token}"),
+                        rules    : [],
+                        parent   : $parent,
+                        depth    : $depth,
+                        isServerInject: true,
+                    );
+
                     if ($parent) {
-                        $block = new Block(
-                            signature: '',
-                            body     : trim("{$missed}{$result->before}{$result->token}"),
-                            rules    : [],
-                            parent   : $parent,
-                            depth    : $depth,
-                            isServerInject: true,
-                        );
                         $parent->children[] = $block;
                     }
-
+                    
+                    $detector->onBlock($block, $depth);
+                    
                     $missed = '';
                     continue;
                 }

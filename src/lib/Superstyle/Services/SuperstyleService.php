@@ -68,6 +68,8 @@ class SuperstyleService {
         $main = null;
 
         $detector->detect(new class(globals: $globals, main: $main) implements CStyleDetectorInterface {
+            private int $counter = 0;
+
             /**
              *
              * @param  array<string> $globals
@@ -88,11 +90,18 @@ class SuperstyleService {
              * @return Unsafe<None>
              */
             public function onBlock(Block $block, int $depth):Unsafe {
-                if (0 === $block->depth && 'main' === $block->signature) {
-                    if ($this->main) {
-                        return error("Error multiple top level main blocks are not allowed.");
+                if (0 === $block->depth) {
+                    if ('main' === $block->signature) {
+                        if ($this->main) {
+                            return error("Error multiple top level main blocks are not allowed.");
+                        }
+                        $this->main = $block;
                     }
-                    $this->main = $block;
+
+                    if ($block->isServerInject) {
+                        $this->globals["inject-$this->counter"] = $block->body;
+                        $this->counter++;
+                    }
                 }
                 return ok();
             }
@@ -115,7 +124,7 @@ class SuperstyleService {
             return error($error);
         }
 
-        $result->withGlobals($globals);
+        $result->withGlobals(join($globals));
 
         return ok($result);
     }

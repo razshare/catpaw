@@ -116,15 +116,15 @@ class SuperstyleRenderContext implements RenderContextInterface {
             return failure();
         }
 
-        $result = $superstyle->file(fileName  : $this->fileName)->unwrap($errorTwig);
+        $result = $superstyle->file(fileName  : $this->fileName)->unwrap($errorSuperstyle);
 
-        if ($errorTwig) {
+        if ($errorSuperstyle) {
             $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
             if ($errorLogger) {
                 echo $errorLogger.PHP_EOL;
-                echo $errorTwig.PHP_EOL;
+                echo $errorSuperstyle.PHP_EOL;
             }
-            $logger->error((string)$errorTwig);
+            $logger->error((string)$errorSuperstyle);
             return failure();
         }
 

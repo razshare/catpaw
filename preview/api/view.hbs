@@ -3,8 +3,16 @@
         display: inline-block;
         padding-left: 1rem;
     }
-
+    
     main {
+        {{#each items}}
+            span {
+                text-align: center;
+                color: red;
+                content: "asdasd";
+            }
+        {{/each}}
+
         font-family: 'Courier New', Courier, monospace;
         position: fixed;
         left: 0;
@@ -36,10 +44,19 @@
             .spacer-x {}
 
             {{#if done}}
-                span {
-                    font-size: 1.3rem;
-                    content: "Submitted as {{email}}!";
-                }
+                {{#if email}}
+                    span {
+                        font-size: 1.3rem;
+                        content: "Thank you for your submission {{email}}!";
+                    }
+                {{/if}}
+
+                {{#unless email}}
+                   span {
+                        font-size: 1.3rem;
+                        content: "Please provide an email address :(";
+                    }
+                {{/unless}}
             {{/if}}
 
             {{#unless done}}

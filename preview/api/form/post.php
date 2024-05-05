@@ -1,7 +1,6 @@
 <?php
 
 use function CatPaw\Core\asFileName;
-
 use function CatPaw\Superstyle\superstyle;
 use CatPaw\Web\Attributes\Body;
 

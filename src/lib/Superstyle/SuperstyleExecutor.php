@@ -174,9 +174,14 @@ readonly class SuperstyleExecutor {
         foreach ($executor->block->children as $childBlock) {
             if ($childBlock->isServerInject) {
                 $innerHtml .= $childBlock->body;
-                // if (!$ignoreCss) {
-                //     $innerCss .= $childBlock->body;
-                // }
+                $previousSignature = $childBlock->signature;
+                if (
+                    str_starts_with($childBlock->body, '{{#each')
+                    || str_starts_with($childBlock->body, '{{/each')
+                ) {
+                    continue;
+                }
+                $innerCss .= $childBlock->body;
                 continue;
             }
 
@@ -185,6 +190,7 @@ readonly class SuperstyleExecutor {
             } else {
                 $previousSignature = $childBlock->signature;
             }
+
             $executorLocal = new SuperstyleExecutor($childBlock);
             $result        = $executorLocal->execute()->unwrap($error);
             if ($error) {
