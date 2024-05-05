@@ -17,9 +17,12 @@ function htmx(SuperstyleExecutorResult $result) {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Document</title>
             <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-            <style>{$result->getGlobals()}{$result->css}</style>
+            
         </head>
-        <body>{$result->html}</body>
+        <body>
+            <style>{$result->getGlobals()}{$result->css}</style>
+            {$result->html}
+        </body>
         </html>
         HTML;
 }

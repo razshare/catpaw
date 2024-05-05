@@ -28,7 +28,7 @@ class SuperstyleTest extends TestCase {
         return anyError(function() use ($style) {
             $result = $style->file(asFileName(__DIR__, './superstyle.hbs'))->try();
             $this->assertEquals('<main><ul>{{#each items}}<li>{{.}}</li>{{/each}}</ul></main>', $result->html);
-            $this->assertEquals('main {  ul { position: relative; li {   } } }', $result->css);
+            $this->assertEquals('main {  ul { position: relative;  } }', $result->css);
             print_r($result);
             return NONE;
         });

@@ -4,6 +4,29 @@
         padding-left: 1rem;
     }
 
+    .red-button {
+        border: 0;
+        font-size: 1.3rem;
+        justify-self: center;
+        align-self: center;
+        background: rgb(234, 40, 5);
+        color: rgb(233, 166, 155);
+        border-radius: 3rem;
+        padding: 1rem;
+        cursor: pointer;
+        box-shadow: 0;
+        transition: 200ms transform;
+
+        &:hover {
+            transform: scale(1.1);
+        }
+
+        &:active {
+            box-shadow: 0;
+            transform: scale(0.9);
+        }
+    }
+
     main {
         font-family: 'Courier New', Courier, monospace;
         position: fixed;
@@ -14,69 +37,65 @@
         display: grid;
         background: #000000;
 
-        form[hx-boost="true"][action="/form"][method="post"] {
-            justify-self: center;
-            align-self: center;
+        {{#if done}}
+            div {
+                justify-self: center;
+                align-self: center;
 
-            input[name="email"][type="email"][placeholder="Enter email..."] {
-                outline: 0;
-                border: 1px solid transparent;
-                font-size: 1.3rem;
-                padding: 1rem;
-                border-radius: 3rem;
-                background: #383232;
-                color: #f1f1f1;
-
-                &:focus {
-                    border-color: rgb(234, 40, 5);
-                }
-            }
-
-            /* Spacing thins out a bit */
-            .spacer-x {}
-
-            {{#if done}}
                 {{#if email}}
                     span {
+                        color: #f1f1f1;
                         font-size: 1.3rem;
                         content: "Thank you for your submission {{email}}!";
                     }
                 {{/if}}
 
                 {{#unless email}}
-                   span {
+                    span {
+                        color: #f1f1f1;
                         font-size: 1.3rem;
                         content: "Please provide an email address :(";
                     }
-                {{/unless}}
-            {{/if}}
 
-            {{#unless done}}
-               
-                button {
-                    content: "Submit";
-                    border: 0;
-                    font-size: 1.3rem;
-                    justify-self: center;
-                    align-self: center;
-                    background: rgb(234, 40, 5);
-                    color: rgb(233, 166, 155);
-                    border-radius: 3rem;
-                    padding: 1rem;
-                    cursor: pointer;
-                    box-shadow: 0;
-                    transition: 200ms transform;
+                    /* Spacing thins out a bit */
+                    .spacer-x {}
 
-                    &:hover {
-                        transform: scale(1.1);
+                    form[hx-boost="true"][action="/"] {
+                        display: inline-block;
+                        button.red-button {
+                            content: "Back";
+                        }
                     }
+                {{/unless}}
+            }
+        {{/if}}
 
-                    &:active {
-                        box-shadow: 0;
-                        transform: scale(0.9);
+        {{#unless done}}
+            form[hx-boost="true"][action="/form"][method="post"] {
+                justify-self: center;
+                align-self: center;
+
+                input[name="email"][type="email"][placeholder="Enter email..."] {
+                    outline: 0;
+                    border: 1px solid transparent;
+                    font-size: 1.3rem;
+                    padding: 1rem;
+                    border-radius: 3rem;
+                    background: #383232;
+                    color: #f1f1f1;
+
+                    &:focus {
+                        border-color: rgb(234, 40, 5);
                     }
                 }
-            {{/unless}}
-        }
+
+                /* Spacing thins out a bit */
+                .spacer-x {}
+                
+                button.red-button {
+                    content: "Submit";
+                }
+            }
+        {{/unless}}
     }
 </style>
