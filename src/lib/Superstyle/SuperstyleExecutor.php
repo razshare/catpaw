@@ -172,6 +172,14 @@ readonly class SuperstyleExecutor {
         $ignoreCss         = false;
 
         foreach ($executor->block->children as $childBlock) {
+            if ($childBlock->isServerInject) {
+                $innerHtml .= $childBlock->body;
+                // if (!$ignoreCss) {
+                //     $innerCss .= $childBlock->body;
+                // }
+                continue;
+            }
+
             if ($previousSignature === $childBlock->signature) {
                 $ignoreCss = true;
             } else {
@@ -200,7 +208,6 @@ readonly class SuperstyleExecutor {
 
 
     /**
-     *
      * @return Unsafe<SuperstyleExecutorResult>
      */
     public function execute(): Unsafe {

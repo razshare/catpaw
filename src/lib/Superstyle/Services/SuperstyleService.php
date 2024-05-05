@@ -5,7 +5,6 @@ use CatPaw\Ast\Block;
 use CatPaw\Ast\CStyleAstDetector;
 use CatPaw\Ast\Interfaces\CStyleDetectorInterface;
 use CatPaw\Core\Attributes\Service;
-use CatPaw\Core\Container;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use CatPaw\Core\None;
@@ -13,7 +12,6 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use CatPaw\Superstyle\SuperstyleExecutor;
 use CatPaw\Superstyle\SuperstyleExecutorResult;
-use CatPaw\Web\Services\HandlebarsService;
 use DOMDocument;
 use DOMElement;
 
@@ -22,10 +20,9 @@ class SuperstyleService {
     /**
      *
      * @param  string                           $fileName
-     * @param  array<string,mixed>              $context
      * @return Unsafe<SuperstyleExecutorResult>
      */
-    public  function file(string $fileName, array $context):Unsafe {
+    public  function file(string $fileName):Unsafe {
         $file = File::open($fileName)->unwrap($error);
         if ($error) {
             return error($error);
@@ -37,26 +34,14 @@ class SuperstyleService {
             return error($error);
         }
 
-        return $this->source($source, $context, $fileName);
+        return $this->source($source);
     }
     /**
      *
      * @param  string                           $source
-     * @param  array<string,mixed>              $context
-     * @param  string                           $id
      * @return Unsafe<SuperstyleExecutorResult>
      */
-    public  function source(string $source, array $context, string $id = ''):Unsafe {
-        $handlebars = Container::create(HandlebarsService::class)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        $source = $handlebars->source($source, $context, $id)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
+    public  function source(string $source):Unsafe {
         $dom = new DOMDocument;
         if (!$dom->loadHTML($source)) {
             return error("Could not load source.");

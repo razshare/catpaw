@@ -10,6 +10,7 @@ class Block {
      * @param false|Block   $parent
      * @param int           $depth
      * @param array<Block>  $children
+     * @param bool          $isServerInject
      */
     public function __construct(
         public string $signature,
@@ -18,6 +19,7 @@ class Block {
         public false|Block $parent,
         public int $depth,
         public array $children = [],
+        public bool $isServerInject = false,
     ) {
     }
 }

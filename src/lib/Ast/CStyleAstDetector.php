@@ -67,6 +67,61 @@ class CStyleAstDetector implements AstSearchInterface {
     // }
 
     /**
+     * Same as `next()`, but it ignores double quotes, single quotes and the different permutations taking into account `\` as an escape character.
+     * @param  string             ...$tokens
+     * @return false|SearchResult
+     */
+    public function nextIgnoreQuotes(string ...$tokens):false|SearchResult {
+        $escaped_character = false;
+        $double_quotes     = 0;
+        $single_quotes     = 0;
+        $before            = '';
+        $escaped_character = false;
+        
+        while (true) {
+            $result = $this->next('\\', '"', '\'', ...$tokens);
+            if (!$result) {
+                return false;
+            }
+
+            // @phpstan-ignore-next-line
+            $reading_string = 0 !== ($double_quotes % 2) || 0 !== ($single_quotes % 2);
+
+            if ($reading_string) {
+                if ($escaped_character) {
+                    $before .= $result->before.$result->token;
+                    $escaped_character = false;
+                    continue;
+                }
+
+                if ('\\' === $result->token) {
+                    $escaped_character = true;
+                    continue;
+                }
+            }
+
+            if ('"' === $result->token) {
+                $before .= $result->before.$result->token;
+                $double_quotes++;
+                continue;
+            }
+
+            if ('\'' === $result->token) {
+                $before .= $result->before.$result->token;
+                $double_quotes++;
+                continue;
+            }
+
+            if ($reading_string) {
+                $before .= $result->before.$result->token;
+                continue;
+            }
+
+            return new SearchResult($result->token ?? '', $before.$result->before);
+        }
+    }
+
+    /**
      * Search the next occurrence of `$tokens`.
      * @param  string             ...$tokens
      * @return false|SearchResult
@@ -158,30 +213,30 @@ class CStyleAstDetector implements AstSearchInterface {
 
         $search = CStyleAstDetector::fromSource($uncommented);
 
-        $name                 = '';
-        $opened_braces        = 0;
-        $closed_braces        = 0;
-        $block_found          = false;
-        $opened_brackets      = 0;
-        $closed_brackets      = 0;
-        $opened_double_braces = 0;
-        $closed_double_braces = 0;
-        $double_quotes        = 0;
-        $single_quotes        = 0;
-        $escaped_character    = false;
-        $body                 = '';
-        $rules                = [];
-        $missed               = '';
+        $name                = '';
+        $opened_curly        = 0;
+        $closed_curly        = 0;
+        $block_found         = false;
+        $opened_square       = 0;
+        $closed_square       = 0;
+        $opened_double_curly = 0;
+        $closed_double_curly = 0;
+        $double_quotes       = 0;
+        $single_quotes       = 0;
+        $escaped_character   = false;
+        $body                = '';
+        $rules               = [];
+        $missed              = '';
 
         $reset = function() use (
             &$name,
-            &$opened_braces,
-            &$closed_braces,
+            &$opened_curly,
+            &$closed_curly,
             &$block_found,
-            &$opened_brackets,
-            &$closed_brackets,
-            &$opened_double_braces,
-            &$closed_double_braces,
+            &$opened_square,
+            &$closed_square,
+            &$opened_double_curly,
+            &$closed_double_curly,
             &$double_quotes,
             &$single_quotes,
             &$escaped_character,
@@ -189,33 +244,47 @@ class CStyleAstDetector implements AstSearchInterface {
             &$rules,
             &$missed,
         ) {
-            $name                 = '';
-            $opened_braces        = 0;
-            $closed_braces        = 0;
-            $block_found          = false;
-            $opened_brackets      = 0;
-            $closed_brackets      = 0;
-            $opened_double_braces = 0;
-            $closed_double_braces = 0;
-            $double_quotes        = 0;
-            $single_quotes        = 0;
-            $escaped_character    = false;
-            $body                 = '';
-            $rules                = [];
-            $missed               = '';
+            $name                = '';
+            $opened_curly        = 0;
+            $closed_curly        = 0;
+            $block_found         = false;
+            $opened_square       = 0;
+            $closed_square       = 0;
+            $opened_double_curly = 0;
+            $closed_double_curly = 0;
+            $double_quotes       = 0;
+            $single_quotes       = 0;
+            $escaped_character   = false;
+            $body                = '';
+            $rules               = [];
+            $missed              = '';
         };
+
+        $previous_token = '';
+        $inject_mode    = false;
 
         while (true) {
             if ($block_found) {
-                if (!$result = $search->next('{{', '}}', '{', '}')) {
+                if (!$result = $search->nextIgnoreQuotes('{', '}')) {
                     return ok();
                 }
 
-                if ('}' === $result->token) {
-                    $closed_braces++;
+                if ($inject_mode) {
+                    if ('}' === $result->token && '}' === $previous_token && '' === $result->before) {
+                        $inject_mode = false;
+                    }
 
-                    if ($opened_braces !== $closed_braces) {
+                    $missed .= $result->before.$result->token;
+                    $previous_token = $result->token;
+                    continue;
+                }
+
+                if ('}' === $result->token) {
+                    $closed_curly++;
+
+                    if ($opened_curly !== $closed_curly) {
                         $missed .= $result->before.$result->token;
+                        $previous_token = $result->token;
                         continue;
                     }
 
@@ -243,75 +312,68 @@ class CStyleAstDetector implements AstSearchInterface {
     
                     $reset();
 
+                    $previous_token = $result->token;
                     continue;
                 }
 
 
                 if ('{' === $result->token) {
-                    $opened_braces++;
+                    if ('{' === $previous_token && '' === $result->before) {
+                        $inject_mode = true;
+                        $opened_curly--;
+                    } else {
+                        $opened_curly++;
+                    }
                 }
 
                 $missed .= $result->before.$result->token;
+                $previous_token = $result->token;
                 continue;
             }
 
-            if (!$result = $search->next('{{', '}}', '[', ']', '"', '\'', '\\', '{', '}', ';')) {
+            if (!$result = $search->nextIgnoreQuotes('[', ']', '{', '}', ';')) {
                 return ok();
             }
 
-            if ('[' === $result->token) {
-                $opened_brackets++;
+            if ($inject_mode) {
+                if ('}' === $result->token && '}' === $previous_token && '' === $result->before) {
+                    $inject_mode    = false;
+                    $previous_token = $result->token;
+                    
+                    if ($parent) {
+                        $block = new Block(
+                            signature: '',
+                            body     : trim("{$missed}{$result->before}{$result->token}"),
+                            rules    : [],
+                            parent   : $parent,
+                            depth    : $depth,
+                            isServerInject: true,
+                        );
+                        $parent->children[] = $block;
+                    }
+
+                    $missed = '';
+                    continue;
+                }
+
                 $missed .= $result->before.$result->token;
+                $previous_token = $result->token;
+                continue;
+            }
+
+            if ('[' === $result->token) {
+                $opened_square++;
+                $missed .= $result->before.$result->token;
+                $previous_token = $result->token;
                 continue;
             } else if (']' === $result->token) {
-                $closed_brackets++;
+                $closed_square++;
                 $missed .= $result->before.$result->token;
+                $previous_token = $result->token;
                 continue;
-            } else if ($opened_brackets !== $closed_brackets) {
+            } else if ($opened_square !== $closed_square) {
                 $missed .= $result->before.$result->token;
-                continue;
-            }
-
-            if ('{{' === $result->token) {
-                $opened_double_braces++;
-                $missed .= $result->before.$result->token;
-                continue;
-            } else if ('}}' === $result->token) {
-                $closed_double_braces++;
-                $missed .= $result->before.$result->token;
-                continue;
-            } else if ($opened_double_braces !== $closed_double_braces) {
-                $missed .= $result->before.$result->token;
-                continue;
-            }
-
-            if ('"' === $result->token && 0 === $single_quotes % 2) {
-                $missed .= $result->before.$result->token;
-                if (!$escaped_character) {
-                    $double_quotes++;
-                } else {
-                    $escaped_character = false;
-                }
-                continue;
-            }
-
-            if ('\'' === $result->token && 0 === $double_quotes % 2) {
-                $missed .= $result->before.$result->token;
-                if (!$escaped_character) {
-                    $single_quotes++;
-                } else {
-                    $escaped_character = false;
-                }
-                continue;
-            }
-
-            if (0 !== $double_quotes % 2 && 0 !== $single_quotes) {
-                if ('\\' === $result->token) {
-                    $escaped_character = true;
-                } else {
-                    $escaped_character = false;
-                }
-                $missed .= $result->before.$result->token;
+                $previous_token = $result->token;
                 continue;
             }
 
@@ -319,6 +381,7 @@ class CStyleAstDetector implements AstSearchInterface {
                 $rule   = trim($missed.$result->before);
                 $missed = '';
                 if ('' === $rule) {
+                    $previous_token = $result->token;
                     continue;
                 }
                 if ($parent) {
@@ -328,27 +391,38 @@ class CStyleAstDetector implements AstSearchInterface {
                 if ($error) {
                     return error($error);
                 }
+                $previous_token = $result->token;
                 continue;
             }
 
             if ('{' === $result->token) {
+                if ('{' === $previous_token && '' === $result->before) {
+                    $inject_mode = true;
+                    $opened_curly--;
+                    $missed .= $result->before.$result->token;
+                    $previous_token = $result->token;
+                    continue;
+                }
+                
+                // This feels hacky, we're looking ahead of the parser, but it saves a cycle.
+                if ('{' === $search->source[0]) {
+                    $opened_curly++;
+                    $missed .= $result->before.$result->token;
+                    $previous_token = $result->token;
+                    continue;
+                }
+                
                 $name   = trim($missed.$result->before);
                 $missed = '';
-                $opened_braces++;
-                $block_found = true;
+                $opened_curly++;
+                $block_found    = true;
+                $previous_token = $result->token;
                 continue;
-            }
-
-            if ('"' === $result->token) {
-                $double_quotes++;
-            }
-
-            if ('\'' === $result->token) {
-                $single_quotes++;
             }
 
             $body .= $missed.$result->before.$result
                     ->token;
+            $previous_token = $result->token;
         }
     }
 }
