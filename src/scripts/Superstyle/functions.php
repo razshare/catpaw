@@ -2,7 +2,6 @@
 namespace CatPaw\Superstyle;
 
 use function CatPaw\Core\asFileName;
-use CatPaw\Web\SuperstyleRenderContext;
 
 /**
  * Render twig a file.

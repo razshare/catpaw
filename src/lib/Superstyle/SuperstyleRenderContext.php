@@ -1,11 +1,16 @@
 <?php
 
-namespace CatPaw\Web;
+namespace CatPaw\Superstyle;
 
 use CatPaw\Core\Container;
-use CatPaw\Core\Interfaces\RenderContextInterface;
 use CatPaw\Superstyle\Services\SuperstyleService;
+use function CatPaw\Web\failure;
+use CatPaw\Web\Interfaces\RenderContextInterface;
 use CatPaw\Web\Interfaces\ResponseModifier;
+
+use function CatPaw\Web\success;
+use const CatPaw\Web\TEXT_HTML;
+
 use Psr\Log\LoggerInterface;
 
 class SuperstyleRenderContext implements RenderContextInterface {
@@ -74,7 +79,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
             return failure();
         }
 
-        $data = $superstyle->file(
+        $result = $superstyle->file(
             fileName  : $this->fileName,
             context: $this->context,
         )->unwrap($errorTwig);
@@ -88,6 +93,20 @@ class SuperstyleRenderContext implements RenderContextInterface {
             $logger->error((string)$errorTwig);
             return failure();
         }
-        return success($data, $status, $headers)->as(TEXT_HTML);
+
+        $document = <<<HTML
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Document</title>
+                <style>{$result->getGlobals()}{$result->css}</style>
+            </head>
+            <body>{$result->html}</body>
+            </html>
+            HTML;
+
+        return success($document, $status, $headers)->as(TEXT_HTML);
     }
 }

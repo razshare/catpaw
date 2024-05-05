@@ -112,11 +112,10 @@ class SuperstyleService {
                 return ok();
             }
             public function onRule(false|Block $block, string $rule):Unsafe {
-                if ($block) {
+                if (0 === $block->depth && 'main' !== $block->signature) {
+                    $this->globals[$block->signature] = "{$block->signature}{{$block->body}}";
                     return ok();
                 }
-
-                $this->globals[] = $rule;
                 return ok();
             }
         });
@@ -126,7 +125,13 @@ class SuperstyleService {
         }
 
         $executor = new SuperstyleExecutor(block: $main);
+        $result   = $executor->execute()->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
 
-        return $executor->execute();
+        $result->withGlobals($globals);
+
+        return ok($result);
     }
 }

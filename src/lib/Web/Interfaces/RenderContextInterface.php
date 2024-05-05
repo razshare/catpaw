@@ -1,7 +1,5 @@
 <?php
-namespace CatPaw\Core\Interfaces;
-
-use CatPaw\Web\Interfaces\ResponseModifier;
+namespace CatPaw\Web\Interfaces;
 
 interface RenderContextInterface {
     /**

@@ -1,0 +1,38 @@
+<style is="super">
+    main {
+        font-family: 'Courier New', Courier, monospace;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        display: grid;
+        background: #000000;
+
+        {{#each items}}
+            button {
+                content: "{{.}}";
+                border: 0;
+                font-size: 1.3rem;
+                justify-self: center;
+                align-self: center;
+                background: rgb(234, 40, 5);
+                color: rgb(233, 166, 155);
+                border-radius: 3rem;
+                padding: 1rem;
+                cursor: pointer;
+                box-shadow: 0;
+                transition: 200ms transform;
+
+                &:hover {
+                    transform: scale(1.1);
+                }
+
+                &:active {
+                    box-shadow: 0;
+                    transform: scale(0.9);
+                }
+            }
+        {{/each}}
+    }
+</style>

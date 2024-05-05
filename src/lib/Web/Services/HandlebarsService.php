@@ -29,6 +29,8 @@ class HandlebarsService {
             if ('' === $id) {
                 $id = hash('xxh3', $source).'.php';
             }
+            
+            $id = hash('xxh3', $id).'.php';
 
             if (isset($this->cache[$id])) {
                 $function = $this->cache[$id];
@@ -37,7 +39,6 @@ class HandlebarsService {
 
             Directory::create('.tmp/handlebars')->try();
 
-            $id = hash('xxh3', $id).'.php';
 
             $fileName = ".tmp/handlebars/$id";
 
@@ -51,10 +52,12 @@ class HandlebarsService {
                 return error("Could not compile handlebars source.");
             }
 
-            $file->write(<<<PHP
-                <?php
-                $compiledPhpFunction
-                PHP)->try();
+            $file->write(
+                <<<PHP
+                    <?php
+                    $compiledPhpFunction
+                    PHP
+            )->try();
             $file->close();
 
             $function         = require_once $fileName;

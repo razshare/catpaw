@@ -3,7 +3,7 @@
 namespace CatPaw\Web;
 
 use CatPaw\Core\Container;
-use CatPaw\Core\Interfaces\RenderContextInterface;
+use CatPaw\Web\Interfaces\RenderContextInterface;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Services\TwigService;
 use Psr\Log\LoggerInterface;

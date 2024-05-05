@@ -168,50 +168,6 @@ readonly class SuperstyleExecutor {
         $innerHtml = '';
         $innerCss  = '';
 
-        if (str_starts_with($signature, 'for')) {
-            if (!preg_match('/^\s*for\s+(\w+)\s+in\s+(\w+)\s*$/', $signature, $matches)) {
-                return error("Invalid `for` statement.");
-            }
-
-            $item = $matches[1];
-            $list = $matches[2];
-
-
-            $innerHtml .= "{% for $item in $list %}";
-
-
-            $previousSignature = '';
-            $ignoreCss         = false;
-
-            foreach ($executor->block->children as $innerChildBlock) {
-                if ($previousSignature === $innerChildBlock->signature) {
-                    $ignoreCss = true;
-                } else {
-                    $previousSignature = $innerChildBlock->signature;
-                }
-                $executorLocal = new SuperstyleExecutor($innerChildBlock);
-                $result        = $executorLocal->execute()->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-                $innerHtml .= $result->html;
-                if (!$ignoreCss) {
-                    $innerCss .= $result->css;
-                }
-            }
-
-            $innerHtml .= "{% endfor %}";
-
-            return ok(
-                new SuperstyleExecutorResult(
-                    html: <<<HTML
-                        $content$innerHtml
-                        HTML,
-                    css : "$rules $innerCss",
-                )
-            );
-        }
-
         $previousSignature = '';
         $ignoreCss         = false;
 
@@ -256,7 +212,7 @@ readonly class SuperstyleExecutor {
 
         $this->validateSignature($cleanSignature)->unwrap($error);
         if ($error) {
-            return error($error);
+            return ok(new SuperstyleExecutorResult(html: '', css: "{$this->block->signature}{{$this->block->body}}"));
         }
 
         $name = $this->findNameFromSignature($cleanSignature);
