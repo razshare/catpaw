@@ -127,12 +127,12 @@ readonly class SuperstyleExecutor {
     }
 
     /**
-     * @param  SuperstyleExecutor               $executor
-     * @param  string                           $name
-     * @param  string                           $attributes
-     * @param  string                           $signature
-     * @param  string                           $cleanSignature
-     * @return Unsafe<SuperstyleExecutorResult>
+     * @param  SuperstyleExecutor           $executor
+     * @param  string                       $name
+     * @param  string                       $attributes
+     * @param  string                       $signature
+     * @param  string                       $cleanSignature
+     * @return Unsafe<SuperstyleMainResult>
      */
     private static function createSuperstyleExecutorResult(SuperstyleExecutor $executor, string $name, string $attributes, string $signature, string $cleanSignature): Unsafe {
         $classes = $executor->findClassesFromSignature($cleanSignature);
@@ -200,25 +200,23 @@ readonly class SuperstyleExecutor {
             if ($error) {
                 return error($error);
             }
-            $innerHtml .= $result->html;
+            $innerHtml .= $result->markup;
             if (!$ignoreCss) {
-                $innerCss .= $result->css;
+                $innerCss .= $result->style;
             }
         }
 
         return ok(
-            new SuperstyleExecutorResult(
-                html: <<<HTML
-                    <$name$class$attributes>$content$innerHtml</$name>
-                    HTML,
-                css : "$signature { $rules $innerCss }",
+            new SuperstyleMainResult(
+                markup: "<$name$class$attributes>$content$innerHtml</$name>",
+                style : "$signature { $rules $innerCss }",
             )
         );
     }
 
 
     /**
-     * @return Unsafe<SuperstyleExecutorResult>
+     * @return Unsafe<SuperstyleMainResult>
      */
     public function execute(): Unsafe {
         $signature = $this->block->signature;
@@ -229,7 +227,12 @@ readonly class SuperstyleExecutor {
 
         $this->validateSignature($cleanSignature)->unwrap($error);
         if ($error) {
-            return ok(new SuperstyleExecutorResult(html: '', css: "{$this->block->signature}{{$this->block->body}}"));
+            return ok(
+                new SuperstyleMainResult(
+                    markup: '',
+                    style: "{$this->block->signature}{{$this->block->body}}",
+                )
+            );
         }
 
         $name = $this->findNameFromSignature($cleanSignature);

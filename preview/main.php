@@ -4,11 +4,11 @@ use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use function CatPaw\Core\ok;
-use CatPaw\Superstyle\SuperstyleExecutorResult;
+use CatPaw\Superstyle\SuperstyleDocument;
 use CatPaw\Web\Server;
 
 
-function htmx(SuperstyleExecutorResult $result) {
+function htmx(SuperstyleDocument $document) {
     return <<<HTML
         <!DOCTYPE html>
         <html lang="en">
@@ -20,8 +20,9 @@ function htmx(SuperstyleExecutorResult $result) {
             
         </head>
         <body>
-            <style>{$result->getGlobals()}{$result->css}</style>
-            {$result->html}
+            <style>{$document->style}</style>
+            {$document->markup}
+            <script>{$document->script}</script>
         </body>
         </html>
         HTML;

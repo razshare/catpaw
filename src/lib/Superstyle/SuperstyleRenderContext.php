@@ -30,7 +30,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
     }
 
 
-    /** @var false|(callable(SuperstyleExecutorResult):string) $templateBuilder */
+    /** @var false|(callable(SuperstyleDocument):string) $templateBuilder */
     private mixed $templateBuilder              = false;
     private false|HandlebarsService $handlebars = false;
 
@@ -71,22 +71,25 @@ class SuperstyleRenderContext implements RenderContextInterface {
 
     /**
      * Build the template template yourself.
-     * @param callable(SuperstyleExecutorResult):string $builder A function that takes the 
-     *                                                           superstyle result and returns a string, which should be the structure of your HTML document.\
+     * @param callable(SuperstyleDocument):string $builder A function that takes the 
+     *                                                     superstyle document and returns a string, which should be the structure of your HTML document.\
      * 
      *                                                            It should looks something like this
      *                                                            ```php
      *                                                            superstyle('my-file.hbs')->template(
-     *                                                            fn (SuperstyleExecutorResult $result) => <<<HTML
+     *                                                            fn (SuperstyleDocument $document) => <<<HTML
      *                                                            <!DOCTYPE html>
      *                                                            <html lang="en">
      *                                                            <head>
      *                                                            <meta charset="UTF-8">
-     *                                                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     *                                                            <title>Document</title>
-     *                                                            <style>{$result->getGlobals()}{$result->css}</style>
+     *                                                            <meta name="viewport content="width=device-width, initial-scale=1.0">
+     *                                                            <title>My title</title>
      *                                                            </head>
-     *                                                            <body>{$result->html}</body>
+     *                                                              <body>
+     *                                                               <style>{$document->style}</style>
+     *                                                               {$document->markup}
+     *                                                               <script>{$document->script}</script>
+     *                                                              </body>
      *                                                            </html>
      *                                                            HTML
      *                                                            )
@@ -116,7 +119,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
             return failure();
         }
 
-        $result = $superstyle->file(fileName  : $this->fileName)->unwrap($errorSuperstyle);
+        $document = $superstyle->file(fileName  : $this->fileName)->unwrap($errorSuperstyle);
 
         if ($errorSuperstyle) {
             $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
@@ -129,7 +132,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
         }
 
         $template = match ((bool)$this->templateBuilder) {
-            true  => ($this->templateBuilder)($result),
+            true  => ($this->templateBuilder)($document),
             false => <<<HTML
                 <!DOCTYPE html>
                 <html lang="en">
@@ -137,9 +140,12 @@ class SuperstyleRenderContext implements RenderContextInterface {
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>Document</title>
-                    <style>{$result->getGlobals()}{$result->css}</style>
                 </head>
-                <body>{$result->html}</body>
+                <body>
+                    <style>{$document->style}</style>
+                    {$document->markup}
+                    <script>{$document->script}</script>
+                </body>
                 </html>
                 HTML,
         };

@@ -26,10 +26,9 @@ class SuperstyleTest extends TestCase {
      */
     private function makeSureSuperstyleServiceWorks(SuperstyleService $style): Unsafe {
         return anyError(function() use ($style) {
-            $result = $style->file(asFileName(__DIR__, './superstyle.hbs'))->try();
-            $this->assertEquals('<main><ul>{{#each items}}<li>{{.}}</li>{{/each}}</ul></main>', $result->html);
-            $this->assertEquals('main {  ul { position: relative;  } }', $result->css);
-            print_r($result);
+            $document = $style->file(asFileName(__DIR__, './superstyle.hbs'))->try();
+            $this->assertEquals('<main><ul>{{#each items}}<li>{{.}}</li>{{/each}}</ul></main>', $document->markup);
+            $this->assertEquals('main {  ul { position: relative;  } }', $document->style);
             return NONE;
         });
     }

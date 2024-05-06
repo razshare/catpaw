@@ -10,8 +10,8 @@ use CatPaw\Core\File;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
+use CatPaw\Superstyle\SuperstyleDocument;
 use CatPaw\Superstyle\SuperstyleExecutor;
-use CatPaw\Superstyle\SuperstyleExecutorResult;
 use DOMDocument;
 use DOMElement;
 
@@ -19,8 +19,8 @@ use DOMElement;
 class SuperstyleService {
     /**
      *
-     * @param  string                           $fileName
-     * @return Unsafe<SuperstyleExecutorResult>
+     * @param  string                     $fileName
+     * @return Unsafe<SuperstyleDocument>
      */
     public  function file(string $fileName):Unsafe {
         $file = File::open($fileName)->unwrap($error);
@@ -38,8 +38,8 @@ class SuperstyleService {
     }
     /**
      *
-     * @param  string                           $source
-     * @return Unsafe<SuperstyleExecutorResult>
+     * @param  string                     $source
+     * @return Unsafe<SuperstyleDocument>
      */
     public  function source(string $source):Unsafe {
         $dom = new DOMDocument;
@@ -57,10 +57,10 @@ class SuperstyleService {
             return error("No style tag found.");
         }
 
-        /** @var DOMElement $node */
-        $node = $nodes[0];
-        
-        $detector = CStyleAstDetector::fromSource($node->textContent);
+        /** @var DOMElement $style */
+        $style = $nodes[0];
+
+        $detector = CStyleAstDetector::fromSource($style->textContent);
 
         /** @var array<string> */
         $globals = [];
@@ -117,6 +117,9 @@ class SuperstyleService {
         if (!$main) {
             return error("A top level main block is required in order to render an application.");
         }
+        
+        /** @var false|DOMElement */
+        $script = $dom->getElementsByTagName("script")[0] ?? false;
 
         $executor = new SuperstyleExecutor(block: $main);
         $result   = $executor->execute()->unwrap($error);
@@ -124,8 +127,14 @@ class SuperstyleService {
             return error($error);
         }
 
-        $result->withGlobals(join($globals));
-
-        return ok($result);
+        $scriptTextContent = '';
+        if ($script) {
+            $scriptTextContent = $script->textContent;
+        }
+        return ok(new SuperstyleDocument(
+            markup: $result->markup,
+            style: join($globals).$result->style,
+            script: $scriptTextContent,
+        ));
     }
 }
