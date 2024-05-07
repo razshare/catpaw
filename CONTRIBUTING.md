@@ -2,7 +2,7 @@
 
 ## Preparing
 
-Install `^php8.2` and the following extenstions:
+Install `^php8.2` and the following extensions:
 - `php8.2-yaml`
 - `php8.2-xml`
 - `php8.2-mbstring`
