@@ -136,11 +136,11 @@ class Server {
     /**
      * Where to serve the api from.\
      * This path should contain your `get.php`, `post.php` (etc) files.
-     * @param  string $api
+     * @param  string $apiLocation
      * @return Server
      */
-    public function withApiLocation(string $api):self {
-        $this->apiLocation = $api;
+    public function withApiLocation(string $apiLocation):self {
+        $this->apiLocation = $apiLocation;
         return $this;
     }
 
@@ -258,7 +258,7 @@ class Server {
             EventLoop::onSignal(SIGTERM, $stopper);
 
             $requestHandler   = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
-            $stackedHandler   = stackMiddleware($requestHandler, $this->middlewares);
+            $stackedHandler   = stackMiddleware($requestHandler, ...$this->middlewares);
             $errorHandler     = ServerErrorHandler::create($logger);
             $this->httpServer = SocketHttpServer::createForDirectAccess(
                 logger: $logger,
