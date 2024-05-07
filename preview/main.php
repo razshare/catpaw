@@ -1,12 +1,12 @@
 <?php
+
+use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
 use CatPaw\Core\Directory;
-use function CatPaw\Core\error;
 use CatPaw\Core\File;
-use function CatPaw\Core\ok;
 use CatPaw\Superstyle\SuperstyleDocument;
 use CatPaw\Web\Server;
-
+use CatPaw\Web\Services\HandlebarsService;
 
 function htmx(SuperstyleDocument $document) {
     return <<<HTML
@@ -28,25 +28,17 @@ function htmx(SuperstyleDocument $document) {
         HTML;
 }
 
-function main() {
-    if (File::exists($tmp = asFileName(__DIR__, '../.tmp'))) {
-        Directory::delete($tmp)->unwrap($error);
-        if ($error) {
-            return error($error);
+function main(HandlebarsService $handlebars) {
+    return anyError(function() use ($handlebars) {
+        $handlebars->withTemporaryDirectory(asFileName(__DIR__, './temp'));
+
+        if (File::exists($tmp = asFileName(__DIR__, './temp'))) {
+            Directory::delete($tmp)->try();
         }
-    }
-
-    $server = Server::create(api: asFileName(__DIR__, './api'), www: asFileName(__DIR__, './www'))->unwrap($error);
-
-    if ($error) {
-        return error($error);
-    }
-
-    $server->start()->unwrap($error);
-
-    if ($error) {
-        return error($error);
-    }
-
-    return ok();
+        
+        Server::get()
+            ->withApiLocation(asFileName(__DIR__, './api'))
+            ->start()
+            ->try();
+    });
 }

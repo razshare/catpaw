@@ -6,14 +6,12 @@ use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
-
 use CatPaw\Core\Container;
 use CatPaw\Core\Signal;
 use const CatPaw\Web\APPLICATION_JSON;
 use const CatPaw\Web\APPLICATION_XML;
 use CatPaw\Web\Attributes\Param;
 use CatPaw\Web\Server;
-
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
 use const CatPaw\Web\TEXT_PLAIN;
@@ -25,12 +23,12 @@ class WebTest extends TestCase {
         Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         Container::provide(HttpClient::class, HttpClientBuilder::buildDefault());
-        $server = Server::create(
-            interface: '127.0.0.1:5858',
-            api      : 'tests/api',
-            www      : 'tests/www',
-            apiPrefix: 'api'
-        )->unwrap($error);
+        $server = Server::get()
+            ->withInterface('127.0.0.1:5858')
+            ->withApiLocation(asFileName(__DIR__, './api'))
+            ->withStaticsLocation(asFileName(__DIR__, './www'))
+            ->withApiPrefix('api');
+
         $this->assertNull($error);
 
         Container::provide(Server::class, $server);

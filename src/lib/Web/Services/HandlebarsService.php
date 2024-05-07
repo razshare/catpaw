@@ -4,10 +4,8 @@ namespace CatPaw\Web\Services;
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Attributes\Service;
 use CatPaw\Core\Directory;
-
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use LightnCandy\LightnCandy;
@@ -15,7 +13,18 @@ use LightnCandy\LightnCandy;
 #[Service]
 class HandlebarsService {
     /** @var array<string,callable(array<string,mixed>):string> */
-    private array $cache = [];
+    private array $cache               = [];
+    private string $temporaryDirectory = '.tmp/handlebars';
+
+    /**
+     * Where to save the compiled templates.
+     * @param  string            $temporaryDirectory
+     * @return HandlebarsService
+     */
+    public function withTemporaryDirectory(string $temporaryDirectory):self {
+        $this->temporaryDirectory = $temporaryDirectory;
+        return $this;
+    }
 
     /**
      *
@@ -25,7 +34,8 @@ class HandlebarsService {
      * @return Unsafe<string>
      */
     public function source(string $source, array $context, string $id = ''):Unsafe {
-        return anyError(function() use ($source, $id, $context) {
+        $temporaryDirectory = $this->temporaryDirectory;
+        return anyError(function() use ($source, $id, $context, $temporaryDirectory) {
             if ('' === $id) {
                 $id = hash('xxh3', $source).'.php';
             }
@@ -37,10 +47,10 @@ class HandlebarsService {
                 return ok($function($context));
             }
 
-            Directory::create('.tmp/handlebars')->try();
+            Directory::create($temporaryDirectory)->try();
 
 
-            $fileName = ".tmp/handlebars/$id";
+            $fileName = "{$temporaryDirectory}/$id";
 
             $file = File::open($fileName, 'w+')->try();
 
@@ -74,6 +84,8 @@ class HandlebarsService {
      * @return Unsafe<string>
      */
     public function file(string $fileName, array $context): Unsafe {
+        $temporaryDirectory = $this->temporaryDirectory;
+
         $file = File::open($fileName)->unwrap($error);
         if ($error) {
             return error($error);
@@ -83,6 +95,10 @@ class HandlebarsService {
             return error($error);
         }
 
+        // This is necessary because the code above is async, 
+        // and we want to maintain the fluent api in case userland wants
+        // to change the temporary directory specifically just for the current execution.
+        $this->temporaryDirectory = $temporaryDirectory;
         return $this->source($source, $context, $fileName);
     }
 }

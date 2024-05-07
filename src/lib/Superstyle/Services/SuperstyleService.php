@@ -47,18 +47,18 @@ class SuperstyleService {
             return error("Could not load source.");
         }
 
-        $nodes = $dom->getElementsByTagName("style");
+        $styleNodes = $dom->getElementsByTagName("style");
         
-        if (($count = $nodes->count()) > 1) {
-            return error("Only one style tag is allowed in superstyle, $count found instead.");
+        if (($styleNodesCount = $styleNodes->count()) > 1) {
+            return error("Only one style tag is allowed in superstyle, $styleNodesCount found instead.");
         }
 
-        if (!isset($nodes[0])) {
+        if (!isset($styleNodes[0])) {
             return error("No style tag found.");
         }
 
         /** @var DOMElement $style */
-        $style = $nodes[0];
+        $style = $styleNodes[0];
 
         $detector = CStyleAstDetector::fromSource($style->textContent);
 
@@ -117,9 +117,15 @@ class SuperstyleService {
         if (!$main) {
             return error("A top level main block is required in order to render an application.");
         }
+
+        $scriptNodes = $dom->getElementsByTagName("script");
         
-        /** @var false|DOMElement */
-        $script = $dom->getElementsByTagName("script")[0] ?? false;
+        if (($scriptNodesCount = $scriptNodes->count()) > 1) {
+            return error("Only one script tag is allowed in superstyle, $scriptNodesCount found instead.");
+        }
+
+        /** @var DOMElement $style */
+        $script = $scriptNodes[0];
 
         $executor = new SuperstyleExecutor(block: $main);
         $result   = $executor->execute()->unwrap($error);

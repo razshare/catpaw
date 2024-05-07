@@ -154,6 +154,6 @@ class RouteResolver {
 
     public HttpInvoker $invoker;
     private function __construct(private Server $server) {
-        $this->invoker = HttpInvoker::create($server);
+        $this->invoker = HttpInvoker::create();
     }
 }

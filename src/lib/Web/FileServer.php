@@ -137,11 +137,11 @@ readonly class FileServer implements FileServerInterface {
         $byteRangeService = $this->byteRangeService;
         $logger           = $this->logger;
 
-        if (!$server->www || strpos($path, '../')) {
+        if (!$server->getStaticsLocation() || strpos($path, '../')) {
             return $this->notFound();
         }
 
-        $fileName = $server->www.$path;
+        $fileName = $server->getStaticsLocation().$path;
 
         if ($overwrite) {
             $fileName = $overwrite->overwrite($fileName, $path);

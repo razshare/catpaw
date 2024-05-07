@@ -105,9 +105,10 @@ class SuperstyleRenderContext implements RenderContextInterface {
      *
      * @param  int                  $status
      * @param  array<string,string> $headers
+     * @param  string               $title
      * @return ResponseModifier
      */
-    public function render(int $status = 200, array $headers = []):ResponseModifier {
+    public function render(int $status = 200, array $headers = [], string $title = 'Document'):ResponseModifier {
         $superstyle = Container::create(SuperstyleService::class)->unwrap($errorService);
         if ($errorService) {
             $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
@@ -139,7 +140,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Document</title>
+                    <title>$title</title>
                 </head>
                 <body>
                     <style>{$document->style}</style>

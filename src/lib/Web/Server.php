@@ -4,7 +4,6 @@ namespace CatPaw\Web;
 
 use Amp\CompositeException;
 use Amp\DeferredFuture;
-use function Amp\File\isDirectory;
 use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
@@ -13,8 +12,6 @@ use CatPaw\Core\Bootstrap;
 use CatPaw\Core\Container;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
-use CatPaw\Core\File;
-use function CatPaw\Core\isPhar;
 
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
@@ -22,8 +19,6 @@ use CatPaw\Core\Signal;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\FileServerInterface;
 use CatPaw\Web\Interfaces\SessionInterface;
-use Error;
-use Phar;
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use Throwable;
@@ -53,199 +48,148 @@ class Server {
     }
 
     /**
-     *
-     * @param  array<string> $www
-     * @throws Error
-     * @return string
+     *  Get the server singleton.
+     * @return Server
      */
-    private static function findFirstValidWebDirectory(array $www):string {
-        if (isPhar()) {
-            $phar = Phar::running();
-            foreach ($www as $directory) {
-                $directory = "$phar/$directory";
-                if (File::exists($directory)) {
-                    if (isDirectory($directory)) {
-                        return $directory;
-                    }
-                }
-            }
-        } else {
-            foreach ($www as $directory) {
-                if (isDirectory($directory)) {
-                    return $directory;
-                }
-            }
-        }
-        return '';
-    }
-
-
-    /**
-     *
-     * @param  array<string> $api
-     * @throws Error
-     * @return string
-     */
-    private static function findFirstValidRoutesDirectory(array $api) : string {
-        foreach ($api as $directory) {
-            if (File::exists($directory)) {
-                if (isDirectory($directory)) {
-                    return $directory;
-                }
-            }
-
-            $isPhar = isPhar();
-            $phar   = Phar::running();
-
-            if ($isPhar) {
-                $directory = "$phar/$directory";
-                if (File::exists($directory)) {
-                    if (isDirectory($directory)) {
-                        return $directory;
-                    }
-                }
-            }
-        }
-        return '';
-    }
-
-    /**
-     * Get the current server instance.
-     * @return Unsafe<Server>
-     */
-    public static function get(): Unsafe {
-        if (!isset(self::$singleton)) {
-            return error("Server not initialized.");
-        }
-        return ok(self::$singleton);
-    }
-
-    /**
-     *  Create a new server.
-     * @param  string         $interface            network interface to bind to.
-     * @param  string         $secureInterface      same as `$interfaces` but using secure certificates.
-     * @param  string         $api                  api directory, this is relative to the project directory.
-     * @param  string         $www                  static assets directory, this is relative to the project directory.
-     * @param  string         $apiPrefix            a prefix to add to the api path.
-     * @param  bool           $enableCompression
-     * @param  int            $connectionLimit
-     * @param  int            $connectionLimitPerIp
-     * @param  int            $concurrencyLimit
-     * @param  array<string>  $allowedMethods
-     * @throws Error
-     * @return Unsafe<Server>
-     */
-    public static function create(
-        string $interface = '127.0.0.1:8080',
-        string $secureInterface = '',
-        string $api = './server/api/',
-        string $www = './server/www/',
-        string $apiPrefix = '/',
-        bool $enableCompression = true,
-        int $connectionLimit = 1000,
-        int $connectionLimitPerIp = 10,
-        int $concurrencyLimit = 1000,
-        array $allowedMethods = [],
-    ): Unsafe {
+    public static function get(): Server {
         if (isset(self::$singleton)) {
-            return error('You can only have one server instance at any time. Use `Server::get()` to get the current instance.');
-        }
-        if (!str_starts_with($apiPrefix, '/')) {
-            $apiPrefix = "/$apiPrefix";
-        }
-        $api = preg_replace('/\/+$/', '', $api);
-        $www = preg_replace('/\/+$/', '', $www);
-
-
-        $logger = Container::create(LoggerInterface::class)->unwrap($error);
-        if ($error) {
-            return error($error);
+            return self::$singleton;
         }
 
-        if ((!$www = self::findFirstValidWebDirectory([$www]))) {
-            $logger->warning("Could not find a valid web root directory.");
-        }
 
-        if ((!$api = self::findFirstValidRoutesDirectory([$api]))) {
-            $logger->warning("Could not find a valid api directory.");
-        }
+        
 
-        if (!Container::isProvided(SessionInterface::class)) {
-            Container::provide(SessionInterface::class, SessionWithMemory::create(...));
-        }
-
-        return ok(self::$singleton = new self(
-            interface        : $interface,
-            secureInterface  : $secureInterface,
-            apiPrefix        : $apiPrefix,
-            api              : $api,
-            www              : $www,
-            enableCompression: $enableCompression,
-            connectionLimit: $connectionLimit,
-            connectionLimitPerIp: $connectionLimitPerIp,
-            concurrencyLimit: $concurrencyLimit,
-            allowedMethods: $allowedMethods,
-            router           : Router::create(),
-            logger           : $logger,
-        ));
+        return self::$singleton = new self(router           : Router::create());
     }
 
     private SocketHttpServer $httpServer;
     private RouteResolver $resolver;
     private FileServerInterface $fileServer;
-    /** @var array<Middleware> */
-    private array $middleware       = [];
     private bool $httpServerStarted = false;
 
+    /** @var array<Middleware> */
+    private array $middlewares = [];
+    private string $interface  = '127.0.0.1:8080';
+    // @phpstan-ignore-next-line
+    private string $secureInterface   = '';
+    private string $apiPrefix         = '/';
+    private string $apiLocation       = '';
+    private string $staticsLocation   = '';
+    private bool $compression         = false;
+    private int $connectionLimit      = 1000;
+    private int $connectionLimitPerIp = 10;
+    private int $concurrencyLimit     = 1000;
+    /** @var array<string> */
+    private array $allowedMethods = [];
+
     /**
-     *
-     * @param string          $interface
-     * @param string          $secureInterface
-     * @param string          $apiPrefix
-     * @param string          $api
-     * @param string          $www
-     * @param bool            $enableCompression
-     * @param int             $connectionLimit
-     * @param int             $connectionLimitPerIp
-     * @param int             $concurrencyLimit
-     * @param array<string>   $allowedMethods
-     * @param Router          $router
-     * @param LoggerInterface $logger
+     * @param  Router $router
+     * @return void
      */
-    private function __construct(
-        public readonly string $interface,
-        public readonly string $secureInterface,
-        public readonly string $apiPrefix,
-        public readonly string $api,
-        public readonly string $www,
-        public readonly bool $enableCompression,
-        public readonly int $connectionLimit,
-        public readonly int $connectionLimitPerIp,
-        public readonly int $concurrencyLimit,
-        public readonly array $allowedMethods,
-        public readonly Router $router,
-        public readonly LoggerInterface $logger,
-    ) {
-        self::initializeRoutes(
-            logger: $this->logger,
-            router: $router,
-            apiPrefix: $this->apiPrefix,
-            api: $this->api,
-        )->unwrap($error);
+    private function __construct(public readonly Router $router) {
+    }
 
-        if ($error) {
-            $logger->error((string)$error);
+    public function getStaticsLocation():string {
+        return $this->staticsLocation;
+    }
+
+    /**
+     * List of middlewares to execute.
+     * @param  array<Middleware> $middlewares
+     * @return Server
+     */
+    public function widthMiddlewares(array $middlewares):self {
+        $this->middlewares = $middlewares;
+        return $this;
+    }
+    
+    /**
+     * Interface to bind to.\
+     * For example `0.0.0.0:80`.\
+     * The default interface is `127.0.0.1:8080`.
+     * @param  string $interface
+     * @return Server
+     */
+    public function withInterface(string $interface):self {
+        $this->interface = $interface;
+        return $this;
+    }
+    
+    public function withSecureInterface(string $secureInterface):self {
+        $this->secureInterface = $secureInterface;
+        return $this;
+    }
+
+    /**
+     * The prefix of the api.
+     * @param  string $apiPrefix
+     * @return Server
+     */
+    public function withApiPrefix(string $apiPrefix):self {
+        if (!str_starts_with($apiPrefix, '/')) {
+            $apiPrefix = "/$apiPrefix";
         }
+        $this->apiPrefix = $apiPrefix;
+        return $this;
+    }
 
-        Bootstrap::onKill(function() {
-            $this->stop();
-        });
+    /**
+     * Where to serve the api from.\
+     * This path should contain your `get.php`, `post.php` (etc) files.
+     * @param  string $api
+     * @return Server
+     */
+    public function withApiLocation(string $api):self {
+        $this->apiLocation = $api;
+        return $this;
+    }
 
-        $this->resolver = RouteResolver::create($this);
+    /**
+     * Where to serve static files from.
+     * @param  string $staticsLocation
+     * @return Server
+     */
+    public function withStaticsLocation(string $staticsLocation):self {
+        $this->staticsLocation = $staticsLocation;
+        return $this;
+    }
+
+    /**
+     * Enables compression.
+     * @return Server
+     */
+    public function withCompression():self {
+        $this->compression = true;
+        return $this;
+    }
+
+    public function withConnectionLimit(int $connectionLimit):self {
+        $this->connectionLimit = $connectionLimit;
+        return $this;
+    }
+
+    public function withConnectionLimitPerIp(int $connectionLimitPerIp):self {
+        $this->connectionLimitPerIp = $connectionLimitPerIp;
+        return $this;
+    }
+
+    public function withConcurrencyLimit(int $concurrencyLimit):self {
+        $this->concurrencyLimit = $concurrencyLimit;
+        return $this;
+    }
+
+    /**
+     * 
+     * @param  array<string> $allowedMethods
+     * @return Server
+     */
+    public function withAllowedMethods(array $allowedMethods):self {
+        $this->allowedMethods = $allowedMethods;
+        return $this;
     }
 
     public function middleware(Middleware $middleware): void {
-        $this->middleware[] = $middleware;
+        $this->middlewares[] = $middleware;
     }
 
     public function setFileServer(FileServerInterface $fileServer):self {
@@ -261,6 +205,32 @@ class Server {
      * @return Unsafe<None>
      */
     public function start(false|Signal $ready = false):Unsafe {
+        $logger = Container::create(LoggerInterface::class)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+
+        if (!Container::isProvided(SessionInterface::class)) {
+            Container::provide(SessionInterface::class, SessionWithMemory::create(...));
+        }
+
+        self::initializeRoutes(
+            logger: $logger,
+            router: $this->router,
+            apiPrefix: $this->apiPrefix,
+            apiLocation: $this->apiLocation,
+        )->unwrap($error);
+
+        if ($error) {
+            $logger->error((string)$error);
+        }
+
+        Bootstrap::onKill(function() {
+            $this->stop();
+        });
+
+        $this->resolver = RouteResolver::create($this);
+
         if (isset($this->httpServer)) {
             if ($this->httpServerStarted) {
                 return error("Server already started.");
@@ -279,7 +249,6 @@ class Server {
 
             $stopper = function(string $callbackId) {
                 EventLoop::cancel($callbackId);
-                $this->stop();
                 Bootstrap::kill();
             };
 
@@ -288,12 +257,12 @@ class Server {
             EventLoop::onSignal(SIGQUIT, $stopper);
             EventLoop::onSignal(SIGTERM, $stopper);
 
-            $requestHandler   = ServerRequestHandler::create($this->logger, $this->fileServer, $this->resolver);
-            $stackedHandler   = stackMiddleware($requestHandler, $this->middleware);
-            $errorHandler     = ServerErrorHandler::create($this->logger);
+            $requestHandler   = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
+            $stackedHandler   = stackMiddleware($requestHandler, $this->middlewares);
+            $errorHandler     = ServerErrorHandler::create($logger);
             $this->httpServer = SocketHttpServer::createForDirectAccess(
-                logger: $this->logger,
-                enableCompression: $this->enableCompression,
+                logger: $logger,
+                enableCompression: $this->compression,
                 connectionLimit: $this->connectionLimit,
                 connectionLimitPerIp: $this->connectionLimitPerIp,
                 concurrencyLimit: $this->concurrencyLimit,
@@ -305,6 +274,7 @@ class Server {
                     $endSignal->complete();
                 }
             });
+            
             $this->httpServer->expose($this->interface);
 
             $this->httpServer->start($stackedHandler, $errorHandler);
@@ -354,17 +324,17 @@ class Server {
      * @param  LoggerInterface $logger
      * @param  Router          $router
      * @param  string          $apiPrefix
-     * @param  string          $api
+     * @param  string          $apiLocation
      * @return Unsafe<None>
      */
     private static function initializeRoutes(
         LoggerInterface $logger,
         Router $router,
         string $apiPrefix,
-        string $api,
+        string $apiLocation,
     ): Unsafe {
-        if ($api) {
-            $flatList = Directory::flat($api)->unwrap($error);
+        if ($apiLocation) {
+            $flatList = Directory::flat($apiLocation)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -373,9 +343,9 @@ class Server {
                 if (!str_ends_with(strtolower($fileName), '.php')) {
                     continue;
                 }
-                $offset       = strpos($fileName, $api);
+                $offset       = strpos($fileName, $apiLocation);
                 $offset       = $offset?:0;
-                $relativePath = substr($fileName, $offset + strlen($api));
+                $relativePath = substr($fileName, $offset + strlen($apiLocation));
 
                 if (!str_starts_with($relativePath, '.'.DIRECTORY_SEPARATOR)) {
                     if ($handler = require_once $fileName) {
@@ -397,7 +367,7 @@ class Server {
                         $routeExists = $router->routeExists($symbolicMethod, $symbolicPath);
 
                         if (!$routeExists) {
-                            $cwd = dirname($api.$fileName)?:'';
+                            $cwd = dirname($apiLocation.$fileName)?:'';
                             $router->initialize($symbolicMethod, $symbolicPath, $handler, $cwd)->unwrap($error);
                             if ($error) {
                                 return error($error);

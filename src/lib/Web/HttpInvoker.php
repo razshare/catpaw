@@ -12,18 +12,14 @@ use function CatPaw\Core\error;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Interfaces\SessionInterface;
+use Psr\Log\LoggerInterface;
 
 class HttpInvoker {
-    public static function create(Server $server):self {
-        return new self($server);
+    public static function create():self {
+        return new self();
     }
-
-    /**
-     * @param Server $server
-     */
-    private function __construct(
-        private readonly Server $server,
-    ) {
+    
+    private function __construct() {
     }
 
     /**
@@ -91,13 +87,24 @@ class HttpInvoker {
                 SessionInterface::class => function() use ($context) {
                     $result = Container::create(SessionInterface::class, $context->request)->unwrap($error);
                     if ($error) {
-                        $this->server->logger->error($error);
+                        $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
+                        if ($errorLogger) {
+                            echo $errorLogger.PHP_EOL;
+                            return false;
+                        }
+                        $logger->error($error);
                         return false;
                     }
                     if ($result instanceof Unsafe) {
                         $result = $result->unwrap($error);
                         if ($error) {
-                            $this->server->logger->error($error);
+                            $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
+                            if ($errorLogger) {
+                                echo $errorLogger.PHP_EOL;
+                                return false;
+                            }
+                            $logger->error($error);
+                            $logger->error($error);
                             return false;
                         }
                     }
