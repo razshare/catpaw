@@ -118,7 +118,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
             return failure();
         }
 
-        $document = $superstyle->file($this->fileName)->unwrap($errorSuperstyle);
+        $document = $superstyle->file($this->fileName, $this->context)->unwrap($errorSuperstyle);
 
         if ($errorSuperstyle) {
             $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);

@@ -59,7 +59,6 @@ class HandlebarsService {
             ]);
 
             if (!$compiledPhpFunction) {
-                echo PHP_EOL.PHP_EOL.PHP_EOL.$source.PHP_EOL.PHP_EOL.PHP_EOL.PHP_EOL;
                 return error("Could not compile handlebars source.");
             }
 
