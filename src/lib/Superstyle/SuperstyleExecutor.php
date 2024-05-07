@@ -22,70 +22,6 @@ readonly class SuperstyleExecutor {
     public function __construct(public Block $block) {
     }
 
-
-    private function separateAttributesFromSignature(string $signature): AttributesAndCleanSignature {
-        $cleanSignature   = '';
-        $stack            = StringStack::of($signature)->expect('[', ']');
-        $readingAttribute = false;
-        /** @var array<string> $attributes */
-        $attributes = [];
-        for ($stack->rewind(); $stack->valid(); $stack->next()) {
-            /**
-             * @var string       $previous
-             * @var false|string $current
-             */
-            [$previous, $current] = $stack->current();
-
-            if (false === $current) {
-                $cleanSignature .= $previous;
-                continue;
-            }
-
-            if ($readingAttribute && ']' === $current) {
-                $attributes[] = $previous;
-                continue;
-            }
-
-            if ('[' === $current) {
-                $cleanSignature .= $previous;
-                $readingAttribute = true;
-            }
-        }
-
-        if (!$attributes) {
-            return new AttributesAndCleanSignature(attributes: '', cleanSignature: $cleanSignature);
-        }
-
-        return new AttributesAndCleanSignature(attributes: ' '.join(' ', $attributes), cleanSignature: $cleanSignature);
-    }
-
-    private function findClassesFromSignature(string $signature): string {
-        $stack            = StringStack::of($signature)->expect('.');
-        $readingAttribute = false;
-        /** @var array<string> $attributes */
-        $attributes = [];
-        for ($stack->rewind(); $stack->valid(); $stack->next()) {
-            /**
-             * @var string $previous
-             * @var string $current
-             */
-            [$previous, $current] = $stack->current();
-
-            $validClassNameCharacter = preg_match('/^[A-z0-9-_]$/', $current);
-
-            if ($readingAttribute && !$validClassNameCharacter) {
-                $attributes[] = $previous;
-                continue;
-            }
-
-            if ('.' === $current) {
-                $readingAttribute = true;
-            }
-        }
-
-        return join(' ', $attributes);
-    }
-
     private function findNameFromSignature(string $signature): string {
         if (preg_match('/^([A-z0-9-_]+)/', $signature, $matches)) {
             return $matches[1];
@@ -127,19 +63,14 @@ readonly class SuperstyleExecutor {
     }
 
     /**
-     * @param  SuperstyleExecutor           $executor
-     * @param  string                       $name
-     * @param  string                       $attributes
-     * @param  string                       $signature
-     * @param  string                       $cleanSignature
-     * @return Unsafe<SuperstyleMainResult>
+     * @param  SuperstyleExecutor       $executor
+     * @param  string                   $name
+     * @param  string                   $attributes
+     * @param  string                   $signature
+     * @param  string                   $cleanSignature
+     * @return Unsafe<SuperstyleResult>
      */
-    private static function createSuperstyleExecutorResult(SuperstyleExecutor $executor, string $name, string $attributes, string $signature, string $cleanSignature): Unsafe {
-        $classes = $executor->findClassesFromSignature($cleanSignature);
-        $class   = match ($classes) {
-            ""      => "",
-            default => " class=\"$classes\"",
-        };
+    private static function createResult(SuperstyleExecutor $executor, string $name, string $attributes, string $signature, string $cleanSignature): Unsafe {
         $rules   = "";
         $content = "";
 
@@ -207,8 +138,8 @@ readonly class SuperstyleExecutor {
         }
 
         return ok(
-            new SuperstyleMainResult(
-                markup: "<$name$class$attributes>$content$innerHtml</$name>",
+            new SuperstyleResult(
+                markup: "<$name$attributes>$content$innerHtml</$name>",
                 style : "$signature { $rules $innerCss }",
             )
         );
@@ -216,19 +147,22 @@ readonly class SuperstyleExecutor {
 
 
     /**
-     * @return Unsafe<SuperstyleMainResult>
+     * @return Unsafe<SuperstyleResult>
      */
     public function execute(): Unsafe {
         $signature = $this->block->signature;
 
-        $attributesAndCleanSignature = $this->separateAttributesFromSignature($signature);
-        $attributes                  = $attributesAndCleanSignature->attributes;
-        $cleanSignature              = $attributesAndCleanSignature->cleanSignature;
+        $resolvedSignature = ResolvedSignature::resolve($signature)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        $attributes     = $resolvedSignature->attributes;
+        $cleanSignature = $resolvedSignature->tagName;
 
         $this->validateSignature($cleanSignature)->unwrap($error);
         if ($error) {
             return ok(
-                new SuperstyleMainResult(
+                new SuperstyleResult(
                     markup: '',
                     style: "{$this->block->signature}{{$this->block->body}}",
                 )
@@ -237,21 +171,12 @@ readonly class SuperstyleExecutor {
 
         $name = $this->findNameFromSignature($cleanSignature);
 
-        return self::createSuperstyleExecutorResult(
+        return self::createResult(
             executor      : $this,
             name          : $name,
             attributes    : $attributes,
             signature     : $signature,
             cleanSignature: $cleanSignature,
         );
-    }
-}
-
-
-readonly class AttributesAndCleanSignature {
-    public function __construct(
-        public string $attributes,
-        public string $cleanSignature,
-    ) {
     }
 }
