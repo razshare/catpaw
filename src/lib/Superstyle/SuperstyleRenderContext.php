@@ -8,7 +8,6 @@ use CatPaw\Superstyle\Services\SuperstyleService;
 use function CatPaw\Web\failure;
 use CatPaw\Web\Interfaces\RenderContextInterface;
 use CatPaw\Web\Interfaces\ResponseModifier;
-use CatPaw\Web\Services\HandlebarsService;
 
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
@@ -31,8 +30,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
 
 
     /** @var false|(callable(SuperstyleDocument):string) $templateBuilder */
-    private mixed $templateBuilder              = false;
-    private false|HandlebarsService $handlebars = false;
+    private mixed $templateBuilder = false;
 
     /**
      *
@@ -132,7 +130,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
             return failure();
         }
 
-        $template = match ((bool)$this->templateBuilder) {
+        $content = match ((bool)$this->templateBuilder) {
             true  => ($this->templateBuilder)($document),
             false => <<<HTML
                 <!DOCTYPE html>
@@ -151,21 +149,6 @@ class SuperstyleRenderContext implements RenderContextInterface {
                 HTML,
         };
 
-        if (!$this->handlebars) {
-            $this->handlebars = Container::create(HandlebarsService::class)->unwrap($error);
-            if ($error) {
-                echo $error.PHP_EOL;
-                return failure()->as(TEXT_HTML);
-            }
-        }
-
-
-        $source = $this->handlebars->source($template, $this->context, $this->fileName)->unwrap($error);
-        if ($error) {
-            echo $error.PHP_EOL;
-            return failure()->as(TEXT_HTML);
-        }
-
-        return success($source, $status, $headers)->as(TEXT_HTML);
+        return success($content, $status, $headers)->as(TEXT_HTML);
     }
 }

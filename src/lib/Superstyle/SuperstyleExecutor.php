@@ -95,25 +95,13 @@ readonly class SuperstyleExecutor {
             }
         }
 
-
-        $innerHtml = '';
-        $innerCss  = '';
-        $ignoreCss = false;
+        $previousSignature = '';
+        $innerHtml         = '';
+        $innerCss          = '';
+        $ignoreCss         = false;
 
         foreach ($executor->block->children as $childBlock) {
-            if ($childBlock->isServerInject) {
-                $innerHtml .= $childBlock->body;
-                if (
-                    str_starts_with($childBlock->body, '{{#each')
-                    || str_starts_with($childBlock->body, '{{/each')
-                ) {
-                    continue;
-                }
-                $innerCss .= $childBlock->body;
-                continue;
-            }
-
-            if (!$childBlock->rules) {
+            if (!$childBlock->rules || $previousSignature === $childBlock->signature) {
                 $ignoreCss = true;
             } else {
                 $meaningfulRulesCounter = 0;
@@ -125,6 +113,8 @@ readonly class SuperstyleExecutor {
                 }
                 $ignoreCss = 0 === $meaningfulRulesCounter;
             }
+
+            $previousSignature = $childBlock->signature;
 
             $executorLocal = new SuperstyleExecutor($childBlock);
             $result        = $executorLocal->execute()->unwrap($error);

@@ -4,7 +4,9 @@ namespace CatPaw\Superstyle\Services;
 use CatPaw\Ast\Block;
 use CatPaw\Ast\CStyleAstDetector;
 use CatPaw\Ast\Interfaces\CStyleDetectorInterface;
+use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Service;
+
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use CatPaw\Core\None;
@@ -12,17 +14,25 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use CatPaw\Superstyle\SuperstyleDocument;
 use CatPaw\Superstyle\SuperstyleExecutor;
+use CatPaw\Web\Services\HandlebarsService;
 use DOMDocument;
 use DOMElement;
 
 #[Service]
 class SuperstyleService {
+    private HandlebarsService $handlebarsService;
+
+    #[Entry] public function start(HandlebarsService $handlebarsService):void {
+        $this->handlebarsService = $handlebarsService;
+    }
+
     /**
      *
      * @param  string                     $fileName
+     * @param  array<mixed>               $context
      * @return Unsafe<SuperstyleDocument>
      */
-    public  function file(string $fileName):Unsafe {
+    public  function file(string $fileName, array $context = []):Unsafe {
         $file = File::open($fileName)->unwrap($error);
         if ($error) {
             return error($error);
@@ -34,16 +44,24 @@ class SuperstyleService {
             return error($error);
         }
 
-        return $this->source($source);
+        return $this->source(source:$source, context:$context, id:$fileName);
     }
     /**
      *
      * @param  string                     $source
+     * @param  array<mixed>               $context
+     * @param  string                     $id
      * @return Unsafe<SuperstyleDocument>
      */
-    public  function source(string $source):Unsafe {
+    public  function source(string $source, array $context = [], string $id = ''):Unsafe {
+        $resolvedSource = $this->handlebarsService->source($source, $context, $id)->unwrap($error);
+
+        if ($error) {
+            return error($error);
+        }
+
         $dom = new DOMDocument;
-        if (!$dom->loadHTML($source)) {
+        if (!$dom->loadHTML($resolvedSource)) {
             return error("Could not load source.");
         }
 
@@ -68,8 +86,6 @@ class SuperstyleService {
         $main = null;
 
         $detector->detect(new class(globals: $globals, main: $main) implements CStyleDetectorInterface {
-            private int $counter = 0;
-
             /**
              *
              * @param  array<string> $globals
@@ -96,11 +112,6 @@ class SuperstyleService {
                             return error("Error multiple top level main blocks are not allowed.");
                         }
                         $this->main = $block;
-                    }
-
-                    if ($block->isServerInject) {
-                        $this->globals["inject-$this->counter"] = $block->body;
-                        $this->counter++;
                     }
                 }
                 return ok();

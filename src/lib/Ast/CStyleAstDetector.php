@@ -186,47 +186,50 @@ class CStyleAstDetector implements AstSearchInterface {
         CStyleDetectorInterface $detector,
         false|Block $parent = false,
         int $depth = 0,
+        bool $clearComments = true,
     ): Unsafe {
-        $uncommented = '';
-        $search      = CStyleAstDetector::fromSource(preg_replace('/^\s*\/\/.*/m', '', $this->source));
+        if ($clearComments) {
+            $uncommented = '';
+            $search      = CStyleAstDetector::fromSource(preg_replace('/^\s*\/\/.*/m', '', $this->source));
 
-        $comment_opened = 0;
-        $comment_closed = 0;
-        while (true) {
-            if (!$result = $search->next('/*', '*/')) {
-                if ($comment_opened === $comment_closed) {
-                    $uncommented .= $search->source;
+            $comment_opened = 0;
+            $comment_closed = 0;
+            while (true) {
+                if (!$result = $search->next('/*', '*/')) {
+                    if ($comment_opened === $comment_closed) {
+                        $uncommented .= $search->source;
+                    }
+                    break;
                 }
-                break;
-            }
 
-            if ('/*' === $result->token && $comment_opened === $comment_closed) {
-                $uncommented .= $result->before;
-                $comment_opened++;
-            } else if ('*/' === $result->token) {
-                $comment_closed++;
-                if ($comment_closed > $comment_opened) {
-                    return ok();
+                if ('/*' === $result->token && $comment_opened === $comment_closed) {
+                    $uncommented .= $result->before;
+                    $comment_opened++;
+                } else if ('*/' === $result->token) {
+                    $comment_closed++;
+                    if ($comment_closed > $comment_opened) {
+                        return ok();
+                    }
                 }
             }
+            $search = CStyleAstDetector::fromSource($uncommented);
+        } else {
+            $search = CStyleAstDetector::fromSource($this->source);
         }
 
-        $search = CStyleAstDetector::fromSource($uncommented);
 
-        $name                = '';
-        $opened_curly        = 0;
-        $closed_curly        = 0;
-        $block_found         = false;
-        $opened_square       = 0;
-        $closed_square       = 0;
-        $opened_double_curly = 0;
-        $closed_double_curly = 0;
-        $double_quotes       = 0;
-        $single_quotes       = 0;
-        $escaped_character   = false;
-        $body                = '';
-        $rules               = [];
-        $missed              = '';
+        $name              = '';
+        $opened_curly      = 0;
+        $closed_curly      = 0;
+        $block_found       = false;
+        $opened_square     = 0;
+        $closed_square     = 0;
+        $double_quotes     = 0;
+        $single_quotes     = 0;
+        $escaped_character = false;
+        $body              = '';
+        $rules             = [];
+        $missed            = '';
 
         $reset = function() use (
             &$name,
@@ -235,8 +238,6 @@ class CStyleAstDetector implements AstSearchInterface {
             &$block_found,
             &$opened_square,
             &$closed_square,
-            &$opened_double_curly,
-            &$closed_double_curly,
             &$double_quotes,
             &$single_quotes,
             &$escaped_character,
@@ -244,24 +245,19 @@ class CStyleAstDetector implements AstSearchInterface {
             &$rules,
             &$missed,
         ) {
-            $name                = '';
-            $opened_curly        = 0;
-            $closed_curly        = 0;
-            $block_found         = false;
-            $opened_square       = 0;
-            $closed_square       = 0;
-            $opened_double_curly = 0;
-            $closed_double_curly = 0;
-            $double_quotes       = 0;
-            $single_quotes       = 0;
-            $escaped_character   = false;
-            $body                = '';
-            $rules               = [];
-            $missed              = '';
+            $name              = '';
+            $opened_curly      = 0;
+            $closed_curly      = 0;
+            $block_found       = false;
+            $opened_square     = 0;
+            $closed_square     = 0;
+            $double_quotes     = 0;
+            $single_quotes     = 0;
+            $escaped_character = false;
+            $body              = '';
+            $rules             = [];
+            $missed            = '';
         };
-
-        $previous_token = '';
-        $inject_mode    = false;
 
         while (true) {
             if ($block_found) {
@@ -269,22 +265,11 @@ class CStyleAstDetector implements AstSearchInterface {
                     return ok();
                 }
 
-                if ($inject_mode) {
-                    if ('}' === $result->token && '}' === $previous_token && '' === $result->before) {
-                        $inject_mode = false;
-                    }
-
-                    $missed .= $result->before.$result->token;
-                    $previous_token = $result->token;
-                    continue;
-                }
-
                 if ('}' === $result->token) {
                     $closed_curly++;
 
                     if ($opened_curly !== $closed_curly) {
                         $missed .= $result->before.$result->token;
-                        $previous_token = $result->token;
                         continue;
                     }
 
@@ -305,29 +290,21 @@ class CStyleAstDetector implements AstSearchInterface {
     
                     if ($block->body) {
                         $searchLocal = CStyleAstDetector::fromSource($block->body);
-                        $searchLocal->detect($detector, $block, $depth + 1);
+                        $searchLocal->detect(detector:$detector, parent:$block, depth:$depth + 1, clearComments:false);
                     }
 
                     $detector->onBlock($block, $depth + 1);
     
                     $reset();
-
-                    $previous_token = $result->token;
                     continue;
                 }
 
 
                 if ('{' === $result->token) {
-                    if ('{' === $previous_token && '' === $result->before) {
-                        $inject_mode = true;
-                        $opened_curly--;
-                    } else {
-                        $opened_curly++;
-                    }
+                    $opened_curly++;
                 }
 
                 $missed .= $result->before.$result->token;
-                $previous_token = $result->token;
                 continue;
             }
 
@@ -335,48 +312,16 @@ class CStyleAstDetector implements AstSearchInterface {
                 return ok();
             }
 
-            if ($inject_mode) {
-                if ('}' === $result->token && '}' === $previous_token && '' === $result->before) {
-                    $inject_mode    = false;
-                    $previous_token = $result->token;
-                    
-                    $block = new Block(
-                        signature: '',
-                        body     : trim("{$missed}{$result->before}{$result->token}"),
-                        rules    : [],
-                        parent   : $parent,
-                        depth    : $depth,
-                        isServerInject: true,
-                    );
-
-                    if ($parent) {
-                        $parent->children[] = $block;
-                    }
-                    
-                    $detector->onBlock($block, $depth);
-                    
-                    $missed = '';
-                    continue;
-                }
-
-                $missed .= $result->before.$result->token;
-                $previous_token = $result->token;
-                continue;
-            }
-
             if ('[' === $result->token) {
                 $opened_square++;
                 $missed .= $result->before.$result->token;
-                $previous_token = $result->token;
                 continue;
             } else if (']' === $result->token) {
                 $closed_square++;
                 $missed .= $result->before.$result->token;
-                $previous_token = $result->token;
                 continue;
             } else if ($opened_square !== $closed_square) {
                 $missed .= $result->before.$result->token;
-                $previous_token = $result->token;
                 continue;
             }
 
@@ -384,7 +329,6 @@ class CStyleAstDetector implements AstSearchInterface {
                 $rule   = trim($missed.$result->before);
                 $missed = '';
                 if ('' === $rule) {
-                    $previous_token = $result->token;
                     continue;
                 }
                 if ($parent) {
@@ -394,38 +338,18 @@ class CStyleAstDetector implements AstSearchInterface {
                 if ($error) {
                     return error($error);
                 }
-                $previous_token = $result->token;
                 continue;
             }
 
             if ('{' === $result->token) {
-                if ('{' === $previous_token && '' === $result->before) {
-                    $inject_mode = true;
-                    $opened_curly--;
-                    $missed .= $result->before.$result->token;
-                    $previous_token = $result->token;
-                    continue;
-                }
-                
-                // This feels hacky, we're looking ahead of the parser, but it saves a cycle.
-                if ('{' === $search->source[0]) {
-                    $opened_curly++;
-                    $missed .= $result->before.$result->token;
-                    $previous_token = $result->token;
-                    continue;
-                }
-                
                 $name   = trim($missed.$result->before);
                 $missed = '';
                 $opened_curly++;
-                $block_found    = true;
-                $previous_token = $result->token;
+                $block_found = true;
                 continue;
             }
 
-            $body .= $missed.$result->before.$result
-                    ->token;
-            $previous_token = $result->token;
+            $body .= $missed.$result->before.$result->token;
         }
     }
 }

@@ -3,6 +3,7 @@ namespace Tests;
 
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
+
 use CatPaw\Core\Container;
 use CatPaw\Core\None;
 use const CatPaw\Core\NONE;
@@ -26,9 +27,15 @@ class SuperstyleTest extends TestCase {
      */
     private function makeSureSuperstyleServiceWorks(SuperstyleService $style): Unsafe {
         return anyError(function() use ($style) {
-            $document = $style->file(asFileName(__DIR__, './superstyle.hbs'))->try();
-            $this->assertEquals('<main><ul>{{#each items}}<li>{{.}}</li>{{/each}}</ul></main>', $document->markup);
-            $this->assertEquals('main {  ul { position: relative;  } }', $document->style);
+            $document = $style->file(asFileName(__DIR__, './superstyle.hbs'), [
+                'items' => [
+                    'item-1',
+                    'item-2',
+                    'item-3',
+                ],
+            ])->try();
+            $this->assertEquals('<main><ul><li>item-1</li><li>item-2</li><li>item-3</li></ul></main>', $document->markup);
+            $this->assertEquals('main {  ul { position: relative; li { color: #fff;  } } }', $document->style);
             return NONE;
         });
     }
