@@ -46,11 +46,6 @@ Create a new project using one of the starter templates.
   ```bash
   composer create-project catpaw/web-starter
   ```
-- or you can start with a basic SPA
-  ```bash
-  composer create-project catpaw/svelte-starter
-  ```
-
 ---
 
 Every application must declare a ```main``` function in the global scope, that will be your entry point:
