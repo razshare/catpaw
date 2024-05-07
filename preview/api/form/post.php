@@ -3,10 +3,11 @@
 use function CatPaw\Core\asFileName;
 use function CatPaw\Superstyle\superstyle;
 use CatPaw\Web\Attributes\Body;
+use Preview\Template;
 
 return 
 fn (#[Body] array $body) => // The has submitted the form.
     superstyle(asFileName(__DIR__, '../view.hbs'))
-        ->setProperties([...$body, 'done' => true])
-        ->template(htmx(...))
+        ->setProperties([...$body, 'done' => true]) // Setting properties here.
+        ->template(Template::htmx(...))
         ->render();
