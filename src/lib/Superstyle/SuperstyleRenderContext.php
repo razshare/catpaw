@@ -118,7 +118,15 @@ class SuperstyleRenderContext implements RenderContextInterface {
             return failure();
         }
 
-        $document = $superstyle->file($this->fileName, $this->context)->unwrap($errorSuperstyle);
+        $documentLocal = $superstyle->file($this->fileName, $this->context)->unwrap($errorSuperstyle);
+
+        $document = new SuperstyleDocument(
+            title: $title,
+            markup: $documentLocal->markup,
+            style: $documentLocal->style,
+            script: $documentLocal->script,
+        );
+        
 
         if ($errorSuperstyle) {
             $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
@@ -138,7 +146,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>$title</title>
+                    <title>$document->title</title>
                 </head>
                 <body>
                     <style>{$document->style}</style>

@@ -149,6 +149,7 @@ class SuperstyleService {
             $scriptTextContent = $script->textContent;
         }
         return ok(new SuperstyleDocument(
+            title: '',
             markup: $result->markup,
             style: join($globals).$result->style,
             script: $scriptTextContent,
