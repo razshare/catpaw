@@ -34,7 +34,7 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 
 # Get started
 
-You will need at least [php 8.2](https://www.php.net/downloads.php), the `php-yaml`, `php-mbstring` and `php-xml` extensions.
+You will need at least [php 8.2](https://www.php.net/downloads.php), the `php-yaml` and `php-dom` extensions.
 
 Create a new project using one of the starter templates.
 

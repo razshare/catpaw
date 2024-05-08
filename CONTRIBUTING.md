@@ -6,6 +6,7 @@ Install `^php8.2` and the following extensions:
 - `php8.2-yaml`
 - `php8.2-xml`
 - `php8.2-mbstring`
+- `php8.2-dom`
 
 > **Note** I suggest you also install the following optional extensions:
 > - `php8.2-curl`
