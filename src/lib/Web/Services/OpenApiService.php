@@ -25,6 +25,6 @@ class OpenApiService {
     }
 
     public function setVersion(string $title):void {
-        $this->openApiStateService['info']['version'] = $title;
+        $this->openApiStateService->json['info']['version'] = $title;
     }
 }
