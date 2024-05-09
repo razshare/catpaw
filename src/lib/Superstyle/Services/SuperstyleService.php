@@ -86,6 +86,7 @@ class SuperstyleService {
         $main = null;
 
         $detector->detect(new class(globals: $globals, main: $main) implements CStyleDetectorInterface {
+            private int $globalRulesCounter = 0;
             /**
              *
              * @param  array<string> $globals
@@ -117,7 +118,9 @@ class SuperstyleService {
                 return ok();
             }
             public function onRule(false|Block $block, string $rule):Unsafe {
-                if (0 === $block->depth && 'main' !== $block->signature) {
+                if (!$block) {
+                    $this->globals[$this->globalRulesCounter++] = "$rule;";
+                } else if ((0 === $block->depth && 'main' !== $block->signature)) {
                     $this->globals[$block->signature] = "{$block->signature}{{$block->body}}";
                     return ok();
                 }
