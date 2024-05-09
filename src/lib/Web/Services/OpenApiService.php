@@ -20,11 +20,11 @@ class OpenApiService {
         return $this->openApiStateService->json;
     }
 
-    public function withTitle(string $title):void {
+    public function setTitle(string $title):void {
         $this->openApiStateService->json['info']['title'] = $title;
     }
 
-    public function withVersion(string $title):void {
+    public function setVersion(string $title):void {
         $this->openApiStateService['info']['version'] = $title;
     }
 }
