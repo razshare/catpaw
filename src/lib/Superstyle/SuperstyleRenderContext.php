@@ -27,11 +27,12 @@ class SuperstyleRenderContext implements RenderContextInterface {
     ):self {
         return new self($fileName, $properties);
     }
-
-
+        
+        
     /** @var false|(callable(SuperstyleDocument):string) $templateBuilder */
     private mixed $templateBuilder = false;
-
+    private string $title          = 'Document';
+        
     /**
      *
      * @param  string       $fileName
@@ -98,15 +99,18 @@ class SuperstyleRenderContext implements RenderContextInterface {
         $this->templateBuilder = $builder;
         return $this;
     }
+    public function withTitle(string $title):self {
+        $this->title = $title;
+        return $this;
+    }
 
     /**
      *
      * @param  int                  $status
      * @param  array<string,string> $headers
-     * @param  string               $title
      * @return ResponseModifier
      */
-    public function render(int $status = 200, array $headers = [], string $title = 'Document'):ResponseModifier {
+    public function render(int $status = 200, array $headers = []):ResponseModifier {
         $superstyle = Container::create(SuperstyleService::class)->unwrap($errorService);
         if ($errorService) {
             $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
@@ -121,7 +125,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
         $documentLocal = $superstyle->file($this->fileName, $this->context)->unwrap($errorSuperstyle);
 
         $document = new SuperstyleDocument(
-            title: $title,
+            title: $this->title,
             markup: $documentLocal->markup,
             style: $documentLocal->style,
             script: $documentLocal->script,
