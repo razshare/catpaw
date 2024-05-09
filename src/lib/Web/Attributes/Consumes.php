@@ -12,7 +12,7 @@ use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
 
 use CatPaw\Web\ConsumedRequest;
-use CatPaw\Web\Services\OpenApiService;
+use CatPaw\Web\Services\OpenApiStateService;
 
 /**
  * Define the type of content the route handler consumes.
@@ -63,10 +63,10 @@ class Consumes implements AttributeInterface {
 
     /**
      *
-     * @param  OpenApiService $oa
+     * @param  OpenApiStateService $oa
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiService $oa):Unsafe {
+    #[Entry] public function setup(OpenApiStateService $oa):Unsafe {
         foreach ($this->request as $request) {
             $request->setup($oa)->unwrap($error);
             if ($error) {

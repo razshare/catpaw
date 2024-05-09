@@ -12,10 +12,10 @@ use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\ErrorItem;
 use CatPaw\Web\ProducedResponse;
-use CatPaw\Web\Services\OpenApiService;
+use CatPaw\Web\Services\OpenApiStateService;
 
 /**
- * Describe the type of content the route handler produces so that the `OpenApiService` can handle it.
+ * Describe the type of content the route handler produces so that the `OpenApiStateService` can handle it.
  *
  * ## Example
  *
@@ -78,10 +78,10 @@ class ProducesErrorItem implements AttributeInterface {
 
     /**
      *
-     * @param  OpenApiService $oa
+     * @param  OpenApiStateService $oa
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiService $oa): Unsafe {
+    #[Entry] public function setup(OpenApiStateService $oa): Unsafe {
         foreach ($this->produces->getResponse() as $response) {
             $response->setup($oa)->unwrap($error);
             if ($error) {

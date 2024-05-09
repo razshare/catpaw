@@ -26,8 +26,7 @@ use CatPaw\Web\Attributes\Summary;
 use CatPaw\Web\Attributes\Tag;
 use CatPaw\Web\Interfaces\OnRequest;
 use CatPaw\Web\Interfaces\OnResponse;
-use CatPaw\Web\Services\OpenApiService;
-
+use CatPaw\Web\Services\OpenApiStateService;
 use Closure;
 
 use function implode;
@@ -231,7 +230,7 @@ readonly class Router {
      */
     private function findRouteOpenApiQueries(
         ReflectionFunction $reflection,
-        OpenApiService $api,
+        OpenApiStateService $api,
     ):Unsafe {
         /** @var array<mixed> */
         $result = [];
@@ -315,7 +314,7 @@ readonly class Router {
      */
     private function findRouteOpenApiHeaders(
         ReflectionFunction $reflection,
-        OpenApiService $api,
+        OpenApiStateService $api,
     ):Unsafe {
         /** @var array<mixed> */
         $result = [];
@@ -395,13 +394,13 @@ readonly class Router {
      *
      * @param  ReflectionFunction   $reflectionFunction
      * @param  string               $path
-     * @param  OpenApiService       $oa
+     * @param  OpenApiStateService  $oa
      * @return Unsafe<array<mixed>>
      */
     private function findRouteOpenApiPathParameters(
         ReflectionFunction $reflectionFunction,
         string $path,
-        OpenApiService $oa,
+        OpenApiStateService $oa,
     ):Unsafe {
         $parametersReflections = $reflectionFunction->getParameters();
         $configurations        = PathResolver::findMatchingPathConfigurations($path, $parametersReflections)->unwrap($error);
@@ -488,13 +487,13 @@ readonly class Router {
 
     /**
      *
-     * @param  ReflectionFunction $reflectionFunction
-     * @param  OpenApiService     $oa
+     * @param  ReflectionFunction  $reflectionFunction
+     * @param  OpenApiStateService $oa
      * @return array<mixed>
      */
     private function findRouteOpenApiPageQueries(
         ReflectionFunction $reflectionFunction,
-        OpenApiService $oa,
+        OpenApiStateService $oa,
     ):array {
         foreach ($reflectionFunction->getParameters() as $paramReflection) {
             if (!$type = ReflectionTypeManager::unwrap($paramReflection)) {
@@ -606,7 +605,7 @@ readonly class Router {
             }
         }
 
-        $openApi = Container::create(OpenApiService::class)->unwrap($error);
+        $openApi = Container::create(OpenApiStateService::class)->unwrap($error);
         if ($error) {
             return error($error);
         }

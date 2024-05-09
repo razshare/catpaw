@@ -9,7 +9,7 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\Services\OpenApiService;
+use CatPaw\Web\Services\OpenApiStateService;
 
 class ProducedResponse implements AttributeInterface {
     use CoreAttributeDefinition;
@@ -122,10 +122,10 @@ class ProducedResponse implements AttributeInterface {
 
     /**
      *
-     * @param  OpenApiService $oa
+     * @param  OpenApiStateService $oa
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiService $oa):Unsafe {
+    #[Entry] public function setup(OpenApiStateService $oa):Unsafe {
         $isClass   = class_exists($this->className);
         $reference = false;
         if ($isClass) {
@@ -161,7 +161,7 @@ class ProducedResponse implements AttributeInterface {
                     default => $this->className,
                 };
                 if ($this->isItem) {
-                    $schema = OpenApiService::templateForItem(className:$type, dataIsObject:false);
+                    $schema = OpenApiStateService::templateForItem(className:$type, dataIsObject:false);
                 } else if ($this->isErrorItem) {
                     $oa->setComponentReference(ErrorItem::class);
                     $oa->setComponentObject(ErrorItem::class)->unwrap($error);
@@ -169,9 +169,9 @@ class ProducedResponse implements AttributeInterface {
                         return error($error);
                     }
 
-                    $schema = OpenApiService::templateForObjectComponent(className:ErrorItem::class);
+                    $schema = OpenApiStateService::templateForObjectComponent(className:ErrorItem::class);
                 } else if ($this->isPage) {
-                    $schema = OpenApiService::templateForPage(className:$type, dataIsObject:false);
+                    $schema = OpenApiStateService::templateForPage(className:$type, dataIsObject:false);
                 } else {
                     $schema = [
                         'type' => $type,

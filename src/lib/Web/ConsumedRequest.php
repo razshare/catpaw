@@ -10,8 +10,7 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\Services\OpenApiService;
-
+use CatPaw\Web\Services\OpenApiStateService;
 use ReflectionClass;
 
 class ConsumedRequest implements AttributeInterface {
@@ -121,10 +120,10 @@ class ConsumedRequest implements AttributeInterface {
 
     /**
      *
-     * @param  OpenApiService $oa
+     * @param  OpenApiStateService $oa
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiService $oa):Unsafe {
+    #[Entry] public function setup(OpenApiStateService $oa):Unsafe {
         $isClass = class_exists($this->className);
         if ($isClass) {
             $oa->setComponentObject($this->className)->unwrap($error);
