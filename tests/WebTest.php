@@ -164,5 +164,9 @@ class WebTest extends TestCase {
         $response = $http->request(new Request('http://127.0.0.1:5858/api/queries?counter=>1&id=1&group=admin&tag=~articles', "GET"));
         $filter   = $response->getBody()->buffer();
         $this->assertEquals('counter > :counter and id = :id and group = :group and tag like :tag', $filter);
+        
+        $response = $http->request(new Request('http://127.0.0.1:5858/api/queries?counter=>1&id=1&group=admin&tag=like:articles', "GET"));
+        $filter   = $response->getBody()->buffer();
+        $this->assertEquals('counter > :counter and id = :id and group = :group and tag like :tag', $filter);
     }
 }
