@@ -161,8 +161,8 @@ class WebTest extends TestCase {
     }
 
     public function makeSureFilterWorksCorrectly(HttpClient $http):void {
-        $response = $http->request(new Request("http://127.0.0.1:5858/api/queries?asd>1|asd=1&test=\"ad\"&name%\"qwerty\"", "GET"));
+        $response = $http->request(new Request('http://127.0.0.1:5858/api/queries?counter=>1&id=1&group=admin&tag=~articles', "GET"));
         $filter   = $response->getBody()->buffer();
-        $this->assertEquals('asd > :asd and asd = :asd1 and test = :test and name % :name', $filter);
+        $this->assertEquals('counter > :counter and id = :id and group = :group and tag like :tag', $filter);
     }
 }

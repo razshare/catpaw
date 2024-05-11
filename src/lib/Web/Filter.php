@@ -80,10 +80,10 @@ class Filter {
             }
 
             if ('&' === $result->token || '%7C' === $result->token) {
-                $queryItems[] = QueryItem::create(query: $result->before, after:'&');
+                $queryItems[] = QueryItem::create(query: $result->before, after:'&&');
                 continue;
             } else if ('%7C' === $result->token) {
-                $queryItems[] = QueryItem::create(query: $result->before, after:'|');
+                $queryItems[] = QueryItem::create(query: $result->before, after:'||');
                 continue;
             }
         }
@@ -93,16 +93,24 @@ class Filter {
 
         foreach ($queryItems as $queryItem) {
             $query = urldecode($queryItem->query);
-            if (preg_match('/^(\w+)([>=<~!%]*)(.*)$/', $query, $matches)) {
-                if (!in_array($matches[2], ['=','>','<','!=','==','<=','>=','~','%'])) {
+            if (preg_match('/^(\w+)=(like|[>=<~!]*)(.*)$/', $query, $matches)) {
+                if (!in_array($matches[2], ['','=','>','<','!','<=','>=','~','like'])) {
                     continue;
                 }
+
+                $operator = $matches[2] ?? '';
+                if ('' === $operator) {
+                    $operator = '=';
+                } else if ('!' === $operator) {
+                    $operator = '!=';
+                }
+
                 $this->items[] = $item = FilterItem::create(
                     after: $queryItem->after,
                     name: $matches[1]     ?? '',
                     bindName: $matches[1] ?? '',
-                    operator: $matches[2] ?? '',
-                    value: $matches[3]    ?? '',
+                    operator: $operator,
+                    value: $matches[3] ?? '',
                 );
                 if (isset($counters[$item->name])) {
                     $counter = ++$counters[$item->name];
@@ -150,12 +158,12 @@ class Filter {
         if (!$this->converter) {
             $this->converter = static function(FilterItem $item):string {
                 $glue = match ($item->after) {
-                    '&'     => ' and',
-                    '|'     => ' or',
+                    '&&'    => ' and',
+                    '||'    => ' or',
                     default => '',
                 };
                 $operator = match ($item->operator) {
-                    '%25'   => 'like',
+                    '~','like' => 'like',
                     default => $item->operator,
                 };
                 return "{$item->name} $operator :{$item->bindName}$glue";
