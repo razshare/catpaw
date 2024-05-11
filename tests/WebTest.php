@@ -29,8 +29,6 @@ class WebTest extends TestCase {
             ->withStaticsLocation(asFileName(__DIR__, './www'))
             ->withApiPrefix('api');
 
-        $this->assertNull($error);
-
         Container::provide(Server::class, $server);
 
         $readySignal = Signal::create();
@@ -44,6 +42,7 @@ class WebTest extends TestCase {
                 yield Container::run($this->makeSureContentNegotiationWorks(...));
                 yield Container::run($this->makeSureParamHintsWork(...));
                 yield Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...));
+                yield Container::run($this->makeSureFilterWorksCorrectly(...));
             })->unwrap($error);
             if ($error) {
                 $this->assertNull($error);
@@ -159,5 +158,11 @@ class WebTest extends TestCase {
         $this->assertArrayHasKey('key2', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
         $this->assertArrayHasKey('key3', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
         $this->assertArrayHasKey('key4', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
+    }
+
+    public function makeSureFilterWorksCorrectly(HttpClient $http):void {
+        $response = $http->request(new Request("http://127.0.0.1:5858/api/queries?asd>1|asd=1&test=\"ad\"&name%\"qwerty\"", "GET"));
+        $filter   = $response->getBody()->buffer();
+        $this->assertEquals('asd > :asd and asd = :asd1 and test = :test and name % :name', $filter);
     }
 }

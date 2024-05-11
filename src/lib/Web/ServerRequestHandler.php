@@ -25,7 +25,7 @@ readonly class ServerRequestHandler implements RequestHandler {
     ) {
     }
 
-    private function createResponseFromError(Throwable $error):Response {
+    private function createResponseFromError(Throwable $error): Response {
         $message    = $error->getMessage();
         $fileName   = $error->getFile();
         $lineNumber = $error->getLine();

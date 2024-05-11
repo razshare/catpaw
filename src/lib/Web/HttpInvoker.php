@@ -113,6 +113,7 @@ class HttpInvoker {
                 Server::class  => static fn () => $context->server,
                 Request::class => static fn () => $context->request,
                 Accepts::class => static fn () => Accepts::createFromRequest($context->request),
+                Filter::class  => static fn () => Filter::createFromRequest($context->request),
                 Page::class    => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
                     $size  = $context->requestQueries['size']  ?? 10;

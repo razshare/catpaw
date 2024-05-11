@@ -12,11 +12,11 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 
-class CStyleAstDetector implements AstSearchInterface {
+class AstDetector implements AstSearchInterface {
     /**
      *
-     * @param  string                    $fileName
-     * @return Unsafe<CStyleAstDetector>
+     * @param  string              $fileName
+     * @return Unsafe<AstDetector>
      */
     public static function fromFile(string $fileName): Unsafe {
         return anyError(function() use ($fileName) {
@@ -182,7 +182,7 @@ class CStyleAstDetector implements AstSearchInterface {
      * @param  int                     $depth
      * @return Unsafe<None>
      */
-    public function detect(
+    public function detectCStyle(
         CStyleDetectorInterface $detector,
         false|Block $parent = false,
         int $depth = 0,
@@ -190,7 +190,7 @@ class CStyleAstDetector implements AstSearchInterface {
     ): Unsafe {
         if ($clearComments) {
             $uncommented = '';
-            $search      = CStyleAstDetector::fromSource(preg_replace('/^\s*\/\/.*/m', '', $this->source));
+            $search      = AstDetector::fromSource(preg_replace('/^\s*\/\/.*/m', '', $this->source));
 
             $comment_opened = 0;
             $comment_closed = 0;
@@ -212,9 +212,9 @@ class CStyleAstDetector implements AstSearchInterface {
                     }
                 }
             }
-            $search = CStyleAstDetector::fromSource($uncommented);
+            $search = AstDetector::fromSource($uncommented);
         } else {
-            $search = CStyleAstDetector::fromSource($this->source);
+            $search = AstDetector::fromSource($this->source);
         }
 
 
@@ -289,8 +289,8 @@ class CStyleAstDetector implements AstSearchInterface {
                     }
     
                     if ($block->body) {
-                        $searchLocal = CStyleAstDetector::fromSource($block->body);
-                        $searchLocal->detect(detector:$detector, parent:$block, depth:$depth + 1, clearComments:false);
+                        $searchLocal = AstDetector::fromSource($block->body);
+                        $searchLocal->detectCStyle(detector:$detector, parent:$block, depth:$depth + 1, clearComments:false);
                     }
 
                     $detector->onBlock($block, $depth + 1);

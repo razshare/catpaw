@@ -1,8 +1,8 @@
 <?php
 namespace CatPaw\Superstyle\Services;
 
+use CatPaw\Ast\AstDetector;
 use CatPaw\Ast\Block;
-use CatPaw\Ast\CStyleAstDetector;
 use CatPaw\Ast\Interfaces\CStyleDetectorInterface;
 use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Service;
@@ -78,14 +78,14 @@ class SuperstyleService {
         /** @var DOMElement $style */
         $style = $styleNodes[0];
 
-        $detector = CStyleAstDetector::fromSource($style->textContent);
+        $detector = AstDetector::fromSource($style->textContent);
 
         /** @var array<string> */
         $globals = [];
         /** @var null|Block $main */
         $main = null;
 
-        $detector->detect(new class(globals: $globals, main: $main) implements CStyleDetectorInterface {
+        $detector->detectCStyle(new class(globals: $globals, main: $main) implements CStyleDetectorInterface {
             private int $globalRulesCounter = 0;
             /**
              *
