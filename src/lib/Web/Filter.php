@@ -93,7 +93,7 @@ class Filter {
 
         foreach ($queryItems as $queryItem) {
             $query = urldecode($queryItem->query);
-            if (preg_match('/^([A-z_]\w*)=(like|[>=<~!%]*)(.*)$/', $query, $matches)) {
+            if (preg_match('/^([A-z_]\w*)=(like|=|>|<|<=|>=|~|%)?(.*)$/', $query, $matches)) {
                 if (!in_array($matches[2], ['','=','>','<','!','<=','>=','~','like','%'])) {
                     continue;
                 }
