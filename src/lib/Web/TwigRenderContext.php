@@ -11,45 +11,43 @@ use Psr\Log\LoggerInterface;
 class TwigRenderContext implements RenderContextInterface {
     /**
      *
-     * @param  string            $fileName
-     * @param  array<mixed>      $properties
-     * @return TwigRenderContext
-     */
-    public static function create(
-        string $fileName,
-        array $properties = [],
-    ):self {
-        return new self($fileName, $properties);
-    }
-
-    /**
-     *
-     * @param  string       $fileName
+     * @param  string       $name
      * @param  array<mixed> $context
      * @return void
      */
-    private function __construct(
-        private readonly string $fileName,
+    public function __construct(
+        private readonly string $name,
         private array $context = [],
     ) {
     }
 
     /**
-     *
+     * Set all properties.
      * @param  array<mixed>      $properties
      * @return TwigRenderContext
      */
-    public function setProperties(array $properties):self {
+    public function withProperties(array $properties):self {
         $this->context = $properties;
         return $this;
     }
 
-    public function setProperty(string $key, mixed $value):self {
+    /**
+     * Set a property.
+     * @param  string            $key
+     * @param  mixed             $value
+     * @return TwigRenderContext
+     */
+    public function withProperty(string $key, mixed $value):self {
         $this->context[$key] = $value;
         return $this;
     }
 
-    public function unsetProperty(string $key):self {
+    /**
+     * Unset a property.
+     * @param  string            $key
+     * @return TwigRenderContext
+     */
+    public function withoutProperty(string $key):self {
         if (!isset($this->context[$key])) {
             return $this;
         }
@@ -57,12 +55,12 @@ class TwigRenderContext implements RenderContextInterface {
         return $this;
     }
     /**
-     *
+     * Create a response modifier to render the Twig component.
      * @param  int                  $status
      * @param  array<string,string> $headers
      * @return ResponseModifier
      */
-    public function render(int $status = 200, array $headers = []):ResponseModifier {
+    public function response(int $status = 200, array $headers = []):ResponseModifier {
         $twig = Container::create(TwigService::class)->unwrap($errorService);
         if ($errorService) {
             $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
@@ -75,7 +73,7 @@ class TwigRenderContext implements RenderContextInterface {
         }
 
         $data = $twig->file(
-            fileName  : $this->fileName,
+            fileName  : $this->name,
             context: $this->context,
         )->unwrap($errorTwig);
 

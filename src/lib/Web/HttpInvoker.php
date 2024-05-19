@@ -4,8 +4,10 @@ namespace CatPaw\Web;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
+use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
+
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
 
@@ -55,6 +57,20 @@ class HttpInvoker {
         }
 
         $modifier = $function(...$dependencies);
+
+        if ($modifier instanceof View) {
+            $viewFileName        = asFileName($context->route->workDirectory, 'view.twig');
+            $fileNameStringified = (string)$viewFileName;
+            if ('' !== $fileNameStringified) {
+                $view     = $modifier;
+                $modifier = twig($fileNameStringified)->withProperties($view->properties)->response(
+                    status: $view->status,
+                    headers: $view->headers,
+                );
+            } else {
+                $modifier = failure();
+            }
+        }
 
         if (!$modifier instanceof ResponseModifier) {
             return error("A route handler must always return a response modifier but route handler {$context->key} did not.");

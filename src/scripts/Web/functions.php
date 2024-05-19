@@ -5,11 +5,10 @@ namespace CatPaw\Web;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use Amp\Websocket\Server\WebsocketClientHandler;
-use Amp\Websocket\WebsocketClient;
 
-use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Interfaces\ViewInterface;
 use CatPaw\Web\Services\WebsocketService;
 use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerInterface;
@@ -167,10 +166,14 @@ function websocket(Request $request, WebsocketClientHandler $handler): ResponseM
 }
 
 /**
- * Render twig a file.
- * @param  string            ...$fileName Path to the twig file.
+ * Render a twig component.
+ * @param  string            $name The component name.
  * @return TwigRenderContext
  */
-function twig(string ...$fileName):TwigRenderContext {
-    return TwigRenderContext::create(asFileName(...$fileName));
+function twig(string $name):TwigRenderContext {
+    return new TwigRenderContext($name);
+}
+
+function view():ViewInterface {
+    return View::create();
 }

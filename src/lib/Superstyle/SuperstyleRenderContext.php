@@ -46,21 +46,32 @@ class SuperstyleRenderContext implements RenderContextInterface {
     }
 
     /**
-     *
+     * Set all properties.
      * @param  array<mixed>            $properties
      * @return SuperstyleRenderContext
      */
-    public function setProperties(array $properties):self {
+    public function withProperties(array $properties):self {
         $this->context = $properties;
         return $this;
     }
 
-    public function setProperty(string $key, mixed $value):self {
+    /**
+     * Set a property.
+     * @param  string                  $key
+     * @param  mixed                   $value
+     * @return SuperstyleRenderContext
+     */
+    public function withProperty(string $key, mixed $value):self {
         $this->context[$key] = $value;
         return $this;
     }
 
-    public function unsetProperty(string $key):self {
+    /**
+     * Unset a property.
+     * @param  string                  $key
+     * @return SuperstyleRenderContext
+     */
+    public function withoutProperty(string $key):self {
         if (!isset($this->context[$key])) {
             return $this;
         }
@@ -105,12 +116,12 @@ class SuperstyleRenderContext implements RenderContextInterface {
     }
 
     /**
-     *
+     * Create a response modifier to render the Superstyle component.
      * @param  int                  $status
      * @param  array<string,string> $headers
      * @return ResponseModifier
      */
-    public function render(int $status = 200, array $headers = []):ResponseModifier {
+    public function response(int $status = 200, array $headers = []):ResponseModifier {
         $superstyle = Container::create(SuperstyleService::class)->unwrap($errorService);
         if ($errorService) {
             $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);

@@ -3,50 +3,58 @@ namespace CatPaw\Web\Services;
 
 use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\error;
+
+use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\TwigAsyncFilesystemLoader;
+use Throwable;
 use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
-use Twig\Source;
-use Twig\TemplateWrapper;
 
 #[Service]
 class TwigService {
     private Environment $environment;
     private TwigAsyncFilesystemLoader $loader;
-    /** @var array<string> */
-    private array $realFileNamesMap = [];
-    /** @var array<string,TemplateWrapper> */
-    private array $templates = [];
+    /** @var array<string,string> */
+    private array $realFileNames = [];
+
+
+    private function realFileName(string $fileName):string {
+        if (isset($this->realFileNames[$fileName])) {
+            $realFileName = $this->realFileNames[$fileName];
+        } else {
+            $realFileName                   = realpath($fileName);
+            $this->realFileNames[$fileName] = $realFileName;
+        }
+
+        return $realFileName;
+    }
 
     /**
-     * Render twig source code.
-     * @param  string              $source
-     * @param  array<string,mixed> $context
-     * @return Unsafe<string>
+     * 
+     * @param  string       $fileName
+     * @param  string       $componentName
+     * @return Unsafe<None>
      */
-    public function source(string $source, array $context = []):Unsafe {
-        if (!isset($this->environment)) {
-            $this->loader      = TwigAsyncFilesystemLoader::create();
-            $this->environment = new Environment($this->loader);
+    public function loadComponent(string $fileName, string $componentName):Unsafe {
+        $fileName = $this->realFileName($fileName);
+
+        if ('' === $fileName) {
+            return error("Twig file `$fileName` not found.");
         }
 
-        try {
-            $templateName = md5($source);
-
-            if (!isset($this->templates[$templateName])) {
-                $template = $this->environment->createTemplate($source, $templateName);
-            } else {
-                $template = $this->templates[$templateName];
+        if (!$this->loader->exists($fileName)) {
+            $this->loader->loadFromFile($fileName)->unwrap($error);
+            if ($error) {
+                return error($error);
             }
-
-            return ok($template->render($context));
-        } catch(LoaderError|RuntimeError|SyntaxError $error) {
-            return error($error);
         }
+
+        if ('' !== $componentName && $componentName !== $fileName) {
+            $this->loader->setAlias($componentName, $fileName);
+        }
+
+        return ok();
     }
 
     /**
@@ -61,26 +69,20 @@ class TwigService {
             $this->environment = new Environment($this->loader);
         }
         try {
-            if (isset($this->realFileNamesMap[$fileName])) {
-                $realFileName = $this->realFileNamesMap[$fileName];
-            } else {
-                $realFileName                      = realpath($fileName);
-                $this->realFileNamesMap[$fileName] = $realFileName;
+            $realFileName = $this->realFileName($fileName);
+            if ('' === $realFileName) {
+                return error("Twig file `$fileName` not found.");
             }
 
-            if (false === $realFileName) {
-                return error("Received an invalid file name `$fileName`.");
-            }
+            $fileName = $realFileName;
 
-            if (!$this->loader->exists($realFileName)) {
-                $this->loader->loadFromFile($realFileName)->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
+            $this->loadComponent($fileName, $fileName)->unwrap($error);
+            if ($error) {
+                return error($error);
             }
             $template = $this->environment->load($fileName);
             return ok($template->render($context));
-        } catch(LoaderError|RuntimeError|SyntaxError $error) {
+        } catch(Throwable $error) {
             return error($error);
         }
     }

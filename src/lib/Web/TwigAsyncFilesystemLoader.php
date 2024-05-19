@@ -20,18 +20,44 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
         return new self();
     }
 
-    private function __construct() {
+
+    
+    /**
+     * @param  array<string,string> $aliases
+     * @return void
+     */
+    private function __construct(
+        private array $aliases = [],
+    ) {
     }
 
     /**
+     * Set an alias for a name.
+     * @param  string $alias
+     * @param  string $name
+     * @return void
+     */
+    public function setAlias(string $alias, string $name):void {
+        $this->aliases[$alias] = $name;
+    }
+
+    public function resolveName(string $name):string {
+        if (isset($this->aliases[$name])) {
+            return $this->aliases[$name];
+        }
+        return $name;
+    }
+
+    
+
+    /**
+     * Load source from file.
      * @param  string       $fileName
      * @return Unsafe<None>
      */
     public function loadFromFile(string $fileName):Unsafe {
-        $name              = $fileName;
-        $key               = $name;
-        $this->keys[$name] = $key;
-        $file              = File::open($fileName)->unwrap($error);
+        $this->keys[$fileName] = $fileName;
+        $file                  = File::open($fileName)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -39,7 +65,7 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
         if ($error) {
             return error($error);
         }
-        $this->sources[$key] = new Source(code: $code, name: $name, path: $fileName);
+        $this->sources[$fileName] = new Source(code: $code, name: $fileName, path: $fileName);
         return ok();
     }
 
