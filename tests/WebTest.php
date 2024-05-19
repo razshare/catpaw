@@ -43,6 +43,7 @@ class WebTest extends TestCase {
                 yield Container::run($this->makeSureParamHintsWork(...));
                 yield Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...));
                 yield Container::run($this->makeSureFilterWorksCorrectly(...));
+                yield Container::run($this->makeSureTwigWorksCorrectly(...));
             })->unwrap($error);
             if ($error) {
                 $this->assertNull($error);
@@ -168,5 +169,11 @@ class WebTest extends TestCase {
         $response = $http->request(new Request('http://127.0.0.1:5858/api/queries?counter=>1&id=1&group=admin&tag=like:articles', "GET"));
         $filter   = $response->getBody()->buffer();
         $this->assertEquals('counter > :counter and id = :id and group = :group and tag like :tag', $filter);
+    }
+
+    public function makeSureTwigWorksCorrectly(HttpClient $http):void {
+        $response = $http->request(new Request('http://127.0.0.1:5858/api/twig/world', "GET"));
+        $content  = $response->getBody()->buffer();
+        $this->assertEquals('hello world', $content);
     }
 }
