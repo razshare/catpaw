@@ -40,7 +40,7 @@ readonly class Router {
         return new self(RouterContext::create());
     }
 
-    private function __construct(private RouterContext $context) {
+    private function __construct(public readonly RouterContext $context) {
     }
 
     /**
