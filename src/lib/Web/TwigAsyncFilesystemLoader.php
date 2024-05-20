@@ -41,15 +41,6 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
         $this->aliases[$alias] = $name;
     }
 
-    public function resolveName(string $name):string {
-        if (isset($this->aliases[$name])) {
-            return $this->aliases[$name];
-        }
-        return $name;
-    }
-
-    
-
     /**
      * Load source from file.
      * @param  string       $fileName
@@ -76,18 +67,30 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
     private array $sources = [];
 
     public function getSourceContext(string $name): Source {
+        if (isset($this->aliases[$name])) {
+            $name = $this->aliases[$name];
+        }
         return $this->sources[$this->keys[$name]];
     }
 
     public function getCacheKey(string $name): string {
+        if (isset($this->aliases[$name])) {
+            $name = $this->aliases[$name];
+        }
         return $this->keys[$name];
     }
 
     public function isFresh(string $name, int $time): bool {
+        if (isset($this->aliases[$name])) {
+            $name = $this->aliases[$name];
+        }
         return true;
     }
 
     public function exists(string $name):bool {
+        if (isset($this->aliases[$name])) {
+            $name = $this->aliases[$name];
+        }
         return isset($this->keys[$name]);
     }
 }

@@ -37,6 +37,10 @@ class TwigService {
      * @return Unsafe<None>
      */
     public function loadComponent(string $fileName, string $componentName):Unsafe {
+        if (!isset($this->environment)) {
+            $this->loader      = TwigAsyncFilesystemLoader::create();
+            $this->environment = new Environment($this->loader);
+        }
         $fileName = $this->realFileName($fileName);
 
         if ('' === $fileName) {
