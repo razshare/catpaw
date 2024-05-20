@@ -191,13 +191,13 @@ function execute(
     }
 
     if ($kill) {
-        $kill->listen(static function(int $code) use ($process, $logger) {
+        $kill->listen(static function() use ($process, $logger) {
             if (!$process->isRunning()) {
                 return;
             }
 
             try {
-                $process->signal($code);
+                $process->signal(9);
             } catch(Throwable $error) {
                 $logger->error($error);
             }
