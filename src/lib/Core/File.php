@@ -186,6 +186,34 @@ readonly class File {
     }
 
     /**
+     * Read and parse the contents of a _.ini_ file.
+     * @template T
+     * @param  class-string<T> $interface Interface of the resulting object.
+     * @param  string          $fileName
+     * @return Unsafe<T>
+     */
+    public static function readIni(string $interface, string $fileName):Unsafe {
+        $file = File::open($fileName, 'r')->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+
+        $contents = $file->readAll()->unwrap($error);
+        
+        if ($error) {
+            return error($error);
+        }
+        
+        $parsed = parse_ini_string(ini_string: $contents, process_sections: true);
+
+        if (false === $parsed) {
+            return error("Couldn't parse yaml file.");
+        }
+        /** @var Unsafe<T> */
+        return ok((object)$parsed);
+    }
+
+    /**
      * Read and parse the contents of a _.yaml_ file.
      * @template T
      * @param  class-string<T> $interface Interface of the resulting object.

@@ -105,7 +105,6 @@
     "ext-pcntl": "*",
     "ext-openssl": "*",
     "ext-zlib": "*",
-    "ext-yaml": "*",
     "vlucas/phpdotenv": "^5.4",
     "monolog/monolog": "^3.3",
     "revolt/event-loop": "^1.0",

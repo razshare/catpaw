@@ -34,7 +34,7 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 
 # Get started
 
-You will need at least [php 8.2](https://www.php.net/downloads.php), the `php-yaml` and `php-dom` extensions.
+You will need at least [php 8.2](https://www.php.net/downloads.php).
 
 Create a new project using one of the starter templates.
 
@@ -48,7 +48,7 @@ Create a new project using one of the starter templates.
   ```
 ---
 
-Every application must declare a ```main``` function in the global scope, that will be your entry point:
+Every application must declare a `main` function in the global scope, that will be your entry point:
 
 ```php
 <?php

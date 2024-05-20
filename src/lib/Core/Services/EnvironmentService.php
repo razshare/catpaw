@@ -27,7 +27,7 @@ class EnvironmentService {
     }
 
     /** @var string */
-    private string $fileName = './env.yaml';
+    private string $fileName = 'env.ini';
 
 
     /**
@@ -77,16 +77,16 @@ class EnvironmentService {
             return error($error);
         }
 
-        $content = $file->readAll()->unwrap($error);
+        $contents = $file->readAll()->unwrap($error);
         if ($error) {
             return error($error);
         }
 
 
-        if (trim($content) !== '') {
+        if (trim($contents) !== '') {
             if (str_ends_with($fileName, '.yaml') || str_ends_with($fileName, '.yml')) {
                 if (function_exists('yaml_parse')) {
-                    $vars = yaml_parse($content);
+                    $vars = yaml_parse($contents);
                     if (false === $vars) {
                         return error("Error while parsing environment yaml file.");
                     }
@@ -100,12 +100,12 @@ class EnvironmentService {
             } else if (str_ends_with($fileName, '.ini')) {
                 $this->variables = [
                     ...$this->variables,
-                    ...parse_ini_string(ini_string: $content, process_sections: true),
+                    ...parse_ini_string(ini_string: $contents, process_sections: true),
                 ];
             } else {
                 $this->variables = [
                     ...$this->variables,
-                    ...Dotenv::parse($content),
+                    ...Dotenv::parse($contents),
                 ];
             }
         }

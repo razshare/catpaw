@@ -31,7 +31,7 @@ class CoreTest extends TestCase {
 
 
     private function makeSureEnvWorks(EnvironmentService $service): void {
-        $service->setFileName(asFileName(__DIR__, 'env.yaml'));
+        $service->setFileName(asFileName(__DIR__, 'env.ini'));
         $service->load()->unwrap($error);
         $this->assertNull($error);
         $sayHello = env("say.hello");
