@@ -8,6 +8,6 @@ use Preview\Template;
 return 
 fn (#[Body] array $body) => // The has submitted the form.
     superstyle(asFileName(__DIR__, '../view.hbs'))
-        ->setProperties([...$body, 'done' => true]) // Setting properties here.
+        ->withProperties([...$body, 'done' => true]) // Setting properties here.
         ->template(Template::htmx(...))
-        ->render();
+        ->response();

@@ -15,10 +15,10 @@ use CatPaw\Core\Unsafe;
  * Install the git pre-commit hook using the specified command.
  * @return Unsafe<None>
  */
-function installPreCommit(string $command):Unsafe {
-    if ('' === trim($command)) {
+function installPreCommit(string $installPreCommit):Unsafe {
+    if ('' === trim($installPreCommit)) {
         echo "The `--install-pre-commit` options requires a value.\n";
-        echo "The received command was: $command\n";
+        echo "The received command was: $installPreCommit\n";
         echo "The value should be whatever command you want to execute before the commit, for example: php catpaw.phar --install-pre-commit=\"echo 'this is a message before the commit.'\"\n";
         return ok();
     }
@@ -33,7 +33,7 @@ function installPreCommit(string $command):Unsafe {
     $file->write(
         <<<BASH
             #!/usr/bin/env bash
-            $command
+            $installPreCommit
             BASH
     )->unwrap($error);
     if ($error) {

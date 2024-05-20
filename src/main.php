@@ -1,10 +1,9 @@
 <?php
-use Amp\ByteStream\ClosedException;
 
 use function CatPaw\Core\anyError;
-use CatPaw\Core\Attributes\Option;
 use function CatPaw\Core\Build\build;
-use CatPaw\Core\Container;
+use function CatPaw\Core\command;
+
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use CatPaw\Core\None;
@@ -15,85 +14,29 @@ use function CatPaw\Core\Precommit\installPreCommit;
 use function CatPaw\Core\Precommit\uninstallPreCommit;
 
 use CatPaw\Core\Unsafe;
-use CatPaw\Cui\Contracts\CuiContract;
-use CatPaw\Cui\Services\CuiService;
 use function CatPaw\Text\foreground;
 use function CatPaw\Text\nocolor;
 
 /**
- * @param  bool            $tips
- * @param  bool            $hi
- * @param  bool            $build
- * @param  bool            $buildOptimize
- * @throws ClosedException
+ * 
  * @return Unsafe<None>
  */
-function main(
-    // ===> INSTALL PRE-COMMIT
-    #[Option("--install-pre-commit")]
-    false|string $installPreCommit = false,
-
-    // ===> UNINSTALL PRE-COMMIT
-    #[Option("--uninstall-pre-commit")]
-    bool $uninstallPreCommit = false,
-
-    // ===> TIPS
-    #[Option("--tips")]
-    bool $tips = false,
-
-    // ===> Hi
-    #[Option("--hi")]
-    bool $hi = false,
-
-    // ===> BUILD
-    #[Option("--build")]
-    bool $build = false,
-    #[Option("--build-optimize")]
-    bool $buildOptimize = false,
-): Unsafe {
+function main(): Unsafe {
     return anyError(fn () => match (true) {
-        $build                       => build(buildOptimize:$buildOptimize),
-        $tips                        => tips(),
-        $hi                          => hi(),
-        $uninstallPreCommit          => uninstallPreCommit(),
-        is_string($installPreCommit) => installPreCommit($installPreCommit),
-        default                      => print("No valid options provided."),
+        command('--build --optimize', build(...))->try()                  => ok(),
+        command('--tips', tips(...))->try()                               => ok(),
+        command('--install-pre-commit', installPreCommit(...))->try()     => ok(),
+        command('--uninstall-pre-commit', uninstallPreCommit(...))->try() => ok(),
+        default                                                           => ok(print(<<<BASH
+            \n
+            --build [--optimize]            Builds the project into a .phar.
+            --tips                          Some tips.
+            --hi                            Says hi. Useful for debugging.
+            --install-pre-commit            Installs the pre-commit hook.
+            --uninstall-pre-commit          Uninstalls the pre-commit hook.
+            \n
+            BASH)),
     });
-}
-
-/**
- *
- * @return Unsafe<None>
- */
-function hi():Unsafe {
-    $cui = Container::create(CuiService::class)->unwrap($error);
-    if ($error) {
-        return error($error);
-    }
-
-    $cui->load()->unwrap($error);
-    if ($error) {
-        return error($error);
-    }
-
-    $cui->loop(function(CuiContract $lib) {
-        $maxX = $lib->MaxX();
-        $maxY = $lib->MaxY();
-
-        $message = "hello";
-        $len     = strlen($message);
-
-        $x0 = ($maxX / 2) - ($len / 2);
-        $y0 = ($maxY / 2) - 1;
-        $x1 = ($maxX / 2) + ($len / 2) + 1;
-        $y1 = ($maxY / 2) + 1;
-
-        $view = $lib->NewView("main", (int)$x0, (int)$y0, (int)$x1, (int)$y1);
-        $lib->Fprintln($view, $message);
-    });
-
-
-    return ok();
 }
 
 /**
@@ -120,7 +63,7 @@ function tips():Unsafe {
             ]);
         }
 
-        out()->write($message);
+        out()->write($message?:"No more tips.\n");
         return ok();
     } catch (\Throwable $error) {
         return error($error);

@@ -9,4 +9,4 @@ return fn () => // The user just landed on the main page,
                 // provide them with a form to submit.
         superstyle(asFileName(__DIR__, './view.hbs'))
             ->template(Template::htmx(...))
-            ->render();
+            ->response();

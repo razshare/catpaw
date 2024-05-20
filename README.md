@@ -75,11 +75,6 @@ composer prod:start
 for production mode.
 
 
-
-> [!NOTE]
-> More in depth examples are available at [tncrazvan/catpaw-examples](https://github.com/tncrazvan/catpaw-examples/tree/master/src).
-
-
 # Build & Run
 
 It is possible, but not required, to build your application into a single `.phar` file using
@@ -87,13 +82,13 @@ It is possible, but not required, to build your application into a single `.phar
 ```bash
 composer prod:build
 ```
-The building process can be configured inside the `build.yaml` file.
+The building process can be configured inside the `build.ini` file.
 
 After building your application, you can simply run it using
 ```
 php app.phar
 ```
-The resulting `.phar`, by default (check `build.yaml`), includes the following directories:
+The resulting `.phar`, by default (check `build.ini`), includes the following directories:
 
 - `./src`
 - `./vendor`

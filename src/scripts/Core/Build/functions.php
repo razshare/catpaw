@@ -2,6 +2,7 @@
 namespace CatPaw\Core\Build;
 
 use function Amp\File\isDirectory;
+use function CatPaw\Core\asFileName;
 
 use CatPaw\Core\Directory;
 use function CatPaw\Core\env;
@@ -18,10 +19,10 @@ use Phar;
 
 /**
  *
- * @param  bool         $buildOptimize
+ * @param  bool         $optimize
  * @return Unsafe<None>
  */
-function build(bool $buildOptimize = false):Unsafe {
+function build(bool $optimize = false):Unsafe {
     if (ini_get('phar.readonly')) {
         return error('Cannot build using readonly phar, please disable the phar.readonly flag by running the builder with "php -dphar.readonly=0"'.PHP_EOL);
     }
@@ -35,7 +36,7 @@ function build(bool $buildOptimize = false):Unsafe {
     if (!$entry) {
         return error(join("\n", [
             "Entry file is missing from environment.",
-            "Remember to properly load your build configuration using `--environment=\"./build.yaml\"`.",
+            "Remember to properly load your build configuration using `--environment=build.ini`.",
         ]));
     }
 
@@ -51,16 +52,11 @@ function build(bool $buildOptimize = false):Unsafe {
         $name .= '.phar';
     }
 
-    $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-
-    if (!str_starts_with($entry, './')) {
-        if (!$isWindows) {
-            return error("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
-        }
-        if (!str_starts_with($entry, '.\\')) {
-            return error("The entry file path must be relative to the project, received: $entry.".PHP_EOL);
-        }
-    }
+    // $entryLocal = (string)asFileName($entry);
+    // if ('' === $entryLocal) {
+    //     return error("Please point to a valid php entry file, received `$entry`.");
+    // }
+    // $entry = $entryLocal;
 
     $app          = "$name";
     $start        = '.build-cache/start.php';
@@ -89,26 +85,28 @@ function build(bool $buildOptimize = false):Unsafe {
 
         $file->write(<<<PHP
             <?php
-            use CatPaw\Core\Attributes\Option;
             use CatPaw\Core\Bootstrap;
+            use function CatPaw\Core\command;
 
             require 'vendor/autoload.php';
 
-            \$environment = new Option('--environment');
-            \$environment = \$environment->findValue('string', true)??'';
+            command(
+                signature: '--environment',
+                function: function(string \$environment = '') {
+                    if(!\$environment){
+                        \$environment = $environmentFallbackStringified;
+                    }
 
-            if(!\$environment){
-                \$environment = $environmentFallbackStringified;
-            }
-
-            Bootstrap::start(
-                entry: "$entry",
-                name: "$name",
-                libraries: "$libraries",
-                resources: '',
-                environment: \$environment,
-                dieOnChange: false,
-            );
+                    Bootstrap::start(
+                        entry: "$entry",
+                        name: "$name",
+                        libraries: "$libraries",
+                        resources: '',
+                        environment: \$environment,
+                        dieOnChange: false,
+                    );
+                }
+            )->try();
             PHP)->unwrap($error);
 
         $file->close();
@@ -134,7 +132,7 @@ function build(bool $buildOptimize = false):Unsafe {
             }
         }
 
-        if ($buildOptimize) {
+        if ($optimize) {
             execute("composer update --no-dev", out())->unwrap($error);
             if ($error) {
                 return error($error);
@@ -170,7 +168,7 @@ function build(bool $buildOptimize = false):Unsafe {
             return error($error);
         }
 
-        if ($buildOptimize) {
+        if ($optimize) {
             execute("composer update", out())->unwrap($error);
             if ($error) {
                 return error($error);

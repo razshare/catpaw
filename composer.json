@@ -22,19 +22,19 @@
   ],
   "scripts": {
     "load": "@composer dump-autoload -o",
-    "prod:start": "php -dphar.readonly=0 -dopcache.enable_cli=1 -dopcache.jit_buffer_size=100M ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
-    "prod:build": "@prod:start --build --environment='./build.yaml' --build-optimize",
-    "prod:fix": "php -dxdebug.mode=off ./vendor/bin/php-cs-fixer fix .",
+    "prod:start": "php -dphar.readonly=0 -dopcache.enable_cli=1 -dopcache.jit_buffer_size=100M ./bin/start --libraries=src/lib --entry=src/main.php",
+    "prod:build": "@prod:start --build --environment=build.ini --optimize",
+    "prod:fix": "php -dxdebug.mode=off vendor/bin/php-cs-fixer fix .",
     "prod:test": [
-      "go build -o ./tests/main.so -buildmode=c-shared ./tests/main.go",
-      "cpp -P ./tests/main.h ./tests/main.static.h",
+      "go build -o tests/main.so -buildmode=c-shared tests/main.go",
+      "cpp -P tests/main.h tests/main.static.h",
       "php vendor/bin/phpunit tests"
     ],
-    "dev:preview": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --libraries='./src/lib' --entry='./preview/main.php' --resources='./preview/api/view.hbs'",
-    "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries='./src/lib' --entry='./src/main.php'",
+    "dev:preview": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --libraries=src/lib --entry=preview/main.php --resources=preview/api/view.hbs",
+    "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries=src/lib --entry=src/main.php",
     "dev:test": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests",
     "dev:testone": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit",
-    "dev:build": "@dev:start --build --environment='./build.yaml'",
+    "dev:build": "@dev:start --build --environment=build.ini --optimize",
     "dev:tips": "[ ! -f catpaw.phar ] && echo '' || php catpaw.phar --tips",
     "dev:install-pre-commit": "@prod:start --install-pre-commit='composer prod:fix && composer prod:test'",
     "post-autoload-dump": [

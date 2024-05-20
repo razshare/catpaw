@@ -97,6 +97,11 @@ class EnvironmentService {
                 } else {
                     return error("Could not parse environment file, the yaml extension is needed in order to parse yaml environment files.");
                 }
+            } else if (str_ends_with($fileName, '.ini')) {
+                $this->variables = [
+                    ...$this->variables,
+                    ...parse_ini_string(ini_string: $content, process_sections: true),
+                ];
             } else {
                 $this->variables = [
                     ...$this->variables,

@@ -1,50 +1,60 @@
 #!/usr/bin/env php
 <?php
-use CatPaw\Core\Attributes\Option;
 use CatPaw\Core\Bootstrap;
+use function CatPaw\Core\command;
+use function CatPaw\Core\error;
+use function CatPaw\Core\ok;
 
 require 'vendor/autoload.php';
 
-$entry       = new Option('--entry');
-$name        = new Option('--name');
-$libraries   = new Option('--libraries');
-$resources   = new Option('--resources');
-$dieOnChange = new Option('--die-on-change');
-$watch       = new Option('--watch');
-$php         = new Option('--php');
-$environment = new Option('--environment');
+command(
+    signature: <<<SIGNATURE
+        --entry
+        --name
+        --libraries
+        --resources
+        --die-on-change
+        --watch
+        --php
+        --environment
+        SIGNATURE,
+    function: function(
+        string $entry = '',
+        string $php = 'php',
+        string $name = 'App',
+        string $libraries = '',
+        string $resources = '',
+        string $environment = '',
+        bool $dieOnChange = false,
+        bool $watch = false,
+    ) {
+        global $argv;
 
-$entry       = $entry->findValue('string', true)       ?? '';
-$name        = $name->findValue('string', true)        ?? 'App';
-$libraries   = $libraries->findValue('string', true)   ?? '';
-$resources   = $resources->findValue('string', true)   ?? '';
-$dieOnChange = $dieOnChange->findValue('bool')         ?? false;
-$watch       = $watch->findValue('bool')               ?? false;
-$php         = $php->findValue('string', true)         ?? 'php';
-$environment = $environment->findValue('string', true) ?? '';
+        if ('' === $entry) {
+            return error('No entry point specified. Use `--entry=src/main.php` to specify an entry point.');
+        }
 
-try {
-    if ($watch) {
-        $arguments   = array_filter(array_slice($argv, 1), fn ($option) => trim($option) !== '--watch');
-        $arguments[] = '--die-on-change';
-        Bootstrap::spawn(
-            binary: $php,
-            fileName: __FILE__,
-            arguments: $arguments,
-            entry: $entry,
-            libraries: $libraries,
-            resources: $resources,
-        );
-    } else {
-        Bootstrap::start(
-            entry: $entry,
-            name: $name,
-            libraries: $libraries,
-            resources: $resources,
-            environment: $environment,
-            dieOnChange: $dieOnChange,
-        );
+        if ($watch) {
+            $arguments   = array_filter(array_slice($argv, 1), fn ($option) => trim($option) !== '--watch');
+            $arguments[] = '--die-on-change';
+            Bootstrap::spawn(
+                binary: $php,
+                fileName: __FILE__,
+                arguments: $arguments,
+                entry: $entry,
+                libraries: $libraries,
+                resources: $resources,
+            );
+        } else {
+            Bootstrap::start(
+                entry: $entry,
+                name: $name,
+                libraries: $libraries,
+                resources: $resources,
+                environment: $environment,
+                dieOnChange: $dieOnChange,
+            );
+        }
+        return ok();
     }
-} catch (Throwable $e) {
-    die(((string)$e).PHP_EOL);
-}
+)->try();

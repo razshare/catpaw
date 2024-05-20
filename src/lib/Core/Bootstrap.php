@@ -9,7 +9,6 @@ use function Amp\File\isDirectory;
 
 use CatPaw\Core\Services\EnvironmentService;
 use Error;
-use Phar;
 use function preg_split;
 use Psr\Log\LoggerInterface;
 use function realpath;
@@ -32,10 +31,6 @@ class Bootstrap {
         string $fileName,
         array $libraries = [],
     ):Unsafe {
-        if (isPhar()) {
-            $fileName = Phar::running()."/$fileName";
-        }
-
         if (!File::exists($fileName)) {
             return error("Could not find php entry file $fileName.");
         }
@@ -79,20 +74,11 @@ class Bootstrap {
         bool $dieOnChange = false,
     ): void {
         try {
-            if (!$entry) {
-                self::kill("Please point to a php entry file.");
+            $entryLocal = (string)asFileName($entry);
+            if ('' === $entryLocal) {
+                self::kill("Please point to a valid php entry file, received `$entry`.");
             }
-
-            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-
-            if (!str_starts_with($entry, './')) {
-                if (!$isWindows) {
-                    self::kill("The entry file path must be relative to the project, received: $entry.");
-                }
-                if (!str_starts_with($entry, '.\\')) {
-                    self::kill("The entry file path must be relative to the project, received: $entry.");
-                }
-            }
+            $entry = $entryLocal;
 
             /** @var LoggerInterface $logger */
             $logger = LoggerFactory::create($name)->unwrap($error);
@@ -123,26 +109,20 @@ class Bootstrap {
                 }
             }
 
-            foreach ($librariesList as $library) {
-                if (!str_starts_with($library, './')) {
-                    if (!$isWindows) {
-                        self::kill("All library directory paths must be relative to the project, received: $library.");
-                    }
-                    if (!str_starts_with($library, '.\\')) {
-                        self::kill("All library directory paths must be relative to the project, received: $library.");
-                    }
+            foreach ($librariesList as &$library) {
+                $libraryLocal = (string)asFileName($library);
+                if ('' === $libraryLocal) {
+                    self::kill("Trying to load php library `$library`, but the directory doesn't seem to exist.");
                 }
+                $library = $libraryLocal;
             }
 
             foreach ($resourcesList as $resource) {
-                if (!str_starts_with($resource, './')) {
-                    if (!$isWindows) {
-                        self::kill("All resource directory paths must be relative to the project, received: $resource.");
-                    }
-                    if (!str_starts_with($resource, '.\\')) {
-                        self::kill("All resource directory paths must be relative to the project, received: $resource.");
-                    }
+                $resourceLocal = (string)asFileName($resource);
+                if ('' === $resourceLocal) {
+                    self::kill("Trying to track resource `$resource`, but it doesn't seem to exist.");
                 }
+                $resource = $resourceLocal;
             }
 
             if ($dieOnChange) {
