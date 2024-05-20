@@ -522,7 +522,7 @@ function command(string $signature, callable $function):Unsafe {
     };
 
     foreach ($reflectionFunction->getParameters() as $reflectionParameter) {
-        $key       = $reflectionParameter->getName();
+        $key       = KebabCase::fromAny($reflectionParameter->getName());
         $notFound  = !isset($options[$key]);
         $value     = $options[$key] ?? '';
         $type      = ReflectionTypeManager::wrap($reflectionParameter);
