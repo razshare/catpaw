@@ -549,9 +549,10 @@ function command(string $signature, callable $function):Unsafe {
     });
 }
 
-interface CommandInterface {
-    /**
-     * @return Unsafe<None>
-     */
-    public function run():Unsafe;
+/**
+ * Create a signal.
+ * @return Signal
+ */
+function signal():Signal {
+    return Signal::create();
 }
