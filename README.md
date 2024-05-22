@@ -25,7 +25,6 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 | ⚡ [State](./docs/26.state.md)                             |
 | ⚡ [Signals](./docs/27.signals.md)                             |
 | ⚡ [Go interop](./docs/28.goffi.md)                             |
-| 🌐 [Superstyle](./docs/29.superstyle.md)                             |
 
 
 > [!NOTE]
