@@ -40,7 +40,7 @@ class ViewService {
     }
     
     /**
-     * Load twig components from a directory recursively.
+     * Load view components from a directory recursively.
      * 
      * 
      * Each component name is resolved based on its path name relative to the given `$directoryName` to load.\
@@ -73,7 +73,7 @@ class ViewService {
     }
 
     /**
-     * 
+     * Load a view component.
      * @param  string       $fileName
      * @param  string       $componentName
      * @return Unsafe<None>
@@ -98,6 +98,26 @@ class ViewService {
 
         if ('' !== $componentName && $componentName !== $fileName) {
             $this->loader->setAlias($componentName, $fileName);
+        }
+
+        return ok();
+    }
+
+    /**
+     * Load view source code as a component.
+     * @param  string       $source
+     * @param  string       $componentName
+     * @return Unsafe<None>
+     */
+    public function loadSourceAsComponent(string $source, string $componentName):Unsafe {
+        if (!isset($this->environment)) {
+            $this->loader      = TwigAsyncFilesystemLoader::create();
+            $this->environment = new Environment($this->loader);
+        }
+
+        $this->loader->loadSourceAsFile($source, $componentName)->unwrap($error);
+        if ($error) {
+            return error($error);
         }
 
         return ok();

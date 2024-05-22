@@ -8,6 +8,7 @@ use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
+use Error;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
 
@@ -39,6 +40,18 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
      */
     public function setAlias(string $alias, string $name):void {
         $this->aliases[$alias] = $name;
+    }
+
+    /**
+     * Load source as file.
+     * @param  string       $source
+     * @param  string       $fileName
+     * @return Unsafe<None>
+     */
+    public function loadSourceAsFile(string $source, string $fileName):Unsafe {
+        $this->keys[$fileName]    = $fileName;
+        $this->sources[$fileName] = new Source(code: $source, name: $fileName, path: $fileName);
+        return ok();
     }
 
     /**
@@ -76,6 +89,9 @@ class TwigAsyncFilesystemLoader implements LoaderInterface {
     public function getCacheKey(string $name): string {
         if (isset($this->aliases[$name])) {
             $name = $this->aliases[$name];
+        }
+        if (!isset($this->keys[$name])) {
+            throw new Error("Twig cache key `$name` not found.");
         }
         return $this->keys[$name];
     }

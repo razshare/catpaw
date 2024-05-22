@@ -7,10 +7,16 @@ use Amp\Http\Server\Response;
 use Amp\Websocket\Server\WebsocketClientHandler;
 
 use CatPaw\Core\Container;
+use function CatPaw\Core\error;
+
+use CatPaw\Core\None;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Interfaces\ViewInterface;
+use CatPaw\Web\Services\ViewService;
 use CatPaw\Web\Services\WebsocketService;
 use Psr\Http\Message\UriInterface;
+
 use Psr\Log\LoggerInterface;
 
 /**
@@ -167,4 +173,43 @@ function websocket(Request $request, WebsocketClientHandler $handler): ResponseM
 
 function view():ViewInterface {
     return View::create();
+}
+
+/**
+ * Load view components from a directory recursively.
+ * 
+ * 
+ * Each component name is resolved based on its path name relative to the given `$directoryName` to load.\
+ * For example, if the `$directoryName` to load is named `/home/user/project/components`, then a file named `/home/user/project/components/buttons/red-button.twig` will create a component called `buttons/red-button`, which you can import in your twig templates, extend or use any other way you would normally use any twig template.
+ * @param  string       $directoryName
+ * @return Unsafe<None>
+ */
+function loadComponentsFromDirectory(string $directoryName):Unsafe {
+    /** @var false|ViewService */
+    static $view = false;
+    if (!$view) {
+        $view = Container::get(ViewService::class)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+    }
+    return $view->loadComponentsFromDirectory($directoryName);
+}
+
+/**
+ * Load a view component.
+ * @param  string       $fileName
+ * @param  string       $componentName
+ * @return Unsafe<None>
+ */
+function loadComponent(string $fileName, string $componentName):Unsafe {
+    /** @var false|ViewService */
+    static $view = false;
+    if (!$view) {
+        $view = Container::get(ViewService::class)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+    }
+    return $view->loadComponent($fileName, $componentName);
 }
