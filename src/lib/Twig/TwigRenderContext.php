@@ -1,11 +1,13 @@
 <?php
-
-namespace CatPaw\Web;
+namespace CatPaw\Twig;
 
 use CatPaw\Core\Container;
+use function CatPaw\Web\failure;
 use CatPaw\Web\Interfaces\RenderContextInterface;
 use CatPaw\Web\Interfaces\ResponseModifier;
-use CatPaw\Web\Services\TwigService;
+use CatPaw\Web\Services\ViewService;
+use function CatPaw\Web\success;
+use const CatPaw\Web\TEXT_HTML;
 use Psr\Log\LoggerInterface;
 
 class TwigRenderContext implements RenderContextInterface {
@@ -61,7 +63,7 @@ class TwigRenderContext implements RenderContextInterface {
      * @return ResponseModifier
      */
     public function response(int $status = 200, array $headers = []):ResponseModifier {
-        $twig = Container::get(TwigService::class)->unwrap($errorService);
+        $twig = Container::get(ViewService::class)->unwrap($errorService);
         if ($errorService) {
             $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
             if ($errorLogger) {

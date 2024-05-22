@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Web;
+namespace CatPaw\Twig;
 
 use function CatPaw\Core\error;
 use CatPaw\Core\File;

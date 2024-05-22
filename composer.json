@@ -30,7 +30,7 @@
       "cpp -P tests/main.h tests/main.static.h",
       "php vendor/bin/phpunit tests"
     ],
-    "dev:preview": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --libraries=src/lib --entry=preview/main.php --resources=preview/api/view.hbs",
+    "dev:preview": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --libraries=src/lib --entry=preview/main.php --resources=preview --watch --php='php -dxdebug.mode=debug -dxdebug.start_with_request=yes'",
     "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries=src/lib --entry=src/main.php",
     "dev:test": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests",
     "dev:testone": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit",
@@ -49,9 +49,6 @@
       "CatPaw\\Core\\": [
         "src/lib/Core"
       ],
-      "CatPaw\\Superstyle\\": [
-        "src/lib/Superstyle"
-      ],
       "CatPaw\\Cui\\": [
         "src/lib/Cui"
       ],
@@ -66,6 +63,9 @@
       ],
       "CatPaw\\Web\\": [
         "src/lib/Web"
+      ],
+      "CatPaw\\Twig\\": [
+        "src/lib/Twig"
       ],
       "CatPaw\\Queue\\": [
         "src/lib/Queue"
@@ -85,11 +85,11 @@
       "src/scripts/Core/functions.php",
       "src/scripts/Core/Build/functions.php",
       "src/scripts/Core/Precommit/functions.php",
-      "src/scripts/Superstyle/functions.php",
       "src/scripts/Web/constants.php",
       "src/scripts/Web/functions.php",
       "src/scripts/Store/functions.php",
-      "src/scripts/Text/functions.php"
+      "src/scripts/Text/functions.php",
+      "src/scripts/Twig/functions.php"
     ]
   },
   "minimum-stability": "stable",

@@ -165,15 +165,6 @@ function websocket(Request $request, WebsocketClientHandler $handler): ResponseM
     return success($websocketService->create($handler)->handleRequest($request));
 }
 
-/**
- * Render a twig component.
- * @param  string            $name The component name.
- * @return TwigRenderContext
- */
-function twig(string $name):TwigRenderContext {
-    return new TwigRenderContext($name);
-}
-
 function view():ViewInterface {
     return View::create();
 }

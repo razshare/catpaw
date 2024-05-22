@@ -7,11 +7,10 @@ use Amp\Http\Server\Response;
 use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
-
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
-
 use CatPaw\Core\Unsafe;
+use function CatPaw\Twig\twig;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Interfaces\SessionInterface;
 use Psr\Log\LoggerInterface;

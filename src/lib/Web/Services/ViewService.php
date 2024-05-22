@@ -1,23 +1,32 @@
 <?php
 namespace CatPaw\Web\Services;
 
+use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Service;
+use CatPaw\Core\Directory;
+
 use function CatPaw\Core\error;
+use CatPaw\Core\File;
 
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\TwigAsyncFilesystemLoader;
+use CatPaw\Twig\TwigAsyncFilesystemLoader;
+use Psr\Log\LoggerInterface;
 use Throwable;
 use Twig\Environment;
 
 #[Service]
-class TwigService {
+class ViewService {
+    private LoggerInterface $logger;
     private Environment $environment;
     private TwigAsyncFilesystemLoader $loader;
     /** @var array<string,string> */
     private array $realFileNames = [];
 
+    #[Entry] function start(LoggerInterface $logger):void {
+        $this->logger = $logger;
+    }
 
     private function realFileName(string $fileName):string {
         if (isset($this->realFileNames[$fileName])) {
@@ -28,6 +37,39 @@ class TwigService {
         }
 
         return $realFileName;
+    }
+    
+    /**
+     * Load twig components from a directory recursively.
+     * 
+     * 
+     * Each component name is resolved based on its path name relative to the given `$directoryName` to load.\
+     * For example, if the `$directoryName` to load is named `/home/user/project/components`, then a file named `/home/user/project/components/buttons/red-button.twig` will create a component called `buttons/red-button`, which you can import in your twig templates, extend or use any other way you would normally use any twig template.
+     * @param  string       $directoryName
+     * @return Unsafe<None>
+     */
+    public function loadComponentsFromDirectory(string $directoryName):Unsafe {
+        // Find directory.
+        if (!File::exists($directoryName)) {
+            return error("Directory `$directoryName` not found.");
+        }
+
+        $fileNames = Directory::list($directoryName)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+            
+        // Load components.
+        foreach ($fileNames as $fileName) {
+            $componentName = str_replace("$directoryName/", '', $fileName);
+            $this->loadComponent($fileName, $componentName)->unwrap($error);
+            if ($error) {
+                $this->logger->error("Error while trying to load component `$componentName`.\n");
+                return error($error);
+            }
+            $this->logger->info("Component `$componentName` loaded.\n");
+        }
+        return ok();
     }
 
     /**
