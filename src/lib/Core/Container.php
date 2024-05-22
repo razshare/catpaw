@@ -173,7 +173,7 @@ class Container {
                 && Readable::class !== $type
             ) {
                 // @phpstan-ignore-next-line
-                $instance = Container::create($type)->unwrap($error);
+                $instance = Container::get($type)->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -247,7 +247,7 @@ class Container {
             }
             Container::provide(LoggerInterface::class, $logger);
         } else {
-            $logger = Container::create(LoggerInterface::class)->unwrap($error);
+            $logger = Container::get(LoggerInterface::class)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -436,16 +436,28 @@ class Container {
     }
 
     /**
-     * Create an instance or retrieve a cached instance of the given class.
-     * - This method will take care of dependency injections.
-     * - Services and Singletons are backed by an internal cache, which you can reset by invoking `Container::clear()`.
-     * - Providers' results are not cached.
+     * Same as `::get`, but deprecated because of confusing name.
      * @template T
      * @param  class-string<T> $name
      * @param  mixed           $args
      * @return Unsafe<T>
      */
     public static function create(string $name, ...$args):Unsafe {
+        return self::get($name, ...$args);
+    }
+
+    /**
+     * Get an instance of the given class.
+     * 
+     * - Services and Singletons are backed by an internal cache, which you can reset by invoking `Container::clear()`.
+     * - This method will take care of dependency injections.
+     * - Providers' results are not cached.
+     * @template T
+     * @param  class-string<T> $name
+     * @param  mixed           $args
+     * @return Unsafe<T>
+     */
+    public static function get(string $name, ...$args):Unsafe {
         if (Singleton::exists($name)) {
             return ok(Singleton::get($name));
         }

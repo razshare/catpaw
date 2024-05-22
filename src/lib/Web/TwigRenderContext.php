@@ -61,9 +61,9 @@ class TwigRenderContext implements RenderContextInterface {
      * @return ResponseModifier
      */
     public function response(int $status = 200, array $headers = []):ResponseModifier {
-        $twig = Container::create(TwigService::class)->unwrap($errorService);
+        $twig = Container::get(TwigService::class)->unwrap($errorService);
         if ($errorService) {
-            $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
+            $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
             if ($errorLogger) {
                 echo $errorLogger.PHP_EOL;
                 echo $errorService.PHP_EOL;
@@ -78,7 +78,7 @@ class TwigRenderContext implements RenderContextInterface {
         )->unwrap($errorTwig);
 
         if ($errorTwig) {
-            $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
+            $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
             if ($errorLogger) {
                 echo $errorLogger.PHP_EOL;
                 echo $errorTwig.PHP_EOL;

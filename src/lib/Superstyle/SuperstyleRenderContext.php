@@ -122,9 +122,9 @@ class SuperstyleRenderContext implements RenderContextInterface {
      * @return ResponseModifier
      */
     public function response(int $status = 200, array $headers = []):ResponseModifier {
-        $superstyle = Container::create(SuperstyleService::class)->unwrap($errorService);
+        $superstyle = Container::get(SuperstyleService::class)->unwrap($errorService);
         if ($errorService) {
-            $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
+            $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
             if ($errorLogger) {
                 echo $errorLogger.PHP_EOL;
                 echo $errorService.PHP_EOL;
@@ -144,7 +144,7 @@ class SuperstyleRenderContext implements RenderContextInterface {
         
 
         if ($errorSuperstyle) {
-            $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
+            $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
             if ($errorLogger) {
                 echo $errorLogger.PHP_EOL;
                 echo $errorSuperstyle.PHP_EOL;

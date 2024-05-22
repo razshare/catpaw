@@ -22,12 +22,12 @@ readonly class FileServer implements FileServerInterface {
      * @return Unsafe<self>
      */
     public static function create(Server $server):Unsafe {
-        $logger = Container::create(LoggerInterface::class)->unwrap($error);
+        $logger = Container::get(LoggerInterface::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $byteRangeService = Container::create(ByteRangeService::class)->unwrap($error);
+        $byteRangeService = Container::get(ByteRangeService::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -45,12 +45,12 @@ readonly class FileServer implements FileServerInterface {
      * @return Unsafe<self>
      */
     public static function createForSpa(Server $server):Unsafe {
-        $logger = Container::create(LoggerInterface::class)->unwrap($error);
+        $logger = Container::get(LoggerInterface::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $byteRangeService = Container::create(ByteRangeService::class)->unwrap($error);
+        $byteRangeService = Container::get(ByteRangeService::class)->unwrap($error);
         if ($error) {
             return error($error);
         }

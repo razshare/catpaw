@@ -605,7 +605,7 @@ readonly class Router {
             }
         }
 
-        $openApi = Container::create(OpenApiStateService::class)->unwrap($error);
+        $openApi = Container::get(OpenApiStateService::class)->unwrap($error);
         if ($error) {
             return error($error);
         }

@@ -205,7 +205,7 @@ class Server {
      * @return Unsafe<None>
      */
     public function start(false|Signal $ready = false):Unsafe {
-        $logger = Container::create(LoggerInterface::class)->unwrap($error);
+        $logger = Container::get(LoggerInterface::class)->unwrap($error);
         if ($error) {
             return error($error);
         }

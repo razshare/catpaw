@@ -123,7 +123,7 @@ class State implements Stringable {
                 $result->unwrap($error);
                 if ($error) {
                     if (!$state->logger) {
-                        $state->logger = Container::create(LoggerInterface::class)->unwrap($error);
+                        $state->logger = Container::get(LoggerInterface::class)->unwrap($error);
                     }
                     if ($error) {
                         echo (string)$error;
@@ -154,7 +154,7 @@ class State implements Stringable {
             if ($error) {
                 // @phpstan-ignore-next-line
                 if (!$this->logger) {
-                    $this->logger = Container::create(LoggerInterface::class)->unwrap($error);
+                    $this->logger = Container::get(LoggerInterface::class)->unwrap($error);
                 }
                 if ($error) {
                     echo (string)$error;

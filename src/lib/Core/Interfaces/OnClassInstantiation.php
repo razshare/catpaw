@@ -7,10 +7,11 @@ use ReflectionClass;
 
 interface OnClassInstantiation {
     /**
-     * Invoked when this attribute is detected on a class.
-     * @param  ReflectionClass<object> $reflection   reflection of the class.
-     * @param  mixed                   $instance     instance of the class.
-     * @param  array<int,mixed>        $dependencies arguments for class the constructor.
+     * Invoked when an instance of this class is created through `Container::get`.
+     * @param  ReflectionClass<object> $reflection   Reflection of the class.
+     * @param  mixed                   $instance     Instance of the class.
+     * @param  array<int,mixed>        $dependencies Arguments for the constructor.\
+     *                                               These are provided by the `Container`.
      * @return Unsafe<None>
      */
     public function onClassInstantiation(ReflectionClass $reflection, mixed &$instance, array $dependencies):Unsafe;

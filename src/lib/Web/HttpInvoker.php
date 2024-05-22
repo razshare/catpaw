@@ -101,9 +101,9 @@ class HttpInvoker {
             key: $key,
             overwrites: [
                 SessionInterface::class => function() use ($context) {
-                    $result = Container::create(SessionInterface::class, $context->request)->unwrap($error);
+                    $result = Container::get(SessionInterface::class, $context->request)->unwrap($error);
                     if ($error) {
-                        $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
+                        $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
                         if ($errorLogger) {
                             echo $errorLogger.PHP_EOL;
                             return false;
@@ -114,7 +114,7 @@ class HttpInvoker {
                     if ($result instanceof Unsafe) {
                         $result = $result->unwrap($error);
                         if ($error) {
-                            $logger = Container::create(LoggerInterface::class)->unwrap($errorLogger);
+                            $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
                             if ($errorLogger) {
                                 echo $errorLogger.PHP_EOL;
                                 return false;

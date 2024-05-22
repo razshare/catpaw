@@ -227,7 +227,7 @@ class Bootstrap {
                     }
                     Container::provide(LoggerInterface::class, $logger);
                 } else {
-                    $logger = Container::create(LoggerInterface::class)->unwrap($error);
+                    $logger = Container::get(LoggerInterface::class)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
