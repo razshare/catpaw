@@ -33,7 +33,7 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 
 # Get started
 
-You will need at least [php 8.2](https://www.php.net/downloads.php).
+You will need at least [php 8.2](https://www.php.net/downloads.php) and the `php-mbstring` extension.
 
 Create a new project using one of the starter templates.
 
