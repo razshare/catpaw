@@ -26,7 +26,7 @@
     "prod:build": "@prod:start --build --environment=build.ini --optimize",
     "prod:fix": "php -dxdebug.mode=off vendor/bin/php-cs-fixer fix .",
     "prod:test": [
-      "go build -o tests/main.so -buildmode=c-shared tests/main.go",
+      "GOOS=linux CGO_ENABLED=1 go build -o tests/main.so -buildmode=c-shared tests/main.go",
       "cpp -P tests/main.h tests/main.static.h",
       "php vendor/bin/phpunit tests"
     ],
@@ -116,8 +116,7 @@
     "amphp/http-client": "^5.0",
     "amphp/parallel": "^2.0",
     "amphp/websocket-server": "^4.0",
-    "twig/twig": "^3.0",
-    "zordius/lightncandy": "^1.2"
+    "twig/twig": "^3.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.8",
