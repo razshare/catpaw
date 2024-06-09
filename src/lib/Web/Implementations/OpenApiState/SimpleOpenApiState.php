@@ -1,10 +1,9 @@
 <?php
 
-namespace CatPaw\Web\Services;
+namespace CatPaw\Web\Implementations\OpenApiState;
 
 use CatPaw\Core\Attributes\ArrayList;
 use CatPaw\Core\Attributes\HashMap;
-use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\error;
 
 use CatPaw\Core\None;
@@ -12,21 +11,17 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Unsafe;
+use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use ReflectionClass;
 use Throwable;
 
-/**
- * @internal
- * @package CatPaw\Web\Services
- */
-#[Service]
-class OpenApiStateService {
+class SimpleOpenApiState implements OpenApiStateInterface {
     /**
      *
      * @param  string       $className
      * @return array<mixed>
      */
-    public static function templateForObjectComponent(string $className):array {
+    public function templateForObjectComponent(string $className):array {
         return [
             'type' => 'object',
             '$ref' => "#/components/schemas/{$className}",
@@ -39,7 +34,7 @@ class OpenApiStateService {
      * @param  bool         $dataIsObject
      * @return array<mixed>
      */
-    public static function templateForItem(string $className, bool $dataIsObject = true):array {
+    public function templateForItem(string $className, bool $dataIsObject = true):array {
         if ($dataIsObject) {
             $data = [
                 'type' => 'object',
@@ -74,7 +69,7 @@ class OpenApiStateService {
      * @param  bool         $dataIsObject
      * @return array<mixed>
      */
-    public static function templateForPage(string $className, bool $dataIsObject = true):array {
+    public function templateForPage(string $className, bool $dataIsObject = true):array {
         if ($dataIsObject) {
             $data = [
                 'type'  => 'array',
@@ -158,7 +153,7 @@ class OpenApiStateService {
      * You can safely expose this through a rest api.
      * @return array<mixed>
      */
-    public function getData():array {
+    public function &getData():array {
         return $this->json;
     }
 

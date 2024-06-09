@@ -10,7 +10,7 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\Services\OpenApiStateService;
+use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use ReflectionClass;
 
 class ConsumedRequest implements AttributeInterface {
@@ -120,13 +120,13 @@ class ConsumedRequest implements AttributeInterface {
 
     /**
      *
-     * @param  OpenApiStateService $oa
+     * @param  OpenApiStateInterface $openApiState
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiStateService $oa):Unsafe {
+    #[Entry] public function setup(OpenApiStateInterface $openApiState):Unsafe {
         $isClass = class_exists($this->className);
         if ($isClass) {
-            $oa->setComponentObject($this->className)->unwrap($error);
+            $openApiState->setComponentObject($this->className)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -157,7 +157,7 @@ class ConsumedRequest implements AttributeInterface {
             }
         }
 
-        $this->request = $oa->createRequestBodyContent(
+        $this->request = $openApiState->createRequestBodyContent(
             contentType: $this->type,
             schema: $schema,
             example: $this->example,

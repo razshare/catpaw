@@ -64,9 +64,6 @@
       "CatPaw\\Web\\": [
         "src/lib/Web"
       ],
-      "CatPaw\\Twig\\": [
-        "src/lib/Twig"
-      ],
       "CatPaw\\Queue\\": [
         "src/lib/Queue"
       ],
@@ -88,8 +85,7 @@
       "src/scripts/Web/constants.php",
       "src/scripts/Web/functions.php",
       "src/scripts/Store/functions.php",
-      "src/scripts/Text/functions.php",
-      "src/scripts/Twig/functions.php"
+      "src/scripts/Text/functions.php"
     ]
   },
   "minimum-stability": "stable",
@@ -116,7 +112,7 @@
     "amphp/http-client": "^5.0",
     "amphp/parallel": "^2.0",
     "amphp/websocket-server": "^4.0",
-    "twig/twig": "^3.0"
+    "latte/latte": "^3.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.8",

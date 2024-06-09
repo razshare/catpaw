@@ -5,21 +5,23 @@ namespace CatPaw\Core;
 use function Amp\async;
 use Amp\DeferredFuture;
 use function Amp\delay;
+
 use function Amp\File\isDirectory;
 
 use CatPaw\Core\Services\EnvironmentService;
+
 use Error;
 use function preg_split;
 use Psr\Log\LoggerInterface;
 use function realpath;
 use ReflectionFunction;
 use Revolt\EventLoop;
-use Revolt\EventLoop\UnsupportedFeatureException;
 use Throwable;
 
 class Bootstrap {
     private function __construct() {
     }
+    
 
     /**
      * Initialize an application from a source file (that usually defines a global "main" function).
@@ -46,7 +48,7 @@ class Bootstrap {
         Container::touch($main);
 
         foreach ($libraries as $path) {
-            Container::load(path:$path, append:true)->unwrap($error);
+            Container::load(path:$path)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -74,19 +76,24 @@ class Bootstrap {
         bool $dieOnChange = false,
     ): void {
         try {
+            Container::provideDefaults($name)->unwrap($provideError);
+            if ($provideError) {
+                self::kill((string)$provideError);
+            }
+
             $entryLocal = (string)asFileName($entry);
             if ('' === $entryLocal) {
                 self::kill("Please point to a valid php entry file, received `$entry`.");
             }
+
             $entry = $entryLocal;
 
-            /** @var LoggerInterface $logger */
-            $logger = LoggerFactory::create($name)->unwrap($error);
-            if ($error) {
-                self::kill((string)$error);
+
+            $logger = Container::get(LoggerInterface::class)->unwrap($loggerError);
+            if ($loggerError) {
+                self::kill((string)$loggerError);
             }
 
-            Container::provide(LoggerInterface::class, $logger);
             /** @var array<string> $librariesList */
             $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
 
@@ -139,10 +146,10 @@ class Bootstrap {
                 );
             }
 
-            self::init($entry, $librariesList)->unwrap($error);
+            self::init($entry, $librariesList)->unwrap($librariesError);
 
-            if ($error) {
-                self::kill((string)$error);
+            if ($librariesError) {
+                self::kill((string)$librariesError);
             }
 
             EventLoop::run();
@@ -189,13 +196,12 @@ class Bootstrap {
     }
 
     /**
-     * @param  string                      $binary
-     * @param  string                      $fileName
-     * @param  array<string>               $arguments
-     * @param  string                      $entry
-     * @param  string                      $libraries
-     * @param  string                      $resources
-     * @throws UnsupportedFeatureException
+     * @param  string        $binary
+     * @param  string        $fileName
+     * @param  array<string> $arguments
+     * @param  string        $entry
+     * @param  string        $libraries
+     * @param  string        $resources
      * @return void
      */
     public static function spawn(
@@ -211,6 +217,12 @@ class Bootstrap {
             EventLoop::onSignal(SIGINT, static fn () => self::kill("Killing application..."));
             EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
             EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
+            
+            Container::provideDefaults("Watcher")->unwrap($provideError);
+            if ($provideError) {
+                self::kill((string)$provideError);
+            }
+
 
             async(static function() use (
                 $binary,

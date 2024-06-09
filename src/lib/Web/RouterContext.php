@@ -14,7 +14,7 @@ class RouterContext {
     }
 
     private LoggerInterface $logger;
-
+    
     /**
      * @param array<string,array<Route>> $routes,
      */
@@ -69,7 +69,7 @@ class RouterContext {
         string $symbolicPath,
         Route $route,
     ):void {
-        if ($this->routes[$symbolicMethod][$symbolicPath] ?? false) {
+        if (isset($this->routes[$symbolicMethod][$symbolicPath])) {
             $this->logger->warning("Overwriting route handler $symbolicMethod $symbolicPath.");
         }
 

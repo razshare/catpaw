@@ -9,7 +9,6 @@ class RequestContext {
     /**
      * @param  string              $key
      * @param  Route               $route
-     * @param  Server              $server
      * @param  Request             $request
      * @param  array<string>       $requestQueries
      * @param  array<string>       $requestPathParameters
@@ -19,7 +18,6 @@ class RequestContext {
     public static function create(
         string $key,
         Route $route,
-        Server $server,
         Request $request,
         array $requestQueries,
         array $requestPathParameters,
@@ -28,7 +26,6 @@ class RequestContext {
         return new self(
             key: $key,
             route: $route,
-            server: $server,
             request: $request,
             requestQueries: $requestQueries,
             requestPathParameters: $requestPathParameters,
@@ -43,7 +40,6 @@ class RequestContext {
      *
      * @param  string              $key
      * @param  Route               $route
-     * @param  Server              $server
      * @param  Request             $request
      * @param  array<string>       $requestQueries
      * @param  array<string>       $requestPathParameters
@@ -53,7 +49,6 @@ class RequestContext {
     private function __construct(
         public readonly string $key,
         public readonly Route $route,
-        public readonly Server $server,
         public readonly Request $request,
         public readonly array $requestQueries,
         public readonly array $requestPathParameters,

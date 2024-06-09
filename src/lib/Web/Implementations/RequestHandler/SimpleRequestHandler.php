@@ -1,27 +1,21 @@
 <?php
 
-namespace CatPaw\Web;
+namespace CatPaw\Web\Implementations\RequestHandler;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\Response;
+use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\FileServerInterface;
+use CatPaw\Web\Interfaces\RouteResolverInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-readonly class ServerRequestHandler implements RequestHandler {
-    public static function create(
-        LoggerInterface $logger,
-        FileServerInterface $fileServer,
-        RouteResolver $resolver,
-    ):self {
-        return new self($logger, $fileServer, $resolver);
-    }
-
-    private function __construct(
+readonly class SimpleRequestHandler implements RequestHandler {
+    public function __construct(
         private LoggerInterface $logger,
         private FileServerInterface $fileServer,
-        private RouteResolver $resolver,
+        private RouteResolverInterface $routeResolver,
     ) {
     }
 
@@ -38,7 +32,7 @@ readonly class ServerRequestHandler implements RequestHandler {
 
     public function handleRequest(Request $request): Response {
         try {
-            $response = $this->resolver->resolve($request)->unwrap($error);
+            $response = $this->routeResolver->resolve($request)->unwrap($error);
             if ($error) {
                 return $this->createResponseFromError($error);
             }

@@ -10,6 +10,7 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
+use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use CatPaw\Web\ProducedResponse;
 use CatPaw\Web\Services\OpenApiStateService;
 
@@ -71,12 +72,12 @@ class ProducesItem implements AttributeInterface {
 
     /**
      *
-     * @param  OpenApiStateService $oa
+     * @param  OpenApiStateInterface $openApiState
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiStateService $oa): Unsafe {
+    #[Entry] public function setup(OpenApiStateInterface $openApiState): Unsafe {
         foreach ($this->produces->getResponse() as $response) {
-            $response->setup($oa)->unwrap($error);
+            $response->setup($openApiState)->unwrap($error);
             if ($error) {
                 return error($error);
             }

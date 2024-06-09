@@ -9,7 +9,7 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\Services\OpenApiStateService;
+use CatPaw\Web\Interfaces\OpenApiStateInterface;
 
 class ProducedResponse implements AttributeInterface {
     use CoreAttributeDefinition;
@@ -122,19 +122,19 @@ class ProducedResponse implements AttributeInterface {
 
     /**
      *
-     * @param  OpenApiStateService $oa
+     * @param  OpenApiStateInterface $openApiState
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiStateService $oa):Unsafe {
+    #[Entry] public function setup(OpenApiStateInterface $openApiState):Unsafe {
         $isClass   = class_exists($this->className);
         $reference = false;
         if ($isClass) {
             if ($this->isPage) {
-                $reference = $oa->setComponentReferencePage($this->className);
+                $reference = $openApiState->setComponentReferencePage($this->className);
             } else if ($this->isItem) {
-                $reference = $oa->setComponentReferenceItem($this->className);
+                $reference = $openApiState->setComponentReferenceItem($this->className);
             }
-            $oa->setComponentObject($this->className)->unwrap($error);
+            $openApiState->setComponentObject($this->className)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -161,17 +161,17 @@ class ProducedResponse implements AttributeInterface {
                     default => $this->className,
                 };
                 if ($this->isItem) {
-                    $schema = OpenApiStateService::templateForItem(className:$type, dataIsObject:false);
+                    $schema = $openApiState->templateForItem(className:$type, dataIsObject:false);
                 } else if ($this->isErrorItem) {
-                    $oa->setComponentReference(ErrorItem::class);
-                    $oa->setComponentObject(ErrorItem::class)->unwrap($error);
-                    if ($error) {
-                        return error($error);
+                    $openApiState->setComponentReference(ErrorItem::class);
+                    $openApiState->setComponentObject(ErrorItem::class)->unwrap($setError);
+                    if ($setError) {
+                        return error($setError);
                     }
 
-                    $schema = OpenApiStateService::templateForObjectComponent(className:ErrorItem::class);
+                    $schema = $openApiState->templateForObjectComponent(className:ErrorItem::class);
                 } else if ($this->isPage) {
-                    $schema = OpenApiStateService::templateForPage(className:$type, dataIsObject:false);
+                    $schema = $openApiState->templateForPage(className:$type, dataIsObject:false);
                 } else {
                     $schema = [
                         'type' => $type,
@@ -180,7 +180,7 @@ class ProducedResponse implements AttributeInterface {
             }
         }
 
-        $this->response = $oa->createResponse(
+        $this->response = $openApiState->createResponse(
             status: $this->status,
             description: $this->description,
             contentType: $this->type,

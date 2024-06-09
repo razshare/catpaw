@@ -1,26 +1,34 @@
 <?php
 
-namespace CatPaw\Web;
+namespace CatPaw\Web\Implementations\HttpInvoker;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use function CatPaw\Core\asFileName;
+
 use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
 use CatPaw\Core\Unsafe;
-use function CatPaw\Twig\twig;
+use CatPaw\Web\Accepts;
+
+use function CatPaw\Web\failure;
+use CatPaw\Web\Filter;
+
+use CatPaw\Web\HttpStatus;
+use CatPaw\Web\Interfaces\HttpInvokerInterface;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Interfaces\SessionInterface;
+use CatPaw\Web\Interfaces\ViewEngineInterface;
+use CatPaw\Web\Interfaces\ViewInterface;
+use CatPaw\Web\Page;
+use CatPaw\Web\RequestContext;
+use function CatPaw\Web\success;
 use Psr\Log\LoggerInterface;
 
-class HttpInvoker {
-    public static function create():self {
-        return new self();
-    }
-    
-    private function __construct() {
+class SimpleHttpInvoker implements HttpInvokerInterface {
+    public function __construct(public readonly ViewEngineInterface $viewEngine) {
     }
 
     /**
@@ -57,15 +65,16 @@ class HttpInvoker {
 
         $modifier = $function(...$dependencies);
 
-        if ($modifier instanceof View) {
-            $viewFileName        = asFileName($context->route->workDirectory, 'view.twig');
-            $fileNameStringified = (string)$viewFileName;
+        if ($modifier instanceof ViewInterface) {
+            $componentName       = asFileName($context->route->workDirectory, 'view.latte');
+            $fileNameStringified = (string)$componentName;
             if ('' !== $fileNameStringified) {
-                $view     = $modifier;
-                $modifier = twig($fileNameStringified)->withProperties($view->properties)->response(
-                    status: $view->status,
-                    headers: $view->headers,
-                );
+                $view = $modifier;
+                $data = $this->viewEngine->render($componentName, $view->getProperties())->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+                $modifier = success($data, $view->getStatus(), $view->getHeaders());
             } else {
                 $modifier = failure();
             }
@@ -125,7 +134,6 @@ class HttpInvoker {
                     }
                     return $result;
                 },
-                Server::class  => static fn () => $context->server,
                 Request::class => static fn () => $context->request,
                 Accepts::class => static fn () => Accepts::createFromRequest($context->request),
                 Filter::class  => static fn () => Filter::createFromRequest($context->request),

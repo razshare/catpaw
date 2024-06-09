@@ -24,8 +24,17 @@ class Singleton implements AttributeInterface, OnClassInstantiation {
     public function __construct() {
     }
 
+    
     /** @var array<string,mixed> */
     private static array $cache = [];
+    
+    /**
+     * 
+     * @return array<string,mixed>
+     */
+    public static function getAll():array {
+        return self::$cache;
+    }
 
     /**
      * Clear all cached singletons.\

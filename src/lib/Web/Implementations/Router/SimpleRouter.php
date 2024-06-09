@@ -1,7 +1,6 @@
 <?php
-namespace CatPaw\Web;
+namespace CatPaw\Web\Implementations\Router;
 
-use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
@@ -24,9 +23,16 @@ use CatPaw\Web\Attributes\ProducesPage;
 use CatPaw\Web\Attributes\Query;
 use CatPaw\Web\Attributes\Summary;
 use CatPaw\Web\Attributes\Tag;
+use CatPaw\Web\ErrorResponseModifier;
 use CatPaw\Web\Interfaces\OnRequest;
 use CatPaw\Web\Interfaces\OnResponse;
-use CatPaw\Web\Services\OpenApiStateService;
+use CatPaw\Web\Interfaces\OpenApiStateInterface;
+use CatPaw\Web\Interfaces\RouterInterface;
+use CatPaw\Web\Page;
+use CatPaw\Web\PathResolver;
+use CatPaw\Web\Route;
+use CatPaw\Web\RouterContext;
+use CatPaw\Web\SuccessResponseModifier;
 use Closure;
 
 use function implode;
@@ -35,12 +41,12 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Throwable;
 
-readonly class Router {
-    public static function create():self {
-        return new self(RouterContext::create());
-    }
-
-    private function __construct(public readonly RouterContext $context) {
+class SimpleRouter implements RouterInterface {
+    public readonly RouterContext $context;
+    public function __construct(
+        public readonly OpenApiStateInterface $openApiState,
+    ) {
+        $this->context = RouterContext::create();
     }
 
     /**
@@ -230,7 +236,6 @@ readonly class Router {
      */
     private function findRouteOpenApiQueries(
         ReflectionFunction $reflection,
-        OpenApiStateService $api,
     ):Unsafe {
         /** @var array<mixed> */
         $result = [];
@@ -296,7 +301,7 @@ readonly class Router {
 
             $result = [
                 ...$result,
-                ...$api->createParameter(
+                ...$this->openApiState->createParameter(
                     name: $name,
                     in: 'query',
                     description: $summary,
@@ -314,7 +319,6 @@ readonly class Router {
      */
     private function findRouteOpenApiHeaders(
         ReflectionFunction $reflection,
-        OpenApiStateService $api,
     ):Unsafe {
         /** @var array<mixed> */
         $result = [];
@@ -376,7 +380,7 @@ readonly class Router {
 
             $result = [
                 ...$result,
-                ...$api->createParameter(
+                ...$this->openApiState->createParameter(
                     name: $name,
                     in: 'header',
                     description: $summary,
@@ -394,13 +398,11 @@ readonly class Router {
      *
      * @param  ReflectionFunction   $reflectionFunction
      * @param  string               $path
-     * @param  OpenApiStateService  $oa
      * @return Unsafe<array<mixed>>
      */
     private function findRouteOpenApiPathParameters(
         ReflectionFunction $reflectionFunction,
-        string $path,
-        OpenApiStateService $oa,
+        string $path
     ):Unsafe {
         $parametersReflections = $reflectionFunction->getParameters();
         $configurations        = PathResolver::findMatchingPathConfigurations($path, $parametersReflections)->unwrap($error);
@@ -472,7 +474,7 @@ readonly class Router {
 
             $result = [
                 ...$result,
-                ...$oa->createParameter(
+                ...$this->openApiState->createParameter(
                     name: $name,
                     in: 'path',
                     description: $summary,
@@ -487,13 +489,11 @@ readonly class Router {
 
     /**
      *
-     * @param  ReflectionFunction  $reflectionFunction
-     * @param  OpenApiStateService $oa
+     * @param  ReflectionFunction $reflectionFunction
      * @return array<mixed>
      */
     private function findRouteOpenApiPageQueries(
         ReflectionFunction $reflectionFunction,
-        OpenApiStateService $oa,
     ):array {
         foreach ($reflectionFunction->getParameters() as $paramReflection) {
             if (!$type = ReflectionTypeManager::unwrap($paramReflection)) {
@@ -505,7 +505,7 @@ readonly class Router {
             }
 
             return [
-                ...$oa->createParameter(
+                ...$this->openApiState->createParameter(
                     name: "start",
                     in: 'query',
                     description: "Beginning position of the page.",
@@ -513,13 +513,13 @@ readonly class Router {
                     schema: [
                         "type" => "integer",
                     ],
-                    examples: $oa->createExample(
+                    examples: $this->openApiState->createExample(
                         title  : 'Beginning of the page',
                         value  : 0,
                         summary: '0',
                     ),
                 ),
-                ...$oa->createParameter(
+                ...$this->openApiState->createParameter(
                     name: "size",
                     in: 'query',
                     description: "Size of the page, as in: how many elements the page can contain at most.",
@@ -527,7 +527,7 @@ readonly class Router {
                     schema: [
                         "type" => "integer",
                     ],
-                    examples: $oa->createExample(
+                    examples: $this->openApiState->createExample(
                         title  : 'Size of the page',
                         value  : 3,
                         summary: '3',
@@ -605,23 +605,19 @@ readonly class Router {
             }
         }
 
-        $openApi = Container::get(OpenApiStateService::class)->unwrap($error);
+
+        $headers = $this->findRouteOpenApiHeaders($reflectionFunction)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $headers = $this->findRouteOpenApiHeaders($reflectionFunction, $openApi)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        $queries = $this->findRouteOpenApiQueries($reflectionFunction, $openApi)->unwrap($error);
+        $queries = $this->findRouteOpenApiQueries($reflectionFunction)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
         try {
-            $parameters = $this->findRouteOpenApiPathParameters($reflectionFunction, $symbolicPath, $openApi)->unwrap($error);
+            $parameters = $this->findRouteOpenApiPathParameters($reflectionFunction, $symbolicPath)->unwrap($error);
         } catch(Throwable $e) {
             return error($e);
         }
@@ -635,7 +631,7 @@ readonly class Router {
             ... $headers,
             ...$queries,
             ...$parameters,
-            ...$this->findRouteOpenApiPageQueries($reflectionFunction, $openApi),
+            ...$this->findRouteOpenApiPageQueries($reflectionFunction),
         ];
 
 
@@ -660,16 +656,16 @@ readonly class Router {
             $operationIdValue = \sha1("$symbolicMethod:$symbolicPath:".\sha1(\json_encode($parameters)));
         }
 
-        $openApi->setPath(
+        $this->openApiState->setPath(
             path: $symbolicPath,
             pathContent: [
-                ...$openApi->createPathContent(
+                ...$this->openApiState->createPathContent(
                     tags: $tags,
                     method     : $symbolicMethod,
                     operationId: $operationIdValue,
                     summary    : $summary->getValue(),
                     parameters : $parameters,
-                    requestBody: $openApi->createRequestBody(
+                    requestBody: $this->openApiState->createRequestBody(
                         description: $crequests > 0?'This is the body of the request':'',
                         required: $crequests    > 0,
                         content: $requests,

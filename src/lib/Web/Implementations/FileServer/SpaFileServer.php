@@ -1,76 +1,45 @@
 <?php
-namespace CatPaw\Web;
+namespace CatPaw\Web\Implementations\FileServer;
 
 use function Amp\File\isDirectory;
 use function Amp\File\isFile;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
-use CatPaw\Core\Container;
-use function CatPaw\Core\error;
 use CatPaw\Core\File;
-use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Web\HttpStatus;
+use CatPaw\Web\Interfaces\ByteRangeInterface;
 use CatPaw\Web\Interfaces\FileServerInterface;
 use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
-use CatPaw\Web\Services\ByteRangeService;
+use CatPaw\Web\Interfaces\ServerInterface;
+use CatPaw\Web\Mime;
 use Psr\Log\LoggerInterface;
 
-readonly class FileServer implements FileServerInterface {
-    /**
-     * Create a file server that serves static files as requested by the
-     * client and return 404 responses whenever a static file is not found.
-     * @return Unsafe<self>
-     */
-    public static function create(Server $server):Unsafe {
-        $logger = Container::get(LoggerInterface::class)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        $byteRangeService = Container::get(ByteRangeService::class)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        return ok(new self(
-            server: $server,
-            fallback: 'index.html',
-            logger: $logger,
-            byteRangeService: $byteRangeService,
-        ));
-    }
-
-    /**
-     * Similar to `::create`, but instead of returning 404 responses, return the `/index.html` file.
-     * @return Unsafe<self>
-     */
-    public static function createForSpa(Server $server):Unsafe {
-        $logger = Container::get(LoggerInterface::class)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        $byteRangeService = Container::get(ByteRangeService::class)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        return ok(new self(
-            server:           $server,
-            fallback:         'index.html',
-            logger:           $logger,
-            byteRangeService: $byteRangeService,
-            overwrite:        FileServerOverwriteForSpa::create($server),
-        ));
-    }
-
-    private function __construct(
-        private Server $server,
-        private string $fallback,
+/**
+ * A file server that serves static files as requested by the
+ * client and return 404 responses whenever a static file is not found.
+ * @package CatPaw\Web
+ */
+readonly class SpaFileServer implements FileServerInterface {
+    public string $fallback;
+    private FileServerOverwriteInterface $overwrite;
+    public function __construct(
+        private ServerInterface $server,
         private LoggerInterface $logger,
-        private ByteRangeService $byteRangeService,
-        private FileServerOverwriteInterface|false $overwrite = false,
+        private ByteRangeInterface $byteRange,
     ) {
+        $this->fallback  = "index.html";
+        $this->overwrite = new class($server) implements FileServerOverwriteInterface {
+            public function __construct(private ServerInterface $server) {
+            }
+        
+            public function overwrite(string $fileName, string $path): string {
+                // Required for Spa mode
+                if (isDirectory($fileName) || !File::exists($fileName)) {
+                    return "{$this->server->getStaticsLocation()}/index.html";
+                }
+                return $fileName;
+            }
+        };
     }
 
     private function notFound():Response {
@@ -134,18 +103,16 @@ readonly class FileServer implements FileServerInterface {
         $server           = $this->server;
         $fallback         = $this->fallback;
         $overwrite        = $this->overwrite;
-        $byteRangeService = $this->byteRangeService;
+        $byteRangeService = $this->byteRange;
         $logger           = $this->logger;
 
         if (!$server->getStaticsLocation() || strpos($path, '../')) {
             return $this->notFound();
         }
 
+        // This smells.
         $fileName = $server->getStaticsLocation().$path;
-
-        if ($overwrite) {
-            $fileName = $overwrite->overwrite($fileName, $path);
-        }
+        $fileName = $overwrite->overwrite($fileName, $path);
 
 
         if (isDirectory($fileName)) {

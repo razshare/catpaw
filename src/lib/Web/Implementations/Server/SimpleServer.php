@@ -1,12 +1,14 @@
 <?php
 
-namespace CatPaw\Web;
+namespace CatPaw\Web\Implementations\Server;
 
 use Amp\CompositeException;
 use Amp\DeferredFuture;
 use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
+
+use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\SocketHttpServer;
 use CatPaw\Core\Bootstrap;
 use CatPaw\Core\Container;
@@ -17,54 +19,18 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Signal;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\Interfaces\FileServerInterface;
+use CatPaw\Web\Interfaces\RouteResolverInterface;
+use CatPaw\Web\Interfaces\RouterInterface;
+use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\SessionInterface;
+use CatPaw\Web\ServerErrorHandler;
+use CatPaw\Web\SessionWithMemory;
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use Throwable;
 
-class Server {
-    private static Server $singleton;
-    /** @var array<callable(HttpServer):(void|Unsafe<void>)> */
-    private static array $onStartListeners = [];
-
-    /**
-     * Invoke a function when the server starts.
-     * @param  callable(HttpServer):(void|Unsafe<void>) $function the function to invoke, with the http server as parameter.
-     * @return Unsafe<None>
-     */
-    public static function onStart(callable $function):Unsafe {
-        self::$onStartListeners[] = $function;
-        if (isset(self::$singleton) && isset(self::$singleton->httpServer) && self::$singleton->httpServerStarted) {
-            $result = $function(self::$singleton->httpServer);
-            if ($result instanceof Unsafe) {
-                $result->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-            }
-        }
-        return ok();
-    }
-
-    /**
-     *  Get the server singleton.
-     * @return Server
-     */
-    public static function get(): Server {
-        if (isset(self::$singleton)) {
-            return self::$singleton;
-        }
-
-
-        
-
-        return self::$singleton = new self(router           : Router::create());
-    }
-
+class SimpleServer implements ServerInterface {
     private SocketHttpServer $httpServer;
-    private RouteResolver $resolver;
-    private FileServerInterface $fileServer;
     private bool $httpServerStarted = false;
 
     /** @var array<Middleware> */
@@ -83,10 +49,37 @@ class Server {
     private array $allowedMethods = [];
 
     /**
-     * @param  Router $router
+     * @param  RouterInterface $router
      * @return void
      */
-    private function __construct(public readonly Router $router) {
+    public function __construct(
+        public readonly RouterInterface $router,
+        public readonly LoggerInterface $logger,
+        public readonly RouteResolverInterface $routeResolver,
+        public readonly RequestHandler $requestHandler,
+    ) {
+    }
+
+    /** @var array<callable(HttpServer):(void|Unsafe<void>)> */
+    private array $onStartListeners = [];
+
+    /**
+     * Invoke a function when the server starts.
+     * @param  callable(HttpServer):(void|Unsafe<void>) $function the function to invoke, with the http server as parameter.
+     * @return Unsafe<None>
+     */
+    public function onStart(callable $function):Unsafe {
+        $this->onStartListeners[] = $function;
+        if (isset($this->httpServer) && $this->httpServerStarted) {
+            $result = $function($this->httpServer);
+            if ($result instanceof Unsafe) {
+                $result->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
+        }
+        return ok();
     }
 
     public function getStaticsLocation():string {
@@ -95,8 +88,7 @@ class Server {
 
     /**
      * List of middlewares to execute.
-     * @param  array<Middleware> $middlewares
-     * @return Server
+     * @param array<Middleware> $middlewares
      */
     public function widthMiddlewares(array $middlewares):self {
         $this->middlewares = $middlewares;
@@ -107,8 +99,7 @@ class Server {
      * Interface to bind to.\
      * For example `0.0.0.0:80`.\
      * The default interface is `127.0.0.1:8080`.
-     * @param  string $interface
-     * @return Server
+     * @param string $interface
      */
     public function withInterface(string $interface):self {
         $this->interface = $interface;
@@ -122,8 +113,7 @@ class Server {
 
     /**
      * The prefix of the api.
-     * @param  string $apiPrefix
-     * @return Server
+     * @param string $apiPrefix
      */
     public function withApiPrefix(string $apiPrefix):self {
         if (!str_starts_with($apiPrefix, '/')) {
@@ -136,8 +126,7 @@ class Server {
     /**
      * Where to serve the api from.\
      * This path should contain your `get.php`, `post.php` (etc) files.
-     * @param  string $apiLocation
-     * @return Server
+     * @param string $apiLocation
      */
     public function withApiLocation(string $apiLocation):self {
         $this->apiLocation = $apiLocation;
@@ -146,8 +135,7 @@ class Server {
 
     /**
      * Where to serve static files from.
-     * @param  string $staticsLocation
-     * @return Server
+     * @param string $staticsLocation
      */
     public function withStaticsLocation(string $staticsLocation):self {
         $this->staticsLocation = $staticsLocation;
@@ -156,7 +144,6 @@ class Server {
 
     /**
      * Enables compression.
-     * @return Server
      */
     public function withCompression():self {
         $this->compression = true;
@@ -179,21 +166,10 @@ class Server {
     }
 
     /**
-     * 
-     * @param  array<string> $allowedMethods
-     * @return Server
+     * @param array<string> $allowedMethods
      */
     public function withAllowedMethods(array $allowedMethods):self {
         $this->allowedMethods = $allowedMethods;
-        return $this;
-    }
-
-    public function middleware(Middleware $middleware): void {
-        $this->middlewares[] = $middleware;
-    }
-
-    public function setFileServer(FileServerInterface $fileServer):self {
-        $this->fileServer = $fileServer;
         return $this;
     }
 
@@ -214,9 +190,7 @@ class Server {
             Container::provide(SessionInterface::class, SessionWithMemory::create(...));
         }
 
-        self::initializeRoutes(
-            logger: $logger,
-            router: $this->router,
+        $this->initializeRoutes(
             apiPrefix: $this->apiPrefix,
             apiLocation: $this->apiLocation,
         )->unwrap($error);
@@ -229,8 +203,6 @@ class Server {
             $this->stop();
         });
 
-        $this->resolver = RouteResolver::create($this);
-
         if (isset($this->httpServer)) {
             if ($this->httpServerStarted) {
                 return error("Server already started.");
@@ -239,14 +211,6 @@ class Server {
         }
         $endSignal = new DeferredFuture;
         try {
-            if (!isset($this->fileServer)) {
-                $fileServer = FileServer::create($this)->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-                $this->fileServer = $fileServer;
-            }
-
             $stopper = function(string $callbackId) {
                 EventLoop::cancel($callbackId);
                 Bootstrap::kill();
@@ -257,11 +221,10 @@ class Server {
             EventLoop::onSignal(SIGQUIT, $stopper);
             EventLoop::onSignal(SIGTERM, $stopper);
 
-            $requestHandler   = ServerRequestHandler::create($logger, $this->fileServer, $this->resolver);
-            $stackedHandler   = stackMiddleware($requestHandler, ...$this->middlewares);
+            $stackedHandler   = stackMiddleware($this->requestHandler, ...$this->middlewares);
             $errorHandler     = ServerErrorHandler::create($logger);
             $this->httpServer = SocketHttpServer::createForDirectAccess(
-                logger: $logger,
+                logger: $this->logger,
                 enableCompression: $this->compression,
                 connectionLimit: $this->connectionLimit,
                 connectionLimitPerIp: $this->connectionLimitPerIp,
@@ -283,7 +246,7 @@ class Server {
                 $ready->send();
             }
 
-            foreach (self::$onStartListeners as $function) {
+            foreach ($this->onStartListeners as $function) {
                 $result = $function($this->httpServer);
                 if ($result instanceof Unsafe) {
                     $result->unwrap($error);
@@ -320,19 +283,11 @@ class Server {
     }
 
     /**
-     * ù
-     * @param  LoggerInterface $logger
-     * @param  Router          $router
-     * @param  string          $apiPrefix
-     * @param  string          $apiLocation
+     * @param  string       $apiPrefix
+     * @param  string       $apiLocation
      * @return Unsafe<None>
      */
-    private static function initializeRoutes(
-        LoggerInterface $logger,
-        Router $router,
-        string $apiPrefix,
-        string $apiLocation,
-    ): Unsafe {
+    private function initializeRoutes(string $apiPrefix, string $apiLocation): Unsafe {
         if ($apiLocation) {
             $flatList = Directory::flat($apiLocation)->unwrap($error);
             if ($error) {
@@ -356,7 +311,7 @@ class Server {
                         }
 
                         if (!preg_match('/^(.*)(\.|\/)(.*)$/', $fileName, $matches)) {
-                            $logger->error("Invalid api path for $fileName.", ["matches" => $matches]);
+                            $this->logger->error("Invalid api path for $fileName.", ["matches" => $matches]);
                             continue;
                         }
 
@@ -364,16 +319,16 @@ class Server {
                         $symbolicPath   = preg_replace(['/^\/+/','/\/index$/'], ['/',''], $symbolicPath);
                         $symbolicMethod = strtoupper($matches[3] ?? 'get');
 
-                        $routeExists = $router->routeExists($symbolicMethod, $symbolicPath);
+                        $routeExists = $this->router->routeExists($symbolicMethod, $symbolicPath);
 
                         if (!$routeExists) {
                             $cwd = dirname($apiLocation.$fileName)?:'';
-                            $router->initialize($symbolicMethod, $symbolicPath, $handler, $cwd)->unwrap($error);
+                            $this->router->initialize($symbolicMethod, $symbolicPath, $handler, $cwd)->unwrap($error);
                             if ($error) {
                                 return error($error);
                             }
                         } else {
-                            $logger->info("Route `$symbolicMethod $symbolicPath` already exists. Will not overwrite.");
+                            $this->logger->info("Route `$symbolicMethod $symbolicPath` already exists. Will not overwrite.");
                         }
                     }
                 }

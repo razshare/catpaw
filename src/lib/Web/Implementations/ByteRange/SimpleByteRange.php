@@ -1,9 +1,8 @@
 <?php
 
-namespace CatPaw\Web\Services;
+namespace CatPaw\Web\Implementations\ByteRange;
 
 use Amp\Http\Server\Response;
-use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\duplex;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
@@ -13,6 +12,7 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use function CatPaw\Core\uuid;
 use CatPaw\Web\HttpStatus;
+use CatPaw\Web\Interfaces\ByteRangeInterface;
 use CatPaw\Web\Interfaces\ByteRangeWriterInterface;
 use CatPaw\Web\Mime;
 use InvalidArgumentException;
@@ -20,9 +20,8 @@ use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use SplFixedArray;
 
-#[Service]
-class ByteRangeService {
-    public function __construct(private LoggerInterface $logger) {
+readonly class SimpleByteRange implements ByteRangeInterface {
+    public function __construct(public LoggerInterface $logger) {
     }
 
     /**
@@ -214,10 +213,7 @@ class ByteRangeService {
      * @param  string           $rangeQuery
      * @return Unsafe<Response>
      */
-    public function file(
-        string $fileName,
-        string $rangeQuery,
-    ):Unsafe {
+    public function file(string $fileName, string $rangeQuery):Unsafe {
         return $this->response(
             interface: new class($rangeQuery, $fileName) implements ByteRangeWriterInterface {
                 private File $file;

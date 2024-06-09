@@ -1,7 +1,7 @@
 <?php
 namespace CatPaw\Web;
 
-use CatPaw\Web\Services\OpenApiService;
+use CatPaw\Web\Interfaces\OpenApiInterface;
 use function count;
 use function explode;
 use function is_array;
@@ -9,11 +9,11 @@ use function is_array;
 trait SchemaEncoder {
     /**
      *
-     * @param  OpenApiService $api
-     * @param  array<mixed>   $schema
+     * @param  OpenApiInterface $api
+     * @param  array<mixed>     $schema
      * @return array<mixed>
      */
-    private function unwrap(OpenApiService $api, array $schema):array {
+    private function unwrap(OpenApiInterface $api, array $schema):array {
         $properties = [];
         $len        = count($schema);
         if (1 === $len && isset($schema[0])) {

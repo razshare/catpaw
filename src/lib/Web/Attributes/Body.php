@@ -35,9 +35,9 @@ class Body implements AttributeInterface, OnParameterMount {
             return error("No context provided for body.");
         }
 
-        $uwnrappedType = ReflectionTypeManager::unwrap($reflection);
+        $unwrappedType = ReflectionTypeManager::unwrap($reflection);
 
-        $className = $uwnrappedType?$uwnrappedType->getName():'';
+        $className = $unwrappedType?$unwrappedType->getName():'';
 
         try {
             $result = match ($className) {

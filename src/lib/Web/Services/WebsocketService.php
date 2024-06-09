@@ -10,7 +10,7 @@ use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Service;
 use CatPaw\Core\None;
 use CatPaw\Core\Unsafe;
-use CatPaw\Web\Server;
+use CatPaw\Web\Interfaces\ServerInterface;
 use Psr\Log\LoggerInterface;
 
 #[Service]
@@ -18,6 +18,7 @@ class WebsocketService {
     private HttpServer $httpServer;
     public function __construct(
         private LoggerInterface $logger,
+        private ServerInterface $server,
     ) {
     }
 
@@ -25,12 +26,17 @@ class WebsocketService {
      * @return Unsafe<None>
      */
     #[Entry] function start():Unsafe {
-        return Server::onStart(function(HttpServer $httpServer) {
+        return $this->server->onStart(function(HttpServer $httpServer) {
             $this->httpServer = $httpServer;
         });
     }
 
-    public function create(WebsocketClientHandler $clientHandler):Websocket {
+    /**
+     * Handle the websocket connection by reading from and writing to it.
+     * @param  WebsocketClientHandler $clientHandler
+     * @return Websocket
+     */
+    public function handle(WebsocketClientHandler $clientHandler):Websocket {
         $acceptor = new Rfc6455Acceptor;
         return new Websocket($this->httpServer, $this->logger, $acceptor, $clientHandler);
     }

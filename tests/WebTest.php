@@ -11,7 +11,9 @@ use CatPaw\Core\Signal;
 use const CatPaw\Web\APPLICATION_JSON;
 use const CatPaw\Web\APPLICATION_XML;
 use CatPaw\Web\Attributes\Param;
-use CatPaw\Web\Server;
+use CatPaw\Web\Interfaces\RouterInterface;
+use CatPaw\Web\Interfaces\ServerInterface;
+
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
 use const CatPaw\Web\TEXT_PLAIN;
@@ -20,16 +22,18 @@ use PHPUnit\Framework\TestCase;
 
 class WebTest extends TestCase {
     public function testAll():void {
+        Container::provideDefaults("Test")->unwrap($error);
+        $this->assertNull($error);
         Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         Container::provide(HttpClient::class, HttpClientBuilder::buildDefault());
-        $server = Server::get()
+        $server = Container::get(ServerInterface::class)->unwrap($error);
+        $this->assertNull($error);
+        $server
             ->withInterface('127.0.0.1:5858')
             ->withApiLocation(asFileName(__DIR__, './api'))
             ->withStaticsLocation(asFileName(__DIR__, './www'))
             ->withApiPrefix('api');
-
-        Container::provide(Server::class, $server);
 
         $readySignal = Signal::create();
 
@@ -43,7 +47,7 @@ class WebTest extends TestCase {
                 yield Container::run($this->makeSureParamHintsWork(...));
                 yield Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...));
                 yield Container::run($this->makeSureFilterWorksCorrectly(...));
-                yield Container::run($this->makeSureTwigWorksCorrectly(...));
+                yield Container::run($this->makeSureLatteWorksCorrectly(...));
             })->unwrap($error);
             if ($error) {
                 $this->assertNull($error);
@@ -97,9 +101,9 @@ class WebTest extends TestCase {
         $this->assertJson($actualBody);
     }
 
-    private function makeSureProducesHintsWork(Server $server): void {
-        $api         = $server->router->findRoute('GET', '/api');
-        $apiUsername = $server->router->findRoute('GET', '/api/{username}');
+    private function makeSureProducesHintsWork(RouterInterface $router): void {
+        $api         = $router->findRoute('GET', '/api');
+        $apiUsername = $router->findRoute('GET', '/api/{username}');
 
         $this->assertTrue((bool)$api);
         $this->assertTrue((bool)$apiUsername);
@@ -128,8 +132,8 @@ class WebTest extends TestCase {
         $this->assertEquals("text/html", $response2->getHeader("Content-Type"));
     }
 
-    private function makeSureParamHintsWork(Server $server, HttpClient $http): void {
-        $server->router->get("/get-with-params/{name}", fn (#[Param] string $name) => success("hello $name"));
+    private function makeSureParamHintsWork(RouterInterface $router, HttpClient $http): void {
+        $router->get("/get-with-params/{name}", fn (#[Param] string $name) => success("hello $name"));
         $response = $http->request(new Request("http://127.0.0.1:5858/get-with-params/user1"));
         $this->assertEquals("hello user1", $response->getBody()->buffer());
         $response = $http->request(new Request("http://127.0.0.1:5858/get-with-params/user2"));
@@ -171,8 +175,8 @@ class WebTest extends TestCase {
         $this->assertEquals('counter > :counter and id = :id and group = :group and tag like :tag', $filter);
     }
 
-    public function makeSureTwigWorksCorrectly(HttpClient $http):void {
-        $response = $http->request(new Request('http://127.0.0.1:5858/api/twig/world', "GET"));
+    public function makeSureLatteWorksCorrectly(HttpClient $http):void {
+        $response = $http->request(new Request('http://127.0.0.1:5858/api/latte/world', "GET"));
         $content  = $response->getBody()->buffer();
         $this->assertEquals('hello world', $content);
     }

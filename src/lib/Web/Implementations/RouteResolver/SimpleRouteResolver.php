@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\Web;
+namespace CatPaw\Web\Implementations\RouteResolver;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
@@ -8,27 +8,36 @@ use Amp\Http\Server\Response;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
+use CatPaw\Web\HttpStatus;
+use CatPaw\Web\Interfaces\HttpInvokerInterface;
+use CatPaw\Web\Interfaces\RouteResolverInterface;
+use CatPaw\Web\Interfaces\RouterInterface;
+use CatPaw\Web\PathResolver;
+use CatPaw\Web\RequestContext;
 use Psr\Http\Message\UriInterface;
 use ReflectionFunction;
 
 use Throwable;
 
-class RouteResolver {
+class SimpleRouteResolver implements RouteResolverInterface {
     /** @var array<string,PathResolver> */
-    private static array $cache = [];
+    private array $cache = [];
+
+    public function __construct(
+        public readonly RouterInterface $router,
+        public readonly HttpInvokerInterface $httpInvoker,
+    ) {
+    }
 
     /**
      * @param  Request                $request
      * @return Unsafe<false|Response>
      */
     public function resolve(Request $request):Unsafe {
-        $server = $this->server;
-        $router = $server->router;
-
         $requestMethod  = $request->getMethod();
         $symbolicMethod = $requestMethod;
 
-        $routes = $router->findRoutesByMethod($requestMethod);
+        $routes = $this->router->findRoutesByMethod($requestMethod);
 
 
         $requestPathParameters = false;
@@ -42,9 +51,9 @@ class RouteResolver {
             $function    = $route->function;
             $requestPath = urldecode($request->getUri()->getPath());
 
-            if (isset(self::$cache[$key])) {
+            if (isset($this->cache[$key])) {
                 /** @var PathResolver $pathResolver */
-                $pathResolver      = self::$cache[$key];
+                $pathResolver      = $this->cache[$key];
                 $parametersWrapper = $pathResolver->findParametersFromPath($requestPath);
                 if ($parametersWrapper->ok) {
                     if ($parametersWrapper->badRequestEntries) {
@@ -75,7 +84,7 @@ class RouteResolver {
                 return error($error);
             }
 
-            self::$cache[$key] = $pathResolver;
+            $this->cache[$key] = $pathResolver;
 
 
             $requestPathParametersWrapper = $pathResolver->findParametersFromPath($requestPath);
@@ -99,7 +108,6 @@ class RouteResolver {
         $context        = RequestContext::create(
             key: "$symbolicMethod:$symbolicPath",
             route: $route,
-            server: $server,
             request: $request,
             requestQueries: $requestQueries,
             requestPathParameters: $requestPathParameters?:[],
@@ -107,12 +115,13 @@ class RouteResolver {
         );
 
         try {
-            $result = $this->invoker->invoke($context)->unwrap($error);
+            $result = $this->httpInvoker->invoke($context)->unwrap($invokeError);
         } catch(Throwable $error) {
             return error($error);
         }
-        if ($error) {
-            return error($error);
+
+        if ($invokeError) {
+            return error($invokeError);
         }
 
         /** @var Unsafe<false|Response> */
@@ -146,14 +155,5 @@ class RouteResolver {
         return new Response(HttpStatus::FOUND, [
             "Location" => preg_replace('/^http/', 'https', (string)$uri),
         ]);
-    }
-
-    public static function create(Server $server):self {
-        return new self($server);
-    }
-
-    public HttpInvoker $invoker;
-    private function __construct(private Server $server) {
-        $this->invoker = HttpInvoker::create();
     }
 }
