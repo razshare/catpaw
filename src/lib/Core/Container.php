@@ -267,7 +267,7 @@ class Container {
             if ($error) {
                 return error($error);
             }
-            Container::set(LoggerInterface::class, $logger);
+            Container::provide(LoggerInterface::class, $logger);
         } else {
             $logger = Container::get(LoggerInterface::class)->unwrap($error);
             if ($error) {
@@ -421,23 +421,17 @@ class Container {
 
     /**
      * Set a provider.
-     * @param  string   $name  The name to provide.
-     * @param  callable $value The value to provide.
+     * @param  string          $name  The name to provide.
+     * @param  callable|object $value If it's an object the container will provide the object as a singleton, 
+     *                                otherwise if it's a callable the container will invoke it to provide the dependency.
      * @return void
      */
-    public static function provide(string $name, callable $value): void {
-        Singleton::unset($name);
-        Provider::set($name, $value);
-        return;
-    }
-
-    /**
-     * Set a singleton.
-     * @param  string $name  The (class) name of the singleton.
-     * @param  object $value The value of the singleton.
-     * @return void
-     */
-    public static function set(string $name, object $value): void {
+    public static function provide(string $name, callable|object $value): void {
+        if (is_callable($value)) {
+            Singleton::unset($name);
+            Provider::set($name, $value);
+            return;
+        }
         Provider::unset($name);
         Singleton::set($name, $value);
     }
@@ -466,36 +460,36 @@ class Container {
 
         return anyError(function() use ($name) {
             $logger = LoggerFactory::create($name)->try();
-            Container::set(LoggerInterface::class, $logger);
+            Container::provide(LoggerInterface::class, $logger);
             
             Container::provide(HttpClient::class, fn () => HttpClientBuilder::buildDefault());
 
             $byteRange = new SimpleByteRange(logger: $logger);
-            Container::set(ByteRangeInterface::class, $byteRange);
+            Container::provide(ByteRangeInterface::class, $byteRange);
             
             $openApiState = new SimpleOpenApiState();
-            Container::set(OpenApiStateInterface::class, $openApiState);
+            Container::provide(OpenApiStateInterface::class, $openApiState);
             
             $openApi = new SimpleOpenApi(openApiState: $openApiState);
-            Container::set(OpenApiInterface::class, $openApi);
+            Container::provide(OpenApiInterface::class, $openApi);
             
             $router = new SimpleRouter(openApiState: $openApiState);
-            Container::set(RouterInterface::class, $router);
+            Container::provide(RouterInterface::class, $router);
             
             $viewEngine = new LatteViewEngine(logger: $logger);
-            Container::set(ViewEngineInterface::class, $viewEngine);
+            Container::provide(ViewEngineInterface::class, $viewEngine);
             
             $httpInvoker = new SimpleHttpInvoker(viewEngine:$viewEngine);
-            Container::set(HttpInvokerInterface::class, $httpInvoker);
+            Container::provide(HttpInvokerInterface::class, $httpInvoker);
             
             $routeResolver = new SimpleRouteResolver(router: $router, httpInvoker: $httpInvoker);
-            Container::set(RouteResolverInterface::class, $routeResolver);
+            Container::provide(RouteResolverInterface::class, $routeResolver);
             
             $fileServer = new SimpleFileServer(logger: $logger, byteRange: $byteRange);
-            Container::set(FileServerInterface::class, $fileServer);
+            Container::provide(FileServerInterface::class, $fileServer);
             
             $requestHandler = new SimpleRequestHandler(logger: $logger, fileServer: $fileServer, routeResolver: $routeResolver);
-            Container::set(RequestHandler::class, $requestHandler);
+            Container::provide(RequestHandler::class, $requestHandler);
             
             $server = new SimpleServer(
                 router: $router,
@@ -504,7 +498,7 @@ class Container {
                 requestHandler: $requestHandler,
                 viewEngine: $viewEngine,
             );
-            Container::set(ServerInterface::class, $server);
+            Container::provide(ServerInterface::class, $server);
             
             self::$defaultsProvided = true;
             return ok();
