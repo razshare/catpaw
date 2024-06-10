@@ -23,6 +23,7 @@ use CatPaw\Web\Interfaces\RouteResolverInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\SessionInterface;
+use CatPaw\Web\Interfaces\ViewEngineInterface;
 use CatPaw\Web\ServerErrorHandler;
 use CatPaw\Web\SessionWithMemory;
 use Psr\Log\LoggerInterface;
@@ -57,6 +58,7 @@ class SimpleServer implements ServerInterface {
         public readonly LoggerInterface $logger,
         public readonly RouteResolverInterface $routeResolver,
         public readonly RequestHandler $requestHandler,
+        public readonly ViewEngineInterface $viewEngine,
     ) {
     }
 
@@ -186,7 +188,7 @@ class SimpleServer implements ServerInterface {
             return error($error);
         }
 
-        if (!Container::isProvided(SessionInterface::class)) {
+        if (!Container::isProvidedOrExists(SessionInterface::class)) {
             Container::provide(SessionInterface::class, SessionWithMemory::create(...));
         }
 
@@ -289,6 +291,11 @@ class SimpleServer implements ServerInterface {
      */
     private function initializeRoutes(string $apiPrefix, string $apiLocation): Unsafe {
         if ($apiLocation) {
+            $this->viewEngine->loadComponentsFromDirectory($apiLocation)->unwrap($error);
+            if ($error) {
+                return error($error);
+            }
+
             $flatList = Directory::flat($apiLocation)->unwrap($error);
             if ($error) {
                 return error($error);

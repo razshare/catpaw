@@ -76,7 +76,7 @@ class Bootstrap {
         bool $dieOnChange = false,
     ): void {
         try {
-            Container::provideDefaults($name)->unwrap($provideError);
+            Container::loadDefaults($name)->unwrap($provideError);
             if ($provideError) {
                 self::kill((string)$provideError);
             }
@@ -218,7 +218,7 @@ class Bootstrap {
             EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
             EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
             
-            Container::provideDefaults("Watcher")->unwrap($provideError);
+            Container::loadDefaults("Watcher")->unwrap($provideError);
             if ($provideError) {
                 self::kill((string)$provideError);
             }
@@ -232,7 +232,7 @@ class Bootstrap {
                 $libraries,
                 $resources,
             ) {
-                if (!Container::isProvided(LoggerInterface::class)) {
+                if (!Container::isProvidedOrExists(LoggerInterface::class)) {
                     $logger = LoggerFactory::create()->unwrap($error);
                     if ($error) {
                         return error($error);

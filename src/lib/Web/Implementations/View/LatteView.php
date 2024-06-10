@@ -47,8 +47,12 @@ class LatteView implements ViewInterface {
         return $this;
     }
 
-    public function withProperties(array $properties): self {
-        $this->properties = $properties;
+    public function withProperties(object|array $properties): self {
+        if (is_object($properties)) {
+            $this->properties = (array)$properties;
+        } else {
+            $this->properties = $properties;
+        }
         return $this;
     }
 

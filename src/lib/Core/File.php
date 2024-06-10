@@ -156,6 +156,43 @@ readonly class File {
     }
 
     /**
+     * Write contents to a file.\
+     * If the file doesn't exist it will be created.
+     * @param  string       $filename
+     * @return Unsafe<None>
+     */
+    public static function writeFile(string $filename, string $contents):Unsafe {
+        $file = File::open($filename, 'w+')->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        $file->write($contents)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        $file->close();
+        return ok();
+    }
+
+    /**
+     * Read the contents of a file.
+     * @param  string         $filename
+     * @return Unsafe<string>
+     */
+    public static function readFile(string $filename):Unsafe {
+        $file = File::open($filename)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        $contents = $file->readAll()->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        $file->close();
+        return ok($contents);
+    }
+
+    /**
      * Open a file.
      * @param string $fileName name of the file to open.
      * @param string $mode     specifies the type of access you require to the stream. It may be any of the following:

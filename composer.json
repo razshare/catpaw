@@ -112,7 +112,8 @@
     "amphp/http-client": "^5.0",
     "amphp/parallel": "^2.0",
     "amphp/websocket-server": "^4.0",
-    "latte/latte": "^3.0"
+    "latte/latte": "^3.0",
+    "amphp/http-server-form-parser": "^2.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.8",

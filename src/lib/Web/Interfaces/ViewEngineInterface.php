@@ -29,22 +29,28 @@ interface ViewEngineInterface {
     public function loadComponentsFromDirectory(string $directoryName):Unsafe;
 
     /**
-     * @param  string       $componentName The name of the component.
-     * @param  string       $short         A short name for the component.
-     * @param  string       $fileName      The name of the file containing the source code of the component.
+     * @param  string        $componentFullName The full name of the component.
+     * @param  array<string> $componentAliases  A list of aliases for the component.
+     * @param  string        $fileName          The name of the file containing the source code of the component.
      * @return Unsafe<None>
      */
-    public function loadComponentFromFile(string $componentName, string $short, string $fileName):Unsafe;
+    public function loadComponentFromFile(string $componentFullName, array $componentAliases, string $fileName):Unsafe;
 
 
 
     /**
-     * @param  string       $componentName The name of the component.
-     * @param  string       $short         A short name for the component.
-     * @param  string       $source        The source code of the component.
+     * @param  string        $componentFullName The full name of the component.
+     * @param  array<string> $componentAliases  A list of aliases for the component.
+     * @param  string        $source            The source code of the component.
      * @return Unsafe<None>
      */
-    public function loadComponentFromSource(string $componentName, string $short, string $source):Unsafe;
+    public function loadComponentFromSource(string $componentFullName, array $componentAliases, string $source):Unsafe;
+
+    /**
+     * @param  string $name The name or alias of the component.
+     * @return bool
+     */
+    public function hasComponent(string $name):bool;
 
     /**
      * Render a component.
@@ -52,5 +58,5 @@ interface ViewEngineInterface {
      * @param  array<string,mixed> $params
      * @return Unsafe<string>
      */
-    public function render(string $componentName, array $params):Unsafe ;
+    public function render(string $componentName, array $params):Unsafe;
 }

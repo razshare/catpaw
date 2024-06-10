@@ -1,7 +1,7 @@
 <?php
 use const CatPaw\Web\APPLICATION_JSON;
-use CatPaw\Web\Attributes\Body;
 use CatPaw\Web\Attributes\Consumes;
+use CatPaw\Web\Body;
 use function CatPaw\Web\success;
 
 class SchemaConsumeSomething {
@@ -13,4 +13,4 @@ class SchemaConsumeSomething {
 
 return
 #[Consumes(APPLICATION_JSON, SchemaConsumeSomething::class)]
-fn (#[Body] array $data) => success($data)->as(APPLICATION_JSON);
+fn (Body $body) => success($body->asText())->as(APPLICATION_JSON);

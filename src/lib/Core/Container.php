@@ -5,6 +5,8 @@ namespace CatPaw\Core;
 use function Amp\File\isDirectory;
 use function Amp\File\isFile;
 
+use Amp\Http\Client\HttpClient;
+use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Server\RequestHandler;
 use Attribute;
 use CatPaw\Core\Attributes\Entry;
@@ -260,12 +262,12 @@ class Container {
             Container::clear();
         }
 
-        if (!Container::isProvided(LoggerInterface::class)) {
+        if (!Container::isProvidedOrExists(LoggerInterface::class)) {
             $logger = LoggerFactory::create()->unwrap($error);
             if ($error) {
                 return error($error);
             }
-            Container::provide(LoggerInterface::class, $logger);
+            Container::set(LoggerInterface::class, $logger);
         } else {
             $logger = Container::get(LoggerInterface::class)->unwrap($error);
             if ($error) {
@@ -409,28 +411,33 @@ class Container {
     }
 
     /**
-     * Check if a name is provided by the container by either a singleton or a provider function (in that order).
+     * Check if a name is provided or if it matches any singleton (in that order).
      * @param  string $name
      * @return bool
      */
-    public static function isProvided(string $name): bool {
-        return Singleton::exists($name) || Provider::exists($name);
+    public static function isProvidedOrExists(string $name): bool {
+        return  Provider::exists($name) || Singleton::exists($name);
     }
 
     /**
-     * Set a provider or a singleton.
-     * @param  string          $name
-     * @param  callable|object $value The value to set.\
-     *                                If the `$value` is a `callable` then the container treats it as a provider,
-     *                                otherwise it treats it as a cached singleton.
+     * Set a provider.
+     * @param  string   $name  The name to provide.
+     * @param  callable $value The value to provide.
      * @return void
      */
-    public static function provide(string $name, callable|object $value): void {
-        if (is_callable($value)) {
-            Singleton::unset($name);
-            Provider::set($name, $value);
-            return;
-        }
+    public static function provide(string $name, callable $value): void {
+        Singleton::unset($name);
+        Provider::set($name, $value);
+        return;
+    }
+
+    /**
+     * Set a singleton.
+     * @param  string $name  The (class) name of the singleton.
+     * @param  object $value The value of the singleton.
+     * @return void
+     */
+    public static function set(string $name, object $value): void {
         Provider::unset($name);
         Singleton::set($name, $value);
     }
@@ -448,51 +455,58 @@ class Container {
     private static bool $defaultsProvided = false;
 
     /**
-     * Provide defaults dependencies.
+     * Load defaults providers and singletons.
      * @param  string       $name
      * @return Unsafe<None>
      */
-    public static function provideDefaults(string $name):Unsafe {
+    public static function loadDefaults(string $name):Unsafe {
         if (self::$defaultsProvided) {
             return ok();
         }
 
         return anyError(function() use ($name) {
             $logger = LoggerFactory::create($name)->try();
-            Container::provide(LoggerInterface::class, $logger);
+            Container::set(LoggerInterface::class, $logger);
+            
+            Container::provide(HttpClient::class, fn () => HttpClientBuilder::buildDefault());
 
             $byteRange = new SimpleByteRange(logger: $logger);
-            Container::provide(ByteRangeInterface::class, $byteRange);
+            Container::set(ByteRangeInterface::class, $byteRange);
             
             $openApiState = new SimpleOpenApiState();
-            Container::provide(OpenApiStateInterface::class, $openApiState);
+            Container::set(OpenApiStateInterface::class, $openApiState);
             
             $openApi = new SimpleOpenApi(openApiState: $openApiState);
-            Container::provide(OpenApiInterface::class, $openApi);
+            Container::set(OpenApiInterface::class, $openApi);
             
             $router = new SimpleRouter(openApiState: $openApiState);
-            Container::provide(RouterInterface::class, $router);
+            Container::set(RouterInterface::class, $router);
             
             $viewEngine = new LatteViewEngine(logger: $logger);
-            Container::provide(ViewEngineInterface::class, $viewEngine);
+            Container::set(ViewEngineInterface::class, $viewEngine);
             
             $httpInvoker = new SimpleHttpInvoker(viewEngine:$viewEngine);
-            Container::provide(HttpInvokerInterface::class, $httpInvoker);
+            Container::set(HttpInvokerInterface::class, $httpInvoker);
             
             $routeResolver = new SimpleRouteResolver(router: $router, httpInvoker: $httpInvoker);
-            Container::provide(RouteResolverInterface::class, $routeResolver);
+            Container::set(RouteResolverInterface::class, $routeResolver);
             
             $fileServer = new SimpleFileServer(logger: $logger, byteRange: $byteRange);
-            Container::provide(FileServerInterface::class, $fileServer);
+            Container::set(FileServerInterface::class, $fileServer);
             
             $requestHandler = new SimpleRequestHandler(logger: $logger, fileServer: $fileServer, routeResolver: $routeResolver);
-            Container::provide(RequestHandler::class, $requestHandler);
+            Container::set(RequestHandler::class, $requestHandler);
             
-            $server = new SimpleServer(router: $router, logger: $logger, routeResolver: $routeResolver, requestHandler: $requestHandler);
-            Container::provide(ServerInterface::class, $server);
+            $server = new SimpleServer(
+                router: $router,
+                logger: $logger,
+                routeResolver: $routeResolver,
+                requestHandler: $requestHandler,
+                viewEngine: $viewEngine,
+            );
+            Container::set(ServerInterface::class, $server);
             
             self::$defaultsProvided = true;
-            $all                    = Singleton::getAll();
             return ok();
         });
     }

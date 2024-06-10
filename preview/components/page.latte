@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
+    {block head}
+        <title>Document</title>
+    {/block}
 </head>
 <body>
-    {% include "hmr.twig" %}
-
-    {% block slot %}
-        
-    {% endblock %}
+    {block body}{/block}
 </body>
 </html>

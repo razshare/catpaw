@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
     public function testAll():void {
-        Container::provideDefaults("Test")->unwrap($error);
+        Container::loadDefaults("Test")->unwrap($error);
         $this->assertNull($error);
         Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);

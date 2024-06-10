@@ -2,7 +2,6 @@
 namespace Tests;
 
 use Amp\Http\Client\HttpClient;
-use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
@@ -22,11 +21,10 @@ use PHPUnit\Framework\TestCase;
 
 class WebTest extends TestCase {
     public function testAll():void {
-        Container::provideDefaults("Test")->unwrap($error);
+        Container::loadDefaults("Test")->unwrap($error);
         $this->assertNull($error);
         Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
-        Container::provide(HttpClient::class, HttpClientBuilder::buildDefault());
         $server = Container::get(ServerInterface::class)->unwrap($error);
         $this->assertNull($error);
         $server

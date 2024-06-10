@@ -7,12 +7,19 @@ use Amp\Http\Server\Response;
 use Amp\Websocket\Server\WebsocketClientHandler;
 
 use CatPaw\Core\Container;
+use function CatPaw\Core\error;
+
+use CatPaw\Core\None;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Unsafe;
 use CatPaw\Web\Implementations\View\LatteView;
 use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Interfaces\ViewEngineInterface;
 use CatPaw\Web\Interfaces\ViewInterface;
-use CatPaw\Web\Services\WebsocketService;
-use Psr\Http\Message\UriInterface;
 
+use CatPaw\Web\Services\WebsocketService;
+
+use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -169,4 +176,74 @@ function websocket(Request $request, WebsocketClientHandler $handler): ResponseM
 
 function view():ViewInterface {
     return new LatteView;
+}
+
+/**
+ * 
+ * @param  string       $directoryName
+ * @return Unsafe<None>
+ */
+function loadComponentsFromDirectory(string $directoryName):Unsafe {
+    /** @var false|ViewEngineInterface */
+    static $viewEngine = false;
+    if (!$viewEngine) {
+        $viewEngine = Container::get(ViewEngineInterface::class)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+    }
+    
+    $viewEngine->loadComponentsFromDirectory($directoryName)->unwrap($loadError);
+    if ($loadError) {
+        return error($loadError);
+    }
+    return ok();
+}
+
+/**
+ * Load a component from the contents of a file.
+ * @param  string        $componentFullName Full name of the component.
+ * @param  array<string> $componentAliases  A list of aliases for the component.
+ * @param  string        $fileName          Path of the file.
+ * @return Unsafe<None>
+ */
+function loadComponentFromFile(string $componentFullName, array $componentAliases, string $fileName):Unsafe {
+    /** @var false|ViewEngineInterface */
+    static $viewEngine = false;
+    if (!$viewEngine) {
+        $viewEngine = Container::get(ViewEngineInterface::class)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+    }
+
+    $viewEngine->loadComponentFromFile($componentFullName, $componentAliases, $fileName)->unwrap($loadError);
+    if ($loadError) {
+        return error($loadError);
+    }
+    return ok();
+}
+
+/**
+ * Load a component from the contents of source code.
+ * @param  string        $componentFullName Full name of the component.
+ * @param  array<string> $componentAliases  A list of aliases for the component.
+ * @param  string        $source            Source code.
+ * @return Unsafe<None>
+ */
+function loadComponentFromSource(string $componentFullName, array $componentAliases, string $source):Unsafe {
+    /** @var false|ViewEngineInterface */
+    static $viewEngine = false;
+    if (!$viewEngine) {
+        $viewEngine = Container::get(ViewEngineInterface::class)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+    }
+
+    $viewEngine->loadComponentFromSource($componentFullName, $componentAliases, $source)->unwrap($loadError);
+    if ($loadError) {
+        return error($loadError);
+    }
+    return ok();
 }

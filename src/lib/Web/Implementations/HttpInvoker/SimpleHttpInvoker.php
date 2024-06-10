@@ -3,6 +3,7 @@
 namespace CatPaw\Web\Implementations\HttpInvoker;
 
 use Amp\Http\Server\Request;
+use Amp\Http\Server\RequestBody;
 use Amp\Http\Server\Response;
 use function CatPaw\Core\asFileName;
 
@@ -12,6 +13,7 @@ use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Accepts;
+use CatPaw\Web\Body;
 
 use function CatPaw\Web\failure;
 use CatPaw\Web\Filter;
@@ -25,7 +27,10 @@ use CatPaw\Web\Interfaces\ViewInterface;
 use CatPaw\Web\Page;
 use CatPaw\Web\RequestContext;
 use function CatPaw\Web\success;
+use const CatPaw\Web\TEXT_HTML;
+
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 class SimpleHttpInvoker implements HttpInvokerInterface {
     public function __construct(public readonly ViewEngineInterface $viewEngine) {
@@ -66,15 +71,22 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         $modifier = $function(...$dependencies);
 
         if ($modifier instanceof ViewInterface) {
-            $componentName       = asFileName($context->route->workDirectory, 'view.latte');
-            $fileNameStringified = (string)$componentName;
+            $componentFullName   = asFileName($context->route->workDirectory, 'view.latte');
+            $fileNameStringified = (string)$componentFullName;
             if ('' !== $fileNameStringified) {
                 $view = $modifier;
-                $data = $this->viewEngine->render($componentName, $view->getProperties())->unwrap($error);
-                if ($error) {
+                if (!$this->viewEngine->hasComponent($componentFullName)) {
+                    return error("Component `$componentFullName` not found.");
+                }
+                try {
+                    $data = $this->viewEngine->render($componentFullName, $view->getProperties())->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                    $modifier = success($data, $view->getStatus(), $view->getHeaders())->as(TEXT_HTML);
+                } catch(Throwable $error) {
                     return error($error);
                 }
-                $modifier = success($data, $view->getStatus(), $view->getHeaders());
             } else {
                 $modifier = failure();
             }
@@ -134,10 +146,12 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                     }
                     return $result;
                 },
-                Request::class => static fn () => $context->request,
-                Accepts::class => static fn () => Accepts::createFromRequest($context->request),
-                Filter::class  => static fn () => Filter::createFromRequest($context->request),
-                Page::class    => static function() use ($context) {
+                Request::class     => static fn () => $context->request,
+                RequestBody::class => static fn () => $context->request->getBody(),
+                Body::class        => static fn () => new Body($context->request),
+                Accepts::class     => static fn () => Accepts::createFromRequest($context->request),
+                Filter::class      => static fn () => Filter::createFromRequest($context->request),
+                Page::class        => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
                     $size  = $context->requestQueries['size']  ?? 10;
                     return

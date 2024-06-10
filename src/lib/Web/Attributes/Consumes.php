@@ -26,8 +26,8 @@ use CatPaw\Web\Interfaces\OpenApiStateInterface;
  *
  * #[Consumes('text/plain', 'string', 'this is an example')]
  * #[Produces(200, 'text/plain', 'On success.', 'string')]
- * function myRouteHandler(#[Body] string $message) {
- *  return success("Message: $message");
+ * function myRouteHandler(Body $body) {
+ *  return success("Message: {$body->as(string::class)}");
  * }
  * ```
  *

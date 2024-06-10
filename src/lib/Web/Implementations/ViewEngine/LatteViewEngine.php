@@ -45,30 +45,34 @@ class LatteViewEngine implements ViewEngineInterface {
             return error("Directory `$directoryName` not found.");
         }
 
-        $fileNames = Directory::list($directoryName)->unwrap($error);
+        $fileNames = Directory::flat($directoryName)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
         foreach ($fileNames as $fileName) {
-            $componentName = str_replace("$directoryName/", '', $fileName);
-            $this->loadComponentFromFile($fileName, $fileName, $componentName)->unwrap($error);
+            if (!str_ends_with($fileName, '.latte')) {
+                continue;
+            }
+            $componentFullName = str_replace("$directoryName/", '', $fileName);
+            $shortAlias        = preg_replace('/.\w+$/', '', $componentFullName);
+            $this->loadComponentFromFile($componentFullName, [$shortAlias, $fileName], $fileName)->unwrap($error);
             if ($error) {
-                $this->logger->error("Error while trying to load component `$componentName`.\n");
+                $this->logger->error("Error while trying to load component `$componentFullName`.\n");
                 return error($error);
             }
-            $this->logger->info("Component `$componentName` loaded.\n");
+            $this->logger->info("Component `$componentFullName` loaded.\n");
         }
         return ok();
     }
     
     /**
-     * @param  string       $componentName
-     * @param  string       $short
-     * @param  string       $fileName
+     * @param  string        $componentFullName
+     * @param  array<string> $componentAliases
+     * @param  string        $fileName
      * @return Unsafe<None>
      */
-    public function loadComponentFromFile(string $componentName, string $short, string $fileName):Unsafe {
+    public function loadComponentFromFile(string $componentFullName, array $componentAliases, string $fileName):Unsafe {
         $file = File::open($fileName)->unwrap($error);
         if ($error) {
             return error($error);
@@ -78,21 +82,24 @@ class LatteViewEngine implements ViewEngineInterface {
         if ($error) {
             return error($error);
         }
+        $file->close();
 
-        return $this->loadComponentFromSource($source, $componentName, $short);
+        return $this->loadComponentFromSource($componentFullName, $componentAliases, $source);
     }
 
 
     /**
-     * @param  string       $componentName
-     * @param  string       $short
-     * @param  string       $source
+     * @param  string        $componentFullName
+     * @param  array<string> $componentAliases
+     * @param  string        $source
      * @return Unsafe<None>
      */
-    public function loadComponentFromSource(string $componentName, string $short, string $source):Unsafe {
-        $this->components[$componentName] = &$source;
-        $this->components[$short]         = &$source;
-        $this->numberOfComponents         = count($this->components);
+    public function loadComponentFromSource(string $componentFullName, array $componentAliases, string $source):Unsafe {
+        $this->components[$componentFullName] = &$source;
+        foreach ($componentAliases as $componentAlias) {
+            $this->components[$componentAlias] = &$source;
+        }
+        $this->numberOfComponents = count($this->components);
         return ok();
     }
 
@@ -101,6 +108,15 @@ class LatteViewEngine implements ViewEngineInterface {
             $this->numberOfComponentsOnLastRender = $this->numberOfComponents;
             $this->latte->setLoader(new StringLoader($this->components));
         }
+    }
+
+    /**
+     * 
+     * @param  string $name
+     * @return bool
+     */
+    public function hasComponent(string $name): bool {
+        return isset($this->components[$name]);
     }
 
     /**

@@ -2,13 +2,19 @@
 
 namespace CatPaw\Web;
 
+use Amp\Cancellation;
+use Amp\Http\Server\FormParser\StreamingFormParser;
+use Amp\Http\Server\Request;
+
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 
 use CatPaw\Core\Unsafe;
 use function json_decode;
 
-use function mb_parse_str;
+use stdClass;
+
+
 use Throwable;
 
 class BodyParser {
@@ -18,26 +24,37 @@ class BodyParser {
     /**
      * @return Unsafe<mixed>
      */
-    public static function parse(
-        string $body,
-        string $contentType,
+    public static function parseAsObject(
+        Request $request,
+        int $sizeLimit,
+        null|Cancellation $cancellation = null
     ): Unsafe {
+        $contentType = $request->getHeader("Content-Type") ?? '';
+
         if ('' === $contentType) {
             return error("No Content-Type specified. Could not parse body.");
         }
 
         try {
-            if (str_starts_with($contentType, "application/x-www-form-urlencoded")) {
-                mb_parse_str($body, $result);
-                return ok($result);
-            } elseif (str_starts_with($contentType, "application/json")) {
-                $result = json_decode($body, true);
-                return ok($result);
-            } elseif (str_starts_with($contentType, "multipart/")) {
-                [,$result] = FormParser::parse($contentType, $body);
+            if (str_starts_with($contentType, "application/json")) {
+                $result = json_decode($request->getBody()->buffer(cancellation: null, limit: $sizeLimit), false);
                 return ok($result);
             } else {
-                return ok([]);
+                $result = new stdClass;
+                $parser = new StreamingFormParser();
+                $fields = $parser->parseForm(request:$request, bodySizeLimit: $sizeLimit);
+                foreach ($fields as $field) {
+                    $name = $field->getName();
+                    if ($field->isFile()) {
+                        $result->{$name} = new FormFile(
+                            fileName: $field->getFilename(),
+                            fileContents: $field->buffer($cancellation),
+                        );
+                    } else {
+                        $result->{$name} = $field->buffer($cancellation);
+                    }
+                }
+                return ok($result);
             }
         } catch (Throwable $error) {
             return error($error);

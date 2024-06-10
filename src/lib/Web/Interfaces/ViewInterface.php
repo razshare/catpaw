@@ -1,6 +1,8 @@
 <?php
 namespace CatPaw\Web\Interfaces;
 
+use CatPaw\Web\Body;
+
 interface ViewInterface {
     /**
      * Get the http status of the view.
@@ -51,10 +53,10 @@ interface ViewInterface {
 
     /**
      * Set all properties.
-     * @param  array<string,mixed> $properties
+     * @param  Body|object|array<string,mixed> $properties
      * @return ViewInterface
      */
-    public function withProperties(array $properties):self;
+    public function withProperties(object|array $properties):self;
 
     /**
      * Set a property.
