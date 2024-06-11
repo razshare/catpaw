@@ -11,7 +11,6 @@ use function Amp\File\getSize;
 use function Amp\File\getStatus;
 use function Amp\File\openFile;
 use Dotenv\Dotenv;
-use Error;
 use Throwable;
 
 readonly class File {
@@ -167,6 +166,25 @@ readonly class File {
             return error($error);
         }
         $file->write($contents)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        $file->close();
+        return ok();
+    }
+    
+    /**
+     * Stream contents to a file.\
+     * If the file doesn't exist it will be created.
+     * @param  ReadableStream $readableStream
+     * @return Unsafe<None>
+     */
+    public static function writeStreamFile(string $filename, ReadableStream $readableStream):Unsafe {
+        $file = File::open($filename, 'w+')->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        $file->writeStream($readableStream)->unwrap($error);
         if ($error) {
             return error($error);
         }

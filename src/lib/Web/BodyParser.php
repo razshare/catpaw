@@ -1,20 +1,14 @@
 <?php
-
 namespace CatPaw\Web;
 
 use Amp\Cancellation;
 use Amp\Http\Server\FormParser\StreamingFormParser;
 use Amp\Http\Server\Request;
-
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-
 use CatPaw\Core\Unsafe;
 use function json_decode;
-
 use stdClass;
-
-
 use Throwable;
 
 class BodyParser {
@@ -48,7 +42,7 @@ class BodyParser {
                     if ($field->isFile()) {
                         $result->{$name} = new FormFile(
                             fileName: $field->getFilename(),
-                            fileContents: $field->buffer($cancellation),
+                            fileContents: $field->buffer()
                         );
                     } else {
                         $result->{$name} = $field->buffer($cancellation);

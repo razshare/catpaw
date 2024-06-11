@@ -6,13 +6,12 @@ use Amp\Cancellation;
 use Amp\Http\Server\Request;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-
 use CatPaw\Core\Unsafe;
 use Throwable;
 
 class Body {
     private null|Cancellation $cancellation = null;
-    private int $sizeLimit                  = 1024 * 1024 * 120;
+    private int $sizeLimit                  = 1024 * 1024 * 1024 * 10; // 10GB
     public function __construct(
         public readonly Request $request,
     ) {
