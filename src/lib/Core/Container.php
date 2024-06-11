@@ -488,7 +488,7 @@ class Container {
             $fileServer = new SimpleFileServer(logger: $logger, byteRange: $byteRange);
             Container::provide(FileServerInterface::class, $fileServer);
             
-            $requestHandler = new SimpleRequestHandler(logger: $logger, fileServer: $fileServer, routeResolver: $routeResolver);
+            $requestHandler = new SimpleRequestHandler(logger: $logger, routeResolver: $routeResolver);
             Container::provide(RequestHandler::class, $requestHandler);
             
             $server = new SimpleServer(
@@ -531,8 +531,6 @@ class Container {
             /** @var Unsafe<T> */
             return ok((object)[]);
         }
-
-        $all        = Singleton::getAll();
         $reflection = new ReflectionClass($name);
 
         if (AttributeResolver::issetClassAttribute($reflection, Attribute::class)) {

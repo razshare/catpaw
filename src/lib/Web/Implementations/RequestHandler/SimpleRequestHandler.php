@@ -5,6 +5,7 @@ namespace CatPaw\Web\Implementations\RequestHandler;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\Response;
+use CatPaw\Core\Container;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\FileServerInterface;
 use CatPaw\Web\Interfaces\RouteResolverInterface;
@@ -14,7 +15,6 @@ use Throwable;
 readonly class SimpleRequestHandler implements RequestHandler {
     public function __construct(
         private LoggerInterface $logger,
-        private FileServerInterface $fileServer,
         private RouteResolverInterface $routeResolver,
     ) {
     }
@@ -37,7 +37,11 @@ readonly class SimpleRequestHandler implements RequestHandler {
                 return $this->createResponseFromError($error);
             }
             if (!$response) {
-                $responseFromFileServer = $this->fileServer->serve($request);
+                $fileServer = Container::get(FileServerInterface::class)->unwrap($error);
+                if ($error) {
+                    return $this->createResponseFromError($error);
+                }
+                $responseFromFileServer = $fileServer->serve($request);
                 return $responseFromFileServer;
             }
             return $response;
