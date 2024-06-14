@@ -14,7 +14,7 @@ use Amp\ByteStream\WritableStream;
 use Amp\DeferredFuture;
 use Amp\Future;
 use Amp\Process\Process;
-use CatPaw\Core\Services\EnvironmentService;
+use CatPaw\Core\Interfaces\EnvironmentInterface;
 use Error;
 use FFI;
 use Generator;
@@ -323,11 +323,11 @@ function deferred(): DeferredFuture {
  * @return mixed  value of the variable.
  */
 function env(string $query): mixed {
-    /** @var false|EnvironmentService */
+    /** @var false|EnvironmentInterface */
     static $env = false;
 
     if (!$env) {
-        $env = Container::get(EnvironmentService::class)->unwrap($error);
+        $env = Container::get(EnvironmentInterface::class)->unwrap($error);
         if ($error) {
             Bootstrap::kill("Couldn't load environment service.\n$error", CommandStatus::NO_DATA_AVAILABLE);
         }

@@ -5,8 +5,9 @@ namespace CatPaw\Web\Implementations\HttpInvoker;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestBody;
 use Amp\Http\Server\Response;
-use function CatPaw\Core\asFileName;
+use Amp\Websocket\Server\Websocket;
 
+use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
@@ -14,10 +15,8 @@ use function CatPaw\Core\error;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Accepts;
 use CatPaw\Web\Body;
-
 use function CatPaw\Web\failure;
 use CatPaw\Web\Filter;
-
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\HttpInvokerInterface;
 use CatPaw\Web\Interfaces\ResponseModifier;
@@ -28,7 +27,6 @@ use CatPaw\Web\Page;
 use CatPaw\Web\RequestContext;
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
-
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -90,10 +88,14 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             } else {
                 $modifier = failure();
             }
+        } else if ($modifier instanceof Websocket) {
+            $websocket = $modifier;
+            $modifier  = success($websocket->handleRequest($context->request));
         }
 
         if (!$modifier instanceof ResponseModifier) {
-            return error("A route handler must always return a response modifier but route handler {$context->key} did not.");
+            $type = gettype($modifier);
+            return error("A route handler must always return a response modifier, a view or a websocket. Route handler {$context->key} returned `$type` instead.");
         }
 
         $modifier->setRequestContext($context);

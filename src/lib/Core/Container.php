@@ -12,7 +12,9 @@ use Attribute;
 use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Service;
 use CatPaw\Core\Attributes\Singleton;
+use CatPaw\Core\Implementations\Environment\SimpleEnvironment;
 use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\Interfaces\OnParameterMount;
 use CatPaw\Core\Interfaces\StorageInterface;
 use CatPaw\Store\Readable;
@@ -27,6 +29,7 @@ use CatPaw\Web\Implementations\Router\SimpleRouter;
 use CatPaw\Web\Implementations\RouteResolver\SimpleRouteResolver;
 use CatPaw\Web\Implementations\Server\SimpleServer;
 use CatPaw\Web\Implementations\ViewEngine\LatteViewEngine;
+use CatPaw\Web\Implementations\Websocket\SimpleWebsocket;
 use CatPaw\Web\Interfaces\ByteRangeInterface;
 use CatPaw\Web\Interfaces\FileServerInterface;
 use CatPaw\Web\Interfaces\HttpInvokerInterface;
@@ -36,6 +39,7 @@ use CatPaw\Web\Interfaces\RouteResolverInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\ViewEngineInterface;
+use CatPaw\Web\Interfaces\WebsocketInterface;
 use Closure;
 use Phar;
 use Psr\Log\LoggerInterface;
@@ -259,7 +263,7 @@ class Container {
         bool $clear = false,
     ):Unsafe {
         if ($clear) {
-            Container::clear();
+            Container::clearAll();
         }
 
         if (!Container::isProvidedOrExists(LoggerInterface::class)) {
@@ -440,16 +444,16 @@ class Container {
      * Remove all providers and cached services and singletons.
      * @return void
      */
-    public static function clear(): void {
-        Singleton::clear();
-        Provider::clear();
+    public static function clearAll(): void {
+        Singleton::clearAll();
+        Provider::clearAll();
     }
 
 
     private static bool $defaultsProvided = false;
 
     /**
-     * Load defaults providers and singletons.
+     * Load default providers and singletons.
      * @param  string       $name
      * @return Unsafe<None>
      */
@@ -458,10 +462,13 @@ class Container {
             return ok();
         }
 
+
         return anyError(function() use ($name) {
             $logger = LoggerFactory::create($name)->try();
             Container::provide(LoggerInterface::class, $logger);
             
+            Container::provide(EnvironmentInterface::class, new SimpleEnvironment(logger: $logger));
+
             Container::provide(HttpClient::class, fn () => HttpClientBuilder::buildDefault());
 
             $byteRange = new SimpleByteRange(logger: $logger);
@@ -499,7 +506,12 @@ class Container {
                 viewEngine: $viewEngine,
             );
             Container::provide(ServerInterface::class, $server);
-            
+
+            Container::provide(WebsocketInterface::class, fn () => new SimpleWebsocket(
+                logger: $logger,
+                server: $server,
+            ));
+
             self::$defaultsProvided = true;
             return ok();
         });

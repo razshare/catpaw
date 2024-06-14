@@ -5,11 +5,9 @@ namespace CatPaw\Core;
 use function Amp\async;
 use Amp\DeferredFuture;
 use function Amp\delay;
-
 use function Amp\File\isDirectory;
-
-use CatPaw\Core\Services\EnvironmentService;
-
+use CatPaw\Core\Implementations\Environment\SimpleEnvironment;
+use CatPaw\Core\Interfaces\EnvironmentInterface;
 use Error;
 use function preg_split;
 use Psr\Log\LoggerInterface;
@@ -100,8 +98,8 @@ class Bootstrap {
             /** @var array<string> $resourcesList */
             $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
 
-            $env = new EnvironmentService($logger);
-            Container::provide(EnvironmentService::class, $env);
+            $env = new SimpleEnvironment($logger);
+            Container::provide(EnvironmentInterface::class, $env);
 
             $env->set('ENTRY', $entry);
             $env->set('LIBRARIES', $librariesList);

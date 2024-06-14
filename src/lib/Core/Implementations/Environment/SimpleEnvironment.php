@@ -1,9 +1,9 @@
 <?php
-namespace CatPaw\Core\Services;
+namespace CatPaw\Core\Implementations\Environment;
 
-use CatPaw\Core\Attributes\Service;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
+use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
@@ -15,8 +15,7 @@ use Psr\Log\LoggerInterface;
 use function str_ends_with;
 use function yaml_parse;
 
-#[Service]
-class EnvironmentService {
+class SimpleEnvironment implements EnvironmentInterface {
     /** @var array<mixed> */
     private array $variables = [];
 
@@ -37,7 +36,7 @@ class EnvironmentService {
      * Call `load()` again to recover the lost keys.
      * @return void
      */
-    public function includeSystemEnvironment() {
+    public function includeSystemEnvironment():void {
         $this->variables = [
             ...$this->variables,
             ...$_ENV,
@@ -59,7 +58,7 @@ class EnvironmentService {
      * Clear all environment variables.
      * @return void
      */
-    public function clear() {
+    public function clear():void {
         $this->variables = [];
     }
 
@@ -119,7 +118,7 @@ class EnvironmentService {
      * @param  mixed  $value
      * @return void
      */
-    public function set(string $query, mixed $value) {
+    public function set(string $query, mixed $value):void {
         $reference = &$this->variables;
         foreach (explode('.', $query) as $key) {
             if (!isset($reference[$key])) {

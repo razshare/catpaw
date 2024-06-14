@@ -4,6 +4,7 @@ namespace CatPaw\Web;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
+use Amp\Websocket\Server\Websocket;
 use Amp\Websocket\Server\WebsocketClientHandler;
 
 use CatPaw\Core\Container;
@@ -13,14 +14,10 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Implementations\View\LatteView;
-use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Interfaces\ViewEngineInterface;
 use CatPaw\Web\Interfaces\ViewInterface;
-
-use CatPaw\Web\Services\WebsocketService;
-
+use CatPaw\Web\Interfaces\WebsocketInterface;
 use Psr\Http\Message\UriInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * Suggest a download action to the client.
@@ -140,14 +137,9 @@ function queries(UriInterface $uri):array {
  *
  * ## Example
  * ```php
- * return fn(Request $request) => websocket(
- *  request: $request,
+ * return fn() => websocket(
  *  handler: new class implements WebsocketClientHandler {
- *      public function handleClient(
- *          WebsocketClient $client,
- *          Request $request,
- *          Response $response,
- *      ): void {
+ *      public function handleClient(WebsocketClient $client): void {
  *          $client->sendText("hello!");
  *          foreach ($client as $message) {
  *              echo "client says: $message\n";
@@ -156,22 +148,16 @@ function queries(UriInterface $uri):array {
  *  }
  * );
  * ```
- * @param  Request                $request Incoming http request.
  * @param  WebsocketClientHandler $handler Websocket handler.
- * @return ResponseModifier
+ * @return Unsafe<Websocket>
  */
-function websocket(Request $request, WebsocketClientHandler $handler): ResponseModifier {
-    $websocketService = Container::get(WebsocketService::class)->unwrap($errorWebsocket);
-    if ($errorWebsocket) {
-        $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
-        if ($errorLogger) {
-            echo $errorLogger.PHP_EOL;
-            echo $errorWebsocket.PHP_EOL;
-        }
-        $logger->error($errorWebsocket);
-        return failure();
+function websocket(WebsocketClientHandler $handler): Unsafe {
+    $websocket = Container::get(WebsocketInterface::class)->unwrap($error);
+    if ($error) {
+        return error($error);
     }
-    return success($websocketService->handle($handler)->handleRequest($request));
+
+    return ok($websocket->success($handler));
 }
 
 function view():ViewInterface {

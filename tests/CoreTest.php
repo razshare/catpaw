@@ -7,9 +7,10 @@ use CatPaw\Core\Container;
 use function CatPaw\Core\env;
 use CatPaw\Core\File;
 use function CatPaw\Core\goffi;
+
+use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Services\EnvironmentService;
 use CatPaw\Core\Signal;
 use CatPaw\Core\Unsafe;
 
@@ -32,13 +33,13 @@ class CoreTest extends TestCase {
     }
 
 
-    private function makeSureEnvWorks(EnvironmentService $service): void {
-        $service->setFileName(asFileName(__DIR__, 'env.ini'));
-        $service->load()->unwrap($error);
+    private function makeSureEnvWorks(EnvironmentInterface $environment): void {
+        $environment->setFileName(asFileName(__DIR__, 'env.ini'));
+        $environment->load()->unwrap($error);
         $this->assertNull($error);
         $sayHello = env("say.hello");
         $this->assertEquals('hello world', $sayHello);
-        $service->set("test-key", "test-value");
+        $environment->set("test-key", "test-value");
         $test = env("test-key");
         $this->assertEquals('test-value', $test);
     }

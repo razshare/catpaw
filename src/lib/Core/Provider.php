@@ -47,7 +47,7 @@ class Provider {
      * @return void
      * @internal
      */
-    public static function clear():void {
+    public static function clearAll():void {
         self::$items = [];
     }
 }

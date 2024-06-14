@@ -60,6 +60,7 @@ class SimpleServer implements ServerInterface {
         public readonly RequestHandler $requestHandler,
         public readonly ViewEngineInterface $viewEngine,
     ) {
+        echo "creating server\n";
     }
 
     /** @var array<callable(HttpServer):(void|Unsafe<void>)> */
