@@ -5,7 +5,7 @@ use CatPaw\Web\Interfaces\ServerInterface;
 
 use function CatPaw\Web\loadComponentsFromDirectory;
 
-function main(ServerInterface $server, ServerInterface $server1) {
+function main(ServerInterface $server) {
     return anyError(function() use ($server) {
         loadComponentsFromDirectory(asFileName(__DIR__, 'components'))->try();
         return $server->withApiLocation(asFileName(__DIR__, 'api'))->start();
