@@ -62,11 +62,11 @@ class Bootstrap {
         bool $dieOnChange = false,
     ): void {
         try {
-            Container::requireLibraries($name)->unwrap($requireError);
+            Container::requireLibraries($libraries)->unwrap($requireError);
             if ($requireError) {
                 self::kill((string)$requireError);
             }
-            Container::requireLibraries($libraries)->unwrap($initializeError);
+            Container::loadDefaultProviders($name)->unwrap($initializeError);
             if ($initializeError) {
                 self::kill((string)$initializeError);
             }
@@ -208,11 +208,11 @@ class Bootstrap {
             EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
             EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
             
-            Container::requireLibraries("Watcher")->unwrap($requireError);
+            Container::requireLibraries($libraries)->unwrap($requireError);
             if ($requireError) {
                 self::kill((string)$requireError);
             }
-            Container::requireLibraries($libraries)->unwrap($initializeError);
+            Container::loadDefaultProviders("Watcher")->unwrap($initializeError);
             if ($initializeError) {
                 self::kill((string)$initializeError);
             }
