@@ -80,6 +80,33 @@ class Container {
      * @return Unsafe<None>
      */
     public static function loadDefaultProviders(string $applicationName):Unsafe {
+        // Making sure providers load correctly.
+        $providersLoaded = match (false) {
+            class_exists($className = \CatPaw\Core\Implementations\Environment\SimpleEnvironment::class)      => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Queue\Implementations\Queue\SimpleQueue::class)                 => error("Could not load class $className"),
+            class_exists($className = \CatPaw\RaspberryPi\Implementations\Gpio\SimpleGpio::class)             => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Schedule\Implementations\Schedule\SimpleSchedule::class)        => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Store\Implementations\Store\SimpleState::class)                 => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\ByteRange\SimpleByteRange::class)           => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\FileServer\SimpleFileServer::class)         => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\FileServer\SpaFileServer::class)            => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\HttpInvoker\SimpleHttpInvoker::class)       => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\OpenApi\SimpleOpenApi::class)               => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\OpenApiState\SimpleOpenApiState::class)     => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\RequestHandler\SimpleRequestHandler::class) => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\RouteResolver\SimpleRouteResolver::class)   => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\Router\SimpleRouter::class)                 => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\Server\SimpleServer::class)                 => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\ViewEngine\LatteViewEngine::class)          => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Web\Implementations\Websocket\SimpleWebsocket::class)           => error("Could not load class $className"),
+            default                                                                                           => ok()
+        };
+
+        $providersLoaded->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+
         /** @var LoggerInterface $logger */
         $logger = LoggerFactory::create(loggerName: $applicationName)->unwrap($error);
         if ($error) {
