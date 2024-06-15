@@ -7,12 +7,12 @@ use Amp\Http\Server\RequestBody;
 use Amp\Http\Server\Response;
 use Amp\Websocket\Server\Websocket;
 use function CatPaw\Core\asFileName;
-
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
+use CatPaw\Core\File;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Accepts;
 use CatPaw\Web\Body;
@@ -28,6 +28,8 @@ use CatPaw\Web\Page;
 use CatPaw\Web\RequestContext;
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
+
+
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -70,7 +72,53 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
 
         $modifier = $function(...$dependencies);
 
-        if ($modifier instanceof ViewInterface) {
+        if ($modifier instanceof Unsafe) {
+            $unsafeModifier = $modifier->unwrap($unsafeModifierError);
+            if ($unsafeModifierError) {
+                $message = $unsafeModifierError->getMessage();
+                $trace   = $unsafeModifierError->getTrace();
+
+                $contents = File::readFile(asFileName(__DIR__, './error.css'))->unwrap($error);
+
+                if ($error) {
+                    return error($error);
+                }
+
+                $styles                                    = "<style>$contents</style>";
+                ["file" => $mainFile, "line" => $mainLine] = $trace[0];
+
+                $content = <<<HTML
+                    $styles
+                    <div class="error-screen">
+                    <div class="error-header">
+                        <h1>Error</h1>
+                        <div class="error-message">$message</div>
+                        <a href="vscode://file$mainFile:$mainLine:0" class="error-jump-main">Jump to error</a>
+                    </div>
+                    <div class="error-body">
+                    HTML;
+
+                foreach ($trace as ['file' => $file, 'line' => $line]) {
+                    if ('' === trim($file)) {
+                        continue;
+                    }
+                    $content .= <<<HTML
+                            <div class="error-trace-entry">
+                                <span class="error-trace-line">$line</span>
+                                <a href="vscode://file$file:$line:0" class="error-trace-file">$file</a>
+                            </div>
+                        HTML;
+                }
+
+                $content .= <<<HTML
+                    </div>
+                    </div>
+                    HTML;
+                $modifier = success($content)->as(TEXT_HTML);
+            } else {
+                $modifier = success((string)$unsafeModifier)->as(TEXT_HTML);
+            }
+        } else if ($modifier instanceof ViewInterface) {
             $componentFullName   = asFileName($context->route->workDirectory, 'view.latte');
             $fileNameStringified = (string)$componentFullName;
             if ('' !== $fileNameStringified) {
@@ -97,7 +145,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
 
         if (!$modifier instanceof ResponseModifier) {
             $type = gettype($modifier);
-            return error("A route handler must always return a response modifier, a view or a websocket. Route handler {$context->key} returned `$type` instead.");
+            return error("A route handler must always return a response modifier, a view, a websocket or an unsafe object. Route handler {$context->key} returned `$type` instead.");
         }
 
         $modifier->setRequestContext($context);
