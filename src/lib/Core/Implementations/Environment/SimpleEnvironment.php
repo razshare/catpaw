@@ -1,20 +1,20 @@
 <?php
 namespace CatPaw\Core\Implementations\Environment;
 
+use CatPaw\Core\Attributes\Provider;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
-
 use Dotenv\Dotenv;
 use function function_exists;
 use Psr\Log\LoggerInterface;
 use function str_ends_with;
 use function yaml_parse;
 
+#[Provider]
 class SimpleEnvironment implements EnvironmentInterface {
     /** @var array<mixed> */
     private array $variables = [];

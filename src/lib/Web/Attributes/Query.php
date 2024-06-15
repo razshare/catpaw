@@ -59,7 +59,7 @@ class Query implements AttributeInterface, OnParameterMount {
         $type    = ReflectionTypeManager::unwrap($reflection);
         $key     = '' === $this->name?$reflection->getName():$this->name;
         if (!$type) {
-            return error("Handler \"$context->key\" must specify at least 1 type for query \"$key\".\n");
+            return error("Handler \"$context->key\" must specify at least 1 type for query \"$key\".");
         }
         $typeName = $type->getName();
 
@@ -78,7 +78,7 @@ class Query implements AttributeInterface, OnParameterMount {
             $value = $result->value;
         } elseif (!$reflection->allowsNull()) {
             if (!$reflection->isDefaultValueAvailable()) {
-                return error("Handler \"$context->key\" specifies a request query string parameter that is not nullable. Any request query string parameter MUST be nullable or at least provide a default value.\n");
+                return error("Handler \"$context->key\" specifies a request query string parameter that is not nullable. Any request query string parameter MUST be nullable or at least provide a default value.");
             } else {
                 $value = $reflection->getDefaultValue();
             }

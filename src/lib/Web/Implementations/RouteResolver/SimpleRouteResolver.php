@@ -4,7 +4,7 @@ namespace CatPaw\Web\Implementations\RouteResolver;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
-
+use CatPaw\Core\Attributes\Provider;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
@@ -16,9 +16,9 @@ use CatPaw\Web\PathResolver;
 use CatPaw\Web\RequestContext;
 use Psr\Http\Message\UriInterface;
 use ReflectionFunction;
-
 use Throwable;
 
+#[Provider]
 class SimpleRouteResolver implements RouteResolverInterface {
     /** @var array<string,PathResolver> */
     private array $cache = [];

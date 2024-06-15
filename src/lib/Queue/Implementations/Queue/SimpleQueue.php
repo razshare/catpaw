@@ -1,19 +1,19 @@
 <?php
 
-namespace CatPaw\Queue\Services;
+namespace CatPaw\Queue\Implementations\Queue;
 
 use function Amp\async;
 use Amp\Future;
 use function Amp\Future\awaitAll;
-use CatPaw\Core\Attributes\Service;
+use CatPaw\Core\Attributes\Provider;
+use CatPaw\Queue\Interfaces\QueueInterface;
 use Closure;
-use InvalidArgumentException;
-
+use Error;
 use SplDoublyLinkedList;
 use SplQueue;
 
-#[Service]
-class QueueService {
+#[Provider]
+class SimpleQueue implements QueueInterface {
     /**
      * Map of queues.
      * @var array<string,SplQueue<callable>>
@@ -21,10 +21,10 @@ class QueueService {
     private array $queues = [];
 
     /**
-     * Queue a callable to run on a specific tag.
-     * @param  string                   $tag
-     * @param  callable                 $action
-     * @throws InvalidArgumentException
+     * 
+     * @param  string   $tag
+     * @param  callable $action
+     * @throws Error
      * @return void
      */
     public function queue(string $tag, callable $action):void {

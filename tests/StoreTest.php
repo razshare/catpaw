@@ -5,23 +5,17 @@ use function Amp\async;
 use function Amp\delay;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
-
 use CatPaw\Core\Container;
-use CatPaw\Store\Attributes\Store;
 use function CatPaw\Store\readable;
-use CatPaw\Store\Writable;
 use function CatPaw\Store\writable;
-
-use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use Revolt\EventLoop;
-use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 class StoreTest extends TestCase {
     public function testAll():void {
-        Container::loadDefaults("Test")->unwrap($error);
+        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
-        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->basic(...));
@@ -30,7 +24,6 @@ class StoreTest extends TestCase {
             yield Container::run($this->set(...));
             yield Container::run($this->subscribe(...));
             yield Container::run($this->update(...));
-            yield Container::run($this->attribute(...));
             yield Container::run($this->makingSureCleanUpFunctionIsInvoked(...));
         })->unwrap($error);
         $this->assertNull($error);
@@ -215,23 +208,5 @@ class StoreTest extends TestCase {
             $this->assertEquals(1, $value);
         });
         $unsubscribe();
-    }
-
-    /**
-     *
-     * @param  Writable<mixed>            $handler1
-     * @param  Writable<mixed>            $handler2
-     * @throws InvalidArgumentException
-     * @throws ExpectationFailedException
-     * @return void
-     */
-    private function attribute(
-        #[Store("test")]
-        Writable $handler1,
-        #[Store("test")]
-        Writable $handler2,
-    ): void {
-        $handler1->set("test");
-        $this->assertEquals("test", $handler2->get());
     }
 }

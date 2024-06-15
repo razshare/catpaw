@@ -5,6 +5,7 @@ use function Amp\File\isDirectory;
 use function Amp\File\isFile;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Container;
 use CatPaw\Core\File;
 use CatPaw\Web\HttpStatus;
@@ -20,6 +21,7 @@ use Psr\Log\LoggerInterface;
  * client and return 404 responses whenever a static file is not found.
  * @package CatPaw\Web
  */
+#[Provider]
 readonly class SimpleFileServer implements FileServerInterface {
     public string $fallback;
     public function __construct(
@@ -87,12 +89,12 @@ readonly class SimpleFileServer implements FileServerInterface {
     }
 
     public function serve(Request $request):Response {
-        $path             = urldecode($request->getUri()->getPath());
-        $fallback         = $this->fallback;
-        $overwrite        = $this->overwrite;
-        $byteRangeService = $this->byteRange;
-        $logger           = $this->logger;
-        $server           = Container::get(ServerInterface::class)->unwrap($error);
+        $path      = urldecode($request->getUri()->getPath());
+        $fallback  = $this->fallback;
+        $overwrite = $this->overwrite;
+        $byteRange = $this->byteRange;
+        $logger    = $this->logger;
+        $server    = Container::get(ServerInterface::class)->unwrap($error);
 
         if ($error) {
             return $this->failure("Server not found.");
@@ -132,7 +134,7 @@ readonly class SimpleFileServer implements FileServerInterface {
             ];
         }
 
-        $rangedResponse = $byteRangeService->file(
+        $rangedResponse = $byteRange->file(
             fileName  : $fileName,
             rangeQuery: $request->getHeader("Range") ?? '',
         )->unwrap($error);

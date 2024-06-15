@@ -5,7 +5,7 @@ namespace CatPaw\RaspberryPi\Interfaces;
 use CatPaw\Core\None;
 use CatPaw\Core\Unsafe;
 
-interface GpioWriter {
+interface GpioWriterInterface {
     /**
      * Write data to the pin.
      * @param  string       $data

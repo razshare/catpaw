@@ -1,19 +1,19 @@
 <?php
 
-namespace CatPaw\RaspberryPi\Services;
+namespace CatPaw\RaspberryPi\Implementations\Gpio;
 
-use CatPaw\Core\Attributes\Service;
-
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use CatPaw\Core\None;
 use CatPaw\Core\Unsafe;
-use CatPaw\RaspberryPi\Interfaces\GpioReader;
-use CatPaw\RaspberryPi\Interfaces\GpioWriter;
+use CatPaw\RaspberryPi\Interfaces\GpioInterface;
+use CatPaw\RaspberryPi\Interfaces\GpioReaderInterface;
+use CatPaw\RaspberryPi\Interfaces\GpioWriterInterface;
 
-#[Service]
-class GpioService {
+#[Provider]
+class SimpleGpio implements GpioInterface {
     private const READ        = 0;
     private const WRITE       = 1;
     private const HEADER7     = 4;
@@ -106,12 +106,12 @@ class GpioService {
 
     /**
      * Create a pin reader.
-     * @param  string     $pin can be one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
-     * @return GpioReader
+     * @param  string              $pin can be one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
+     * @return GpioReaderInterface
      */
-    public function createReader(string $pin):GpioReader {
+    public function createReader(string $pin):GpioReaderInterface {
         $export = fn () => $this->export($pin, self::READ);
-        return new class($export) implements GpioReader {
+        return new class($export) implements GpioReaderInterface {
             private File|false $file = false;
             /**
              *
@@ -141,12 +141,12 @@ class GpioService {
 
     /**
      * Create a pin writer.
-     * @param  string     $pin can be one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
-     * @return GpioWriter
+     * @param  string              $pin can be one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
+     * @return GpioWriterInterface
      */
-    public function createWriter(string $pin):GpioWriter {
+    public function createWriter(string $pin):GpioWriterInterface {
         $export = fn () => $this->export($pin, self::WRITE);
-        return new class($export) implements GpioWriter {
+        return new class($export) implements GpioWriterInterface {
             private File|false $file = false;
             /**
              *

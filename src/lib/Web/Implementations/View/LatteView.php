@@ -1,8 +1,10 @@
 <?php
 namespace CatPaw\Web\Implementations\View;
 
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Web\Interfaces\ViewInterface;
 
+#[Provider]
 class LatteView implements ViewInterface {
     public int $status = 200;
 

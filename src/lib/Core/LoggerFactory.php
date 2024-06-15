@@ -19,7 +19,7 @@ class LoggerFactory {
     public static function create(string $loggerName = 'Logger'): Unsafe {
         try {
             $handler = new StreamHandler(STDOUT);
-            // $handler->setFormatter(new ConsoleFormatter());
+            $handler->setFormatter(new \Monolog\Formatter\SyslogFormatter($loggerName));
             $logger = new Logger($loggerName);
             $logger->pushHandler($handler);
             // @phpstan-ignore-next-line

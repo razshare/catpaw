@@ -7,7 +7,6 @@ use ReflectionParameter;
 class DependencySearchResultItem {
     /**
      * @param ReflectionParameter                $reflectionParameter
-     * @param mixed                              $defaultArgument
      * @param bool                               $isOptional
      * @param mixed                              $defaultValue
      * @param string                             $type
@@ -16,7 +15,6 @@ class DependencySearchResultItem {
      */
     public function __construct(
         public ReflectionParameter $reflectionParameter,
-        public mixed $defaultArgument,
         public bool $isOptional,
         public mixed $defaultValue,
         public string $type,

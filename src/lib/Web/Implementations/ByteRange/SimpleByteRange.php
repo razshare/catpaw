@@ -3,6 +3,8 @@
 namespace CatPaw\Web\Implementations\ByteRange;
 
 use Amp\Http\Server\Response;
+use CatPaw\Core\Attributes\Provider;
+
 use function CatPaw\Core\duplex;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
@@ -20,6 +22,7 @@ use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use SplFixedArray;
 
+#[Provider]
 readonly class SimpleByteRange implements ByteRangeInterface {
     public function __construct(public LoggerInterface $logger) {
     }

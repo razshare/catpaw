@@ -7,7 +7,6 @@ use CatPaw\Core\Container;
 use function CatPaw\Core\env;
 use CatPaw\Core\File;
 use function CatPaw\Core\goffi;
-
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
@@ -18,9 +17,9 @@ use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
     public function testAll():void {
-        Container::loadDefaults("Test")->unwrap($error);
+        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
-        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->makeSureEnvWorks(...));

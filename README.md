@@ -15,14 +15,13 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 | ⚡ [Entry](./docs/5.entry.md)                              |
 | ⚡ [Custom Attributes](./docs/8.custom-attributes.md)      |
 | 💡 [RaspberryPi](./docs/11.raspberrypi.md)                |
-| ⚡ [Services](./docs/13.services.md)                       |
+| ⚡ [Container](./docs/13.container.md)                       |
 | ⚡ [Stores](./docs/12.stores.md)                           |
 | ⚡ [Queues](./docs/21.queues.md)                           |
 | ⚡ [Schedule](./docs/22.schedule.md)                       |
 | ⚡ [Build](./docs/23.build.md)                             |
 | 🌐 [Websockets](./docs/24.websockets.md)                  |
 | 🌐 [View (Twig)](./docs/25.view.md)                              |
-| ⚡ [State](./docs/26.state.md)                             |
 | ⚡ [Signals](./docs/27.signals.md)                             |
 | ⚡ [Go interop](./docs/28.goffi.md)                             |
 

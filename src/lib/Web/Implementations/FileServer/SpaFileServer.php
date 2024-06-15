@@ -99,12 +99,12 @@ readonly class SpaFileServer implements FileServerInterface {
     }
 
     public function serve(Request $request):Response {
-        $path             = urldecode($request->getUri()->getPath());
-        $server           = $this->server;
-        $fallback         = $this->fallback;
-        $overwrite        = $this->overwrite;
-        $byteRangeService = $this->byteRange;
-        $logger           = $this->logger;
+        $path      = urldecode($request->getUri()->getPath());
+        $server    = $this->server;
+        $fallback  = $this->fallback;
+        $overwrite = $this->overwrite;
+        $byteRange = $this->byteRange;
+        $logger    = $this->logger;
 
         if (!$server->getStaticsLocation() || strpos($path, '../')) {
             return $this->notFound();
@@ -138,7 +138,7 @@ readonly class SpaFileServer implements FileServerInterface {
             ];
         }
 
-        $rangedResponse = $byteRangeService->file(
+        $rangedResponse = $byteRange->file(
             fileName  : $fileName,
             rangeQuery: $request->getHeader("Range") ?? '',
         )->unwrap($error);

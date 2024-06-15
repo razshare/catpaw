@@ -4,6 +4,8 @@ namespace CatPaw\Web\Implementations\OpenApiState;
 
 use CatPaw\Core\Attributes\ArrayList;
 use CatPaw\Core\Attributes\HashMap;
+use CatPaw\Core\Attributes\Provider;
+
 use function CatPaw\Core\error;
 
 use CatPaw\Core\None;
@@ -15,6 +17,7 @@ use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use ReflectionClass;
 use Throwable;
 
+#[Provider]
 class SimpleOpenApiState implements OpenApiStateInterface {
     /**
      *

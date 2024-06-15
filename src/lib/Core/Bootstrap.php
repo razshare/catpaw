@@ -24,13 +24,9 @@ class Bootstrap {
     /**
      * Initialize an application from a source file (that usually defines a global "main" function).
      * @param  string        $fileName
-     * @param  array<string> $libraries
      * @return Unsafe<mixed>
      */
-    public static function init(
-        string $fileName,
-        array $libraries = [],
-    ):Unsafe {
+    public static function initialize(string $fileName):Unsafe {
         if (!File::exists($fileName)) {
             return error("Could not find php entry file $fileName.");
         }
@@ -38,20 +34,12 @@ class Bootstrap {
         require_once $fileName;
 
         if (!function_exists('main')) {
-            return error("could not find a global main function.\n");
+            return error("could not find a global main function.");
         }
 
         $main = new ReflectionFunction('main');
 
         Container::touch($main);
-
-        foreach ($libraries as $path) {
-            Container::load(path:$path)->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
-        }
-
         return Container::run($main, false);
     }
 
@@ -74,9 +62,13 @@ class Bootstrap {
         bool $dieOnChange = false,
     ): void {
         try {
-            Container::loadDefaults($name)->unwrap($provideError);
-            if ($provideError) {
-                self::kill((string)$provideError);
+            Container::requireLibraries($name)->unwrap($requireError);
+            if ($requireError) {
+                self::kill((string)$requireError);
+            }
+            Container::requireLibraries($libraries)->unwrap($initializeError);
+            if ($initializeError) {
+                self::kill((string)$initializeError);
             }
 
             $entryLocal = (string)asFileName($entry);
@@ -144,10 +136,10 @@ class Bootstrap {
                 );
             }
 
-            self::init($entry, $librariesList)->unwrap($librariesError);
+            self::initialize($entry)->unwrap($initializeError);
 
-            if ($librariesError) {
-                self::kill((string)$librariesError);
+            if ($initializeError) {
+                self::kill((string)$initializeError);
             }
 
             EventLoop::run();
@@ -216,11 +208,14 @@ class Bootstrap {
             EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
             EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
             
-            Container::loadDefaults("Watcher")->unwrap($provideError);
-            if ($provideError) {
-                self::kill((string)$provideError);
+            Container::requireLibraries("Watcher")->unwrap($requireError);
+            if ($requireError) {
+                self::kill((string)$requireError);
             }
-
+            Container::requireLibraries($libraries)->unwrap($initializeError);
+            if ($initializeError) {
+                self::kill((string)$initializeError);
+            }
 
             async(static function() use (
                 $binary,
@@ -230,7 +225,7 @@ class Bootstrap {
                 $libraries,
                 $resources,
             ) {
-                if (!Container::isProvidedOrExists(LoggerInterface::class)) {
+                if (!Container::isProvided(LoggerInterface::class)) {
                     $logger = LoggerFactory::create()->unwrap($error);
                     if ($error) {
                         return error($error);

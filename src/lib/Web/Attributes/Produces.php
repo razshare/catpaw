@@ -6,17 +6,15 @@ use CatPaw\Core\Attributes\Entry;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\None;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\ErrorItem;
 use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use CatPaw\Web\ProducedResponse;
-use CatPaw\Web\Services\OpenApiStateService;
 
 /**
- * Describe the type of content the route handler produces so that the `OpenApiStateService` can handle it.
+ * Describe the type of content the route handler produces so that the `OpenApiInterface` can handle it.
  *
  * ## Example
  *

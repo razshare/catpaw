@@ -7,14 +7,13 @@ use Amp\DeferredFuture;
 use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
-
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\SocketHttpServer;
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Bootstrap;
 use CatPaw\Core\Container;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
-
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Signal;
@@ -30,6 +29,7 @@ use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use Throwable;
 
+#[Provider]
 class SimpleServer implements ServerInterface {
     private SocketHttpServer $httpServer;
     private bool $httpServerStarted = false;
@@ -60,7 +60,6 @@ class SimpleServer implements ServerInterface {
         public readonly RequestHandler $requestHandler,
         public readonly ViewEngineInterface $viewEngine,
     ) {
-        echo "creating server\n";
     }
 
     /** @var array<callable(HttpServer):(void|Unsafe<void>)> */
@@ -189,7 +188,7 @@ class SimpleServer implements ServerInterface {
             return error($error);
         }
 
-        if (!Container::isProvidedOrExists(SessionInterface::class)) {
+        if (!Container::isProvided(SessionInterface::class)) {
             Container::provide(SessionInterface::class, SessionWithMemory::create(...));
         }
 

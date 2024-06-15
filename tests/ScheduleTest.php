@@ -3,19 +3,18 @@ namespace Tests;
 
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
-
 use CatPaw\Core\Container;
 use CatPaw\Core\Signal;
-use CatPaw\Schedule\Services\ScheduleService;
+use CatPaw\Schedule\Interfaces\ScheduleInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 
 class ScheduleTest extends TestCase {
     public function testAll():void {
-        Container::loadDefaults("Test")->unwrap($error);
+        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
-        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->scheduleDaily(...));
@@ -26,10 +25,10 @@ class ScheduleTest extends TestCase {
         EventLoop::run();
     }
 
-    private function scheduleDaily(ScheduleService $scheduler): void {
-        $hour     = $scheduler->date()->format('H');
+    private function scheduleDaily(ScheduleInterface $schedule): void {
+        $hour     = $schedule->date()->format('H');
         $value    = false;
-        $schedule = $scheduler->daily(
+        $schedule = $schedule->daily(
             due:"at $hour:00",
             function: function(callable $cancel) use (&$value) {
                 $value = true;
@@ -42,7 +41,7 @@ class ScheduleTest extends TestCase {
     }
 
 
-    private function scheduleAfter1Second(ScheduleService $schedule, LoggerInterface $logger): void {
+    private function scheduleAfter1Second(ScheduleInterface $schedule, LoggerInterface $logger): void {
         $signal  = Signal::create();
         $checked = false;
         $start   = time();
@@ -64,7 +63,7 @@ class ScheduleTest extends TestCase {
         });
     }
 
-    public function scheduleEvery1Second3Times(ScheduleService $scheduler, LoggerInterface $logger): void {
+    public function scheduleEvery1Second3Times(ScheduleInterface $scheduler, LoggerInterface $logger): void {
         $value = 0;
         $logger->info("Executing function every 1 second 3 times...");
         $schedule = $scheduler->every("1 seconds", static function(callable $cancel) use (&$value, $logger) {

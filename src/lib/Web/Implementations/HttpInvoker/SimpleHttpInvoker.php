@@ -6,8 +6,9 @@ use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestBody;
 use Amp\Http\Server\Response;
 use Amp\Websocket\Server\Websocket;
-
 use function CatPaw\Core\asFileName;
+
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
@@ -30,6 +31,7 @@ use const CatPaw\Web\TEXT_HTML;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
+#[Provider]
 class SimpleHttpInvoker implements HttpInvokerInterface {
     public function __construct(public readonly ViewEngineInterface $viewEngine) {
     }

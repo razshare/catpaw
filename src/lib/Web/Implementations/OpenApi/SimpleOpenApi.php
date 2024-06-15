@@ -2,9 +2,11 @@
 
 namespace CatPaw\Web\Implementations\OpenApi;
 
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Web\Interfaces\OpenApiInterface;
 use CatPaw\Web\Interfaces\OpenApiStateInterface;
 
+#[Provider]
 class SimpleOpenApi implements OpenApiInterface {
     /** @var array<mixed> */
     private array $data = [];

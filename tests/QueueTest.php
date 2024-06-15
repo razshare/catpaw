@@ -4,17 +4,16 @@ namespace Tests;
 use function Amp\delay;
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\asFileName;
-
 use CatPaw\Core\Container;
-use CatPaw\Queue\Services\QueueService;
+use CatPaw\Queue\Interfaces\QueueInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class QueueTest extends TestCase {
     public function testAll():void {
-        Container::loadDefaults("Test")->unwrap($error);
+        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
-        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->execution(...));
@@ -25,7 +24,7 @@ class QueueTest extends TestCase {
         $this->assertNull($error);
     }
 
-    private function execution(QueueService $queue): void {
+    private function execution(QueueInterface $queue): void {
         $executed = false;
         $queue->queue("my-tag", function() use (&$executed) {
             $executed = true;
@@ -34,7 +33,7 @@ class QueueTest extends TestCase {
         $this->assertTrue($executed);
     }
 
-    private function tag(QueueService $queue): void {
+    private function tag(QueueInterface $queue): void {
         $queue->queue("my-tag", function($tag) {
             $this->assertEquals("my-tag", $tag);
         });
@@ -42,7 +41,7 @@ class QueueTest extends TestCase {
         echo "DONE\n";
     }
 
-    private function order(QueueService $queue): void {
+    private function order(QueueInterface $queue): void {
         /** @var array<mixed> */
         $stack = [];
         $queue->queue("my-tag-1", function($tag) use (&$stack) {
@@ -61,7 +60,7 @@ class QueueTest extends TestCase {
         $this->assertEquals("my-tag-2", $stack[1]);
     }
 
-    private function timedQueue(QueueService $queue, LoggerInterface $logger): void {
+    private function timedQueue(QueueInterface $queue, LoggerInterface $logger): void {
         $queue->queue("my-tag-1", function($tag) use ($logger) {
             delay(.005);
             $logger->info("Executed $tag");

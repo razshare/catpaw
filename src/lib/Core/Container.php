@@ -7,51 +7,91 @@ use function Amp\File\isFile;
 
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\HttpClientBuilder;
-use Amp\Http\Server\RequestHandler;
 use Attribute;
 use CatPaw\Core\Attributes\Entry;
-use CatPaw\Core\Attributes\Service;
-use CatPaw\Core\Attributes\Singleton;
-use CatPaw\Core\Implementations\Environment\SimpleEnvironment;
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Interfaces\AttributeInterface;
-use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\Interfaces\OnParameterMount;
 use CatPaw\Core\Interfaces\StorageInterface;
 use CatPaw\Store\Readable;
 use CatPaw\Store\Writable;
-use CatPaw\Web\Implementations\ByteRange\SimpleByteRange;
-use CatPaw\Web\Implementations\FileServer\SimpleFileServer;
-use CatPaw\Web\Implementations\HttpInvoker\SimpleHttpInvoker;
-use CatPaw\Web\Implementations\OpenApi\SimpleOpenApi;
-use CatPaw\Web\Implementations\OpenApiState\SimpleOpenApiState;
-use CatPaw\Web\Implementations\RequestHandler\SimpleRequestHandler;
-use CatPaw\Web\Implementations\Router\SimpleRouter;
-use CatPaw\Web\Implementations\RouteResolver\SimpleRouteResolver;
-use CatPaw\Web\Implementations\Server\SimpleServer;
-use CatPaw\Web\Implementations\ViewEngine\LatteViewEngine;
-use CatPaw\Web\Implementations\Websocket\SimpleWebsocket;
-use CatPaw\Web\Interfaces\ByteRangeInterface;
-use CatPaw\Web\Interfaces\FileServerInterface;
-use CatPaw\Web\Interfaces\HttpInvokerInterface;
-use CatPaw\Web\Interfaces\OpenApiInterface;
-use CatPaw\Web\Interfaces\OpenApiStateInterface;
-use CatPaw\Web\Interfaces\RouteResolverInterface;
-use CatPaw\Web\Interfaces\RouterInterface;
-use CatPaw\Web\Interfaces\ServerInterface;
-use CatPaw\Web\Interfaces\ViewEngineInterface;
-use CatPaw\Web\Interfaces\WebsocketInterface;
+use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 use Closure;
 use Phar;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
+
 use ReflectionParameter;
 use Throwable;
-use function trim;
 
 class Container {
     private function __construct() {
+    }
+
+    /**
+     * Require libraries.
+     * @param  string                $librariesPath Path to the libraries directory.
+     * @return Unsafe<array<string>> list of files scanned.
+     */
+    public static function requireLibraries(string $librariesPath):Unsafe {
+        $isPhar = isPhar();
+        if ('' === trim($librariesPath)) {
+            /** @var Unsafe<array<string>> */
+            return ok([]);
+        }
+
+        if ($isPhar) {
+            $librariesPath = Phar::running()."/$librariesPath";
+        }
+
+        if (isFile($librariesPath)) {
+            require_once($librariesPath);
+            /** @var Unsafe<array<string>> */
+            return ok([$librariesPath]);
+        } else if (!isDirectory($librariesPath)) {
+            /** @var Unsafe<array<string>> */
+            return ok([]);
+        }
+
+        $flatList = Directory::flat($librariesPath)->unwrap($error);
+        if ($error) {
+            return  error($error);
+        }
+
+        $phpFileNames = [];
+
+        foreach ($flatList as $fileName) {
+            if (!str_ends_with(strtolower($fileName), '.php')) {
+                continue;
+            }
+            require_once($fileName);
+            $phpFileNames[] = $fileName;
+        }
+        /** @var Unsafe<array<string>> */
+        return ok($phpFileNames);
+    }
+
+
+    /**
+     * Load default providers, such as the logger and the http client providers.
+     * @param  string       $applicationName Name of the application.
+     * @return Unsafe<None>
+     */
+    public static function loadDefaultProviders(string $applicationName):Unsafe {
+        /** @var LoggerInterface $logger */
+        $logger = LoggerFactory::create(loggerName: $applicationName)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+
+        Container::provide(LoggerInterface::class, $logger);
+        Container::provide(HttpClient::class, static function() {
+            return HttpClientBuilder::buildDefault();
+        });
+
+        return ok();
     }
 
     /**
@@ -92,43 +132,36 @@ class Container {
 
     /**
      * @param  ReflectionFunction|ReflectionMethod           $reflection
-     * @param  DependenciesOptions                           $options
      * @return Unsafe<array<int,DependencySearchResultItem>>
      */
     private static function findFunctionDependencies(
-        ReflectionFunction|ReflectionMethod $reflection,
-        DependenciesOptions $options,
+        ReflectionFunction|ReflectionMethod $reflection
     ):Unsafe {
         try {
-            $defaultArguments     = $options->defaultArguments;
             $reflectionParameters = $reflection->getParameters();
             $items                = [];
             foreach ($reflectionParameters as $key => $reflectionParameter) {
-                $defaultArgument = $defaultArguments[$key] ?? null;
-                $isOptional      = $reflectionParameter->isOptional();
-                $defaultValue    = $reflectionParameter->isDefaultValueAvailable()?$reflectionParameter->getDefaultValue():null;
-                $unwrappedType   = ReflectionTypeManager::unwrap($reflectionParameter);
-                $type            = $unwrappedType?$unwrappedType->getName():'';
-                $name            = $reflectionParameter->getName();
-                $attributes      = $reflectionParameter->getAttributes();
-
-                if ('bool' === $type) {
-                    $negative = false;
-                } else {
-                    $negative = null;
+                $unwrappedType = ReflectionTypeManager::unwrap($reflectionParameter);
+                $wrappedType   = ReflectionTypeManager::wrap($reflectionParameter);
+                $type          = $unwrappedType?$unwrappedType->getName():'';
+                if (FileServerOverwriteInterface::class === $type) {
+                    echo "here\n";
                 }
+                $name       = $reflectionParameter->getName();
+                $attributes = $reflectionParameter->getAttributes();
 
-                $defaultCalculated = ($defaultArgument ?? $negative)?$defaultArgument:$negative;
+                $isOptional   = $wrappedType->allowsDefaultValue() || $wrappedType->allowsNullValue();
+                $defaultValue = match ($wrappedType->allowsDefaultValue()) {
+                    true    => $wrappedType->getDefaultValue(),
+                    default => match ($wrappedType->allowsBoolean() || $wrappedType->allowsFalse()) {
+                        true    => false,
+                        default => null,
+                    }
+                };
 
-                if (!$defaultCalculated && $isOptional) {
-                    $defaultValue = $defaultValue ?? $negative;
-                } else {
-                    $defaultValue = $defaultCalculated;
-                }
 
                 $items[] = new DependencySearchResultItem(
                     reflectionParameter: $reflectionParameter,
-                    defaultArgument: $defaultArgument,
                     isOptional: $isOptional,
                     defaultValue: $defaultValue,
                     type: $type,
@@ -163,7 +196,7 @@ class Container {
             );
         }
         $parameters = [];
-        $results    = self::findFunctionDependencies($reflection, $options)->unwrap($error);
+        $results    = self::findFunctionDependencies($reflection)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -201,7 +234,15 @@ class Container {
                 // @phpstan-ignore-next-line
                 $instance = Container::get($type)->unwrap($error);
                 if ($error) {
-                    return error($error);
+                    if (!$result->isOptional) {
+                        return error($error);
+                    }
+                    $logger = Container::get(LoggerInterface::class)->unwrap($loggerError);
+                    if ($loggerError) {
+                        return error($loggerError);
+                    }
+                    $logger->warning($error);
+                    $instance = $result->defaultValue;
                 }
                 $parameters[$key] = $instance;
             }
@@ -250,71 +291,6 @@ class Container {
         }
 
         return ok($parameters);
-    }
-
-    /**
-     * Load libraries and create singletons for the container.
-     * @param  string                $path
-     * @param  bool                  $clear if true, the container will be cleared before loading.
-     * @return Unsafe<array<string>> list of files scanned.
-     */
-    public static function load(
-        string $path,
-        bool $clear = false,
-    ):Unsafe {
-        if ($clear) {
-            Container::clearAll();
-        }
-
-        if (!Container::isProvidedOrExists(LoggerInterface::class)) {
-            $logger = LoggerFactory::create()->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
-            Container::provide(LoggerInterface::class, $logger);
-        } else {
-            $logger = Container::get(LoggerInterface::class)->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
-        }
-
-        /** @var LoggerInterface $logger */
-
-        $isPhar = isPhar();
-        if ('' === trim($path)) {
-            /** @var Unsafe<array<string>> */
-            return ok([]);
-        }
-
-        if ($isPhar) {
-            $path = Phar::running()."/$path";
-        }
-
-        if (isFile($path)) {
-            require_once($path);
-            /** @var Unsafe<array<string>> */
-            return ok([$path]);
-        } else if (!isDirectory($path)) {
-            /** @var Unsafe<array<string>> */
-            return ok([]);
-        }
-
-        $flatList = Directory::flat($path)->unwrap($error);
-        if ($error) {
-            return  error($error);
-        }
-
-        $phpFileNames = [];
-
-        foreach ($flatList as $fileName) {
-            if (str_ends_with(strtolower($fileName), '.php')) {
-                continue;
-            }
-            $phpFileNames[] = $fileName;
-        }
-        /** @var Unsafe<array<string>> */
-        return ok($phpFileNames);
     }
 
     /**
@@ -392,8 +368,8 @@ class Container {
             }
 
             return ok($result);
-        } catch(Throwable $e) {
-            return error($e);
+        } catch(Throwable $error) {
+            return error($error);
         }
     }
 
@@ -415,12 +391,12 @@ class Container {
     }
 
     /**
-     * Check if a name is provided or if it matches any singleton (in that order).
+     * Check if a name is provided.
      * @param  string $name
      * @return bool
      */
-    public static function isProvidedOrExists(string $name): bool {
-        return  Provider::exists($name) || Singleton::exists($name);
+    public static function isProvided(string $name): bool {
+        return  Provider::isset($name);
     }
 
     /**
@@ -432,109 +408,45 @@ class Container {
      */
     public static function provide(string $name, callable|object $value): void {
         if (is_callable($value)) {
-            Singleton::unset($name);
             Provider::set($name, $value);
             return;
         }
-        Provider::unset($name);
-        Singleton::set($name, $value);
+        Provider::set($name, static fn () => $value);
     }
 
     /**
-     * Remove all providers and cached services and singletons.
+     * Remove all providers.
      * @return void
      */
     public static function clearAll(): void {
-        Singleton::clearAll();
         Provider::clearAll();
-    }
-
-
-    private static bool $defaultsProvided = false;
-
-    /**
-     * Load default providers and singletons.
-     * @param  string       $name
-     * @return Unsafe<None>
-     */
-    public static function loadDefaults(string $name):Unsafe {
-        if (self::$defaultsProvided) {
-            return ok();
-        }
-
-
-        return anyError(function() use ($name) {
-            $logger = LoggerFactory::create($name)->try();
-            Container::provide(LoggerInterface::class, $logger);
-            
-            Container::provide(EnvironmentInterface::class, new SimpleEnvironment(logger: $logger));
-
-            Container::provide(HttpClient::class, fn () => HttpClientBuilder::buildDefault());
-
-            $byteRange = new SimpleByteRange(logger: $logger);
-            Container::provide(ByteRangeInterface::class, $byteRange);
-            
-            $openApiState = new SimpleOpenApiState();
-            Container::provide(OpenApiStateInterface::class, $openApiState);
-            
-            $openApi = new SimpleOpenApi(openApiState: $openApiState);
-            Container::provide(OpenApiInterface::class, $openApi);
-            
-            $router = new SimpleRouter(openApiState: $openApiState);
-            Container::provide(RouterInterface::class, $router);
-            
-            $viewEngine = new LatteViewEngine(logger: $logger);
-            Container::provide(ViewEngineInterface::class, $viewEngine);
-            
-            $httpInvoker = new SimpleHttpInvoker(viewEngine:$viewEngine);
-            Container::provide(HttpInvokerInterface::class, $httpInvoker);
-            
-            $routeResolver = new SimpleRouteResolver(router: $router, httpInvoker: $httpInvoker);
-            Container::provide(RouteResolverInterface::class, $routeResolver);
-            
-            $fileServer = new SimpleFileServer(logger: $logger, byteRange: $byteRange);
-            Container::provide(FileServerInterface::class, $fileServer);
-            
-            $requestHandler = new SimpleRequestHandler(logger: $logger, routeResolver: $routeResolver);
-            Container::provide(RequestHandler::class, $requestHandler);
-            
-            $server = new SimpleServer(
-                router: $router,
-                logger: $logger,
-                routeResolver: $routeResolver,
-                requestHandler: $requestHandler,
-                viewEngine: $viewEngine,
-            );
-            Container::provide(ServerInterface::class, $server);
-
-            Container::provide(WebsocketInterface::class, fn () => new SimpleWebsocket(
-                logger: $logger,
-                server: $server,
-            ));
-
-            self::$defaultsProvided = true;
-            return ok();
-        });
     }
 
     /**
      * Get an instance of the given class.
-     * 
-     * - Services and Singletons are backed by an internal cache, which you can reset by invoking `Container::clear()`.
-     * - This method will take care of dependency injections.
-     * - Providers' results are not cached.
      * @template T
      * @param  class-string<T> $name
      * @param  mixed           $args
      * @return Unsafe<T>
      */
     public static function get(string $name, ...$args):Unsafe {
-        if (Singleton::exists($name)) {
-            return ok(Singleton::get($name));
+        if (Provider::isset($name)) {
+            return ok(Provider::get($name)(...$args));
         }
 
-        if (Provider::exists($name)) {
-            return ok(Provider::get($name)(...$args));
+        if (interface_exists($name)) {
+            $providerClassName = Provider::findNameByInterface($name)->unwrap($error);
+            if ($error) {
+                return error($error);
+            }
+            if (!$providerClassName) {
+                return error("Interface `$name` doesn't seem to be provided.\nMake sure you're providing it by invoking `Container::provide()` or by adding the `#[Provider]` attribute to any class that implements it.");
+            }
+
+            Provider::setAlias($providerClassName, $name);
+
+            // @phpstan-ignore-next-line
+            return self::get($providerClassName, ...$args);
         }
 
         if ('callable' === $name) {
@@ -543,48 +455,35 @@ class Container {
             /** @var Unsafe<T> */
             return ok((object)[]);
         }
+
         $reflection = new ReflectionClass($name);
 
         if (AttributeResolver::issetClassAttribute($reflection, Attribute::class)) {
             return error("Cannot instantiate $name because it's meant to be an attribute.");
         }
 
-        /** @var Singleton $singleton */
-        $singleton = Singleton::findByClass($reflection)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        /** @var Service $service */
-        $service = Service::findByClass($reflection)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
+        $instance    = null;
         $constructor = $reflection->getConstructor() ?? false;
 
         if ($constructor) {
-            $dependencies = self::dependencies($constructor)->unwrap($error);
-            if ($error) {
-                return error($error);
+            $dependencies = self::dependencies($constructor)->unwrap($dependenciesError);
+            if ($dependenciesError) {
+                return error($dependenciesError);
             }
         } else {
             $dependencies = [];
         }
 
-        $instance = null;
-
-        // @phpstan-ignore-next-line
-        if ($singleton || $service) {
-            // @phpstan-ignore-next-line
-            if ($service) {
-                $service->onClassInstantiation($reflection, $instance, $dependencies)->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
+        /** @var false|Provider $provider */
+        $provider = Provider::findByClass($reflection)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        if ($provider) {
+            $provider->onClassInstantiation($reflection, $instance, $dependencies)->unwrap($error);
+            if ($error) {
+                return error($error);
             }
-        } else {
-            return error("Cannot instantiate $name because it's not marked as a service or a singleton.");
         }
 
         if (!$instance) {

@@ -12,7 +12,6 @@ use const CatPaw\Web\APPLICATION_XML;
 use CatPaw\Web\Attributes\Param;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
-
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
 use const CatPaw\Web\TEXT_PLAIN;
@@ -21,9 +20,9 @@ use PHPUnit\Framework\TestCase;
 
 class WebTest extends TestCase {
     public function testAll():void {
-        Container::loadDefaults("Test")->unwrap($error);
+        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
-        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
         $server = Container::get(ServerInterface::class)->unwrap($error);
         $this->assertNull($error);

@@ -16,9 +16,9 @@ use PHPUnit\Framework\TestCase;
 
 class AstTest extends TestCase {
     public function testAll():void {
-        Container::loadDefaults("Test")->unwrap($error);
+        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
-        Container::load(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
             yield Container::run($this->makeSureCStyleParserWorks(...));

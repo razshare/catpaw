@@ -7,12 +7,14 @@ use Amp\Websocket\Server\Rfc6455Acceptor;
 use Amp\Websocket\Server\Websocket;
 use Amp\Websocket\Server\WebsocketClientHandler;
 use CatPaw\Core\Attributes\Entry;
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\None;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\WebsocketInterface;
 use Psr\Log\LoggerInterface;
 
+#[Provider]
 class SimpleWebsocket implements WebsocketInterface {
     private HttpServer $httpServer;
     public function __construct(

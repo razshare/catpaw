@@ -1,11 +1,11 @@
 <?php
 namespace CatPaw\Web\Implementations\Router;
 
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\DependenciesOptions;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\None;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Unsafe;
@@ -34,13 +34,13 @@ use CatPaw\Web\Route;
 use CatPaw\Web\RouterContext;
 use CatPaw\Web\SuccessResponseModifier;
 use Closure;
-
 use function implode;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 use Throwable;
 
+#[Provider]
 class SimpleRouter implements RouterInterface {
     public readonly RouterContext $context;
     public function __construct(
@@ -750,7 +750,7 @@ class SimpleRouter implements RouterInterface {
             $originalRoute = $this->context->findRoute($originalSymbolicMethod, $originalSymbolicPath);
             $this->custom($originalSymbolicMethod, $aliasSymbolicPath, $originalRoute->function);
         } else {
-            return error("Trying to create alias \"$aliasSymbolicPath\" => \"$originalSymbolicPath\", but the original route \"$originalSymbolicPath\" has not been defined.\n");
+            return error("Trying to create alias \"$aliasSymbolicPath\" => \"$originalSymbolicPath\", but the original route \"$originalSymbolicPath\" has not been defined.");
         }
         return ok();
     }

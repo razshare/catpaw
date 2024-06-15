@@ -51,7 +51,7 @@ readonly class Unsafe {
     }
 
     /**
-     * Get the value or throw the exception if present.
+     * Get the value or throw the error if present.
      * @throws Error
      * @return T
      */

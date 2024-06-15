@@ -5,6 +5,7 @@ namespace CatPaw\Web\Implementations\RequestHandler;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\Response;
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Container;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\FileServerInterface;
@@ -12,6 +13,7 @@ use CatPaw\Web\Interfaces\RouteResolverInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
+#[Provider]
 readonly class SimpleRequestHandler implements RequestHandler {
     public function __construct(
         private LoggerInterface $logger,

@@ -1,11 +1,10 @@
 <?php
 namespace CatPaw\Web\Implementations\ViewEngine;
 
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Directory;
-
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
-
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
@@ -15,6 +14,7 @@ use Latte\Loaders\StringLoader;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
+#[Provider]
 class LatteViewEngine implements ViewEngineInterface {
     private Engine $latte;
     private string $temporaryDirectory = '.tmp';
@@ -58,10 +58,10 @@ class LatteViewEngine implements ViewEngineInterface {
             $shortAlias        = preg_replace('/.\w+$/', '', $componentFullName);
             $this->loadComponentFromFile($componentFullName, [$shortAlias, $fileName], $fileName)->unwrap($error);
             if ($error) {
-                $this->logger->error("Error while trying to load component `$componentFullName`.\n");
+                $this->logger->error("Error while trying to load component `$componentFullName`.");
                 return error($error);
             }
-            $this->logger->info("Component `$componentFullName` loaded.\n");
+            $this->logger->info("Component `$componentFullName` loaded.");
         }
         return ok();
     }

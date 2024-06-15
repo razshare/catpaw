@@ -12,10 +12,9 @@ use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use CatPaw\Web\ProducedResponse;
-use CatPaw\Web\Services\OpenApiStateService;
 
 /**
- * Describe the type of content the route handler produces so that the `OpenApiStateService` can handle it.
+ * Describe the type of content the route handler produces so that the `OpenApiInterface` can handle it.
  *
  * ## Example
  *

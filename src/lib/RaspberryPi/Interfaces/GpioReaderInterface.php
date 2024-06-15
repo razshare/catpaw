@@ -4,7 +4,7 @@ namespace CatPaw\RaspberryPi\Interfaces;
 
 use CatPaw\Core\Unsafe;
 
-interface GpioReader {
+interface GpioReaderInterface {
     /**
      * Read data from the pin.
      * @return Unsafe<string>
