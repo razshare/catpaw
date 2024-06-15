@@ -11,7 +11,6 @@ use CatPaw\Core\File;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\ByteRangeInterface;
 use CatPaw\Web\Interfaces\FileServerInterface;
-use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Mime;
 use Psr\Log\LoggerInterface;
@@ -26,8 +25,7 @@ readonly class SimpleFileServer implements FileServerInterface {
     public string $fallback;
     public function __construct(
         private LoggerInterface $logger,
-        private ByteRangeInterface $byteRange,
-        private false|FileServerOverwriteInterface $overwrite = false,
+        private ByteRangeInterface $byteRange
     ) {
         $this->fallback = "index.html";
     }
@@ -89,16 +87,21 @@ readonly class SimpleFileServer implements FileServerInterface {
     }
 
     public function serve(Request $request):Response {
+        $logger    = $this->logger;
         $path      = urldecode($request->getUri()->getPath());
         $fallback  = $this->fallback;
-        $overwrite = $this->overwrite;
+        $overwrite = Container::get(\CatPaw\Web\Interfaces\FileServerOverwriteInterface::class)->unwrap($error);
+        if ($error) {
+            $overwrite = false;
+            $logger->info("File server couldn't find an overwrite interface, proceeding without one.");
+        }
         $byteRange = $this->byteRange;
-        $logger    = $this->logger;
         $server    = Container::get(ServerInterface::class)->unwrap($error);
 
         if ($error) {
             return $this->failure("Server not found.");
         }
+        
 
         if (!$server->getStaticsLocation() || strpos($path, '../')) {
             return $this->notFound();
