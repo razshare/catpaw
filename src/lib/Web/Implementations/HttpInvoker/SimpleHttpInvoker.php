@@ -13,6 +13,10 @@ use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
+use CatPaw\Core\None;
+
+use const CatPaw\Core\NONE;
+use function CatPaw\Core\ok;
 use CatPaw\Core\Unsafe;
 use CatPaw\Web\Accepts;
 use CatPaw\Web\Body;
@@ -26,6 +30,7 @@ use CatPaw\Web\Interfaces\ViewEngineInterface;
 use CatPaw\Web\Interfaces\ViewInterface;
 use CatPaw\Web\Page;
 use CatPaw\Web\RequestContext;
+
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
 
@@ -36,6 +41,87 @@ use Throwable;
 #[Provider]
 class SimpleHttpInvoker implements HttpInvokerInterface {
     public function __construct(public readonly ViewEngineInterface $viewEngine) {
+    }
+
+    /**
+     * 
+     * @param  Unsafe                   $value
+     * @return Unsafe<ResponseModifier>
+     */
+    private static function renderUnsafe(Unsafe $value):Unsafe {
+        static $pico      = '';
+        static $style     = '';
+        static $allStyles = '';
+        $result           = $value->unwrap($error);
+
+        if (NONE === $result || $result instanceof None) {
+            $result = '';
+        }
+
+        if ($error) {
+            $message = $error->getMessage();
+            $trace   = $error->getTrace();
+
+            if ('' === $style) {
+                $style = File::readFile(asFileName(__DIR__, './error.css'))->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
+
+            if ('' === $pico) {
+                $pico = File::readFile(asFileName(__DIR__, './pico.css'))->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
+
+            if ('' === $allStyles) {
+                $allStyles = "<style>$pico\n$style</style>";
+            }
+
+
+            ["file" => $mainFile, "line" => $mainLine] = $trace[0];
+
+            $content = <<<HTML
+                $allStyles
+                <div class="error-screen">
+                <div class="error-header">
+                    <h1>Error</h1>
+                    <div class="error-message">$message</div>
+                    <a href="vscode://file$mainFile:$mainLine:0" class="error-jump-main">Jump to error</a>
+                </div>
+                <div class="error-body">
+                HTML;
+
+            foreach ($trace as ['file' => $file, 'line' => $line]) {
+                if ('' === trim($file)) {
+                    continue;
+                }
+                $content .= <<<HTML
+                        <div class="error-trace-entry">
+                            <span class="error-trace-line">$line</span>
+                            <a href="vscode://file$file:$line:0" class="error-trace-file">$file</a>
+                        </div>
+                    HTML;
+            }
+
+            $content .= <<<HTML
+                </div>
+                </div>
+                HTML;
+            $modifier = success($content)->as(TEXT_HTML);
+        } else {
+            try {
+                $modifier = success((string)$result)->as(TEXT_HTML);
+            } catch(Throwable $error) {
+                $modifier = self::renderUnsafe(error($error))->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
+        }
+        return ok($modifier);
     }
 
     /**
@@ -73,50 +159,9 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         $modifier = $function(...$dependencies);
 
         if ($modifier instanceof Unsafe) {
-            $unsafeModifier = $modifier->unwrap($unsafeModifierError);
-            if ($unsafeModifierError) {
-                $message = $unsafeModifierError->getMessage();
-                $trace   = $unsafeModifierError->getTrace();
-
-                $contents = File::readFile(asFileName(__DIR__, './error.css'))->unwrap($error);
-
-                if ($error) {
-                    return error($error);
-                }
-
-                $styles                                    = "<style>$contents</style>";
-                ["file" => $mainFile, "line" => $mainLine] = $trace[0];
-
-                $content = <<<HTML
-                    $styles
-                    <div class="error-screen">
-                    <div class="error-header">
-                        <h1>Error</h1>
-                        <div class="error-message">$message</div>
-                        <a href="vscode://file$mainFile:$mainLine:0" class="error-jump-main">Jump to error</a>
-                    </div>
-                    <div class="error-body">
-                    HTML;
-
-                foreach ($trace as ['file' => $file, 'line' => $line]) {
-                    if ('' === trim($file)) {
-                        continue;
-                    }
-                    $content .= <<<HTML
-                            <div class="error-trace-entry">
-                                <span class="error-trace-line">$line</span>
-                                <a href="vscode://file$file:$line:0" class="error-trace-file">$file</a>
-                            </div>
-                        HTML;
-                }
-
-                $content .= <<<HTML
-                    </div>
-                    </div>
-                    HTML;
-                $modifier = success($content)->as(TEXT_HTML);
-            } else {
-                $modifier = success((string)$unsafeModifier)->as(TEXT_HTML);
+            $modifier = self::renderUnsafe($modifier)->unwrap($error);
+            if ($error) {
+                return error($error);
             }
         } else if ($modifier instanceof ViewInterface) {
             $componentFullName   = asFileName($context->route->workDirectory, 'view.latte');
