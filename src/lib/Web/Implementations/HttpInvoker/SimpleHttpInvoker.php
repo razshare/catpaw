@@ -45,7 +45,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
 
     /**
      * 
-     * @param  Unsafe                   $value
+     * @param  Unsafe<mixed>            $value
      * @return Unsafe<ResponseModifier>
      */
     private static function renderUnsafe(Unsafe $value):Unsafe {
