@@ -1,13 +1,14 @@
 #!/usr/bin/env php
 <?php
 use CatPaw\Core\Bootstrap;
-use function CatPaw\Core\command;
+use CatPaw\Core\Command;
+
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 
 require 'vendor/autoload.php';
 
-command(
+Command::create(
     signature: <<<SIGNATURE
         --entry
         --name

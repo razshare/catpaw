@@ -2,7 +2,8 @@
 
 use function CatPaw\Core\anyError;
 use function CatPaw\Core\Build\build;
-use function CatPaw\Core\command;
+
+use CatPaw\Core\Command;
 
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
@@ -23,11 +24,11 @@ use function CatPaw\Text\nocolor;
  */
 function main(): Unsafe {
     return anyError(fn () => match (true) {
-        command('--build --optimize', build(...))->try()                  => ok(),
-        command('--tips', tips(...))->try()                               => ok(),
-        command('--install-pre-commit', installPreCommit(...))->try()     => ok(),
-        command('--uninstall-pre-commit', uninstallPreCommit(...))->try() => ok(),
-        default                                                           => ok(print(<<<BASH
+        Command::create('--build --optimize', build(...))->try()                  => ok(),
+        Command::create('--tips', tips(...))->try()                               => ok(),
+        Command::create('--install-pre-commit', installPreCommit(...))->try()     => ok(),
+        Command::create('--uninstall-pre-commit', uninstallPreCommit(...))->try() => ok(),
+        default                                                                   => ok(print(<<<BASH
             \n
             --build [--optimize]            Builds the project into a .phar.
             --tips                          Some tips.

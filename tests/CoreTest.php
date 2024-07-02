@@ -6,7 +6,7 @@ use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
 use function CatPaw\Core\env;
 use CatPaw\Core\File;
-use function CatPaw\Core\goffi;
+use CatPaw\Core\GoffiContract;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
@@ -96,7 +96,7 @@ class CoreTest extends TestCase {
      */
     public function makeSureGoffiWorks():Unsafe {
         return anyError(function() {
-            $lib    = goffi(Contract::class, asFileName(__DIR__, './main.so'))->try();
+            $lib    = GoffiContract::create(Contract::class, asFileName(__DIR__, './main.so'))->try();
             $result = $lib->hello("world");
             $this->assertEquals("hello world", $result);
             return ok();

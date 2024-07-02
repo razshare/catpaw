@@ -86,11 +86,11 @@ function build(bool $optimize = false):Unsafe {
         $file->write(<<<PHP
             <?php
             use CatPaw\Core\Bootstrap;
-            use function CatPaw\Core\command;
+            use CatPaw\Core\Command;
 
             require 'vendor/autoload.php';
 
-            command(
+            Command::create(
                 signature: '--environment',
                 function: function(string \$environment = '') {
                     if(!\$environment){

@@ -37,7 +37,7 @@ readonly class Unsafe {
 
     /**
      *
-     * @param  null|Error $error
+     * @param  Error $error
      * @return T
      */
     public function unwrap(&$error = null) {
