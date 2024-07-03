@@ -168,7 +168,7 @@ function main(CommandInterface $command) {
 ## Flags
 
 Flags are option that don't accept any value.
-Any flag is automatically coerced into `'1'` when the user issues the flag, or `'0'` when the use doesn't issue the flag.
+Any flag is automatically coerced into `'1'` when the user issues the flag, or `'0'` when the user doesn't issue the flag.
 
 Casting flags to `bool` is pretty straight forward.
 
