@@ -8,8 +8,6 @@ You can use `Container::get()` to get a dependency by name.
 
 Although it is technically not required, it's good practice to name and provide your dependency using an interface.
 
-You have some dependencies already setup out of the box, for example the logger.
-
 ```php
 <?php
 use CatPaw\Core\Container;
