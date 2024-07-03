@@ -81,10 +81,11 @@ public function build(CommandBuilder $builder):Unsafe {
 ```
 Your command will the execute whenever the console user issues the required flags of your command.
 
-The same application can execute multiple commands asynchronously.
-
 > [!NOTE]
 > Generally you should always define at least one unique required flag using `$builder->withRequiredFlag()` in order to avoid ambiguity.
+
+> [!NOTE]
+> The same application can execute multiple commands asynchronously.
 
 The second method, `run()`, is where you can write your logic.
 
