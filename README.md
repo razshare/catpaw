@@ -4,26 +4,27 @@ Catpaw is an opinionated dependency injection library that comes with batteries 
 It leverages [php attributes](https://www.php.net/manual/en/language.attributes.overview.php) to provide declarative apis, and the [amphp](https://github.com/amphp/amp) platform to make your program asynchronous.
 
 
-| Table of Contents                                         |
-|-----------------------------------------------------------|
-| ⚡ [Error Management](./docs/0.error-managament.md)        |
-| 🌐 [Router](./docs/1.router.md)                           |
-| 🌐 [Path Parameters](./docs/2.path-parameters.md)         |
-| 🌐 [Open Api](./docs/18.open-api.md)                      |
-| 🌐 [Session](./docs/4.session.md)                         |
-| 🌐 [Byte Range Requests](./docs/7.byte-range-requests.md) |
-| ⚡ [Entry](./docs/5.entry.md)                              |
-| ⚡ [Custom Attributes](./docs/8.custom-attributes.md)      |
-| 💡 [RaspberryPi](./docs/11.raspberrypi.md)                |
-| ⚡ [Container](./docs/13.container.md)                       |
-| ⚡ [Stores](./docs/12.stores.md)                           |
-| ⚡ [Queues](./docs/21.queues.md)                           |
-| ⚡ [Schedule](./docs/22.schedule.md)                       |
-| ⚡ [Build](./docs/23.build.md)                             |
-| 🌐 [Websockets](./docs/24.websockets.md)                  |
-| 🌐 [View (Twig)](./docs/25.view.md)                              |
-| ⚡ [Signals](./docs/27.signals.md)                             |
-| ⚡ [Go interop](./docs/28.goffi.md)                             |
+| Table of Contents                                         | Description |
+|-----------------------------------------------------------|-------------|
+| ⚡ [Error Management](./docs/Error%20Management.md)       | Manage errors. |
+| 🌐 [Server Router](./docs/Server%20Router.md)                    | Create a server and define routes. |
+| 🌐 [Server Path Parameters](./docs/Server%20Path%20Parameters.md)         | Define path parameters in your routes. |
+| 🌐 [Server Open Api](./docs/Server%20Open%20Api.md)                      | Generate an Open Api definition. |
+| 🌐 [Server Session](./docs/Server%20Session.md)                         | Create and manage server sessions. |
+| 🌐 [Server Byte Range Requests](./docs/Server%20Byte%20Range%20Requests.md) | Serve byte range requests. |
+| 🌐 [Server Websockets](./docs/Server%20Websockets.md)                  | Serve websockets. |
+| 🌐 [Server Views](./docs/Server%20Views.md)                              | Serve view using Latte. |
+| ⚡ [Container](./docs/Container.md)                       | Provide dependencies and retrieve them. |
+| ⚡ [Entry](./docs/Entry.md)                              | Execute code when a dependency is resolved. |
+| ⚡ [Command](./docs/Command.md)                              | Create a console command. |
+| ⚡ [Custom Attributes](./docs/Custom%20Attributes.md)      | An easy way to define custom attributes with hooks that pierce into the framework. |
+| ⚡ [Stores](./docs/Stores.md)                           | Store data in memory and react to changes in said data. |
+| ⚡ [Queues](./docs/Queues.md)                           | Create in memory queues and tag them. |
+| ⚡ [Schedule](./docs/Schedule.md)                       | Schedule code execution using a human readable format. |
+| ⚡ [Signals](./docs/Signals.md)                             | Create signals and react to them. |
+| ⚡ [Build](./docs/Build.md)                             | Build your project into one single portable file. |
+| ⚡ [Go Interop](./docs/Go%20Interop.md)                             | Interop with Go. |
+| 💡 [RaspberryPi](./docs/RaspberryPi.md)                | Control your RaspberryPi's GPIOs. |
 
 
 > [!NOTE]

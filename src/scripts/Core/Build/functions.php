@@ -85,28 +85,21 @@ function build(bool $optimize = false):Unsafe {
 
         $file->write(<<<PHP
             <?php
-            use CatPaw\Core\Bootstrap;
-            use CatPaw\Core\Command;
+            use CatPaw\Core\ApplicationBundled;
+            use CatPaw\Core\Container;
+            use CatPaw\Core\Implementations\Command\SimpleCommand;
+            use CatPaw\Core\Interfaces\CommandInterface;
 
             require 'vendor/autoload.php';
 
-            Command::create(
-                signature: '--environment',
-                function: function(string \$environment = '') {
-                    if(!\$environment){
-                        \$environment = $environmentFallbackStringified;
-                    }
-
-                    Bootstrap::start(
-                        entry: "$entry",
-                        name: "$name",
-                        libraries: "$libraries",
-                        resources: '',
-                        environment: \$environment,
-                        dieOnChange: false,
-                    );
-                }
-            )->try();
+            Container::provide(CommandInterface::class, \$command = new SimpleCommand);
+            \$command->run(new ApplicationBundled(
+                entry: "$entry",
+                name: "$name",
+                libraries: "$libraries",
+                resources: '',
+                environment: $environmentFallbackStringified,
+            ))->try();
             PHP)->unwrap($error);
 
         $file->close();

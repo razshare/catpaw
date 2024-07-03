@@ -1,61 +1,11 @@
 #!/usr/bin/env php
 <?php
-use CatPaw\Core\Bootstrap;
-use CatPaw\Core\Command;
-
-use function CatPaw\Core\error;
-use function CatPaw\Core\ok;
+use CatPaw\Core\Application;
+use CatPaw\Core\Container;
+use CatPaw\Core\Implementations\Command\SimpleCommand;
+use CatPaw\Core\Interfaces\CommandInterface;
 
 require 'vendor/autoload.php';
 
-Command::create(
-    signature: <<<SIGNATURE
-        --entry
-        --name
-        --libraries
-        --resources
-        --die-on-change
-        --watch
-        --php
-        --environment
-        SIGNATURE,
-    function: function(
-        string $entry = '',
-        string $php = 'php',
-        string $name = 'App',
-        string $libraries = '',
-        string $resources = '',
-        string $environment = '',
-        bool $dieOnChange = false,
-        bool $watch = false,
-    ) {
-        global $argv;
-
-        if ('' === $entry) {
-            return error('No entry point specified. Use `--entry=src/main.php` to specify an entry point.');
-        }
-
-        if ($watch) {
-            $arguments   = array_filter(array_slice($argv, 1), fn ($option) => trim($option) !== '--watch');
-            $arguments[] = '--die-on-change';
-            Bootstrap::spawn(
-                binary: $php,
-                fileName: __FILE__,
-                arguments: $arguments,
-                entry: $entry,
-                libraries: $libraries,
-                resources: $resources,
-            );
-        } else {
-            Bootstrap::start(
-                entry: $entry,
-                name: $name,
-                libraries: $libraries,
-                resources: $resources,
-                environment: $environment,
-                dieOnChange: $dieOnChange,
-            );
-        }
-        return ok();
-    }
-)->try();
+Container::provide(CommandInterface::class, $command = new SimpleCommand);
+$command->run(new Application)->try();
