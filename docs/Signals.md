@@ -5,7 +5,7 @@ When a signal is _triggered_ all listener functions will be invoked.
 
 ## Usage
 
-- Use _signal()_ to create a signal
+- Use _Signal::create()_ to create a signal
 - Use _Signal::listen()_ to listen for the signal
 - Use _Signal::send()_ to trigger the signal
 
