@@ -11,11 +11,11 @@ When a signal is _triggered_ all listener functions will be invoked.
 
 ```php
 <?php
-use function CatPaw\Core\signal;
+use CatPaw\Core\Dignal;
 use function Amp\delay;
 
 function main(){
-    $printGreeting = signal();
+    $printGreeting = Signal::create();
 
     // Listen for the signal.
     $printGreeting->listen(fn () => print("hello foo!\n"));
@@ -39,11 +39,11 @@ Use _clear()_ in order to remove all listeners of the signal.
 
 ```php
 <?php
-use function CatPaw\Core\signal;
+use CatPaw\Core\Signal;
 use function Amp\delay;
 
 function main(){
-    $printGreeting = signal();
+    $printGreeting = Signal::create();
 
     $printGreeting->listen(fn () => print("hello foo!\n"));
     $printGreeting->listen(fn () => print("hello bar!\n"));
@@ -69,16 +69,16 @@ For example you can create _apis_ that receive signals and act on them, while th
 
 ```php
 <?php
+use CatPaw\Core\Signal;
 use function Amp\async;
 use function Amp\delay;
 use function CatPaw\Core\out;
-use function CatPaw\Core\signal;
 use function CatPaw\Core\execute;
 use function CatPaw\Core\anyError;
 
 function main(){
     return anyError(function(){
-        $kill = signal();
+        $kill = Signal::create();
 
         async(function() use($kill) {
             delay(2);
@@ -107,13 +107,13 @@ You can also use signals to synchronize functions that are being invoked in comp
 <?php
 use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Service;
-use function CatPaw\Core\signal;
+use CatPaw\Core\Signal;
 
 #[Service]
 class UserSignedInService {
     public readonly Signal $signedIn;
     private function __construct() {
-        $this->signedIn = signal();
+        $this->signedIn = Signal::create();
     }
 
     #[Entry] function start() {
@@ -126,7 +126,7 @@ class UserSignedInService {
 class UserSignedOffService {
     public readonly Signal $signedOff;
     private function __construct() {
-        $this->signedOff = signal();
+        $this->signedOff = Signal::create();
     }
 
     #[Entry] function start() {
@@ -164,4 +164,4 @@ Obviously this is a proof of concept, I'm not implementing the actual logic of d
 > - A signal cannot send values to its listeners.
 > - Signal listeners cannot be removed individually by design.
 >
-> If you want more control of the structure and behavior, see the [stores section](./12.stores.md).
+> If you want more control of the structure and behavior, see the [stores section](./Stores.md).
