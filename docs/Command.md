@@ -36,7 +36,7 @@ interface CommandRunnerInterface {
 
 The two methods have 2 different life cycles.
 
-The `build()` method executes immediately after invoking `CommandInterface::run()`.
+The `build()` method executes immediately after invoking `CommandInterface::run()`.\
 Inside `build()` you can attach options and flags to your command using `$builder->withRequiredFlag()` for defining a required flag
 ```php
 /**
@@ -79,9 +79,9 @@ public function build(CommandBuilder $builder):Unsafe {
     return ok();
 }
 ```
+Your command will the execute whenever the console user issues the required flags of your command.
 
-When the user issues the required flags and options of your command, the command will execute.\
-This means the same application can listen for multiple commands and multiple commands can execute at the same time in the same application.\
+The same application can execute multiple commands asynchronously.
 
 > [!NOTE]
 > Generally you should always define at least one unique required flag using `$builder->withRequiredFlag()` in order to avoid ambiguity.
