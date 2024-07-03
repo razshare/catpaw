@@ -195,8 +195,10 @@ final class Provider implements AttributeInterface, OnClassInstantiation {
                     return $instance;
                 };
                 self::set($name, $provider);
-                foreach (self::$aliases[$name] as $alias => $_) {
-                    self::set($alias, $provider);
+                if (isset(self::$aliases[$name])) {
+                    foreach (self::$aliases[$name] as $alias => $_) {
+                        self::set($alias, $provider);
+                    }
                 }
             } else {
                 $instance = new $name(...$dependencies);
