@@ -189,8 +189,11 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         }
 
         if (!$modifier instanceof ResponseModifier) {
-            $type = gettype($modifier);
-            return error("A route handler must always return a response modifier, a view, a websocket or an unsafe object. Route handler {$context->key} returned `$type` instead.");
+            try {
+                $modifier = success($modifier);
+            } catch(Throwable $error) {
+                return error($error);
+            }
         }
 
         $modifier->withRequestContext($context);
