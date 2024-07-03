@@ -33,7 +33,7 @@ class CoreTest extends TestCase {
 
 
     private function makeSureEnvWorks(EnvironmentInterface $environment): void {
-        $environment->setFileName(asFileName(__DIR__, 'env.ini'));
+        $environment->withFileName(asFileName(__DIR__, 'env.ini'));
         $environment->load()->unwrap($error);
         $this->assertNull($error);
         $sayHello = env("say.hello");

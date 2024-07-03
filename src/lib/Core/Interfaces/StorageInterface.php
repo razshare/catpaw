@@ -7,14 +7,14 @@ interface StorageInterface {
      * Get the storage by reference.
      * @return array<mixed>
      */
-    public function &getStorage():array;
+    public function &storage():array;
 
     /**
      * Set the storage by reference.
      * @param  array<mixed> $value
      * @return void
      */
-    public function setStorage(array &$value):void;
+    public function withStorage(array &$value):void;
 
     /**
      * Get the value.

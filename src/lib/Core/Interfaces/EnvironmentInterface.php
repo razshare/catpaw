@@ -19,7 +19,7 @@ interface EnvironmentInterface {
      * @param  string $fileName
      * @return void
      */
-    public function setFileName(string $fileName):void;
+    public function withFileName(string $fileName):void;
 
     /**
      * Clear all environment variables.

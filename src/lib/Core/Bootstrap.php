@@ -102,7 +102,7 @@ class Bootstrap {
             $env->set('DIE_ON_CHANGE', $dieOnChange);
 
             if ($environment) {
-                $env->setFileName($environment);
+                $env->withFileName($environment);
                 $env->load()->unwrap($error);
                 if ($error) {
                     self::kill((string)$error);
