@@ -7,9 +7,9 @@ interface OpenApiInterface {
      * You can safely expose this through a rest api.
      * @return array<mixed>
      */
-    public function getData():array;
+    public function data():array;
 
-    public function setTitle(string $title):void;
+    public function withTitle(string $title):void;
 
-    public function setVersion(string $title):void;
+    public function withVersion(string $title):void;
 }

@@ -93,7 +93,7 @@ readonly class MatchingPathConfiguration {
         $dynamics = [];
         foreach ($configurations as $configuration) {
             if ($configuration->isStatic) {
-                $pattern .= $configuration->param->getRegex();
+                $pattern .= $configuration->param->regex();
             } else {
                 $dynamics[] = $configuration;
                 // $pattern .= '('.$configuration->param->getRegex().')';
@@ -112,7 +112,7 @@ readonly class MatchingPathConfiguration {
             $configuration = $dynamics[$index - 1];
             $key           = $configuration->name;
             $receivedValue = $matches[$index];
-            $pattern       = $configuration->param                        ->getRegex();
+            $pattern       = $configuration->param                        ->regex();
             if (!preg_match("/^$pattern$/", $receivedValue)) {
                 $badRequestEntries[] = "Invalid value `$receivedValue` for parameter `$key` which is expected to match pattern `$pattern`.";
             }

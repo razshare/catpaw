@@ -32,7 +32,7 @@ class LatteViewEngine implements ViewEngineInterface {
         return $this;
     }
 
-    public function getTemporaryDirectoryLocation():string {
+    public function temporaryDirectoryLocation():string {
         return $this->temporaryDirectory;
     }
 

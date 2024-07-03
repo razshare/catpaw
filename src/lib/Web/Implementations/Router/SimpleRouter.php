@@ -214,9 +214,9 @@ class SimpleRouter implements RouterInterface {
                 context: $route,
             );
 
-            $this->context->setRoute($symbolicMethod, $symbolicPath, $route);
+            $this->context->withRoute($symbolicMethod, $symbolicPath, $route);
 
-            $route->setOptions($options);
+            $route->withOptions($options);
 
             if (!$ignoreOpenApi) {
                 $this->registerRouteForOpenApi($route)->unwrap($error);
@@ -286,13 +286,13 @@ class SimpleRouter implements RouterInterface {
             $schema = ["type" => $type];
 
 
-            $name     = $queryAttribute->getName();
-            $summary  = $summaryAttribute?$summaryAttribute->getValue():'';
+            $name     = $queryAttribute->name();
+            $summary  = $summaryAttribute?$summaryAttribute->value():'';
             $examples = [];
             foreach ($exampleAttributes as $exampleAttribute) {
                 $examples = [
                     ...$examples,
-                    ...($exampleAttribute->getValue() ?? []),
+                    ...($exampleAttribute->value() ?? []),
                 ];
             }
 
@@ -365,13 +365,13 @@ class SimpleRouter implements RouterInterface {
             $schema = ["type" => $type];
 
 
-            $name     = $headerAttribute->getKey();
-            $summary  = $summaryAttribute?$summaryAttribute->getValue():'';
+            $name     = $headerAttribute->key();
+            $summary  = $summaryAttribute?$summaryAttribute->value():'';
             $examples = [];
             foreach ($exampleAttributes as $exampleAttribute) {
                 $examples = [
                     ...$examples,
-                    ...($exampleAttribute->getValue() ?? []),
+                    ...($exampleAttribute->value() ?? []),
                 ];
             }
 
@@ -464,12 +464,12 @@ class SimpleRouter implements RouterInterface {
 
             $schema = ["type" => $type];
 
-            $summary  = $summaryAttribute?$summaryAttribute->getValue():'';
+            $summary  = $summaryAttribute?$summaryAttribute->value():'';
             $examples = [];
             foreach ($exampleAttributes as $exampleAttribute) {
                 $examples = [
                     ...$examples,
-                    ...($exampleAttribute->getValue() ?? []),
+                    ...($exampleAttribute->value() ?? []),
                 ];
             }
 
@@ -559,14 +559,14 @@ class SimpleRouter implements RouterInterface {
 
         /** @var Tag $tag */
         foreach ($route->tags as $tag) {
-            $tags[] = $tag->getValue();
+            $tags[] = $tag->value();
         }
 
         if ($consumes) {
             /** @var array<Consumes> $consumes */
             foreach ($consumes as $consumesLocal) {
-                foreach ($consumesLocal->getRequest() as $request) {
-                    foreach ($request->getValue() as $contentType => $content) {
+                foreach ($consumesLocal->request() as $request) {
+                    foreach ($request->value() as $contentType => $content) {
                         $requests[$contentType] = $content;
                     }
                 }
@@ -575,8 +575,8 @@ class SimpleRouter implements RouterInterface {
 
         if ($produces) {
             foreach ($produces as $producesLocal) {
-                foreach ($producesLocal->getResponse() as $response) {
-                    foreach ($response->getValue() as $status => $value) {
+                foreach ($producesLocal->response() as $response) {
+                    foreach ($response->value() as $status => $value) {
                         if ($responses[$status] ?? false) {
                             $content = [
                                 // @phpstan-ignore-next-line
@@ -652,19 +652,19 @@ class SimpleRouter implements RouterInterface {
         }
 
         if ($operationId) {
-            $operationIdValue = $operationId->getValue();
+            $operationIdValue = $operationId->value();
         } else {
             $operationIdValue = \sha1("$symbolicMethod:$symbolicPath:".\sha1(\json_encode($parameters)));
         }
 
-        $this->openApiState->setPath(
+        $this->openApiState->withPath(
             path: $symbolicPath,
             pathContent: [
                 ...$this->openApiState->createPathContent(
                     tags: $tags,
                     method     : $symbolicMethod,
                     operationId: $operationIdValue,
-                    summary    : $summary->getValue(),
+                    summary    : $summary->value(),
                     parameters : $parameters,
                     requestBody: $this->openApiState->createRequestBody(
                         description: $crequests > 0?'This is the body of the request':'',
@@ -680,11 +680,11 @@ class SimpleRouter implements RouterInterface {
     }
 
     /**
-     * @param  ReflectionMethod     $reflection_method
+     * @param  ReflectionMethod     $reflectionMethod
      * @return array{string,string}
      */
-    public function getMappedParameters(ReflectionMethod $reflection_method): array {
-        $reflectionParameters = $reflection_method->getParameters();
+    public function mappedParameters(ReflectionMethod $reflectionMethod): array {
+        $reflectionParameters = $reflectionMethod->getParameters();
         $namedAndTypedParams  = [];
         $namedParams          = [];
         foreach ($reflectionParameters as $reflectionParameter) {

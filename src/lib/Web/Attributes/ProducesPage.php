@@ -75,9 +75,9 @@ class ProducesPage implements AttributeInterface {
      * @param  OpenApiStateInterface $openApiState
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiStateInterface $openApiState): Unsafe {
-        foreach ($this->produces->getResponse() as $response) {
-            $response->setup($openApiState)->unwrap($error);
+    #[Entry] public function start(OpenApiStateInterface $openApiState): Unsafe {
+        foreach ($this->produces->response() as $response) {
+            $response->start($openApiState)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -90,10 +90,10 @@ class ProducesPage implements AttributeInterface {
      *
      * @return array<string>
      */
-    public function getContentType():array {
+    public function contentType():array {
         $contentType = [];
-        foreach ($this->produces->getResponse() as $response) {
-            $contentType[] = $response->getContentType();
+        foreach ($this->produces->response() as $response) {
+            $contentType[] = $response->contentType();
         }
         return $contentType;
     }
@@ -103,11 +103,11 @@ class ProducesPage implements AttributeInterface {
      *
      * @return array<ProducedResponse>
      */
-    public function getResponse():array {
-        return $this->produces->getResponse();
+    public function response():array {
+        return $this->produces->response();
     }
 
-    public function getProduces():Produces {
+    public function produces():Produces {
         return $this->produces;
     }
 }

@@ -64,7 +64,7 @@ class Produces implements AttributeInterface {
         protected bool $isErrorItem = false,
         protected string $errorClassName = ErrorItem::class,
     ) {
-        $this->setContentType($contentType);
+        $this->withContentType($contentType);
     }
 
     protected function createProducedResponse():ProducedResponse {
@@ -85,9 +85,9 @@ class Produces implements AttributeInterface {
      * @param  OpenApiStateInterface $openApiState
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiStateInterface $openApiState):Unsafe {
+    #[Entry] public function start(OpenApiStateInterface $openApiState):Unsafe {
         foreach ($this->response as $response) {
-            $response->setup($openApiState)->unwrap($error);
+            $response->start($openApiState)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -116,7 +116,7 @@ class Produces implements AttributeInterface {
      * @param  string|array<string> $contentType
      * @return void
      */
-    public function setContentType(string|array $contentType):void {
+    public function withContentType(string|array $contentType):void {
         $this->response = [];
         if (is_string($contentType)) {
             $contentType = [$contentType];
@@ -145,10 +145,10 @@ class Produces implements AttributeInterface {
      *
      * @return array<string>
      */
-    public function getContentType(): array {
+    public function contentType(): array {
         $contentType = [];
         foreach ($this->response as $response) {
-            $contentType[] = $response->getContentType();
+            $contentType[] = $response->contentType();
         }
         return $contentType;
     }
@@ -158,7 +158,7 @@ class Produces implements AttributeInterface {
      *
      * @return array<ProducedResponse>
      */
-    public function getResponse():array {
+    public function response():array {
         return $this->response;
     }
 }

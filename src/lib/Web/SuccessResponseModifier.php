@@ -62,7 +62,7 @@ class SuccessResponseModifier implements ResponseModifier {
         $this->update();
     }
 
-    public function setCookies(ResponseCookie ...$cookies):void {
+    public function withCookies(ResponseCookie ...$cookies):void {
         $this->cookies = $cookies;
     }
 
@@ -75,12 +75,12 @@ class SuccessResponseModifier implements ResponseModifier {
      * @param  T    $data
      * @return void
      */
-    public function setData(mixed $data):void {
+    public function withData(mixed $data):void {
         $this->data = $data;
         $this->update();
     }
 
-    public function setRequestContext(RequestContext $context):void {
+    public function withRequestContext(RequestContext $context):void {
         $this->context = $context;
     }
 
@@ -89,17 +89,17 @@ class SuccessResponseModifier implements ResponseModifier {
      * @param  array<string,string> $headers
      * @return void
      */
-    public function setHeaders(array $headers):void {
+    public function withHeaders(array $headers):void {
         $this->headers = $headers;
         $this->update();
     }
 
-    public function setStatus(int $status):void {
+    public function withStatus(int $status):void {
         $this->status = $status;
         $this->update();
     }
 
-    public function getData():mixed {
+    public function data():mixed {
         return $this->data;
     }
 
@@ -107,11 +107,11 @@ class SuccessResponseModifier implements ResponseModifier {
      *
      * @return array<string,string>
      */
-    public function getHeaders():array {
+    public function headers():array {
         return $this->headers;
     }
 
-    public function getStatus():int {
+    public function status():int {
         return $this->status;
     }
 
@@ -130,7 +130,7 @@ class SuccessResponseModifier implements ResponseModifier {
         }
 
         if (!$this->message) {
-            $this->message = HttpStatus::getReason($this->status);
+            $this->message = HttpStatus::reason($this->status);
         }
 
         $this->body = $this->data;
@@ -194,7 +194,7 @@ class SuccessResponseModifier implements ResponseModifier {
      *
      * @return Unsafe<Response>
      */
-    public function getResponse():Unsafe {
+    public function response():Unsafe {
         if ($this->bodyIsResponse) {
             return ok($this->body);
         }

@@ -33,14 +33,14 @@ class Param implements AttributeInterface, OnParameterMount {
     public function __construct(
         private string $regex = '',
     ) {
-        $this->setRegex($regex);
+        $this->withRegex($regex);
     }
 
-    public function getRegex(): string {
+    public function regex(): string {
         return $this->regex;
     }
 
-    public function setRegex(string $value): void {
+    public function withRegex(string $value): void {
         $this->regex = $value;
     }
 

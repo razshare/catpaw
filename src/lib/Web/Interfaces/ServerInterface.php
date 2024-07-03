@@ -19,7 +19,7 @@ interface ServerInterface {
      * Get the location of the static files the server is serving.
      * @return string
      */
-    public function getStaticsLocation():string;
+    public function staticsLocation():string;
 
     /**
      * List of middlewares to execute.

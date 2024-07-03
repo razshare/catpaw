@@ -36,7 +36,7 @@ class Header implements AttributeInterface, OnParameterMount {
     ) {
     }
 
-    public function getKey():string {
+    public function key():string {
         return $this->key;
     }
 

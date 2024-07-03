@@ -84,7 +84,7 @@ class SimpleServer implements ServerInterface {
         return ok();
     }
 
-    public function getStaticsLocation():string {
+    public function staticsLocation():string {
         return $this->staticsLocation;
     }
 

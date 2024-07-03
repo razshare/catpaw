@@ -67,7 +67,7 @@ final class HttpStatus {
     public const NOT_EXTENDED                    = 510;
     public const NETWORK_AUTHENTICATION_REQUIRED = 511;
 
-    public static function getReason(int $code): string {
+    public static function reason(int $code): string {
         static $reasons = [
             100 => 'Continue',
             101 => 'Switching Protocols',

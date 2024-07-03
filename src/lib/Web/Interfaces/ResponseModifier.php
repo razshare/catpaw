@@ -8,29 +8,29 @@ use CatPaw\Web\RequestContext;
 
 
 interface ResponseModifier {
-    public function setData(mixed $data):void;
-    public function setRequestContext(RequestContext $context):void;
-    public function setCookies(ResponseCookie ...$cookies):void;
+    public function withData(mixed $data):void;
+    public function withRequestContext(RequestContext $context):void;
+    public function withCookies(ResponseCookie ...$cookies):void;
     public function addCookies(ResponseCookie ...$cookies):void;
     /**
      *
      * @param  array<string,string> $headers
      * @return void
      */
-    public function setHeaders(array $headers):void;
-    public function setStatus(int $status):void;
-    public function getData():mixed;
+    public function withHeaders(array $headers):void;
+    public function withStatus(int $status):void;
+    public function data():mixed;
     /**
      *
      * @return array<string,string>
      */
-    public function getHeaders():array;
-    public function getStatus():int;
+    public function headers():array;
+    public function status():int;
     public function as(string $contentType):self;
     public function item():self;
     /**
      *
      * @return Unsafe<Response>
      */
-    public function getResponse():Unsafe;
+    public function response():Unsafe;
 }

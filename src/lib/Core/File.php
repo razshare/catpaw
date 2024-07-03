@@ -18,7 +18,7 @@ readonly class File {
      * @param  string      $fileName
      * @return Unsafe<int>
      */
-    public static function getSize(string $fileName):Unsafe {
+    public static function size(string $fileName):Unsafe {
         $size = filesize($fileName);
         if (false === $size) {
             return error("Could not retrieve size of file $fileName.");
@@ -102,7 +102,7 @@ readonly class File {
             return error($error);
         }
 
-        $stream = $source->getAmpFile();
+        $stream = $source->ampFile();
 
         return $destination->writeStream($stream);
     }
@@ -112,7 +112,7 @@ readonly class File {
      * @param  string               $fileName
      * @return Unsafe<array<mixed>>
      */
-    public static function getStatus(string $fileName):Unsafe {
+    public static function status(string $fileName):Unsafe {
         $status = getStatus($fileName);
         if (null === $status) {
             return error("Could not get status of file $fileName because it doesn't exist.");
@@ -124,7 +124,7 @@ readonly class File {
      * @param  string      $fileName
      * @return Unsafe<int>
      */
-    public static function getModificationTime(string $fileName):Unsafe {
+    public static function modificationTime(string $fileName):Unsafe {
         try {
             $mtime = getModificationTime($fileName);
             return ok($mtime);
@@ -510,7 +510,7 @@ readonly class File {
     /**
      * @return AmpFile
      */
-    public function getAmpFile():AmpFile {
+    public function ampFile():AmpFile {
         return $this->ampFile;
     }
 

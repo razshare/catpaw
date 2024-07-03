@@ -179,7 +179,7 @@ class Container {
 
                 $isOptional   = $wrappedType->allowsDefaultValue() || $wrappedType->allowsNullValue();
                 $defaultValue = match ($wrappedType->allowsDefaultValue()) {
-                    true    => $wrappedType->getDefaultValue(),
+                    true    => $wrappedType->defaultValue(),
                     default => match ($wrappedType->allowsBoolean() || $wrappedType->allowsFalse()) {
                         true    => false,
                         default => null,
@@ -309,7 +309,7 @@ class Container {
                     }
 
                     if ($parameters[$key] instanceof StorageInterface) {
-                        $parameters[$key] = &$parameters[$key]->getStorage();
+                        $parameters[$key] = &$parameters[$key]->storage();
                     }
                 }
             } catch(Throwable $e) {
@@ -470,7 +470,7 @@ class Container {
                 return error("Interface `$name` doesn't seem to be provided.\nMake sure you're providing it by invoking `Container::provide()` or by adding the `#[Provider]` attribute to any class that implements it.");
             }
 
-            Provider::setAlias($providerClassName, $name);
+            Provider::withAlias($providerClassName, $name);
 
             // @phpstan-ignore-next-line
             return self::get($providerClassName, ...$args);
@@ -485,7 +485,7 @@ class Container {
 
         $reflection = new ReflectionClass($name);
 
-        if (AttributeResolver::issetClassAttribute($reflection, Attribute::class)) {
+        if (AttributeResolver::classAttribute($reflection, Attribute::class)) {
             return error("Cannot instantiate $name because it's meant to be an attribute.");
         }
 

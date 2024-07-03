@@ -132,7 +132,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         $badRequestEntries = $context->badRequestEntries;
         if ($badRequestEntries) {
             $modifier = failure(join("\n", $badRequestEntries), HttpStatus::BAD_REQUEST);
-            return $modifier->getResponse();
+            return $modifier->response();
         }
         $onRequests         = $context->route->onRequest;
         $onResponses        = $context->route->onResponse;
@@ -172,11 +172,11 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                     return error("Component `$componentFullName` not found.");
                 }
                 try {
-                    $data = $this->viewEngine->render($componentFullName, $view->getProperties())->unwrap($error);
+                    $data = $this->viewEngine->render($componentFullName, $view->properties())->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
-                    $modifier = success($data, $view->getStatus(), $view->getHeaders())->as(TEXT_HTML);
+                    $modifier = success($data, $view->status(), $view->headers())->as(TEXT_HTML);
                 } catch(Throwable $error) {
                     return error($error);
                 }
@@ -193,7 +193,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             return error("A route handler must always return a response modifier, a view, a websocket or an unsafe object. Route handler {$context->key} returned `$type` instead.");
         }
 
-        $modifier->setRequestContext($context);
+        $modifier->withRequestContext($context);
 
         foreach ($dependencies as $dependency) {
             if ($dependency instanceof SessionInterface) {
@@ -209,7 +209,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             }
         }
 
-        return $modifier->getResponse();
+        return $modifier->response();
     }
 
     private function createDependenciesOptions(RequestContext $context):DependenciesOptions {
@@ -253,7 +253,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                     $size  = $context->requestQueries['size']  ?? 10;
                     return
                         Page::create(start: $start, size: $size)
-                            ->setUri($context->request->getUri());
+                            ->withUri($context->request->getUri());
                 },
             ],
             provides: [

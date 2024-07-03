@@ -102,7 +102,7 @@ class ConsumedRequest implements AttributeInterface {
         return $schema;
     }
 
-    public function getContentType():string {
+    public function contentType():string {
         return $this->type;
     }
 
@@ -110,11 +110,11 @@ class ConsumedRequest implements AttributeInterface {
      *
      * @return array<mixed>
      */
-    public function getValue():array {
+    public function value():array {
         return $this->request;
     }
 
-    public function getClassName():string {
+    public function className():string {
         return $this->className;
     }
 
@@ -123,10 +123,10 @@ class ConsumedRequest implements AttributeInterface {
      * @param  OpenApiStateInterface $openApiState
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiStateInterface $openApiState):Unsafe {
+    #[Entry] public function start(OpenApiStateInterface $openApiState):Unsafe {
         $isClass = class_exists($this->className);
         if ($isClass) {
-            $openApiState->setComponentObject($this->className)->unwrap($error);
+            $openApiState->withComponentObject($this->className)->unwrap($error);
             if ($error) {
                 return error($error);
             }

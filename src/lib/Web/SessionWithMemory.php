@@ -74,7 +74,7 @@ class SessionWithMemory implements SessionInterface {
      * @return void
      */
     public function apply(ResponseModifier $modifier):void {
-        $modifier->setCookies(new ResponseCookie('session-id', $this->id));
+        $modifier->withCookies(new ResponseCookie('session-id', $this->id));
     }
 
     /**

@@ -35,7 +35,7 @@ readonly class SpaFileServer implements FileServerInterface {
             public function overwrite(string $fileName, string $path): string {
                 // Required for Spa mode
                 if (isDirectory($fileName) || !File::exists($fileName)) {
-                    return "{$this->server->getStaticsLocation()}/index.html";
+                    return "{$this->server->staticsLocation()}/index.html";
                 }
                 return $fileName;
             }
@@ -88,7 +88,7 @@ readonly class SpaFileServer implements FileServerInterface {
         array $headers = []
     ):Response {
         if (false === $message) {
-            $message = HttpStatus::getReason($status);
+            $message = HttpStatus::reason($status);
         }
 
         return new Response(
@@ -106,12 +106,12 @@ readonly class SpaFileServer implements FileServerInterface {
         $byteRange = $this->byteRange;
         $logger    = $this->logger;
 
-        if (!$server->getStaticsLocation() || strpos($path, '../')) {
+        if (!$server->staticsLocation() || strpos($path, '../')) {
             return $this->notFound();
         }
 
         // This smells.
-        $fileName = $server->getStaticsLocation().$path;
+        $fileName = $server->staticsLocation().$path;
         $fileName = $overwrite->overwrite($fileName, $path);
 
 
@@ -153,9 +153,9 @@ readonly class SpaFileServer implements FileServerInterface {
             return $this->failure();
         }
 
-        $stream = $file->getAmpFile();
+        $stream = $file->ampFile();
 
-        $fileSize = File::getSize($fileName)->unwrap($error);
+        $fileSize = File::size($fileName)->unwrap($error);
         if ($error) {
             $logger->error($error);
             return $this->failure();

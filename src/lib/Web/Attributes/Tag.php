@@ -13,7 +13,7 @@ class Tag implements AttributeInterface {
     public function __construct(private string $value) {
     }
 
-    public function getValue():string {
+    public function value():string {
         return $this->value;
     }
 }

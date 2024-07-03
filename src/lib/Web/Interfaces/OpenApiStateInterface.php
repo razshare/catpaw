@@ -33,11 +33,11 @@ interface OpenApiStateInterface {
      * You can safely expose this through a rest api.
      * @return array<mixed>
      */
-    public function &getData():array;
+    public function &data():array;
 
-    public function setTitle(string $title):void;
+    public function withTitle(string $title):void;
 
-    public function setVersion(string $title):void;
+    public function withVersion(string $title):void;
 
     /**
      *
@@ -45,20 +45,20 @@ interface OpenApiStateInterface {
      * @param  array<mixed> $pathContent
      * @return void
      */
-    public function setPath(string $path, array $pathContent):void;
+    public function withPath(string $path, array $pathContent):void;
 
-    public function setComponentReference(string $className):string;
+    public function withComponentReference(string $className):string;
 
-    public function setComponentReferenceItem(string $className):string;
+    public function withComponentReferenceItem(string $className):string;
 
-    public function setComponentReferencePage(string $className):string;
+    public function withComponentReferencePage(string $className):string;
 
     /**
      *
      * @param  string       $className
      * @return Unsafe<None>
      */
-    public function setComponentObject(string $className):Unsafe;
+    public function withComponentObject(string $className):Unsafe;
 
 
     /**

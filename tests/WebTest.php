@@ -109,11 +109,11 @@ class WebTest extends TestCase {
         $this->assertNotEmpty($apiUsername->produces);
 
         foreach ($api->produces as $produces) {
-            $this->assertContains(TEXT_PLAIN, $produces->getContentType());
+            $this->assertContains(TEXT_PLAIN, $produces->contentType());
         }
 
         foreach ($apiUsername->produces as $produces) {
-            $this->assertContains(TEXT_HTML, $produces->getContentType());
+            $this->assertContains(TEXT_HTML, $produces->contentType());
         }
     }
 

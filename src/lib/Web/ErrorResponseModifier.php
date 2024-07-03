@@ -51,7 +51,7 @@ class ErrorResponseModifier implements ResponseModifier {
     }
 
 
-    public function setCookies(ResponseCookie ...$cookies):void {
+    public function withCookies(ResponseCookie ...$cookies):void {
         $this->cookies = $cookies;
     }
 
@@ -59,30 +59,30 @@ class ErrorResponseModifier implements ResponseModifier {
         $this->cookies = [...$this->cookies, ...$cookies];
     }
 
-    public function setData(mixed $data):void {
+    public function withData(mixed $data):void {
     }
 
-    public function setRequestContext(RequestContext $context):void {
+    public function withRequestContext(RequestContext $context):void {
         // $this->context = $context;
     }
 
-    public function setHeaders(array $headers):void {
+    public function withHeaders(array $headers):void {
         $this->headers = $headers;
     }
 
-    public function setStatus(int $status):void {
+    public function withStatus(int $status):void {
         $this->status = $status;
     }
 
-    public function getData():mixed {
+    public function data():mixed {
         return null;
     }
 
-    public function getHeaders():array {
+    public function headers():array {
         return $this->headers;
     }
 
-    public function getStatus():int {
+    public function status():int {
         return $this->status;
     }
 
@@ -103,7 +103,7 @@ class ErrorResponseModifier implements ResponseModifier {
      *
      * @return Unsafe<Response>
      */
-    public function getResponse():Unsafe {
+    public function response():Unsafe {
         if (APPLICATION_JSON === $this->contentType) {
             $body = json_encode($this->body);
             if (false === $body) {

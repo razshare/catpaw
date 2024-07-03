@@ -19,21 +19,21 @@ readonly class ExecuteResult implements Stringable {
     /**
      * @return int
      */
-    function getCode() : int {
+    function code() : int {
         return $this->code;
     }
     
     /**
      * @return string
      */
-    function getOutput() : string {
+    function output() : string {
         return $this->output;
     }
     
     /**
      * @return string
      */
-    function getError() : string {
+    function error() : string {
         return $this->error;
     }
 

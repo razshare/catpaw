@@ -95,7 +95,7 @@ readonly class Route {
         public false|IgnoreDescribe $ignoreDescribe,
     ) {
     }
-    public function setOptions(DependenciesOptions $options):void {
+    public function withOptions(DependenciesOptions $options):void {
         // @phpstan-ignore-next-line
         $this->options = $options;
     }

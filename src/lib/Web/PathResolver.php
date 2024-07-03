@@ -83,19 +83,19 @@ class PathResolver {
 
             $typeName = ReflectionTypeManager::unwrap($reflectionParameter) ?: 'string';
 
-            if ('' === $param->getRegex()) {
+            if ('' === $param->regex()) {
                 switch ($typeName) {
                     case 'int':
-                        $param->setRegex('[-+]?[0-9]+');
+                        $param->withRegex('[-+]?[0-9]+');
                         break;
                     case 'float':
-                        $param->setRegex('[-+]?[0-9]+\.[0-9]+');
+                        $param->withRegex('[-+]?[0-9]+\.[0-9]+');
                         break;
                     case 'string':
-                        $param->setRegex('[^\/]*');
+                        $param->withRegex('[^\/]*');
                         break;
                     case 'bool':
-                        $param->setRegex('(0|1|no?|y(es)?|false|true)');
+                        $param->withRegex('(0|1|no?|y(es)?|false|true)');
                         break;
                 }
             }

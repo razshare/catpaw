@@ -171,7 +171,7 @@ final class Provider implements AttributeInterface, OnClassInstantiation {
     /** @var array<string,array<string>> */
     private static array $aliases = [];
 
-    public static function setAlias(string $name, string $alias):void {
+    public static function withAlias(string $name, string $alias):void {
         if (!isset(self::$aliases[$name])) {
             self::$aliases[$name] = [];
         }

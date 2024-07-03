@@ -156,15 +156,15 @@ class SimpleOpenApiState implements OpenApiStateInterface {
      * You can safely expose this through a rest api.
      * @return array<mixed>
      */
-    public function &getData():array {
+    public function &data():array {
         return $this->json;
     }
 
-    public function setTitle(string $title):void {
+    public function withTitle(string $title):void {
         $this->json['info']['title'] = $title;
     }
 
-    public function setVersion(string $title):void {
+    public function withVersion(string $title):void {
         $this->json['info']['version'] = $title;
     }
 
@@ -174,7 +174,7 @@ class SimpleOpenApiState implements OpenApiStateInterface {
      * @param  array<mixed> $pathContent
      * @return void
      */
-    public function setPath(string $path, array $pathContent):void {
+    public function withPath(string $path, array $pathContent):void {
         if (isset($this->json['paths'][$path])) {
             $this->json['paths'][$path] = [
                 ...$this->json['paths'][$path],
@@ -185,17 +185,17 @@ class SimpleOpenApiState implements OpenApiStateInterface {
         $this->json['paths'][$path] = $pathContent;
     }
 
-    public function setComponentReference(string $className):string {
+    public function withComponentReference(string $className):string {
         $this->json['components']['schemas'][$className] = self::templateForObjectComponent($className);
         return "#/components/schemas/{$className}";
     }
 
-    public function setComponentReferenceItem(string $className):string {
+    public function withComponentReferenceItem(string $className):string {
         $this->json['components']['schemas']["{$className}Item"] = self::templateForItem($className);
         return "#/components/schemas/{$className}Item";
     }
 
-    public function setComponentReferencePage(string $className):string {
+    public function withComponentReferencePage(string $className):string {
         $this->json['components']['schemas']["{$className}Page"] = self::templateForPage($className);
         return "#/components/schemas/{$className}Page";
     }
@@ -205,7 +205,7 @@ class SimpleOpenApiState implements OpenApiStateInterface {
      * @param  string       $className
      * @return Unsafe<None>
      */
-    public function setComponentObject(string $className):Unsafe {
+    public function withComponentObject(string $className):Unsafe {
         try {
             $resolvedProperties = [];
             $reflection         = new ReflectionClass($className);
@@ -217,7 +217,7 @@ class SimpleOpenApiState implements OpenApiStateInterface {
                 $type                = $reflectionNamedType?$reflectionNamedType->getName():'string';
 
                 if (class_exists($type)) {
-                    $this->setComponentObject($type)->unwrap($error);
+                    $this->withComponentObject($type)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
@@ -246,7 +246,7 @@ class SimpleOpenApiState implements OpenApiStateInterface {
                         }
 
                         if (class_exists($subType)) {
-                            $this->setComponentObject($subType)->unwrap($error);
+                            $this->withComponentObject($subType)->unwrap($error);
                             if ($error) {
                                 return error($error);
                             }

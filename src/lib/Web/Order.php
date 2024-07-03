@@ -107,16 +107,16 @@ readonly class Order implements Stringable {
      *
      * @return array<string>
      */
-    public function getItems():array {
+    public function items():array {
         return $this->items;
     }
 
-    public function getDirection():string {
+    public function direction():string {
         return $this->direction;
     }
 
 
-    public function toQuery():string {
+    public function query():string {
         return "$this->direction:".urlencode(join(',', $this->items));
     }
 

@@ -76,7 +76,7 @@ readonly class SimpleFileServer implements FileServerInterface {
         array $headers = []
     ):Response {
         if (false === $message) {
-            $message = HttpStatus::getReason($status);
+            $message = HttpStatus::reason($status);
         }
 
         return new Response(
@@ -103,11 +103,11 @@ readonly class SimpleFileServer implements FileServerInterface {
         }
         
 
-        if (!$server->getStaticsLocation() || strpos($path, '../')) {
+        if (!$server->staticsLocation() || strpos($path, '../')) {
             return $this->notFound();
         }
 
-        $fileName = $server->getStaticsLocation().$path;
+        $fileName = $server->staticsLocation().$path;
 
         if ($overwrite) {
             $fileName = $overwrite->overwrite($fileName, $path);
@@ -152,9 +152,9 @@ readonly class SimpleFileServer implements FileServerInterface {
             return $this->failure();
         }
 
-        $stream = $file->getAmpFile();
+        $stream = $file->ampFile();
 
-        $fileSize = File::getSize($fileName)->unwrap($error);
+        $fileSize = File::size($fileName)->unwrap($error);
         if ($error) {
             $logger->error($error);
             return $this->failure();

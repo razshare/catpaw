@@ -269,7 +269,7 @@ readonly class CommandStatus {
      * @param  int    $code
      * @return string
      */
-    public static function getReason(int $code): string {
+    public static function reason(int $code): string {
         static $reasons = [
             0   => 'Success',
             1   => 'Operation not permitted',

@@ -95,7 +95,7 @@ readonly class SimpleByteRange implements ByteRangeInterface {
      */
     public function response(ByteRangeWriterInterface $interface): Unsafe {
         $headers    = [];
-        $rangeQuery = $interface->getRangeQuery()->unwrap($error);
+        $rangeQuery = $interface->rangeQuery()->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -106,7 +106,7 @@ readonly class SimpleByteRange implements ByteRangeInterface {
             return error($error);
         }
 
-        $contentLength = $interface->getContentLength()->unwrap($error);
+        $contentLength = $interface->contentLength()->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -115,7 +115,7 @@ readonly class SimpleByteRange implements ByteRangeInterface {
             return error("Could not retrieve file size.");
         }
 
-        $contentType = $interface->getContentType()->unwrap($error);
+        $contentType = $interface->contentType()->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -227,16 +227,16 @@ readonly class SimpleByteRange implements ByteRangeInterface {
                 ) {
                 }
 
-                public function getRangeQuery():Unsafe {
+                public function rangeQuery():Unsafe {
                     return ok($this->rangeQuery);
                 }
 
-                public function getContentType():Unsafe {
+                public function contentType():Unsafe {
                     return ok(Mime::findContentType($this->fileName));
                 }
 
-                public function getContentLength():Unsafe {
-                    $size = File::getSize($this->fileName)->unwrap($error);
+                public function contentLength():Unsafe {
+                    $size = File::size($this->fileName)->unwrap($error);
                     if ($error) {
                         return error($error);
                     }

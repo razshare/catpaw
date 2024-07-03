@@ -82,7 +82,7 @@ class Page {
      * @param  UriInterface $uri
      * @return Page
      */
-    public function setUri(UriInterface $uri):self {
+    public function withUri(UriInterface $uri):self {
         $this->query    = $uri->getQuery();
         $this->scheme   = $uri->getScheme();
         $this->hostname = $uri->getHost();

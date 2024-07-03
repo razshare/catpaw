@@ -14,18 +14,18 @@ class LatteView implements ViewInterface {
     /** @var array<string,mixed> */
     public array $properties = [];
 
-    public function getStatus(): int {
+    public function status(): int {
         return $this->status;
     }
 
     /**
      * @return array<string,mixed>
      */
-    public function getHeaders(): array {
+    public function headers(): array {
         return $this->headers;
     }
 
-    public function getProperties(): array {
+    public function properties(): array {
         return $this->properties;
     }
 

@@ -41,7 +41,7 @@ class FileName implements Stringable {
         return join($parts)?:'';
     }
 
-    private static function getAbsolutePath(string $path):string {
+    private static function absolutePath(string $path):string {
         $root = match (true) {
             str_starts_with($path, './')  => './',
             str_starts_with($path, '../') => '../',
@@ -84,13 +84,13 @@ class FileName implements Stringable {
             if ($this->usingPhar) {
                 $pharFileName = "$phar/$localizedFileName";
                 if (!file_exists($pharFileName)) {
-                    return self::getAbsolutePath($localizedFileName);
+                    return self::absolutePath($localizedFileName);
                 }
                 return $pharFileName;
             }
-            return self::getAbsolutePath($localizedFileName);
+            return self::absolutePath($localizedFileName);
         } else {
-            return self::getAbsolutePath(self::asFileName($this->path));
+            return self::absolutePath(self::asFileName($this->path));
         }
     }
 }

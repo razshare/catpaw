@@ -137,7 +137,7 @@ class Filter {
     /**
      * @return array<string,mixed>
      */
-    public function getProperties() {
+    public function properties() {
         /** @var array<string, mixed> */
         $properties = [];
         foreach ($this->items as $item) {// These are reserved for pagination.

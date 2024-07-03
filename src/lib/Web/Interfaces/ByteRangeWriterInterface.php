@@ -10,19 +10,19 @@ interface ByteRangeWriterInterface {
      * Get the content length of the response.
      * @return Unsafe<int>
      */
-    public function getContentLength():Unsafe;
+    public function contentLength():Unsafe;
 
     /**
      * Get the range query of the request.
      * @return Unsafe<string>
      */
-    public function getRangeQuery():Unsafe;
+    public function rangeQuery():Unsafe;
 
     /**
      * Get the content type of the response.
      * @return Unsafe<string>
      */
-    public function getContentType():Unsafe;
+    public function contentType():Unsafe;
 
     /**
      * This method will be invoked before `send`.

@@ -59,7 +59,7 @@ function success(
     false|string $message = false,
 ):SuccessResponseModifier {
     if (false === $message) {
-        $message = HttpStatus::getReason($status);
+        $message = HttpStatus::reason($status);
     }
     return SuccessResponseModifier::create(
         data   : $data,
@@ -91,7 +91,7 @@ function failure(
     array $headers = []
 ):ErrorResponseModifier {
     if (false === $message) {
-        $message = HttpStatus::getReason($status);
+        $message = HttpStatus::reason($status);
     }
     return ErrorResponseModifier::create(
         status: $status,

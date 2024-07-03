@@ -29,7 +29,7 @@ readonly class SimpleRequestHandler implements RequestHandler {
             "file" => $fileName,
             "line" => $lineNumber,
         ]);
-        return new Response(HttpStatus::INTERNAL_SERVER_ERROR, [], HttpStatus::getReason(HttpStatus::INTERNAL_SERVER_ERROR));
+        return new Response(HttpStatus::INTERNAL_SERVER_ERROR, [], HttpStatus::reason(HttpStatus::INTERNAL_SERVER_ERROR));
     }
 
     public function handleRequest(Request $request): Response {

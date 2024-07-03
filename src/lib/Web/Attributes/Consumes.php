@@ -66,9 +66,9 @@ class Consumes implements AttributeInterface {
      * @param  OpenApiStateInterface $openApiState
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiStateInterface $openApiState):Unsafe {
+    #[Entry] public function start(OpenApiStateInterface $openApiState):Unsafe {
         foreach ($this->request as $request) {
-            $request->setup($openApiState)->unwrap($error);
+            $request->start($openApiState)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -81,10 +81,10 @@ class Consumes implements AttributeInterface {
      *
      * @return array<string>
      */
-    public function getContentType(): array {
+    public function contentType(): array {
         $contentType = [];
         foreach ($this->request as $request) {
-            $contentType[] = $request->getContentType();
+            $contentType[] = $request->contentType();
         }
         return $contentType;
     }
@@ -94,7 +94,7 @@ class Consumes implements AttributeInterface {
      *
      * @return array<ConsumedRequest>
      */
-    public function getRequest():array {
+    public function request():array {
         return $this->request;
     }
 }

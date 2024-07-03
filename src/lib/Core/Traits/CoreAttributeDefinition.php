@@ -35,7 +35,7 @@ trait CoreAttributeDefinition {
      */
     public static function findAllByFunction(ReflectionFunction $reflectionFunction): Unsafe {
         self::initializeCache();
-        if (!($trueClassNames = AttributeResolver::issetFunctionAttributes($reflectionFunction, static::class))) {
+        if (!($trueClassNames = AttributeResolver::functionAttributes($reflectionFunction, static::class))) {
             /** @var Unsafe<array<self>> */
             return ok([]);
         }
@@ -44,7 +44,7 @@ trait CoreAttributeDefinition {
             /** @var array<self> $instances */
             $instances = [];
 
-            $allAttributesArguments = AttributeResolver::getFunctionAllAttributesArguments($reflectionFunction, static::class);
+            $allAttributesArguments = AttributeResolver::functionAllAttributesArguments($reflectionFunction, static::class);
 
             foreach ($trueClassNames as $key => $trueClassName) {
                 $attributeArguments = $allAttributesArguments[$key];
@@ -74,13 +74,13 @@ trait CoreAttributeDefinition {
             /** @var Unsafe<false|self> */
             return ok($instance);
         }
-        if (!($trueClassName = AttributeResolver::issetFunctionAttribute($reflectionFunction, static::class))) {
+        if (!($trueClassName = AttributeResolver::functionAttribute($reflectionFunction, static::class))) {
             /** @var Unsafe<false|self> */
             return ok(false);
         }
 
         try {
-            $attributeArguments = AttributeResolver::getFunctionAttributeArguments($reflectionFunction, static::class);
+            $attributeArguments = AttributeResolver::functionAttributeArguments($reflectionFunction, static::class);
             $klass              = new ReflectionClass($trueClassName);
             /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
@@ -111,13 +111,13 @@ trait CoreAttributeDefinition {
             return ok($instance);
         }
 
-        if (!($trueClassName = AttributeResolver::issetMethodAttribute($reflectionMethod, static::class))) {
+        if (!($trueClassName = AttributeResolver::methodAttribute($reflectionMethod, static::class))) {
             /** @var Unsafe<self|false> */
             return ok(false);
         }
 
         try {
-            $attributeArguments = AttributeResolver::getMethodAttributeArguments($reflectionMethod, static::class);
+            $attributeArguments = AttributeResolver::methodAttributeArguments($reflectionMethod, static::class);
             $klass              = new ReflectionClass($trueClassName);
             /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
@@ -148,13 +148,13 @@ trait CoreAttributeDefinition {
             return ok($instance);
         }
 
-        if (!($trueClassName = AttributeResolver::issetClassAttribute($reflectionClass, static::class))) {
+        if (!($trueClassName = AttributeResolver::classAttribute($reflectionClass, static::class))) {
             /** @var Unsafe<self|false> */
             return ok(false);
         }
 
         try {
-            $attributeArguments = AttributeResolver::getClassAttributeArguments($reflectionClass, static::class);
+            $attributeArguments = AttributeResolver::classAttributeArguments($reflectionClass, static::class);
             $klass              = new ReflectionClass($trueClassName);
             /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
@@ -185,13 +185,13 @@ trait CoreAttributeDefinition {
             return ok($instance);
         }
 
-        if (!($trueClassName = AttributeResolver::issetPropertyAttribute($reflectionProperty, static::class))) {
+        if (!($trueClassName = AttributeResolver::propertyAttribute($reflectionProperty, static::class))) {
             /** @var Unsafe<self|false> */
             return ok(false);
         }
 
         try {
-            $attributeArguments = AttributeResolver::getPropertyAttributeArguments($reflectionProperty, static::class);
+            $attributeArguments = AttributeResolver::propertyAttributeArguments($reflectionProperty, static::class);
             $klass              = new ReflectionClass($trueClassName);
             /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
@@ -222,13 +222,13 @@ trait CoreAttributeDefinition {
             return ok($instance);
         }
 
-        if (!($trueClassName = AttributeResolver::issetParameterAttribute($reflectionParameter, static::class))) {
+        if (!($trueClassName = AttributeResolver::parameterAttribute($reflectionParameter, static::class))) {
             /** @var Unsafe<self|false> */
             return ok(false);
         }
 
         try {
-            $attributeArguments = AttributeResolver::getParameterAttributeArguments($reflectionParameter, static::class);
+            $attributeArguments = AttributeResolver::parameterAttributeArguments($reflectionParameter, static::class);
             $klass              = new ReflectionClass($trueClassName);
             /** @var self $instance */
             $instance = $klass->newInstance(...$attributeArguments);
@@ -253,7 +253,7 @@ trait CoreAttributeDefinition {
      */
     public static function findAllByParameter(ReflectionParameter $reflectionParameter): Unsafe {
         self::initializeCache();
-        if (!($trueClassNames = AttributeResolver::issetParameterAttributes($reflectionParameter, static::class))) {
+        if (!($trueClassNames = AttributeResolver::parameterAttributes($reflectionParameter, static::class))) {
             /** @var Unsafe<array<self>> */
             return ok([]);
         }
@@ -261,7 +261,7 @@ trait CoreAttributeDefinition {
         try {
             $instances = [];
 
-            $allAttributesArguments = AttributeResolver::getParameterAllAttributeArguments($reflectionParameter, static::class);
+            $allAttributesArguments = AttributeResolver::parameterAllAttributeArguments($reflectionParameter, static::class);
 
             foreach ($trueClassNames as $key => $trueClassName) {
                 $attributeArguments = $allAttributesArguments[$key];

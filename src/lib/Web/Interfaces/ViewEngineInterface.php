@@ -16,7 +16,7 @@ interface ViewEngineInterface {
      * Get the location of the temporary directory.
      * @return string
      */
-    public function getTemporaryDirectoryLocation():string;
+    public function temporaryDirectoryLocation():string;
 
     /**
      * Load components from a directory recursively.

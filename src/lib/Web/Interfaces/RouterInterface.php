@@ -24,10 +24,10 @@ interface RouterInterface {
     ):Unsafe;
 
     /**
-     * @param  ReflectionMethod     $reflection_method
+     * @param  ReflectionMethod     $reflectionMethod
      * @return array{string,string}
      */
-    public function getMappedParameters(ReflectionMethod $reflection_method): array;
+    public function mappedParameters(ReflectionMethod $reflectionMethod): array;
 
     /**
      * Find a route.

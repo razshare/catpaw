@@ -18,11 +18,11 @@ class Example implements AttributeInterface {
     ) {
     }
 
-    public function getValue():mixed {
+    public function value():mixed {
         return $this->example;
     }
 
-    #[Entry] public function setup(OpenApiStateInterface $openAPiState):void {
+    #[Entry] public function start(OpenApiStateInterface $openAPiState):void {
         $this->example = $openAPiState->createExample(
             title  : $this->value,
             value  : $this->value,

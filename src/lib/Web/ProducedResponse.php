@@ -66,21 +66,21 @@ class ProducedResponse implements AttributeInterface {
             $this->example = (object)[
                 'type'    => 'item',
                 'status'  => $status,
-                'message' => HttpStatus::getReason($status),
+                'message' => HttpStatus::reason($status),
                 'data'    => $converted,
             ];
         } else if ($isErrorItem) {
             $this->example = (object)[
                 'type'    => 'error',
                 'status'  => $status,
-                'message' => HttpStatus::getReason($status),
+                'message' => HttpStatus::reason($status),
             ];
         } else if ($isPage) {
             $converted     = is_array($this->example) || is_object($this->example)?(object)$this->example:$this->example;
             $this->example = (object)[
                 'type'         => 'page',
                 'status'       => $status,
-                'message'      => HttpStatus::getReason($status),
+                'message'      => HttpStatus::reason($status),
                 'previousHref' => 'http://example.com?start0&size=3',
                 'nextHref'     => 'http://example.com?start6&size=3',
                 'previous'     => [
@@ -96,15 +96,15 @@ class ProducedResponse implements AttributeInterface {
                 ],
             ];
         } else {
-            $this->example = HttpStatus::getReason($status);
+            $this->example = HttpStatus::reason($status);
         }
     }
 
-    public function getStatus():int {
+    public function status():int {
         return $this->status;
     }
 
-    public function getContentType():string {
+    public function contentType():string {
         return $this->type;
     }
 
@@ -112,11 +112,11 @@ class ProducedResponse implements AttributeInterface {
      *
      * @return array<mixed>
      */
-    public function getValue():array {
+    public function value():array {
         return $this->response;
     }
 
-    public function getClassName():string {
+    public function className():string {
         return $this->className;
     }
 
@@ -125,16 +125,16 @@ class ProducedResponse implements AttributeInterface {
      * @param  OpenApiStateInterface $openApiState
      * @return Unsafe<None>
      */
-    #[Entry] public function setup(OpenApiStateInterface $openApiState):Unsafe {
+    #[Entry] public function start(OpenApiStateInterface $openApiState):Unsafe {
         $isClass   = class_exists($this->className);
         $reference = false;
         if ($isClass) {
             if ($this->isPage) {
-                $reference = $openApiState->setComponentReferencePage($this->className);
+                $reference = $openApiState->withComponentReferencePage($this->className);
             } else if ($this->isItem) {
-                $reference = $openApiState->setComponentReferenceItem($this->className);
+                $reference = $openApiState->withComponentReferenceItem($this->className);
             }
-            $openApiState->setComponentObject($this->className)->unwrap($error);
+            $openApiState->withComponentObject($this->className)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -163,8 +163,8 @@ class ProducedResponse implements AttributeInterface {
                 if ($this->isItem) {
                     $schema = $openApiState->templateForItem(className:$type, dataIsObject:false);
                 } else if ($this->isErrorItem) {
-                    $openApiState->setComponentReference(ErrorItem::class);
-                    $openApiState->setComponentObject(ErrorItem::class)->unwrap($setError);
+                    $openApiState->withComponentReference(ErrorItem::class);
+                    $openApiState->withComponentObject(ErrorItem::class)->unwrap($setError);
                     if ($setError) {
                         return error($setError);
                     }

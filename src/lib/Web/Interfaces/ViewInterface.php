@@ -8,19 +8,19 @@ interface ViewInterface {
      * Get the http status of the view.
      * @return int
      */
-    public function getStatus():int;
+    public function status():int;
 
     /**
      * Get all http headers of the view.
      * @return array<string,mixed>
      */
-    public function getHeaders():array;
+    public function headers():array;
 
     /**
      * Get all properties of the view.
      * @return array<string,mixed>
      */
-    public function getProperties():array;
+    public function properties():array;
 
     /**
      * Set the http status.

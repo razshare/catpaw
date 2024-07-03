@@ -59,14 +59,14 @@ class ServerSentEvent {
     /**
      * @return WritableIterableStream The underlying writable stream used by the event.
      */
-    function getWriter():WritableIterableStream {
+    function writer():WritableIterableStream {
         return $this->writer;
     }
 
     /**
      * @return ReadableIterableStream The underlying readable stream used by the event.
      */
-    function getReader():ReadableIterableStream {
+    function reader():ReadableIterableStream {
         return $this->reader;
     }
 
@@ -91,7 +91,7 @@ class ServerSentEvent {
      * @param  string          $value
      * @return ServerSentEvent
      */
-    function setHeader(string $name, string $value):self {
+    function withHeader(string $name, string $value):self {
         $this->headers[$name] = $value;
         return $this;
     }
@@ -116,7 +116,7 @@ class ServerSentEvent {
      * @param  string          $name
      * @return ServerSentEvent
      */
-    function unsetHeader(string $name):self {
+    function withoutHeader(string $name):self {
         unset($this->headers[$name]);
         return $this;
     }

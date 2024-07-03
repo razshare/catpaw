@@ -60,14 +60,14 @@ readonly class WrappedType {
     /**
      * @return mixed
      */
-    public function getDefaultValue():mixed {
+    public function defaultValue():mixed {
         return $this->defaultValue;
     }
     
     /**
      * @return string
      */
-    public function getClassName():string {
+    public function className():string {
         return $this->className;
     }
 }

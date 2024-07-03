@@ -13,7 +13,7 @@ class SimpleOpenApi implements OpenApiInterface {
     public function __construct(
         public readonly OpenApiStateInterface $openApiState
     ) {
-        $this->data = &$openApiState->getData();
+        $this->data = &$openApiState->data();
     }
 
     /**
@@ -21,15 +21,15 @@ class SimpleOpenApi implements OpenApiInterface {
      * You can safely expose this through a rest api.
      * @return array<mixed>
      */
-    public function getData():array {
+    public function data():array {
         return $this->data;
     }
 
-    public function setTitle(string $title):void {
+    public function withTitle(string $title):void {
         $this->data['info']['title'] = $title;
     }
 
-    public function setVersion(string $title):void {
+    public function withVersion(string $title):void {
         $this->data['info']['version'] = $title;
     }
 }
