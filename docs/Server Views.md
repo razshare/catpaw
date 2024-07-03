@@ -1,6 +1,6 @@
 # View
 
-You can render twig files and serve them to the client using _view()_.
+You can render Latte files and serve them to the client using _view()_.
 
 ## Usage
 
