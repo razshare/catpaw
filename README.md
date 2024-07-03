@@ -13,7 +13,7 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 | 🌐 [Server Session](./docs/Server%20Session.md)                         | Create and manage server sessions. |
 | 🌐 [Server Byte Range Requests](./docs/Server%20Byte%20Range%20Requests.md) | Serve byte range requests. |
 | 🌐 [Server Websockets](./docs/Server%20Websockets.md)                  | Serve websockets. |
-| 🌐 [Server Views](./docs/Server%20Views.md)                              | Serve view using Latte. |
+| 🌐 [Server Views](./docs/Server%20Views.md)                              | Serve views using Latte. |
 | ⚡ [Container](./docs/Container.md)                       | Provide dependencies and retrieve them. |
 | ⚡ [Entry](./docs/Entry.md)                              | Execute code when a dependency is resolved. |
 | ⚡ [Command](./docs/Command.md)                              | Create a console command. |
