@@ -4,12 +4,14 @@ You can render Latte files and serve them to the client using _view()_.
 
 ## Usage
 
-Create a latte file, for example under _src/api/view.latte_
+Create a latte file a _src/api/view.latte_
 
-```twig
+```html
 hello world!
 ```
 
+> [!NOTE]
+> It must be called `view.latte` and be in the same directory as your route handler file.
 
 
 Now create your route handler and respond with `view()`
@@ -20,11 +22,11 @@ use function CatPaw\Web\view;
 return fn () => view();
 ```
 
-That's all it takes, your endpoint will respond with the twig view.
+That's all it takes, your endpoint will respond with the latte view.
 
 ## Properties
 
-You can set specific properties on your twig view with `view::withProperty()`
+You can set specific properties on your latte view with `view::withProperty()`
 
 ```php
 <?php
@@ -32,7 +34,7 @@ use function CatPaw\Web\view;
 return fn () => view()
                 ->withProperty('title', 'My Document')
                 ->withProperty('name', 'world')
-                ->withProperty('fileName', 'view.twig');
+                ->withProperty('fileName', 'view.latte');
 ```
 
 Or you can set all the properties with `view::withProperties()`
@@ -43,7 +45,7 @@ use function CatPaw\Web\view;
 return fn () => view()->properties([
     'title'    => 'My Document',
     'name'     => 'world',
-    'fileName' => 'view.twig',
+    'fileName' => 'view.latte',
 ]);
 ```
 
