@@ -30,7 +30,7 @@ use Amp\Http\Client\HttpClientBuilder;
 Container::provide(HttpClient::class, static fn () => HttpClientBuilder::buildDefault());
 ```
 
-You can also provide your dependency as a singleton, all you have to to is pass in the object directly.
+You can also provide your dependency as a singleton, all you have to do is pass in the object directly.
 
 ```php
 <?php
