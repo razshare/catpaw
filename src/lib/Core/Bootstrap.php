@@ -28,7 +28,7 @@ class Bootstrap {
      */
     public static function initialize(string $fileName):Unsafe {
         if (!File::exists($fileName)) {
-            return error("Could not find php entry file $fileName.");
+            return error("Could not find main file $fileName.");
         }
 
         require_once $fileName;
@@ -45,16 +45,16 @@ class Bootstrap {
 
     /**
      * Bootstrap an application from a file.
-     * @param  string $entry       the entry file of the application (it usually defines a global "main" function)
+     * @param  string $main        the main file of the application (it usually defines a global "main" function)
      * @param  string $name        application name (this will be used by the default logger)
      * @param  string $libraries   libraries to load
      * @param  string $resources   resources to load
      * @param  string $environment
-     * @param  bool   $dieOnChange die when a change to the entry file, libraries or resources is detected
+     * @param  bool   $dieOnChange die when a change to the main file, libraries or resources is detected
      * @return void
      */
     public static function start(
-        string $entry,
+        string $main,
         string $name,
         string $libraries,
         string $resources,
@@ -74,12 +74,12 @@ class Bootstrap {
                 self::kill((string)$initializeError);
             }
 
-            $entryLocal = (string)asFileName($entry);
-            if ('' === $entryLocal) {
-                self::kill("Please point to a valid php entry file, received `$entry`.");
+            $mainLocal = (string)asFileName($main);
+            if ('' === $mainLocal) {
+                self::kill("Please point to a valid main file, received `$main`.");
             }
 
-            $entry = $entryLocal;
+            $main = $mainLocal;
 
 
             $logger = Container::get(LoggerInterface::class)->unwrap($loggerError);
@@ -96,7 +96,7 @@ class Bootstrap {
             $env = new SimpleEnvironment($logger);
             Container::provide(EnvironmentInterface::class, $env);
 
-            $env->set('ENTRY', $entry);
+            $env->set('MAIN', $main);
             $env->set('LIBRARIES', $librariesList);
             $env->set('RESOURCES', $resourcesList);
             $env->set('DIE_ON_CHANGE', $dieOnChange);
@@ -130,7 +130,7 @@ class Bootstrap {
                     self::kill("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
                 }
                 self::onFileChange(
-                    entry: $entry,
+                    main: $main,
                     libraries: $librariesList,
                     resources: $resourcesList,
                     function: static function() {
@@ -139,7 +139,7 @@ class Bootstrap {
                 );
             }
 
-            self::initialize($entry)->unwrap($initializeError);
+            self::initialize($main)->unwrap($initializeError);
 
             if ($initializeError) {
                 self::kill((string)$initializeError);
@@ -192,7 +192,7 @@ class Bootstrap {
      * @param  string        $binary
      * @param  string        $fileName
      * @param  array<string> $arguments
-     * @param  string        $entry
+     * @param  string        $main
      * @param  string        $libraries
      * @param  string        $resources
      * @return void
@@ -201,7 +201,7 @@ class Bootstrap {
         string $binary,
         string $fileName,
         array $arguments,
-        string $entry,
+        string $main,
         string $libraries,
         string $resources,
     ):void {
@@ -227,7 +227,7 @@ class Bootstrap {
                 $binary,
                 $fileName,
                 $arguments,
-                $entry,
+                $main,
                 $libraries,
                 $resources,
             ) {
@@ -242,6 +242,18 @@ class Bootstrap {
                     if ($error) {
                         return error($error);
                     }
+                }
+
+                foreach ($arguments as &$argument) {
+                    $parts = preg_split('/=|\s/', $argument, 2);
+                    if (count($parts) < 2) {
+                        continue;
+                    }
+
+                    $left     = $parts[0];
+                    $right    = $parts[1];
+                    $slashed  = addslashes($right);
+                    $argument = "$left=\"$slashed\"";
                 }
 
                 $argumentsStringified = join(' ', $arguments);
@@ -265,7 +277,7 @@ class Bootstrap {
                 $ready = false;
 
                 self::onFileChange(
-                    entry: $entry,
+                    main: $main,
                     libraries: $librariesList,
                     resources: $resourcesList,
                     function: static function() use (&$ready) {
@@ -298,20 +310,20 @@ class Bootstrap {
     /**
      * Start a watcher which will detect file changes.
      * Useful for development mode.
-     * @param  string        $entry
+     * @param  string        $main
      * @param  array<string> $libraries
      * @param  array<string> $resources
      * @param  callable      $function
      * @return void
      */
     private static function onFileChange(
-        string $entry,
+        string $main,
         array $libraries,
         array $resources,
         callable $function,
     ): void {
         async(function() use (
-            $entry,
+            $main,
             $libraries,
             $resources,
             $function,
@@ -323,7 +335,7 @@ class Bootstrap {
                 clearstatcache();
                 $countLastPass = count($changes);
 
-                $fileNames = [$entry => false];
+                $fileNames = [$main => false];
                 /** @var array<string> $files */
                 $files = [...$libraries, ...$resources];
 

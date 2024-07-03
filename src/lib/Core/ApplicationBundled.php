@@ -5,7 +5,7 @@ use CatPaw\Core\Interfaces\CommandRunnerInterface;
 
 readonly class ApplicationBundled implements CommandRunnerInterface {
     public function __construct(
-        public string $entry,
+        public string $main,
         public string $name,
         public string $libraries,
         public string $resources,
@@ -27,7 +27,7 @@ readonly class ApplicationBundled implements CommandRunnerInterface {
                 $environment = $this->environment;
             }
             Bootstrap::start(
-                entry: $this->entry,
+                main: $this->main,
                 name: $this->name,
                 libraries: $this->libraries,
                 resources: $this->resources,

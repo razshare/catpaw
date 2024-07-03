@@ -2,7 +2,6 @@
 namespace CatPaw\Core\Build;
 
 use function Amp\File\isDirectory;
-use function CatPaw\Core\asFileName;
 
 use CatPaw\Core\Directory;
 use function CatPaw\Core\env;
@@ -28,12 +27,12 @@ function build(bool $optimize = false):Unsafe {
     }
 
     $name        = env('name')        ?? 'app.phar';
-    $entry       = env('entry')       ?? '';
+    $main        = env('main')        ?? '';
     $libraries   = env('libraries')   ?? '';
     $match       = env('match')       ?? '';
     $environment = env('environment') ?? '';
 
-    if (!$entry) {
+    if (!$main) {
         return error(join("\n", [
             "Entry file is missing from environment.",
             "Remember to properly load your build configuration using `--environment=build.ini`.",
@@ -41,7 +40,7 @@ function build(bool $optimize = false):Unsafe {
     }
 
     $name      = str_replace(['"',"\n"], ['\\"',''], $name);
-    $entry     = str_replace(['"',"\n"], ['\\"',''], $entry);
+    $main      = str_replace(['"',"\n"], ['\\"',''], $main);
     $libraries = str_replace(['"',"\n"], ['\\"',''], $libraries);
 
     if ($environment) {
@@ -51,12 +50,6 @@ function build(bool $optimize = false):Unsafe {
     if (!str_ends_with(strtolower($name), '.phar')) {
         $name .= '.phar';
     }
-
-    // $entryLocal = (string)asFileName($entry);
-    // if ('' === $entryLocal) {
-    //     return error("Please point to a valid php entry file, received `$entry`.");
-    // }
-    // $entry = $entryLocal;
 
     $app          = "$name";
     $start        = '.build-cache/start.php';
@@ -94,7 +87,7 @@ function build(bool $optimize = false):Unsafe {
 
             Container::provide(CommandInterface::class, \$command = new SimpleCommand);
             \$command->run(new ApplicationBundled(
-                entry: "$entry",
+                main: "$main",
                 name: "$name",
                 libraries: "$libraries",
                 resources: '',

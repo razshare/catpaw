@@ -4,6 +4,11 @@ namespace CatPaw\Core;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 
 readonly class Application implements CommandRunnerInterface {
+    public function __construct(
+        public string $startFileName
+    ) {
+    }
+
     public function build(CommandBuilder $builder): Unsafe {
         // Flags.
         $builder->withFlag('d', "die-on-change");
@@ -12,10 +17,10 @@ readonly class Application implements CommandRunnerInterface {
         // Options.
         $builder->withOption('p', 'php', ok('php'));
         $builder->withOption('n', 'name', ok('App'));
-        $builder->withOption('t', 'entry', error('Missing entry file.'));
+        $builder->withOption('m', 'main', error('Missing main file.'));
         $builder->withOption('l', 'libraries');
         $builder->withOption('r', 'resources');
-        $builder->withOption('e', 'environment');
+        $builder->withOption('n', 'environment');
 
         return ok();
     }
@@ -29,16 +34,15 @@ readonly class Application implements CommandRunnerInterface {
             // Options.
             $php         = $context->get('php')->try();
             $name        = $context->get('name')->try();
-            $entry       = $context->get('entry')->try();
+            $main        = $context->get('main')->try();
             $libraries   = $context->get('libraries')->try();
             $resources   = $context->get('resources')->try();
             $environment = $context->get('environment')->try();
 
-
             global $argv;
 
-            if ('' === $entry) {
-                return error('No entry point specified. Use `--entry=src/main.php` to specify an entry point.');
+            if ('' === $main) {
+                return error('No main file specified. Use `--main=src/main.php` to specify a main file.');
             }
 
             if ($watch) {
@@ -46,15 +50,15 @@ readonly class Application implements CommandRunnerInterface {
                 $arguments[] = '--die-on-change';
                 Bootstrap::spawn(
                     binary: $php,
-                    fileName: __FILE__,
+                    fileName: $this->startFileName,
                     arguments: $arguments,
-                    entry: $entry,
+                    main: $main,
                     libraries: $libraries,
                     resources: $resources,
                 );
             } else {
                 Bootstrap::start(
-                    entry: $entry,
+                    main: $main,
                     name: $name,
                     libraries: $libraries,
                     resources: $resources,
