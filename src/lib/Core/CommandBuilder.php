@@ -64,7 +64,7 @@ class CommandBuilder {
             longName: $longName,
             shortName: $shortName,
             isFlag: true,
-            value: ok("Required flag `--$longName (-$shortName)` is missing."),
+            value: error("Required flag `--$longName (-$shortName)` is missing."),
         );
         $this->options[$shortName] = $option;
         $this->options[$longName]  = $option;

@@ -86,7 +86,7 @@ function build(bool $optimize = false):Unsafe {
             require 'vendor/autoload.php';
 
             Container::provide(CommandInterface::class, \$command = new SimpleCommand);
-            \$command->run(new ApplicationBundled(
+            \$command->register(new ApplicationBundled(
                 main: "$main",
                 name: "$name",
                 libraries: "$libraries",
