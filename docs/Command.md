@@ -1,6 +1,6 @@
 # Command
 
-You can create and run console commands using `CommandInterface::run()`.
+You can create and run console commands using `CommandInterface::register()`.
 
 
 
@@ -9,13 +9,13 @@ use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 
 function main(CommandInterface $command) {
-    return $command->run(new class implements CommandRunnerInterface {
+    return $command->register(new class implements CommandRunnerInterface {
         // ...
     });
 }
 ```
 
-You will need to implement `CommandRunnerInterface`, it only requires 2 methods
+You will need to implement `CommandRunnerInterface`
 
 ```php
 interface CommandRunnerInterface {
@@ -36,7 +36,7 @@ interface CommandRunnerInterface {
 
 The two methods have 2 different life cycles.
 
-The `build()` method executes immediately after invoking `CommandInterface::run()`.\
+The `build()` method executes immediately after invoking `CommandInterface::register()`.
 Inside `build()` you can attach options and flags to your command using `$builder->withRequiredFlag()` for defining a required flag
 ```php
 /**
@@ -84,10 +84,35 @@ Your command will the execute whenever the console user issues the required flag
 > [!NOTE]
 > Generally you should always define at least one unique required flag using `$builder->withRequiredFlag()` in order to avoid ambiguity.
 
-> [!NOTE]
-> The same application can execute multiple commands asynchronously.
+The second method, `run()`, is where you can write your logic.\
+This method is only executed if the console user issues a request to your command, meaning - they've invoked the program with all the required flags.
 
-The second method, `run()`, is where you can write your logic.
+So for example, if your build method looks like this
+
+```php
+/**
+ * Build the command.
+ * @param  CommandBuilder $builder
+ * @return Unsafe<None>
+ */
+public function build(CommandBuilder $builder):Unsafe {
+    $builder->withRequiredFlag('s','start');
+    $builder->withOption('p','port', ok('80'));
+    return ok();
+}
+```
+
+Then, in order to execute the command, the console user should invoke the program using the `start` flag
+
+```bash
+php app.phar --start
+```
+
+and optionally they can specify a `port`
+
+```bash
+php app.phar --start --port="80"
+```
 
 ## Build
 
@@ -100,7 +125,7 @@ use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 
 function main(CommandInterface $command) {
-    return $command->run(new class implements CommandRunnerInterface {
+    return $command->register(new class implements CommandRunnerInterface {
         /**
          * Build the command.
          * @param  CommandBuilder $builder
@@ -138,7 +163,7 @@ use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 
 function main(CommandInterface $command) {
-    return $command->run(new class implements CommandRunnerInterface {
+    return $command->register(new class implements CommandRunnerInterface {
         /**
          * Build the command.
          * @param  CommandBuilder $builder
@@ -179,7 +204,7 @@ use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 
 function main(CommandInterface $command) {
-    return $command->run(new class implements CommandRunnerInterface {
+    return $command->register(new class implements CommandRunnerInterface {
         /**
          * Build the command.
          * @param  CommandBuilder $builder

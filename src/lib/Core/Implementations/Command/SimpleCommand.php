@@ -17,7 +17,7 @@ class SimpleCommand implements InterfacesCommandInterface {
      * @param  CommandRunnerInterface $command
      * @return Unsafe<bool>
      */
-    public function run(CommandRunnerInterface $command):Unsafe {
+    public function register(CommandRunnerInterface $command):Unsafe {
         $builder = new CommandBuilder;
         $command->build($builder)->unwrap($error);
         if ($error) {
