@@ -9,7 +9,6 @@ use CatPaw\Core\CommandContext;
 use CatPaw\Core\Container;
 use function CatPaw\Core\env;
 use CatPaw\Core\File;
-use CatPaw\Core\GoffiContract;
 use CatPaw\Core\Implementations\Command\SimpleCommand;
 use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
@@ -18,7 +17,7 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Signal;
 use CatPaw\Core\Unsafe;
-
+use CatPaw\Go\Interfaces\GoInterface;
 use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
@@ -102,9 +101,9 @@ class CoreTest extends TestCase {
     /**
      * @return Unsafe<None>
      */
-    public function makeSureGoffiWorks():Unsafe {
-        return anyError(function() {
-            $lib    = GoffiContract::create(Contract::class, asFileName(__DIR__, './main.so'))->try();
+    public function makeSureGoffiWorks(GoInterface $go):Unsafe {
+        return anyError(function() use ($go) {
+            $lib    = $go->load(Contract::class, asFileName(__DIR__, './main.so'))->try();
             $result = $lib->hello("world");
             $this->assertEquals("hello world", $result);
             return ok();

@@ -5,7 +5,10 @@ use function CatPaw\Core\Build\build;
 
 use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
+
 use function CatPaw\Core\error;
+use function CatPaw\Core\execute;
+
 use CatPaw\Core\File;
 use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
@@ -16,7 +19,9 @@ use function CatPaw\Core\Precommit\installPreCommit;
 use function CatPaw\Core\Precommit\uninstallPreCommit;
 use CatPaw\Core\Unsafe;
 use function CatPaw\Text\foreground;
+
 use function CatPaw\Text\nocolor;
+use Psr\Log\LoggerInterface;
 
 class TipsCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):Unsafe {
@@ -106,6 +111,39 @@ class HiCommand implements CommandRunnerInterface {
     }
 }
 
+class GompileCommand implements CommandRunnerInterface {
+    public function __construct(private LoggerInterface $logger) {
+    }
+
+    public function build(CommandBuilder $builder): Unsafe {
+        $builder->withOption('g', 'gompile', error("A Go file name is required."));
+        return ok();
+    }
+
+    public function run(CommandContext $context): Unsafe {
+        return anyError(function() use ($context) {
+            $inputFileName = $context->get('gompile')->try();
+            if (!$fullFileName = realpath($inputFileName)) {
+                return error("File `{$inputFileName}` not found.");
+            }
+            
+            if (!preg_match('/(.+).go$/', $fullFileName, $matches)) {
+                return error("Illegal Go file name received `$fullFileName`, please provide a file name that ends with `.go`.");
+            }
+
+            $fileName      = basename($matches[1]);
+            $directoryName = dirname($matches[1]);
+
+            execute("GOOS=linux CGO_ENABLED=1 go build -o $fileName.so -buildmode=c-shared $fileName.go", out(), $directoryName)->try();
+            execute("cpp -P $fileName.h $fileName.static.h", out(), $directoryName)->try();
+            File::delete("$directoryName/$fileName.h")->try();
+
+            $this->logger->info("Go program compiled successfully into `$directoryName/$fileName.so`.");
+
+            return ok();
+        });
+    }
+}
 
 class HelpCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):Unsafe {
@@ -115,11 +153,12 @@ class HelpCommand implements CommandRunnerInterface {
     public function run(CommandContext $context): Unsafe {
         echo <<<BASH
             \n
-            -b, --build [-o, --optimize]        Builds the project into a .phar.
-            -t, --tips                          Some tips.
-            -h, --hi                            Says hi. Useful for debugging.
-            -i, --install-pre-commit            Installs the pre-commit hook.
-            -u, --uninstall-pre-commit          Uninstalls the pre-commit hook.
+            -b,  --build [-o, --optimize]        Builds the project into a .phar.
+            -g,  --gompile                       Compile a Go program into a shared object and a static header file as required by Php's FFI api.
+            -t,  --tips                          Some tips.
+            -h,  --hi                            Says hi. Useful for debugging.
+            -i,  --install-pre-commit            Installs the pre-commit hook.
+            -u,  --uninstall-pre-commit          Uninstalls the pre-commit hook.
             \n
             BASH;
         return ok();
@@ -130,12 +169,13 @@ class HelpCommand implements CommandRunnerInterface {
  * 
  * @return Unsafe<None>
  */
-function main(CommandInterface $command) {
+function main(CommandInterface $command, LoggerInterface $logger) {
     return anyError(fn () => match (true) {
         $command->register(new TipsCommand)->try()               => ok(),
         $command->register(new InstallPreCommitCommand)->try()   => ok(),
         $command->register(new UninstallPreCommitCommand)->try() => ok(),
         $command->register(new BuildCommand)->try()              => ok(),
+        $command->register(new GompileCommand($logger))->try()   => ok(),
         $command->register(new HiCommand)->try()                 => ok(),
         default                                                  => $command->register(new HelpCommand)->try()
     });

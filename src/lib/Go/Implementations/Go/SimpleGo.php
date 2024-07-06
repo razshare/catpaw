@@ -1,6 +1,15 @@
 <?php
-namespace CatPaw\Core;
+namespace CatPaw\Go\Implementations\Go;
 
+use CatPaw\Core\Attributes\Provider;
+
+use function CatPaw\Core\error;
+use CatPaw\Core\File;
+
+use function CatPaw\Core\ok;
+use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Unsafe;
+use CatPaw\Go\Interfaces\GoInterface;
 use Error;
 use FFI;
 use FFI\CData;
@@ -9,19 +18,16 @@ use Phar;
 use ReflectionClass;
 use Throwable;
 
-/**
- * @template T
- * @package CatPaw\Core
- */
-class GoffiContract {
+#[Provider]
+class SimpleGo implements GoInterface {
     /**
-     * Create a Goffi contract.
-     * @template TContract
-     * @param  class-string<TContract>                    $interface
-     * @param  string                                     $fileName
-     * @return Unsafe<GoffiContract<TContract>&TContract>
+     * Load a Go library.
+     * @template T
+     * @param  class-string<T> $interface Contract interface, as in - what functions the go library exposes.
+     * @param  string          $fileName  Main go file.
+     * @return Unsafe<T>
      */
-    public static function create(string $interface, string $fileName):Unsafe {
+    public static function load(string $interface, string $fileName):Unsafe {
         $isPharFileName = str_starts_with($fileName, 'phar://');
 
         $strippedFileName = preg_replace('/\.so$/', '', $fileName);
@@ -80,34 +86,34 @@ class GoffiContract {
         }
 
         try {
-            $methods = self::loadContract($lib, $interface);
+            $methods = self::signContract($interface, $lib);
         } catch(Throwable $error) {
             return error($error);
         }
 
-        /** @var GoffiContract<TContract>&TContract */
-        $item = new self($lib, $methods);
+        /** @var T */
+        return ok(new class($methods) {
+            /**
+             * @param  array<callable(mixed...):mixed[]> $methods
+             * @return void
+             */
+            public function __construct(private array $methods) {
+            }
 
-        return ok($item);
+            /**
+             * @param  string  $name
+             * @param  mixed   $arguments
+             * @return mixed[]
+             */
+            public function __call(string $name, mixed $arguments) {
+                return $this->methods[$name](...$arguments);
+            }
+        });
     }
 
-    /**
-     *
-     * @param  FFI                               $lib
-     * @param  array<callable(mixed...):mixed[]> $methods
-     * @return void
-     */
-    private function __construct(readonly public FFI $lib, readonly private array $methods) {
-    }
 
-    /**
-     * @param  string  $name
-     * @param  mixed   $arguments
-     * @return mixed[]
-     */
-    public function __call(string $name, mixed $arguments) {
-        return $this->methods[$name](...$arguments);
-    }
+
+
 
     /**
      * Parse the given `$interface` and create a _contract_ (let's call it so), which is a set of methods
@@ -122,12 +128,12 @@ class GoffiContract {
      * Php's FFI api will not convert php `string`s into `_GoString_`s (understandably so), which means you would need to do it by hand, which is not the best experience.
      *
      * This method will create the necessary _contract methods_ that will automate your Go calls, converting php strings and other primitives to their correct Go counterparts.
-     * @param  FFI                                      $lib
      * @param  string                                   $interface
+     * @param  FFI                                      $lib
      * @throws Error
      * @return array<callable(mixed ...$args): mixed[]>
      */
-    private static function loadContract(FFI $lib, string $interface):array {
+    private static function signContract(string $interface, FFI $lib):array {
         $reflectionClass = new ReflectionClass($interface);
         $methods         = [];
         foreach ($reflectionClass->getMethods() as $reflectionMethod) {

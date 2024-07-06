@@ -26,8 +26,7 @@
     "prod:build": "@prod:start --environment=build.ini --build --optimize",
     "prod:fix": "php -dxdebug.mode=off vendor/bin/php-cs-fixer fix .",
     "prod:test": [
-      "GOOS=linux CGO_ENABLED=1 go build -o tests/main.so -buildmode=c-shared tests/main.go",
-      "cpp -P tests/main.h tests/main.static.h",
+      "@prod:start --gompile tests/main.go",
       "php vendor/bin/phpunit tests"
     ],
     "dev:preview": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --libraries=src/lib --main=preview/main.php --resources=preview --watch --php='php -dxdebug.mode=debug -dxdebug.start_with_request=yes'",
@@ -48,6 +47,9 @@
     "psr-4": {
       "CatPaw\\Core\\": [
         "src/lib/Core"
+      ],
+      "CatPaw\\Screen\\": [
+        "src/lib/Screen"
       ],
       "CatPaw\\Cui\\": [
         "src/lib/Cui"

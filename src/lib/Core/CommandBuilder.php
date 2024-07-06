@@ -21,7 +21,7 @@ class CommandBuilder {
      * @return CommandBuilder
      */
     public function withOption(string $shortName, string $longName, false|Unsafe $value = false):self {
-        $option = new CommandOption(
+        $option = CommandOption::create(
             longName: $longName,
             shortName: $shortName,
             isFlag: false,
@@ -40,7 +40,7 @@ class CommandBuilder {
      * @return CommandBuilder
      */
     public function withFlag(string $shortName, string $longName):self {
-        $option = new CommandOption(
+        $option = CommandOption::create(
             longName: $longName,
             shortName: $shortName,
             isFlag: true,
@@ -60,7 +60,7 @@ class CommandBuilder {
      * @return CommandBuilder
      */
     public function withRequiredFlag(string $shortName, string $longName):self {
-        $option = new CommandOption(
+        $option = CommandOption::create(
             longName: $longName,
             shortName: $shortName,
             isFlag: true,

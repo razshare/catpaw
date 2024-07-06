@@ -50,14 +50,14 @@ class SimpleCommand implements InterfacesCommandInterface {
 
             $value = $option->value->unwrap($error);
 
-            if ($error) {
-                // Not optional.
-                $longOptions[] = "{$option->longName}:";
-                $shortOptions .= "{$option->shortName}:";
-            } else if ($option->isFlag) {
+            if ($option->isFlag) {
                 // Not optional and doesn't accept a value.
                 $longOptions[] = "{$option->longName}";
                 $shortOptions .= "{$option->shortName}";
+            } else if ($error) {
+                // Not optional.
+                $longOptions[] = "{$option->longName}:";
+                $shortOptions .= "{$option->shortName}:";
             } else {
                 if (!is_string($value)) {
                     $type = gettype($value);
@@ -98,7 +98,7 @@ class SimpleCommand implements InterfacesCommandInterface {
             }
         }
 
-        $command->run(new CommandContext($map))->unwrap($error);
+        $command->run(CommandContext::create($map))->unwrap($error);
         if ($error) {
             return error($error);
         }

@@ -5,11 +5,18 @@ readonly class CommandContext {
     /**
      * 
      * @param  array<string,CommandOption> $options
+     * @return self
+     */
+    public static function create(array $options) {
+        return new self($options);
+    }
+
+    /**
+     * 
+     * @param  array<string,CommandOption> $options
      * @return void
      */
-    public function __construct(
-        private array $options,
-    ) {
+    private function __construct(private array $options) {
     }
 
     /**

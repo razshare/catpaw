@@ -17,6 +17,7 @@ use CatPaw\Store\Readable;
 use CatPaw\Store\Writable;
 use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 use Closure;
+use FFI;
 use Phar;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
@@ -80,9 +81,13 @@ class Container {
      * @return Unsafe<None>
      */
     public static function loadDefaultProviders(string $applicationName):Unsafe {
+        Container::provide(FFI::class, static fn () => new FFI);
+
         // Making sure providers load correctly.
         $providersLoaded = match (false) {
             class_exists($className = \CatPaw\Core\Implementations\Environment\SimpleEnvironment::class)      => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Go\Implementations\Go\SimpleGo::class)                          => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Screen\Implementations\Screen\SimpleScreen::class)              => error("Could not load class $className"),
             class_exists($className = \CatPaw\Queue\Implementations\Queue\SimpleQueue::class)                 => error("Could not load class $className"),
             class_exists($className = \CatPaw\RaspberryPi\Implementations\Gpio\SimpleGpio::class)             => error("Could not load class $className"),
             class_exists($className = \CatPaw\Schedule\Implementations\Schedule\SimpleSchedule::class)        => error("Could not load class $className"),
