@@ -20,7 +20,6 @@ use Error;
 use FFI;
 use FFI\CData;
 use FFI\ParserException;
-use Phar;
 use ReflectionClass;
 use Throwable;
 
@@ -66,14 +65,14 @@ class SimpleGo implements GoInterface {
 
         $strippedFileName = preg_replace('/\.so$/', '', $fileName);
 
+        
         if ($isPharFileName) {
             if (!File::exists($fileName)) {
                 return error("Shared library `$fileName` not found.");
             }
 
             $localHeaderFileName = "$strippedFileName.static.h";
-            $phar                = Phar::running();
-            $headerFileName      = './'.basename('.'.str_replace($phar, '', $localHeaderFileName));
+            $headerFileName      = './bin/'.sha1($localHeaderFileName).'.h';
             if (!File::exists($headerFileName)) {
                 File::copy($localHeaderFileName, $headerFileName)->unwrap($error);
                 if ($error) {
@@ -115,8 +114,7 @@ class SimpleGo implements GoInterface {
         $externalFileName = '';
         try {
             if ($isPharFileName) {
-                $phar             = Phar::running();
-                $externalFileName = './'.basename('.'.str_replace($phar, '', $fileName));
+                $externalFileName = './bin/'.sha1($fileName).'.so';
 
                 if (!File::exists($externalFileName)) {
                     File::copy($fileName, $externalFileName)->unwrap($error);

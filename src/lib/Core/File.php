@@ -104,7 +104,15 @@ readonly class File {
 
         $stream = $source->ampFile();
 
-        return $destination->writeStream($stream);
+        $destination->writeStream($stream)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+
+        $source->close();
+        $destination->close();
+
+        return ok();
     }
 
 
