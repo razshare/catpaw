@@ -5,12 +5,17 @@ Invoke _Go_ functions from _Php_.
 # Usage
 
 > [!NOTE]
-> You will need [Go](https://go.dev/) installed on your machine.
+> You will need [Go](https://go.dev/) and C++ installed on your machine.\
+> Refer to the [official guide in order to install Go](https://go.dev/doc/install).\
+> You can install the C++ requirements with
+> ```sh
+> apt install build-essential
+> ```
 
-Write your _Go_ program, for example in a `goffi.go` file.
+Write your _Go_ program, for example in a `lib.go` file.
 
 ```go
-// ./goffi.go
+// ./lib.go
 package main
 import "C"
 func main() {}
@@ -25,23 +30,17 @@ The `//export DoubleIt` annotation will make it so that the function `DoubleIt()
 
 Compile your program to a shared object
 ```sh
-GOOS=linux CGO_ENABLED=1 go build -o libgoffi.so -buildmode=c-shared goffi.go
+php catpaw.phar -g lib.go
 ```
-This will create 2 files, your shared object `libgoffi.so` and its C header file `libgoffi.h`.
+This will create 2 files, your shared object `lib.so` and its C header file `lib.static.h`.
 
-Resolve the C header file's preprocessor directives.
-```sh
-cpp -P ./libgoffi.h ./libgoffi.static.h
-```
-This will create a `libgoffi.static.h` file, this file _must_ be located in the same directory as the `libgoffi.so` file.
-
-Now use `GoffiContract::create()` to interop with your _Go_ program from _Php_.
+Now use `GoInterface::load()` to interop with your _Go_ program from _Php_.
 
 ```php
 <?php
 // src/main.php
 use CatPaw\Core\Unsafe;
-use CatPaw\Core\GoffiContract;
+use CatPaw\Go\Interfaces\GoInterface;
 use function CatPaw\Core\anyError;
 
 interface Contract {
@@ -51,9 +50,9 @@ interface Contract {
     function DoubleIt(int $value):int;
 }
 
-function main():Unsafe{
-    return anyError(function(){
-        $lib     = GoffiContract::create(Contract::class, './libgoffi.so')->try();
+function main(GoInterface $go):Unsafe{
+    return anyError(function() use($go) {
+        $lib     = $go->load(Contract::class, './lib.so')->try();
         $doubled = $lib->DoubleIt(3);
         echo "doubled: $doubled\n";
     });
@@ -61,7 +60,7 @@ function main():Unsafe{
 ```
 
 > [!NOTE]
-> If any of your interface methods doesn't specify a return type, the `GoffiContract::create()` call will fail.
+> If any of your interface methods doesn't specify a return type, the `GoInterface::load()` call will fail.
 
 Run the program.
 
@@ -96,16 +95,16 @@ Call _Greeting_ from php like so
 ```php
 <?php
 use CatPaw\Core\Unsafe;
-use CatPaw\Core\GoffiContract;
+use CatPaw\Go\Interfaces\GoInterface;
 use function CatPaw\Core\anyError;
 
 interface Contract {
     function Greeting(string $name):string;
 }
 
-function main():Unsafe {
-    return anyError(function() {
-        $goffi = GoffiContract::create(Contract::class, './libgoffi.so')->try();
+function main(GoInterface $go):Unsafe {
+    return anyError(function() use($go) {
+        $goffi = $go->load(Contract::class, './lib.so')->try();
         echo $goffi->Greeting('world').PHP_EOL;
     });
 }
@@ -123,5 +122,3 @@ it should print `hello world` to the terminal.
 More quality of life improvements will come in the future.
 
 Discussion available [here](https://github.com/tncrazvan/catpaw/discussions/3).
-
-Standalone example available [here](https://github.com/tncrazvan/catpaw-php-go-interop).
