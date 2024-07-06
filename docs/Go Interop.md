@@ -120,5 +120,3 @@ it should print `hello world` to the terminal.
 # Other notes
 
 More quality of life improvements will come in the future.
-
-Discussion available [here](https://github.com/tncrazvan/catpaw/discussions/3).
