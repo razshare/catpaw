@@ -69,7 +69,20 @@ class SimpleCommand implements InterfacesCommandInterface {
             }
         }
 
-        $opts      = getopt($shortOptions, $longOptions);
+        $opts = getopt($shortOptions, $longOptions);
+
+        $removableKeys = [];
+
+        foreach ($opts as $key => $value) {
+            if (is_array($value)) {
+                $removableKeys[] = $key;
+            }
+        }
+
+        foreach ($removableKeys as $key) {
+            unset($opts[$key]);
+        }
+
         $optsCount = count($opts);
         $mapCount  = count($map);
 

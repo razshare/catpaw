@@ -20,7 +20,7 @@ readonly class Application implements CommandRunnerInterface {
         $builder->withOption('m', 'main', error('Missing main file.'));
         $builder->withOption('l', 'libraries');
         $builder->withOption('r', 'resources');
-        $builder->withOption('n', 'environment');
+        $builder->withOption('e', 'environment');
 
         return ok();
     }

@@ -171,12 +171,12 @@ class HelpCommand implements CommandRunnerInterface {
  */
 function main(CommandInterface $command, LoggerInterface $logger) {
     return anyError(fn () => match (true) {
-        $command->register(new TipsCommand)->try()               => ok(),
-        $command->register(new InstallPreCommitCommand)->try()   => ok(),
-        $command->register(new UninstallPreCommitCommand)->try() => ok(),
         $command->register(new BuildCommand)->try()              => ok(),
         $command->register(new GompileCommand($logger))->try()   => ok(),
+        $command->register(new TipsCommand)->try()               => ok(),
         $command->register(new HiCommand)->try()                 => ok(),
+        $command->register(new InstallPreCommitCommand)->try()   => ok(),
+        $command->register(new UninstallPreCommitCommand)->try() => ok(),
         default                                                  => $command->register(new HelpCommand)->try()
     });
 }

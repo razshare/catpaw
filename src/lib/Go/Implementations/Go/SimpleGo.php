@@ -1,12 +1,18 @@
 <?php
 namespace CatPaw\Go\Implementations\Go;
 
-use CatPaw\Core\Attributes\Provider;
+use function CatPaw\Core\anyError;
 
+use CatPaw\Core\Attributes\Provider;
 use function CatPaw\Core\error;
+use function CatPaw\Core\execute;
+
 use CatPaw\Core\File;
+use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
+use function CatPaw\Core\out;
+
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Unsafe;
 use CatPaw\Go\Interfaces\GoInterface;
@@ -21,18 +27,50 @@ use Throwable;
 #[Provider]
 class SimpleGo implements GoInterface {
     /**
+     * 
+     * @param  string       $fileName Go file to compile.
+     * @return Unsafe<None>
+     */
+    public function compile(string $fileName):Unsafe {
+        return anyError(function() use ($fileName) {
+            if (!$fullFileName = realpath($fileName)) {
+                return error("File `{$fileName}` not found.");
+            }
+            
+            if (!preg_match('/(.+).go$/', $fullFileName, $matches)) {
+                return error("Illegal Go file name received `$fullFileName`, please provide a file name that ends with `.go`.");
+            }
+
+            $fileName      = basename($matches[1]);
+            $directoryName = dirname($matches[1]);
+
+            execute("GOOS=linux CGO_ENABLED=1 go build -o $fileName.so -buildmode=c-shared $fileName.go", out(), $directoryName)->try();
+            execute("cpp -P $fileName.h $fileName.static.h", out(), $directoryName)->try();
+            File::delete("$directoryName/$fileName.h")->try();
+
+            // $this->logger->info("Go program compiled successfully into `$directoryName/$fileName.so`.");
+
+            return ok();
+        });
+    }
+
+    /**
      * Load a Go library.
      * @template T
      * @param  class-string<T> $interface Contract interface, as in - what functions the go library exposes.
      * @param  string          $fileName  Main go file.
      * @return Unsafe<T>
      */
-    public static function load(string $interface, string $fileName):Unsafe {
+    public function load(string $interface, string $fileName):Unsafe {
         $isPharFileName = str_starts_with($fileName, 'phar://');
 
         $strippedFileName = preg_replace('/\.so$/', '', $fileName);
 
         if ($isPharFileName) {
+            if (!File::exists($fileName)) {
+                return error("Shared library `$fileName` not found.");
+            }
+
             $localHeaderFileName = "$strippedFileName.static.h";
             $phar                = Phar::running();
             $headerFileName      = './'.basename('.'.str_replace($phar, '', $localHeaderFileName));
@@ -43,6 +81,16 @@ class SimpleGo implements GoInterface {
                 }
             }
         } else {
+            if (!File::exists($fileName)) {
+                if (!File::exists("$strippedFileName.go")) {
+                    return error("Shared library `$fileName` not found. Since you're not running in phar mode, an attempt to build program `$strippedFileName.go` was made, but that file doesn't exist either.");
+                }
+                $this->compile("$strippedFileName.go")->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
+
             $headerFileName = "$strippedFileName.static.h";
         }
 
