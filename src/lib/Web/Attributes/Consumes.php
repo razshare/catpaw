@@ -46,16 +46,16 @@ class Consumes implements AttributeInterface {
 
     /**
      * @param string $contentType the http content-type, like `application/json`, `text/html` etc.
-     * @param string $schema      usually `string`, but can also be a class name to indicate the structure of the content.
+     * @param string $className      usually `string`, but can also be a class name to indicate the structure of the content.
      * @param mixed  $example
      */
     public function __construct(
         string $contentType,
-        string $schema,
+        string $className,
         mixed $example = '',
     ) {
         $this->request[] = ConsumedRequest::create(
-            className  : $schema,
+            className  : $className,
             type       : $contentType,
             example    : $example,
         );

@@ -81,7 +81,7 @@ use CatPaw\Web\Body;
 
 #[Consumes(
     contentType: 'text/plain',
-    schema: 'string',
+    className: 'string',
     example: 'hello world'
 )]
 #[Produces(
