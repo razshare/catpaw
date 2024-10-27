@@ -11,7 +11,7 @@ php -dphar.readonly=0 catpaw.phar --build
 > [!NOTE]
 > The `-dphar.readonly=0` option is required because the program needs permissions to write the _.phar_ file.
 
-## Configuration
+# Configuration
 The configuration file is a _build.ini_ file
 
 ```ini
@@ -37,7 +37,7 @@ match = "/(^\.\/(\.build-cache|src|vendor|resources|bin)\/.*)|(\.\/env\.ini)/"
 - `match` a regular expression matching all other files you want bundled in your _.phar_ file.
 
 
-## Optimize
+# Optimize
 
 You can shake off all your dev dependencies and make the bundle smaller by passing `--build-optimize`.
 
