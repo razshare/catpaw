@@ -90,7 +90,7 @@ Note that php's match expressions is exhaustive, meaning it forces you to provid
 
 
 But the most important advantage is probably type safety.\
-While it is true you can check for native thrown exceptions using development tools, like phpstan, psalm and so on, these tools don't guarantee your code is safely checked for errors, they are mere linting solutions.\
+While it is true you can check for native thrown exceptions using development tools like phpstan, psalm and so on, these tools don't guarantee your code is safely checked for errors, they are mere linting solutions.\
 Using results, the php type system itself will force you to `unwrap()` the value.
 
 > [!NOTE]
