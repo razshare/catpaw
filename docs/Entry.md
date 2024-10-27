@@ -29,8 +29,7 @@ class WeirdCat implements CatInterface {
 #[Provider]
 class CatOwner {
     #[Entry] public function setup(CatInterface $cat): Result {
-        $theCatBarks = $cat->doesTheCatBark();
-        if ($theCatBarks) {
+        if ($cat->doesTheCatBark()) {
             return error('You gave me a cat that barks');
         }
         return ok();
