@@ -80,9 +80,6 @@ There are some rules you will need to follow.
    | src/api/about/`{username}`/get.php  | __GET__ /api/v1/about/`{username}`  |
    | src/api/about/`{username}`/post.php | __POST__ /api/v1/about/`{username}` |
    | ...                                 | ...                                 |
-
-   > [!NOTE]
-   > `{username}` is a path parameter, read more [here](./Server%20Path%20Parameters.md).
 2. Each file must return a function.
    ```php
    <?php
@@ -92,3 +89,6 @@ There are some rules you will need to follow.
        return success("hello world");
    };
    ```
+
+> [!NOTE]
+> `{username}` is a path parameter, read more [here](./Server%20Path%20Parameters.md).
