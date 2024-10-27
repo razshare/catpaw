@@ -4,7 +4,7 @@ A router is an object that allows you to define __routes__ for your server appli
 
 Routes are defined through __route handlers__, which are functions that trigger whenever a client requests a specific resource.
 
-## Routes
+# Routes
 
 You can map a __GET__ route using `RouterInterface::get`
 
