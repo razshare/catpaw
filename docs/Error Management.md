@@ -44,7 +44,7 @@ $result = anyError(fn() => throw new Exception("Some exception message"));
 ```
 
 > [!NOTE]
-> The `anyError()` function will detect exceptions that are thrown, returned or yielded and convert them into a results.
+> The `anyError()` function will detect exceptions that are thrown, returned or yielded and convert them into results.
 
 # Unwrap
 
