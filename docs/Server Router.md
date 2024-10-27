@@ -49,7 +49,7 @@ function main(ServerInterface $server, RouterInterface $router): void {
 }
 ```
 
-# Filesystem routes
+# Filesystem Routes
 
 You can automate routes definitions by describing them through the filesystem.
 
