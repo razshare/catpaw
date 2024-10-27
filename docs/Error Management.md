@@ -68,7 +68,7 @@ if($error){
 
 The first advantage over throwing exceptions is that your control flow is linear and easier to understand because you are not required to use `try/catch` syntax.
 
-Another advantage of representing errors as values is that you can use pattern matching to manage logic
+Another advantage of representing errors as values is that you can use expressions and pattern matching to manage logic
 
 ```php
 use function CatPaw\Core\error;
