@@ -1,9 +1,9 @@
 # Entry attribute
 
-The `#[Entry]` attribute is an attribute that can be attached to any service or singleton method.
+The `#[Entry]` attribute is an attribute that can be attached to any method of any `#[Provider]` class.
 
-Any method annotated with `#[Entry]` will be invoked right after the container constructs an instance.\
-The method will benefit from dependency injection, just like a constructor.
+Methods annotated with `#[Entry]` will be invoked right after the container constructs an instance.\
+These methods can request services directly.
 
  ```php
 namespace App;
@@ -15,21 +15,25 @@ use CatPaw\Core\Result;
 use function CatPaw\Core\ok;
 use function CatPaw\Core\error;
 
-#[Singleton]
-class TheWeirdCat {
-    #[Entry] public function setup(WeirdCatService $service): Result {
-        $theCatBarks = $service->doesTheCatBark();
-        if ($theCatBarks) {
-            return error('This cat barks');
-        }
-        return ok();
+interface CatInterface {
+    public function doesTheCatBark(): bool;
+}
+
+#[Provider]
+class WeirdCat implements CatInterface {
+    public function doesTheCatBark(): bool {
+        return true;
     }
 }
 
-#[Service]
-class WeirdCatService {
-    public function doesTheCatBark(): bool {
-        return true;
+#[Provider]
+class CatOwner {
+    #[Entry] public function setup(CatInterface $cat): Result {
+        $theCatBarks = $cat->doesTheCatBark();
+        if ($theCatBarks) {
+            return error('You gave me a cat that barks');
+        }
+        return ok();
     }
 }
  ```
