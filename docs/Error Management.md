@@ -1,77 +1,97 @@
 # Error Management
 
-Do not throw exceptions in your code, instead return your errors as `Unsafe<T>` using either `ok()` or `error()`.
+Do not throw exceptions in your code, instead create results as `Result<T>` using either `ok()` or `error()`.
 
 ```php
-namespace CatPaw\Core;
-/**
- * @template T
- * @package CatPaw\Core
- */
-readonly class Unsafe {
-    /**
-     * @param T          $value
-     * @param null|Error $error
-     */
-    public function __construct(
-        public mixed $value,
-        public null|Error $error
-    );
+readonly class None {}
+const NONE = new None;
+
+readonly class Result {
+  public mixed $value;
+  public Error $error;
 }
 
-/**
- * Create an unsafe object with a value.
- * @template T
- * @param  T         $value
- * @return Unsafe<T>
- */
-function ok(mixed $value = NONE): Unsafe;
-
-/**
- * Create an unsafe object with an error.
- * @param  string|Error  $message
- * @return Unsafe<mixed>
- */
-function error(string|Error $message): Unsafe;
+function ok(mixed $value = NONE): Result;
+function error(string|Error $message): Result;
 ```
 
+# What is a result
 
-# Usage
+A result is a simple object that can contain either a value or an error.
 
-There are two ways of managing an `Unsafe<T>` error object.
+# How to create results
 
-
-You can `unwrap()` the object, which will return the value of the object or assign the error by reference.
-
+You can create a result by invoking `ok()` with a value
 ```php
 use function CatPaw\Core\ok;
-
-$attempt = ok("hello world");
-$value = $attempt->unwrap($error); // $error is assigned by reference here
-if($error){
-  echo "Something is wrong! $error";
-}
+$result = ok("my-value");
 ```
 
-Or you can use `anyError()` and `try()`.
+or by invoking `error()` with an error message
 
 ```php
 use function CatPaw\Core\error;
-use function CatPaw\Core\anyError;
+$result = error("My error message");
+```
 
-$value = anyError(function(){
-  $attempt = error("Sorry, can't do that.");
-  $value = $attempt->try()  // this will throw the inner error
-  return true;
-})->unwrap($error) // $error is assigned by reference
+# Convert exceptions to results
+
+You can convert exceptions into results with `anyError()`
+
+```php
+use function CatPaw\Core\anyError;
+$result = anyError(fn() => throw new Exception("Some exception message"));
+```
+
+> [!NOTE]
+> The `anyError()` function will detect exceptions that are thrown, returned or yielded and convert them into a results.
+
+# Unwrap
+
+You can check if a result contains an error by `unwrap`ping it
+
+```php
+use function CatPaw\Core\error;
+
+$result = error("My error message");
+
+$value = $result->unwrap($error);
 
 if($error){
-  echo "Something is wrong! $error";
+  echo "Something is wrong: $error";
+} else {
+  echo "OK!";
 }
-
-echo $value?'true':'false'; // this will print 'true'
-
 ```
-`try()` will return the value of the object or it will throw the internal error.\
-`anyError()` function will detect any errors thrown, yielded or returned and convert them into an _unsafe_ object.\
-If no error is detected, it will create an _unsafe_ object with the value you return, in this case `true`.
+
+# Some advantages
+
+The first advantage over throwing exceptions is that your control flow is linear and easier to understand because you are not required to use `try/catch` syntax.
+
+Another advantage of representing errors as values is that you can use pattern matching to manage logic
+
+```php
+use function CatPaw\Core\error;
+
+class Error1 {}
+class Error2 {}
+
+$result = error(new Error1)
+
+$value = $result->unwrap($error) or match($error::class){
+  Error1::class => "fallback value 1",
+  Error2::class => "fallback value 2",
+  default       => "default value"
+};
+```
+
+Note that php's match expressions is exhaustive, meaning it forces you to provide a default value.
+
+
+
+But the most important advantage is probably type safety.\
+While it is true you can check for native thrown exceptions using development tools, like phpstan, psalm and so on, these tools don't guarantee your code is safely checked for errors, they are mere linting solutions.\
+Using results, the php type system itself will force you to `unwrap()` the value.
+
+> [!NOTE]
+> Of course, you can choose to ignore the error after you `unwrap()` the result, but that would be a conscious decision on your part rather than mistake.

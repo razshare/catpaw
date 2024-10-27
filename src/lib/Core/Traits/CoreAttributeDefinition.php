@@ -6,7 +6,7 @@ use CatPaw\Core\AttributeResolver;
 use CatPaw\Core\Container;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -31,12 +31,12 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionFunction  $reflectionFunction
-     * @return Unsafe<array<self>>
+     * @return Result<array<self>>
      */
-    public static function findAllByFunction(ReflectionFunction $reflectionFunction): Unsafe {
+    public static function findAllByFunction(ReflectionFunction $reflectionFunction): Result {
         self::initializeCache();
         if (!($trueClassNames = AttributeResolver::functionAttributes($reflectionFunction, static::class))) {
-            /** @var Unsafe<array<self>> */
+            /** @var Result<array<self>> */
             return ok([]);
         }
 
@@ -56,7 +56,7 @@ trait CoreAttributeDefinition {
                 }
                 $instances[] = $instance;
             }
-            /** @var Unsafe<array<self>> */
+            /** @var Result<array<self>> */
             return ok($instances);
         } catch(Throwable $e) {
             return error($e);
@@ -65,17 +65,17 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionFunction $reflectionFunction
-     * @return Unsafe<false|self>
+     * @return Result<false|self>
      */
-    public static function findByFunction(ReflectionFunction $reflectionFunction): Unsafe {
+    public static function findByFunction(ReflectionFunction $reflectionFunction): Result {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionFunction)) {
             $instance = self::$coreDefinitionCache->offsetGet($reflectionFunction);
-            /** @var Unsafe<false|self> */
+            /** @var Result<false|self> */
             return ok($instance);
         }
         if (!($trueClassName = AttributeResolver::functionAttribute($reflectionFunction, static::class))) {
-            /** @var Unsafe<false|self> */
+            /** @var Result<false|self> */
             return ok(false);
         }
 
@@ -92,7 +92,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionFunction,
                 info: $instance,
             );
-            /** @var Unsafe<false|self> */
+            /** @var Result<false|self> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -101,18 +101,18 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionMethod   $reflectionMethod
-     * @return Unsafe<self|false>
+     * @return Result<self|false>
      */
-    public static function findByMethod(ReflectionMethod $reflectionMethod):Unsafe {
+    public static function findByMethod(ReflectionMethod $reflectionMethod):Result {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionMethod)) {
             $instance = self::$coreDefinitionCache->offsetGet($reflectionMethod);
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok($instance);
         }
 
         if (!($trueClassName = AttributeResolver::methodAttribute($reflectionMethod, static::class))) {
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok(false);
         }
 
@@ -129,7 +129,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionMethod,
                 info: $instance,
             );
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -138,18 +138,18 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionClass<object> $reflectionClass
-     * @return Unsafe<self|false>
+     * @return Result<self|false>
      */
-    public static function findByClass(ReflectionClass $reflectionClass):Unsafe {
+    public static function findByClass(ReflectionClass $reflectionClass):Result {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionClass)) {
             $instance = self::$coreDefinitionCache->offsetGet($reflectionClass);
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok($instance);
         }
 
         if (!($trueClassName = AttributeResolver::classAttribute($reflectionClass, static::class))) {
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok(false);
         }
 
@@ -166,7 +166,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionClass,
                 info: $instance,
             );
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -175,18 +175,18 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionProperty $reflectionProperty
-     * @return Unsafe<self|false>
+     * @return Result<self|false>
      */
-    public static function findByProperty(ReflectionProperty $reflectionProperty):Unsafe {
+    public static function findByProperty(ReflectionProperty $reflectionProperty):Result {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionProperty)) {
             $instance = self::$coreDefinitionCache->offsetGet($reflectionProperty);
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok($instance);
         }
 
         if (!($trueClassName = AttributeResolver::propertyAttribute($reflectionProperty, static::class))) {
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok(false);
         }
 
@@ -203,7 +203,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionProperty,
                 info: $instance,
             );
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -212,18 +212,18 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionParameter $reflectionParameter
-     * @return Unsafe<self|false>
+     * @return Result<self|false>
      */
-    public static function findByParameter(ReflectionParameter $reflectionParameter):Unsafe {
+    public static function findByParameter(ReflectionParameter $reflectionParameter):Result {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionParameter)) {
             $instance = self::$coreDefinitionCache->offsetGet($reflectionParameter);
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok($instance);
         }
 
         if (!($trueClassName = AttributeResolver::parameterAttribute($reflectionParameter, static::class))) {
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok(false);
         }
 
@@ -240,7 +240,7 @@ trait CoreAttributeDefinition {
                 object: $reflectionParameter,
                 info: $instance,
             );
-            /** @var Unsafe<self|false> */
+            /** @var Result<self|false> */
             return ok($instance);
         } catch(Throwable $e) {
             return error($e);
@@ -249,12 +249,12 @@ trait CoreAttributeDefinition {
 
     /**
      * @param  ReflectionParameter $reflectionParameter
-     * @return Unsafe<array<self>>
+     * @return Result<array<self>>
      */
-    public static function findAllByParameter(ReflectionParameter $reflectionParameter): Unsafe {
+    public static function findAllByParameter(ReflectionParameter $reflectionParameter): Result {
         self::initializeCache();
         if (!($trueClassNames = AttributeResolver::parameterAttributes($reflectionParameter, static::class))) {
-            /** @var Unsafe<array<self>> */
+            /** @var Result<array<self>> */
             return ok([]);
         }
 
@@ -274,7 +274,7 @@ trait CoreAttributeDefinition {
                 }
                 $instances[] = $instance;
             }
-            /** @var Unsafe<array<self>> */
+            /** @var Result<array<self>> */
             return ok($instances);
         } catch(Throwable $e) {
             return error($e);

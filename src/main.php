@@ -17,19 +17,19 @@ use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
 use function CatPaw\Core\Precommit\installPreCommit;
 use function CatPaw\Core\Precommit\uninstallPreCommit;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use function CatPaw\Text\foreground;
 
 use function CatPaw\Text\nocolor;
 use Psr\Log\LoggerInterface;
 
 class TipsCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder):Unsafe {
-        $builder->withRequiredFlag('t', 'tips');
+    public function build(CommandBuilder $builder):Result {
+        $builder->withRequiredOption('t', 'tips');
         return ok();
     }
 
-    public function run(CommandContext $context): Unsafe {
+    public function run(CommandContext $context): Result {
         try {
             $message = '';
     
@@ -58,12 +58,12 @@ class TipsCommand implements CommandRunnerInterface {
 }
 
 class InstallPreCommitCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): Unsafe {
-        $builder->withRequiredFlag('i', 'install-pre-commit');
+    public function build(CommandBuilder $builder): Result {
+        $builder->withRequiredOption('i', 'install-pre-commit');
         return ok();
     }
 
-    public function run(CommandContext $context): Unsafe {
+    public function run(CommandContext $context): Result {
         return anyError(function() use ($context) {
             $command = $context->get('install-pre-commit')->try();
             return installPreCommit($command);
@@ -72,24 +72,24 @@ class InstallPreCommitCommand implements CommandRunnerInterface {
 }
 
 class UninstallPreCommitCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): Unsafe {
-        $builder->withRequiredFlag('u', 'uninstall-pre-commit');
+    public function build(CommandBuilder $builder): Result {
+        $builder->withRequiredOption('u', 'uninstall-pre-commit');
         return ok();
     }
 
-    public function run(CommandContext $context): Unsafe {
+    public function run(CommandContext $context): Result {
         return uninstallPreCommit();
     }
 }
 
 class BuildCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): Unsafe {
-        $builder->withRequiredFlag('b', 'build');
-        $builder->withFlag('o', 'optimize');
+    public function build(CommandBuilder $builder): Result {
+        $builder->withRequiredOption('b', 'build');
+        $builder->withOption('o', 'optimize');
         return ok();
     }
 
-    public function run(CommandContext $context): Unsafe {
+    public function run(CommandContext $context): Result {
         return anyError(function() use ($context) {
             $optimize = (bool)$context->get('optimize')->try();
             return build($optimize);
@@ -98,12 +98,12 @@ class BuildCommand implements CommandRunnerInterface {
 }
 
 class HiCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): Unsafe {
-        $builder->withRequiredFlag('h', 'hi');
+    public function build(CommandBuilder $builder): Result {
+        $builder->withRequiredOption('h', 'hi');
         return ok();
     }
 
-    public function run(CommandContext $context): Unsafe {
+    public function run(CommandContext $context): Result {
         return anyError(function() {
             echo "Hi.\n";
             return ok();
@@ -115,12 +115,12 @@ class GompileCommand implements CommandRunnerInterface {
     public function __construct(private LoggerInterface $logger) {
     }
 
-    public function build(CommandBuilder $builder): Unsafe {
+    public function build(CommandBuilder $builder): Result {
         $builder->withOption('g', 'gompile', error("A Go file name is required."));
         return ok();
     }
 
-    public function run(CommandContext $context): Unsafe {
+    public function run(CommandContext $context): Result {
         return anyError(function() use ($context) {
             $inputFileName = $context->get('gompile')->try();
             if (!$fullFileName = realpath($inputFileName)) {
@@ -146,11 +146,11 @@ class GompileCommand implements CommandRunnerInterface {
 }
 
 class HelpCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder):Unsafe {
+    public function build(CommandBuilder $builder):Result {
         return ok();
     }
 
-    public function run(CommandContext $context): Unsafe {
+    public function run(CommandContext $context): Result {
         echo <<<BASH
             \n
             -b,  --build [-o, --optimize]        Builds the project into a .phar.
@@ -167,7 +167,7 @@ class HelpCommand implements CommandRunnerInterface {
 
 /**
  * 
- * @return Unsafe<None>
+ * @return Result<None>
  */
 function main(CommandInterface $command, LoggerInterface $logger) {
     return anyError(fn () => match (true) {

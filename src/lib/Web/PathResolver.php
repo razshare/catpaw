@@ -8,7 +8,7 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Web\Attributes\Param;
 use ReflectionParameter;
 
@@ -22,10 +22,10 @@ class PathResolver {
      * @param  string                     $symbolicMethod
      * @param  string                     $symbolicPath
      * @param  array<ReflectionParameter> $parameters
-     * @return Unsafe<None>
+     * @return Result<None>
      */
     // @phpstan-ignore-next-line
-    public static function cacheResolver(string $symbolicMethod, string $symbolicPath, array $reflectionParameters):Unsafe {
+    public static function cacheResolver(string $symbolicMethod, string $symbolicPath, array $reflectionParameters):Result {
         self::findResolver($symbolicMethod, $symbolicPath, $reflectionParameters)->unwrap($error);
         if ($error) {
             return error($error);
@@ -39,9 +39,9 @@ class PathResolver {
      * @param  string                     $symbolicMethod
      * @param  string                     $symbolicPath
      * @param  array<ReflectionParameter> $reflectionParameters
-     * @return Unsafe<PathResolver>
+     * @return Result<PathResolver>
      */
-    public static function findResolver(string $symbolicMethod, string $symbolicPath, array $reflectionParameters):Unsafe {
+    public static function findResolver(string $symbolicMethod, string $symbolicPath, array $reflectionParameters):Result {
         $key = "$symbolicMethod:$symbolicPath";
         if (isset(self::$cache[$key])) {
             return ok(self::$cache[$key]);
@@ -63,9 +63,9 @@ class PathResolver {
      *
      * @param  string                                   $path
      * @param  array<ReflectionParameter>               $reflectionParameters
-     * @return Unsafe<array<MatchingPathConfiguration>>
+     * @return Result<array<MatchingPathConfiguration>>
      */
-    public static function findMatchingPathConfigurations(string $path, array $reflectionParameters):Unsafe {
+    public static function findMatchingPathConfigurations(string $path, array $reflectionParameters):Result {
         /** @var array<MatchingPathConfiguration> $configurations */
         $configurations = [];
 

@@ -17,17 +17,14 @@ use CatPaw\Core\None;
 
 use const CatPaw\Core\NONE;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Web\Accepts;
 use CatPaw\Web\Body;
 use function CatPaw\Web\failure;
-use CatPaw\Web\Filter;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\HttpInvokerInterface;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Interfaces\SessionInterface;
-use CatPaw\Web\Interfaces\ViewEngineInterface;
-use CatPaw\Web\Interfaces\ViewInterface;
 use CatPaw\Web\Page;
 use CatPaw\Web\RequestContext;
 
@@ -40,15 +37,12 @@ use Throwable;
 
 #[Provider]
 class SimpleHttpInvoker implements HttpInvokerInterface {
-    public function __construct(public readonly ViewEngineInterface $viewEngine) {
-    }
-
     /**
      * 
-     * @param  Unsafe<mixed>            $value
-     * @return Unsafe<ResponseModifier>
+     * @param  Result<mixed>            $value
+     * @return Result<ResponseModifier>
      */
-    private static function renderUnsafe(Unsafe $value):Unsafe {
+    private static function renderUnsafe(Result $value):Result {
         static $pico      = '';
         static $style     = '';
         static $allStyles = '';
@@ -126,9 +120,9 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
 
     /**
      * @param  RequestContext   $context
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    public function invoke(RequestContext $context):Unsafe {
+    public function invoke(RequestContext $context):Result {
         $badRequestEntries = $context->badRequestEntries;
         if ($badRequestEntries) {
             $modifier = failure(join("\n", $badRequestEntries), HttpStatus::BAD_REQUEST);
@@ -158,30 +152,10 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
 
         $modifier = $function(...$dependencies);
 
-        if ($modifier instanceof Unsafe) {
+        if ($modifier instanceof Result) {
             $modifier = self::renderUnsafe($modifier)->unwrap($error);
             if ($error) {
                 return error($error);
-            }
-        } else if ($modifier instanceof ViewInterface) {
-            $componentFullName   = asFileName($context->route->workDirectory, 'view.latte');
-            $fileNameStringified = (string)$componentFullName;
-            if ('' !== $fileNameStringified) {
-                $view = $modifier;
-                if (!$this->viewEngine->hasComponent($componentFullName)) {
-                    return error("Component `$componentFullName` not found.");
-                }
-                try {
-                    $data = $this->viewEngine->render($componentFullName, $view->properties())->unwrap($error);
-                    if ($error) {
-                        return error($error);
-                    }
-                    $modifier = success($data, $view->status(), $view->headers())->as(TEXT_HTML);
-                } catch(Throwable $error) {
-                    return error($error);
-                }
-            } else {
-                $modifier = failure();
             }
         } else if ($modifier instanceof Websocket) {
             $websocket = $modifier;
@@ -231,7 +205,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                         $logger->error($error);
                         return false;
                     }
-                    if ($result instanceof Unsafe) {
+                    if ($result instanceof Result) {
                         $result = $result->unwrap($error);
                         if ($error) {
                             $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
@@ -250,7 +224,6 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 RequestBody::class => static fn () => $context->request->getBody(),
                 Body::class        => static fn () => new Body($context->request),
                 Accepts::class     => static fn () => Accepts::createFromRequest($context->request),
-                Filter::class      => static fn () => Filter::createFromRequest($context->request),
                 Page::class        => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
                     $size  = $context->requestQueries['size']  ?? 10;

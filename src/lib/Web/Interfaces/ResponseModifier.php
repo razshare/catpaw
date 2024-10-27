@@ -3,7 +3,7 @@ namespace CatPaw\Web\Interfaces;
 
 use Amp\Http\Cookie\ResponseCookie;
 use Amp\Http\Server\Response;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Web\RequestContext;
 
 
@@ -30,7 +30,7 @@ interface ResponseModifier {
     public function item():self;
     /**
      *
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    public function response():Unsafe;
+    public function response():Result;
 }

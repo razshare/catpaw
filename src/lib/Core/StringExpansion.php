@@ -7,9 +7,9 @@ class StringExpansion {
     /**
      * @param  string              $content
      * @param  array<string,mixed> $parameters
-     * @return Unsafe<string>
+     * @return Result<string>
      */
-    public static function variable(string $content, array $parameters): Unsafe {
+    public static function variable(string $content, array $parameters): Result {
         $result      = '';
         $stack       = StringStack::of($content);
         $occurrences = $stack->expect("{", "}");
@@ -58,10 +58,10 @@ class StringExpansion {
 
     /**
      * @param  string                                             $content
-     * @param  false|callable(string,int,string):Unsafe<bool|int> $validator
-     * @return Unsafe<bool>
+     * @param  false|callable(string,int,string):Result<bool|int> $validator
+     * @return Result<bool>
      */
-    public static function linearCondition(string $content, false|callable $validator = false): Unsafe {
+    public static function linearCondition(string $content, false|callable $validator = false): Result {
         $previousValue = false;
 
         $stack       = StringStack::of($content);
@@ -172,10 +172,10 @@ class StringExpansion {
     /**
      * @param  string                                             $content
      * @param  int                                                $depth
-     * @param  false|callable(string,int,string):Unsafe<bool|int> $validator
-     * @return Unsafe<bool>
+     * @param  false|callable(string,int,string):Result<bool|int> $validator
+     * @return Result<bool>
      */
-    public static function groupCondition(string $content, int $depth = 0, false|callable $validator = false): Unsafe {
+    public static function groupCondition(string $content, int $depth = 0, false|callable $validator = false): Result {
         if ($depth > 10) {
             return error("Too many nested groups in the condition (max 10).");
         }
@@ -237,9 +237,9 @@ class StringExpansion {
     /**
      * @param  string              $content
      * @param  array<string,mixed> $parameters
-     * @return Unsafe<bool>
+     * @return Result<bool>
      */
-    public static function condition(string $content, array $parameters): Unsafe {
+    public static function condition(string $content, array $parameters): Result {
         $variable = self::variable($content, $parameters)->unwrap($error);
         if ($error) {
             return error($error);
@@ -250,10 +250,10 @@ class StringExpansion {
     /**
      * @param  string                                     $content
      * @param  array<string,mixed>                        $parameters
-     * @param  callable(mixed,int,mixed):Unsafe<bool|int> $validator
-     * @return Unsafe<bool>
+     * @param  callable(mixed,int,mixed):Result<bool|int> $validator
+     * @return Result<bool>
      */
-    public static function conditionCustomized(string $content, array $parameters, callable $validator): Unsafe {
+    public static function conditionCustomized(string $content, array $parameters, callable $validator): Result {
         $variable = self::variable($content, $parameters)->unwrap($error);
         if ($error) {
             return error($error);
@@ -266,9 +266,9 @@ class StringExpansion {
      * Parse text surrounded by `$delimiters` as a string.
      * @param  string         $text
      * @param  array<string>  $delimiters
-     * @return Unsafe<string>
+     * @return Result<string>
      */
-    public static function delimit(string $text, array $delimiters): Unsafe {
+    public static function delimit(string $text, array $delimiters): Result {
         foreach ($delimiters as $delimiter) {
             $stack         = StringStack::of($text);
             $occurrences   = $stack->expect($delimiter, '\\');

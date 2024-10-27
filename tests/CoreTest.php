@@ -15,9 +15,8 @@ use CatPaw\Core\Interfaces\CommandRunnerInterface;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
+use CatPaw\Core\Result;
 use CatPaw\Core\Signal;
-use CatPaw\Core\Unsafe;
-use CatPaw\Go\Interfaces\GoInterface;
 use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
@@ -32,7 +31,6 @@ class CoreTest extends TestCase {
             yield Container::run($this->makeSureUnsafeWorks(...));
             yield Container::run($this->makeSureUnsafeWorksWithAnyError(...));
             yield Container::run($this->makeSureSignalsWork(...));
-            yield Container::run($this->makeSureGoffiWorks(...));
             yield Container::run($this->makeSureCommandWorks(...));
         })->unwrap($error);
         $this->assertNull($error);
@@ -99,34 +97,21 @@ class CoreTest extends TestCase {
     }
 
     /**
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function makeSureGoffiWorks(GoInterface $go):Unsafe {
-        return anyError(function() use ($go) {
-            $lib    = $go->load(Contract::class, asFileName(__DIR__, './main.so'))->try();
-            $result = $lib->hello("world");
-            $this->assertEquals("hello world", $result);
-            return ok();
-        });
-    }
-
-    /**
-     * @return Unsafe<None>
-     */
-    public function makeSureCommandWorks(CommandInterface $command):Unsafe {
+    public function makeSureCommandWorks(CommandInterface $command):Result {
         return anyError(function() use ($command) {
             $command->register($runner = new class implements CommandRunnerInterface {
                 public CommandBuilder $builder;
-                public function build(CommandBuilder $builder): Unsafe {
+                public function build(CommandBuilder $builder): Result {
                     $this->builder = $builder;
-                    $builder->withRequiredFlag('r', 'run');
+                    $builder->withRequiredOption('r', 'run');
                     $builder->withOption('p', 'port', ok('80'));
                     $builder->withOption('c', 'certificate');
-                    $builder->withFlag('s', 'secure');
                     return ok();
                 }
             
-                public function run(CommandContext $context): Unsafe {
+                public function run(CommandContext $context): Result {
                     return ok();
                 }
             });
@@ -139,8 +124,6 @@ class CoreTest extends TestCase {
             $this->assertArrayHasKey('port', $options);
             $this->assertArrayHasKey('c', $options);
             $this->assertArrayHasKey('certificate', $options);
-            $this->assertArrayHasKey('s', $options);
-            $this->assertArrayHasKey('secure', $options);
 
             $r   = $options['r'];
             $run = $options['run'];
@@ -154,14 +137,9 @@ class CoreTest extends TestCase {
             $certificate = $options['certificate'];
             $this->assertEquals($c, $certificate);
 
-            $s      = $options['s'];
-            $secure = $options['secure'];
-            $this->assertEquals($s, $secure);
-
             $this->assertTrue($r->isFlag);
             $this->assertFalse($p->isFlag);
             $this->assertFalse($c->isFlag);
-            $this->assertTrue($s->isFlag);
 
             $runValue = $run->value->unwrap($error);
             $this->assertNull($runValue);
@@ -172,9 +150,6 @@ class CoreTest extends TestCase {
 
             $certificateValue = $certificate->value->unwrap($error);
             $this->assertEquals('', $certificateValue);
-            
-            $secureValue = $secure->value->unwrap($error);
-            $this->assertEquals('0', $secureValue);
 
             return ok();
         });

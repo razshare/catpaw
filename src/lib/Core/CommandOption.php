@@ -6,14 +6,14 @@ class CommandOption {
      * @param  string         $longName
      * @param  string         $shortName
      * @param  bool           $isFlag
-     * @param  Unsafe<string> $value
+     * @param  Result<string> $value
      * @return self
      */
     public static function create(
         string $longName,
         string $shortName,
         bool $isFlag,
-        Unsafe $value,
+        Result $value,
     ) {
         return new self(
             longName: $longName,
@@ -27,14 +27,14 @@ class CommandOption {
      * @param  string         $longName
      * @param  string         $shortName
      * @param  bool           $isFlag
-     * @param  Unsafe<string> $value
+     * @param  Result<string> $value
      * @return void
      */
     private function __construct(
         public readonly string $longName,
         public readonly string $shortName,
         public readonly bool $isFlag,
-        public Unsafe $value,
+        public Result $value,
     ) {
     }
 }

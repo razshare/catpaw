@@ -21,22 +21,19 @@ Here's an example of a blinking LED on pin _12_<br/>
 
 ```php
 <?php
-use CatPaw\Core\Unsafe;
 use function Amp\delay;
 use function CatPaw\Core\error;
 use function CatPaw\Core\anyError;
 use CatPaw\Core\RaspberryPi\Services\GpioService;
 
-function main(GpioService $gpio): Unsafe {
-    return anyError(function() use($gpio) {
-        $writer = $gpio->createWriter('12');
-        $active = true;
-        while (true) {
-            $writer->write($active?'1':'0')->try();
-            $active = !$active;
-            delay(1);
-        }
-    });
+function main(GpioService $gpio): void {
+    $writer = $gpio->createWriter('12');
+    $active = true;
+    while (true) {
+        $writer->write($active?'1':'0')->try();
+        $active = !$active;
+        delay(1);
+    }
 }
 ```
 

@@ -6,7 +6,7 @@ use Amp\Http\Server\Response;
 
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Core\XMLSerializer;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use Throwable;
@@ -192,9 +192,9 @@ class SuccessResponseModifier implements ResponseModifier {
 
     /**
      *
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    public function response():Unsafe {
+    public function response():Result {
         if ($this->bodyIsResponse) {
             return ok($this->body);
         }

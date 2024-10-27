@@ -77,21 +77,19 @@ use function CatPaw\Core\execute;
 use function CatPaw\Core\anyError;
 
 function main(){
-    return anyError(function(){
-        $kill = Signal::create();
+    $kill = Signal::create();
 
-        async(function() use($kill) {
-            delay(2);
-            $kill->send();
-        });
-
-        execute(
-            command:'git push',
-            output:out(),
-            workDirectory:'.',
-            kill:$kill,
-        )->try();
+    async(function() use($kill) {
+        delay(2);
+        $kill->send();
     });
+
+    execute(
+        command:'git push',
+        output:out(),
+        workDirectory:'.',
+        kill:$kill,
+    )->try();
 }
 ```
 

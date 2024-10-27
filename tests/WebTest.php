@@ -43,8 +43,6 @@ class WebTest extends TestCase {
                 yield Container::run($this->makeSureContentNegotiationWorks(...));
                 yield Container::run($this->makeSureParamHintsWork(...));
                 yield Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...));
-                yield Container::run($this->makeSureFilterWorksCorrectly(...));
-                yield Container::run($this->makeSureLatteWorksCorrectly(...));
             })->unwrap($error);
             if ($error) {
                 $this->assertNull($error);
@@ -160,21 +158,5 @@ class WebTest extends TestCase {
         $this->assertArrayHasKey('key2', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
         $this->assertArrayHasKey('key3', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
         $this->assertArrayHasKey('key4', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
-    }
-
-    public function makeSureFilterWorksCorrectly(HttpClient $http):void {
-        $response = $http->request(new Request('http://127.0.0.1:5858/api/queries?counter=>1&id=1&group=admin&tag=~articles', "GET"));
-        $filter   = $response->getBody()->buffer();
-        $this->assertEquals('counter > :counter and id = :id and group = :group and tag like :tag', $filter);
-        
-        $response = $http->request(new Request('http://127.0.0.1:5858/api/queries?counter=>1&id=1&group=admin&tag=like:articles', "GET"));
-        $filter   = $response->getBody()->buffer();
-        $this->assertEquals('counter > :counter and id = :id and group = :group and tag like :tag', $filter);
-    }
-
-    public function makeSureLatteWorksCorrectly(HttpClient $http):void {
-        $response = $http->request(new Request('http://127.0.0.1:5858/api/latte/world', "GET"));
-        $content  = $response->getBody()->buffer();
-        $this->assertEquals('hello world', $content);
     }
 }

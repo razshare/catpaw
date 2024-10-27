@@ -9,7 +9,7 @@ use Amp\Websocket\Server\WebsocketClientHandler;
 use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\WebsocketInterface;
 use Psr\Log\LoggerInterface;
@@ -24,9 +24,9 @@ class SimpleWebsocket implements WebsocketInterface {
     }
 
     /**
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    #[Entry] function start():Unsafe {
+    #[Entry] function start():Result {
         return $this->server->onStart(function(HttpServer $httpServer) {
             $this->httpServer = $httpServer;
         });

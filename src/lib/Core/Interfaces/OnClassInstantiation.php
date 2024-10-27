@@ -2,7 +2,7 @@
 namespace CatPaw\Core\Interfaces;
 
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use ReflectionClass;
 
 interface OnClassInstantiation {
@@ -12,7 +12,7 @@ interface OnClassInstantiation {
      * @param  mixed                   $instance     Instance of the class.
      * @param  array<int,mixed>        $dependencies Arguments for the constructor.\
      *                                               These are provided by the `Container`.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function onClassInstantiation(ReflectionClass $reflection, mixed &$instance, array $dependencies):Unsafe;
+    public function onClassInstantiation(ReflectionClass $reflection, mixed &$instance, array $dependencies):Result;
 }

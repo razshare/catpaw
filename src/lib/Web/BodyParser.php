@@ -6,7 +6,7 @@ use Amp\Http\Server\FormParser\StreamingFormParser;
 use Amp\Http\Server\Request;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use function json_decode;
 use stdClass;
 use Throwable;
@@ -16,13 +16,13 @@ class BodyParser {
     }
 
     /**
-     * @return Unsafe<mixed>
+     * @return Result<mixed>
      */
     public static function parseAsObject(
         Request $request,
         int $sizeLimit,
         null|Cancellation $cancellation = null
-    ): Unsafe {
+    ): Result {
         $contentType = $request->getHeader("Content-Type") ?? '';
 
         if ('' === $contentType) {

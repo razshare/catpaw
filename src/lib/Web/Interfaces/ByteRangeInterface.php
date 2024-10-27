@@ -2,21 +2,21 @@
 namespace CatPaw\Web\Interfaces;
 
 use Amp\Http\Server\Response;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 interface ByteRangeInterface {
     /**
      *
      * @param  ByteRangeWriterInterface $interface
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    public function response(ByteRangeWriterInterface $interface): Unsafe;
+    public function response(ByteRangeWriterInterface $interface): Result;
 
     /**
      *
      * @param  string           $fileName
      * @param  string           $rangeQuery
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    public function file(string $fileName, string $rangeQuery):Unsafe;
+    public function file(string $fileName, string $rangeQuery):Result;
 }

@@ -7,7 +7,7 @@ use function CatPaw\Core\deferred;
 use function CatPaw\Core\error;
 
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Schedule\Interfaces\ScheduleInterface;
 use CatPaw\Schedule\ScheduleConfiguration;
 use CatPaw\Schedule\ScheduleEntry;
@@ -39,9 +39,9 @@ readonly class SimpleSchedule implements ScheduleInterface {
     /**
      * @param  string                  $due
      * @param  callable(callable):void $function
-     * @return Unsafe<ScheduleEntry>
+     * @return Result<ScheduleEntry>
      */
-    public function after(string $due, callable $function):Unsafe {
+    public function after(string $due, callable $function):Result {
         $scheduleConfiguration = $this->configure(format: "after $due", repeat: false)->unwrap($error);
         if ($error) {
             return error($error);
@@ -56,9 +56,9 @@ readonly class SimpleSchedule implements ScheduleInterface {
     /**
      * @param  string                  $due
      * @param  callable(callable):void $function
-     * @return Unsafe<ScheduleEntry>
+     * @return Result<ScheduleEntry>
      */
-    public function every(string $due, callable $function):Unsafe {
+    public function every(string $due, callable $function):Result {
         $scheduleConfiguration = $this->configure(format: "after $due", repeat: true)->unwrap($error);
         if ($error) {
             return error($error);
@@ -71,9 +71,9 @@ readonly class SimpleSchedule implements ScheduleInterface {
     }    /**
      * @param  string                  $due
      * @param  callable(callable):void $function
-     * @return Unsafe<ScheduleEntry>
+     * @return Result<ScheduleEntry>
      */
-    public function daily(string $due, callable $function):Unsafe {
+    public function daily(string $due, callable $function):Result {
         $scheduleConfiguration = $this->configure(format: "daily $due", repeat: true)->unwrap($error);
         if ($error) {
             return error($error);
@@ -88,9 +88,9 @@ readonly class SimpleSchedule implements ScheduleInterface {
     /**
      * @param  string                        $format
      * @param  bool                          $repeat
-     * @return Unsafe<ScheduleConfiguration>
+     * @return Result<ScheduleConfiguration>
      */
-    private function configure(string $format, bool $repeat):Unsafe {
+    private function configure(string $format, bool $repeat):Result {
         if (preg_match(self::PATTERN_AFTER, $format, $matches)) {
             [,$value,$humanReadableUnit] = $matches;
             $multiplier                  = match ($humanReadableUnit) {
@@ -112,13 +112,14 @@ readonly class SimpleSchedule implements ScheduleInterface {
         }
 
         if (preg_match(self::PATTERN_DAILY, $format, $matches)) {
-            $hour   = (int)($matches[1] ?? date('H'));
-            $minute = (int)($matches[2] ?? date('i'));
-            $second = (int)($matches[3] ?? date('s'));
+            $hour   = (int)($matches[1]);
+            $minute = (int)($matches[2]);
+            $second = (int)($matches[3]);
 
             if ($minute > 59) {
                 return error("Invalid time format `$format`, minute can't be greater than 59.");
             }
+            
             if ($second > 59) {
                 return error("Invalid time format `$format`, second can't be greater than 59.");
             }
@@ -168,12 +169,12 @@ readonly class SimpleSchedule implements ScheduleInterface {
      * Schedule a function to execute.
      * @param  callable(callable):void $function              the function to execute.
      * @param  ScheduleConfiguration   $scheduleConfiguration
-     * @return Unsafe<ScheduleEntry>
+     * @return Result<ScheduleEntry>
      */
     private function schedule(
         callable $function,
         ScheduleConfiguration $scheduleConfiguration,
-    ):Unsafe {
+    ):Result {
         $delta      = $scheduleConfiguration->value;
         $semaphore  = deferred();
         $callbackId = '';

@@ -34,12 +34,12 @@ class Container {
     /**
      * Require libraries.
      * @param  string                $librariesPath Path to the libraries directory.
-     * @return Unsafe<array<string>> list of files scanned.
+     * @return Result<array<string>> list of files scanned.
      */
-    public static function requireLibraries(string $librariesPath):Unsafe {
+    public static function requireLibraries(string $librariesPath):Result {
         $isPhar = isPhar();
         if ('' === trim($librariesPath)) {
-            /** @var Unsafe<array<string>> */
+            /** @var Result<array<string>> */
             return ok([]);
         }
 
@@ -49,10 +49,10 @@ class Container {
 
         if (isFile($librariesPath)) {
             require_once($librariesPath);
-            /** @var Unsafe<array<string>> */
+            /** @var Result<array<string>> */
             return ok([$librariesPath]);
         } else if (!isDirectory($librariesPath)) {
-            /** @var Unsafe<array<string>> */
+            /** @var Result<array<string>> */
             return ok([]);
         }
 
@@ -70,7 +70,7 @@ class Container {
             require_once($fileName);
             $phpFileNames[] = $fileName;
         }
-        /** @var Unsafe<array<string>> */
+        /** @var Result<array<string>> */
         return ok($phpFileNames);
     }
 
@@ -78,16 +78,14 @@ class Container {
     /**
      * Load default providers, such as the logger and the http client providers.
      * @param  string       $applicationName Name of the application.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public static function loadDefaultProviders(string $applicationName):Unsafe {
+    public static function loadDefaultProviders(string $applicationName):Result {
         Container::provide(FFI::class, static fn () => new FFI);
 
         // Making sure providers load correctly.
         $providersLoaded = match (false) {
             class_exists($className = \CatPaw\Core\Implementations\Environment\SimpleEnvironment::class)      => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Go\Implementations\Go\SimpleGo::class)                          => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Screen\Implementations\Screen\SimpleScreen::class)              => error("Could not load class $className"),
             class_exists($className = \CatPaw\Queue\Implementations\Queue\SimpleQueue::class)                 => error("Could not load class $className"),
             class_exists($className = \CatPaw\RaspberryPi\Implementations\Gpio\SimpleGpio::class)             => error("Could not load class $className"),
             class_exists($className = \CatPaw\Schedule\Implementations\Schedule\SimpleSchedule::class)        => error("Could not load class $className"),
@@ -102,7 +100,6 @@ class Container {
             class_exists($className = \CatPaw\Web\Implementations\RouteResolver\SimpleRouteResolver::class)   => error("Could not load class $className"),
             class_exists($className = \CatPaw\Web\Implementations\Router\SimpleRouter::class)                 => error("Could not load class $className"),
             class_exists($className = \CatPaw\Web\Implementations\Server\SimpleServer::class)                 => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\ViewEngine\LatteViewEngine::class)          => error("Could not load class $className"),
             class_exists($className = \CatPaw\Web\Implementations\Websocket\SimpleWebsocket::class)           => error("Could not load class $className"),
             default                                                                                           => ok()
         };
@@ -130,9 +127,9 @@ class Container {
      * Run the entry method of an instance of a class.
      * @param  object                  $instance
      * @param  array<ReflectionMethod> $methods  methods of the class.
-     * @return Unsafe<mixed>
+     * @return Result<mixed>
      */
-    public static function entry(object $instance, array $methods):Unsafe {
+    public static function entry(object $instance, array $methods):Result {
         try {
             foreach ($methods as $method) {
                 $entry = Entry::findByMethod($method)->unwrap($error);
@@ -150,7 +147,7 @@ class Container {
                     } else {
                         $result = $method->invoke($instance, ...$arguments);
                     }
-                    if ($result instanceof Unsafe) {
+                    if ($result instanceof Result) {
                         return $result;
                     }
                     return ok($result);
@@ -164,11 +161,11 @@ class Container {
 
     /**
      * @param  ReflectionFunction|ReflectionMethod           $reflection
-     * @return Unsafe<array<int,DependencySearchResultItem>>
+     * @return Result<array<int,DependencySearchResultItem>>
      */
     private static function findFunctionDependencies(
         ReflectionFunction|ReflectionMethod $reflection
-    ):Unsafe {
+    ):Result {
         try {
             $reflectionParameters = $reflection->getParameters();
             $items                = [];
@@ -211,12 +208,12 @@ class Container {
     /**
      * @param  ReflectionFunction|ReflectionMethod $reflection
      * @param  false|DependenciesOptions           $options
-     * @return Unsafe<array<int,mixed>>
+     * @return Result<array<int,mixed>>
      */
     public static function dependencies(
         ReflectionFunction|ReflectionMethod $reflection,
         false|DependenciesOptions $options = false,
-    ):Unsafe {
+    ):Result {
         if (!$options) {
             $options = DependenciesOptions::create(
                 key: '',
@@ -290,7 +287,7 @@ class Container {
                     $attributeReflectionClass = new ReflectionClass($attribute->getName());
                     $findByParameter          = $attributeReflectionClass->getMethod('findByParameter')->getClosure();
 
-                    /** @var callable(ReflectionParameter):(Unsafe<null|AttributeInterface>) $findByParameter */
+                    /** @var callable(ReflectionParameter):(Result<null|AttributeInterface>) $findByParameter */
                     /** @var null|AttributeInterface $attributeInstance */
 
                     $attributeInstance = $findByParameter($reflectionParameter)->unwrap($error);
@@ -330,9 +327,9 @@ class Container {
      *
      * Will not execute the function itself and parameter attributes will not be instantiated at all.
      * @param  Closure|ReflectionFunction $function
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public static function touch(Closure|ReflectionFunction $function): Unsafe {
+    public static function touch(Closure|ReflectionFunction $function): Result {
         try {
             if ($function instanceof Closure) {
                 $reflection = new ReflectionFunction($function);
@@ -370,12 +367,12 @@ class Container {
      * @param  Closure|ReflectionFunction $function
      * @param  bool                       $touch    if true, Container::touch will be
      *                                              called automatically on the function
-     * @return Unsafe<mixed>
+     * @return Result<mixed>
      */
     public static function run(
         Closure|ReflectionFunction $function,
         bool $touch = true,
-    ):Unsafe {
+    ):Result {
         try {
             if ($function instanceof Closure) {
                 $reflection = new ReflectionFunction($function);
@@ -395,7 +392,7 @@ class Container {
 
             $result = $function(...$arguments);
 
-            if ($result instanceof Unsafe) {
+            if ($result instanceof Result) {
                 return $result;
             }
 
@@ -459,9 +456,9 @@ class Container {
      * @template T
      * @param  class-string<T> $name
      * @param  mixed           $args
-     * @return Unsafe<T>
+     * @return Result<T>
      */
-    public static function get(string $name, ...$args):Unsafe {
+    public static function get(string $name, ...$args):Result {
         if (Provider::isset($name)) {
             return ok(Provider::get($name)(...$args));
         }
@@ -484,7 +481,7 @@ class Container {
         if ('callable' === $name) {
             return error("Cannot instantiate callables.");
         } else if ('object' === $name || 'stdClass' === $name) {
-            /** @var Unsafe<T> */
+            /** @var Result<T> */
             return ok((object)[]);
         }
 

@@ -8,7 +8,7 @@ use Amp\Http\Server\Response;
 use function CatPaw\Core\duplex;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use Closure;
 use Throwable;
 
@@ -43,9 +43,9 @@ class ServerSentEvent {
 
     /**
      * Build the response `Response`.
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    function toResponse():Unsafe {
+    function toResponse():Result {
         $response = new Response();
         $response->setBody($this->reader);
         try {

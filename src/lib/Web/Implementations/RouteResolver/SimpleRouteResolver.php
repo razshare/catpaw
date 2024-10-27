@@ -7,7 +7,7 @@ use Amp\Http\Server\Response;
 use CatPaw\Core\Attributes\Provider;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\HttpInvokerInterface;
 use CatPaw\Web\Interfaces\RouteResolverInterface;
@@ -31,9 +31,9 @@ class SimpleRouteResolver implements RouteResolverInterface {
 
     /**
      * @param  Request                $request
-     * @return Unsafe<false|Response>
+     * @return Result<false|Response>
      */
-    public function resolve(Request $request):Unsafe {
+    public function resolve(Request $request):Result {
         $requestMethod  = $request->getMethod();
         $symbolicMethod = $requestMethod;
 
@@ -100,7 +100,7 @@ class SimpleRouteResolver implements RouteResolverInterface {
         }
 
         if (false === $requestPathParameters && !$badRequestEntries) {
-            /** @var Unsafe<false|Response> */
+            /** @var Result<false|Response> */
             return ok(false);
         }
 
@@ -124,7 +124,7 @@ class SimpleRouteResolver implements RouteResolverInterface {
             return error($invokeError);
         }
 
-        /** @var Unsafe<false|Response> */
+        /** @var Result<false|Response> */
         return ok($result);
     }
 

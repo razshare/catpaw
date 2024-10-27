@@ -33,15 +33,10 @@ readonly class Order implements Stringable {
      * @return false|Order
      */
     public static function fromString(string $items):false|self {
-        $direction = 'asc';
-        if (
-            preg_match('/(ASC|DESC):([A-z0-9,]+)/i', $items, $groups)
-            && count($groups) >= 3
-        ) {
-            $direction = $groups[1] ?? $direction;
-            $items     = explode(',', $groups[2]);
+        if (preg_match('/(ASC|DESC):([A-z0-9,]+)/i', $items, $groups)) {
+            $items = explode(',', $groups[2]);
             return self::by(
-                direction: $direction,
+                direction: $groups[1],
                 items: $items,
             );
         }

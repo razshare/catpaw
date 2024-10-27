@@ -1,13 +1,13 @@
 <?php
 namespace CatPaw\Core\Interfaces;
 
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 interface CommandInterface {
     /**
      * Register a command to run.
      * @param  CommandRunnerInterface $command
-     * @return Unsafe<bool>           `true` if the command attempted to run, `false` otherwise.
+     * @return Result<bool>           `true` if the command attempted to run, `false` otherwise.
      */
-    public function register(CommandRunnerInterface $command):Unsafe;
+    public function register(CommandRunnerInterface $command):Result;
 }

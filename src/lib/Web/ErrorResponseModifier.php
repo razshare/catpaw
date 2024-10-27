@@ -5,7 +5,7 @@ use Amp\Http\Cookie\ResponseCookie;
 use Amp\Http\Server\Response;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Core\XMLSerializer;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use Throwable;
@@ -101,9 +101,9 @@ class ErrorResponseModifier implements ResponseModifier {
 
     /**
      *
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    public function response():Unsafe {
+    public function response():Result {
         if (APPLICATION_JSON === $this->contentType) {
             $body = json_encode($this->body);
             if (false === $body) {

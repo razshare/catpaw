@@ -1,168 +1,44 @@
-> [!NOTE]
-> _Attributes used in this document_
-> - `#[Produces]` - _supported by the open api service_ ✅
-> - `#[IgnoreOpenApi]` - _supported by the open api service_ ✅
-> - `#[Summary]` - _supported by the open api service_ ✅
-> - `#[Example]` - _supported by the open api service_ ✅
+# Open Api
 
-# Open API
+When [mapping routes](./Server%20Router.md), you can use attributes to define Open Api metadata
+```php
+use CatPaw\Web\Attributes\ProducesItem;
 
-The web server comes with an open api scanner by default which can be found in the _OpenApiService_
-service.
+#[ProducesItem(200, 'text/plain', 'Success!', string::class)]
+fn() => success('hello')->item();
+```
 
-The service will automatically document your route handlers as you're creating them.
+# Available Attributes
 
-In order to obtain the resulting open api json you can use the _getData()_ method.
+| Attribute Name | Description |
+|----------------|-------------|
+| `Consumes` | Annotate a __route handler__ to describe the content it consumes. |
+| `Produces` | Annotate a __route handler__ to describe the content it produces. |
+| `ProducesItem` | Annotate a __route handler__ to describe the content it produces using a predefined structure offered by catpaw. |
+| `ProducesPage` | Annotate a __route handler__ to describe the content it produces using a predefined paged structure offered by catpaw. |
+| `ProducesError` | Annotate a __route handler__ to describe an error. Must be paired with `Produces`. |
+| `ProducesItemError` | Annotate a __route handler__ to describe an error. Must be paired with `ProducesItem`. |
+| `ProducesPageError` | Annotate a __route handler__ to describe an error. Must be paired with `ProducesPage`. |
+| `Summary` | Annotate a __route handler__ with a short description. |
+| `Tag` | Annotate a __route handler__ with a tag. SwaggerUi will graphically group routes based on these tags. |
+| `Example` | Annotate a __route handler parameter__  to provide an example in SwaggerUi. |
+| `Header` | Annotate a __route handler parameter__ to inject an http header. |
+| `Param` | Annotate a __route handler parameter__ to inject and configure a path parameter. |
+| `Query` | Annotate a __route handler parameter__ to inject a query string. |
+
+# SwaggerUi & Json Metadata
+
+For SwaggerUi to work as intended, you will need to export all this metadata you define through attributes as Json
 
 ```php
-<?php
-use CatPaw\Core\Unsafe;
-use function CatPaw\Core\success;
-use function CatPaw\Core\anyError;
-use CatPaw\Web\Interfaces\ServerInterface;
-use CatPaw\Web\Interfaces\RouterInterface;
-use CatPaw\Web\Interfaces\OpenApiInterface;
-use CatPaw\Web\Attributes\IgnoreOpenApi;
-use CatPaw\Web\Attributes\Produces;
-use const CatPaw\Web\TEXT_PLAIN;
-use const CatPaw\Web\OK;
-
-#[Produces(OK, TEXT_PLAIN, 'string')]
-function test() {
-    return "this is a test";
-}
-
-// this will omit the "/openapi" route
-// itself from the documentation
-#[IgnoreOpenApi]
-function openapi(OpenApiInterface $openApi) {
-    return success($openApi->getData());
-}
-
-function main(ServerInterface $server, RouterInterface $router):Unsafe {
-  return anyError(function() use($server) {
-    $router->get('/test', test(...))->try();
-    $router->get("/openapi", openapi(...))->try();
-    $server->start()->try();
-  });
+function main(
+  RouterInterface $router,
+  OpenApiInterface $oa,
+  // ...
+){
+  $router->get('/openapi', $oa->data(...));
+  // ...
 }
 ```
 
-The above code will generate 1 openapi entry for the _\CatPaw\Web\Services\OpenApiService_ service.
-
-<details>
-    <summary>OpenAPI Output JSON</summary>
-
-```json
-{
-  "openapi": "3.0.0",
-  "info": {
-    "title": "OpenAPI",
-    "version": "0.0.1"
-  },
-  "paths": {
-    "/test": {
-      "get": {
-        "summary": "",
-        "operationId": "fab75b617f6e066250e96d3501d4406aa5c25170",
-        "parameters": [],
-        "requestBody": {
-          "description": "This is the body of the request",
-          "required": true,
-          "content": []
-        },
-        "responses": []
-      }
-    }
-  }
-}
-```
-
-</details>
-
-# Documenting parameters and body
-
-Parameters are documented automatically when injected, but you can also add some extra information like summaries and
-examples.
-
-```php
-<?php
-use CatPaw\Web\Body;
-use CatPaw\Core\Unsafe;
-use function CatPaw\Core\anyError;
-use CatPaw\Web\Attributes\Example;
-use CatPaw\Web\Interfaces\ServerInterface;
-use CatPaw\Web\Interfaces\RouterInterface;
-use CatPaw\Web\Attributes\Produces;
-use CatPaw\Web\Attributes\Summary;
-use const CatPaw\Web\TEXT_PLAIN;
-use const CatPaw\Web\OK;
-
-#[Produces(OK, TEXT_PLAIN, 'on success', 'string')]
-function handler(string $value, Body $body) {
-    return "this is a test";
-}
-
-function main(ServerInterface $server, RouterInterface $router): Unsafe {
-  return anyError(function() use($server) {
-    $router->get('/test/{value}', handler(...))->try();
-    $server->start()->try();
-  });
-}
-```
-
-<details>
-    <summary>OpenAPI Output JSON</summary>
-
-```json
-{
-  "openapi": "3.0.0",
-  "info": {
-    "title": "OpenAPI",
-    "version": "0.0.1"
-  },
-  "paths": {
-    "/test/{value}": {
-      "get": {
-        "summary": "",
-        "operationId": "92bc1bd07434281f59c47f4857aa504c0642bd2f",
-        "parameters": [
-          {
-            "name": "value",
-            "in": "path",
-            "description": "this is a summary of the parameter",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "examples": {
-              "example": {
-                "value": "this is an example value"
-              }
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "This is the body of the request",
-          "required": true,
-          "content": []
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": ""
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-</details>
+Then feed the data to your SwaggerUi (or any other user interface compliant with Open Api).

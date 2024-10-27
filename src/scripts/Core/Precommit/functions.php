@@ -9,13 +9,13 @@ use CatPaw\Core\File;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 /**
  * Install the git pre-commit hook using the specified command.
- * @return Unsafe<None>
+ * @return Result<None>
  */
-function installPreCommit(string $command):Unsafe {
+function installPreCommit(string $command):Result {
     if ('' === trim($command)) {
         echo "The `--install-pre-commit` options requires a value.\n";
         echo "The received command was: $command\n";
@@ -56,9 +56,9 @@ function installPreCommit(string $command):Unsafe {
 
 /**
  * Uninstall the git pre-commit hook.
- * @return Unsafe<None>
+ * @return Result<None>
  */
-function uninstallPreCommit():Unsafe {
+function uninstallPreCommit():Result {
     $fileName = '.git/hooks/pre-commit';
 
     if (!File::exists($fileName)) {

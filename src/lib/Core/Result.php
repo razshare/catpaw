@@ -12,7 +12,7 @@ use Error;
  * @template T
  * @package CatPaw\Core
  */
-readonly class Unsafe {
+readonly class Result {
     /**
      * @param T          $value
      * @param null|Error $error

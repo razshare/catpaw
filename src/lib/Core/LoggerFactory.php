@@ -14,9 +14,9 @@ class LoggerFactory {
     /**
      * Create a logger.
      * @param  string                  $loggerName
-     * @return Unsafe<LoggerInterface>
+     * @return Result<LoggerInterface>
      */
-    public static function create(string $loggerName = 'Logger'): Unsafe {
+    public static function create(string $loggerName = 'Logger'): Result {
         try {
             $handler = new StreamHandler(STDOUT);
             $handler->setFormatter(new \Monolog\Formatter\SyslogFormatter($loggerName));

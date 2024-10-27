@@ -89,9 +89,9 @@ function isPhar(): bool {
 /**
  * Request an input from the terminal without feeding back to the display whatever it's been typed.
  * @param  string         $prompt message to display along with the input request.
- * @return Unsafe<string>
+ * @return Result<string>
  */
-function readLineSilent(string $prompt): Unsafe {
+function readLineSilent(string $prompt): Result {
     $command = "/usr/bin/env bash -c 'echo OK'";
     if (rtrim(shell_exec($command)) !== 'OK') {
         return error("Can't invoke bash");
@@ -137,25 +137,25 @@ function in(): ReadableResourceStream {
  * Create an unsafe object with a value.
  * @template T
  * @param  T         $value
- * @return Unsafe<T>
+ * @return Result<T>
  */
-function ok(mixed $value = NONE): Unsafe {
-    return new Unsafe($value, null);
+function ok(mixed $value = NONE): Result {
+    return new Result($value, null);
 }
 
 /**
  * Create an unsafe object with an error.
  * @param  string|Error  $message
- * @return Unsafe<mixed>
+ * @return Result<mixed>
  */
-function error(string|Error $message): Unsafe {
+function error(string|Error $message): Result {
     if (is_string($message)) {
-        /** @var Unsafe<mixed> */
-        $error = new Unsafe(null, new Error($message));
+        /** @var Result<mixed> */
+        $error = new Result(null, new Error($message));
         return $error;
     }
-    /** @var Unsafe<mixed> */
-    return new Unsafe(null, $message);
+    /** @var Result<mixed> */
+    return new Result(null, $message);
 }
 
 
@@ -165,14 +165,14 @@ function error(string|Error $message): Unsafe {
  * @param  false|WritableStream $output        Send the output of the process to this stream.
  * @param  false|string         $workDirectory Work directory of the command.
  * @param  false|Signal         $kill          When this signal is triggered the process is killed.
- * @return Unsafe<int>
+ * @return Result<int>
  */
 function execute(
     string $command,
     false|WritableStream $output = false,
     false|string $workDirectory = false,
     false|Signal $kill = false,
-): Unsafe {
+): Result {
     try {
         $logger = Container::get(LoggerInterface::class)->unwrap($error);
         if ($error) {
@@ -208,9 +208,9 @@ function execute(
 /**
  * Execute a command and return its output.
  * @param  string         $command command to run
- * @return Unsafe<string>
+ * @return Result<string>
  */
-function get(string $command): Unsafe {
+function get(string $command): Result {
     [$reader, $writer] = duplex();
     execute($command, $writer)->unwrap($error);
     if ($error) {
@@ -221,11 +221,11 @@ function get(string $command): Unsafe {
 
 /**
  * Invoke a generator function and immediately return any `Error`
- * or `Unsafe` that contains an error.\
- * In both cases the result is always an `Unsafe<T>` object.
+ * or `Result` that contains an error.\
+ * In both cases the result is always an `Result<T>` object.
  *
- * - If you generate an `Unsafe<T>` the error within the object is transferred to a new `Unsafe<T>` for the sake of consistency.
- * - If you generate an `Error` instead, then the `Error` is wrapped in `Unsafe<T>`.
+ * - If you generate an `Result<T>` the error within the object is transferred to a new `Result<T>` for the sake of consistency.
+ * - If you generate an `Error` instead, then the `Error` is wrapped in `Result<T>`.
  *
  * The generator is consumed and if no error is detected then the function produces the returned value of the generator.
  *
@@ -238,17 +238,17 @@ function get(string $command): Unsafe {
  * });
  * ```
  * @template T
- * @param  callable():(Generator<string>|Unsafe<T>|T) $function
- * @return Unsafe<T>
+ * @param  callable():(Generator<string>|Result<T>|T) $function
+ * @return Result<T>
  */
-function anyError(callable $function): Unsafe {
+function anyError(callable $function): Result {
     $result = $function();
 
     if (!($result instanceof Generator)) {
-        if ($result instanceof Unsafe) {
+        if ($result instanceof Result) {
             return $result;
         }
-        /** @var Unsafe<T> */
+        /** @var Result<T> */
         return ok($result);
     }
 
@@ -256,7 +256,7 @@ function anyError(callable $function): Unsafe {
         $value = $result->current();
         if ($value instanceof Error) {
             return error($value);
-        } elseif ($value instanceof Unsafe && $value->error) {
+        } elseif ($value instanceof Result && $value->error) {
             return error($value->error);
         }
     }
@@ -266,7 +266,7 @@ function anyError(callable $function): Unsafe {
 
         if ($return instanceof Error) {
             return error($return);
-        } else if ($return instanceof Unsafe) {
+        } else if ($return instanceof Result) {
             return $return;
         }
 

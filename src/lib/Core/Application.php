@@ -9,10 +9,10 @@ readonly class Application implements CommandRunnerInterface {
     ) {
     }
 
-    public function build(CommandBuilder $builder): Unsafe {
+    public function build(CommandBuilder $builder): Result {
         // Flags.
-        $builder->withFlag('d', "die-on-change");
-        $builder->withFlag('w', "watch");
+        $builder->withId('d', "die-on-change");
+        $builder->withId('w', "watch");
 
         // Options.
         $builder->withOption('p', 'php', ok('php'));
@@ -25,7 +25,7 @@ readonly class Application implements CommandRunnerInterface {
         return ok();
     }
 
-    public function run(CommandContext $context): Unsafe {
+    public function run(CommandContext $context): Result {
         return anyError(function() use ($context) {
             // Flags.
             $dieOnChange = $context->get('die-on-change')->try();

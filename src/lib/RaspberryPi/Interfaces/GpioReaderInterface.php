@@ -2,14 +2,14 @@
 
 namespace CatPaw\RaspberryPi\Interfaces;
 
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 interface GpioReaderInterface {
     /**
      * Read data from the pin.
-     * @return Unsafe<string>
+     * @return Result<string>
      */
-    public function read():Unsafe;
+    public function read():Result;
 
     /**
      * Close the pin reader.

@@ -4,27 +4,25 @@ Catpaw is an opinionated dependency injection library that comes with batteries 
 It leverages [php attributes](https://www.php.net/manual/en/language.attributes.overview.php) to provide declarative apis, and the [amphp](https://github.com/amphp/amp) platform to make your program asynchronous.
 
 
-| Table of Contents                                         | Description |
-|-----------------------------------------------------------|-------------|
-| ⚡ [Error Management](./docs/Error%20Management.md)       | Manage errors. |
-| 🌐 [Server Router](./docs/Server%20Router.md)                    | Create a server and define routes. |
-| 🌐 [Server Path Parameters](./docs/Server%20Path%20Parameters.md)         | Define path parameters in your routes. |
-| 🌐 [Server Open Api](./docs/Server%20Open%20Api.md)                      | Generate an Open Api definition. |
-| 🌐 [Server Session](./docs/Server%20Session.md)                         | Create and manage server sessions. |
-| 🌐 [Server Byte Range Requests](./docs/Server%20Byte%20Range%20Requests.md) | Serve byte range requests. |
-| 🌐 [Server Websockets](./docs/Server%20Websockets.md)                  | Serve websockets. |
-| 🌐 [Server Views](./docs/Server%20Views.md)                              | Serve views using Latte. |
-| ⚡ [Container](./docs/Container.md)                       | Provide dependencies and retrieve them. |
-| ⚡ [Entry](./docs/Entry.md)                              | Execute code when a dependency is resolved. |
-| ⚡ [Command](./docs/Command.md)                              | Create a console command. |
-| ⚡ [Custom Attributes](./docs/Custom%20Attributes.md)      | An easy way to define custom attributes with hooks that pierce into the framework. |
-| ⚡ [Stores](./docs/Stores.md)                           | Store data in memory and react to changes in said data. |
-| ⚡ [Queues](./docs/Queues.md)                           | Create in memory queues and tag them. |
-| ⚡ [Schedule](./docs/Schedule.md)                       | Schedule code execution using a human readable format. |
-| ⚡ [Signals](./docs/Signals.md)                             | Create signals and react to them. |
-| ⚡ [Build](./docs/Build.md)                             | Build your project into one single portable file. |
-| ⚡ [Go Interop](./docs/Go%20Interop.md)                             | Interop with Go. |
-| 💡 [RaspberryPi](./docs/RaspberryPi.md)                | Control your RaspberryPi's GPIOs. |
+| Table of Contents                                                 | Description |
+|-------------------------------------------------------------------|-------------|
+| ⚡ [Container](./docs/Container.md)                               | Provide dependencies and retrieve them. |
+| ⚡ [Error Management](./docs/Error%20Management.md)               | Manage errors. |
+| 🌐 [Server Router](./docs/Server%20Router.md)                     | Create a server and define routes. |
+| 🌐 [Server Path Parameters](./docs/Server%20Path%20Parameters.md) | Define path parameters in your routes. |
+| 🌐 [Server Open Api](./docs/Server%20Open%20Api.md)               | Generate an Open Api definition. |
+| 🌐 [Server Session](./docs/Server%20Session.md)                   | Create and manage server sessions. |
+| 🌐 [Server Websockets](./docs/Server%20Websockets.md)             | Serve websockets. |
+| 🌐 [Server Views](./docs/Server%20Views.md)                       | Serve views using Latte. |
+| ⚡ [Entry](./docs/Entry.md)                                       | Execute code when a dependency is resolved. |
+| ⚡ [Command](./docs/Command.md)                                   | Create a console command. |
+| ⚡ [Custom Attributes](./docs/Custom%20Attributes.md)             | An easy way to define custom attributes with hooks that pierce into the framework. |
+| ⚡ [Stores](./docs/Stores.md)                                     | Store data in memory and react to changes in said data. |
+| ⚡ [Queues](./docs/Queues.md)                                     | Create in memory queues and tag them. |
+| ⚡ [Schedule](./docs/Schedule.md)                                 | Schedule code execution using a human readable format. |
+| ⚡ [Signals](./docs/Signals.md)                                   | Create signals and react to them. |
+| ⚡ [Build](./docs/Build.md)                                       | Build your project into one single portable file. |
+| 💡 [RaspberryPi](./docs/RaspberryPi.md)                           | Control your RaspberryPi's GPIOs. |
 
 
 > [!NOTE]
@@ -33,7 +31,7 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 
 # Get started
 
-You will need at least [php 8.2](https://www.php.net/downloads.php) and the `php-mbstring` extension.
+You will need at least [php 8.3](https://www.php.net/downloads.php) and the `php-mbstring` extension (required for PHPUnit).
 
 Create a new project using one of the starter templates.
 

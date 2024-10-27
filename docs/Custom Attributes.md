@@ -4,7 +4,7 @@ Create the class, annotate it with _#[Attribute]_ and implement _AttributeInterf
 
 ```php
 <?php
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
@@ -17,7 +17,7 @@ use function CatPaw\Core\ok;
 #[Attribute]
 class HelloWorldAttribute implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options) : Unsafe {
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options) : Result {
         $value = "hello world";
         return ok();
     }
@@ -27,11 +27,9 @@ function handler(#[HelloWorldAttribute] string $greeting){
   return $greeting;
 }
 
-function main(ServerInterface $server, RouterInterface $router): Unsafe {
-  return anyError(function() use($server) {
-    $router->get("/", handler(...))->try();
-    $server->start()->try();
-  });
+function main(ServerInterface $server, RouterInterface $router): void {
+  $router->get("/", handler(...))->try();
+  $server->start()->try();
 }
 ```
 

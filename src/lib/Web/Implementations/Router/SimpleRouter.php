@@ -8,7 +8,7 @@ use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Web\Attributes\Consumes;
 use CatPaw\Web\Attributes\Example;
 use CatPaw\Web\Attributes\Header;
@@ -55,14 +55,14 @@ class SimpleRouter implements RouterInterface {
      * @param  string                  $symbolicPath
      * @param  callable|Closure        $function
      * @param  string                  $workDirectory
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
     public function initialize(
         string $symbolicMethod,
         string $symbolicPath,
         callable|Closure $function,
         string $workDirectory = '',
-    ):Unsafe {
+    ):Result {
         try {
             if (!str_starts_with($symbolicPath, '/')) {
                 return error("Symbolic paths must start with `/`, received `$symbolicPath`.");
@@ -233,11 +233,11 @@ class SimpleRouter implements RouterInterface {
 
 
     /**
-     * @return Unsafe<array<mixed>>
+     * @return Result<array<mixed>>
      */
     private function findRouteOpenApiQueries(
         ReflectionFunction $reflection,
-    ):Unsafe {
+    ):Result {
         /** @var array<mixed> */
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
@@ -316,11 +316,11 @@ class SimpleRouter implements RouterInterface {
     }
 
     /**
-     * @return Unsafe<array<mixed>>
+     * @return Result<array<mixed>>
      */
     private function findRouteOpenApiHeaders(
         ReflectionFunction $reflection,
-    ):Unsafe {
+    ):Result {
         /** @var array<mixed> */
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
@@ -399,12 +399,12 @@ class SimpleRouter implements RouterInterface {
      *
      * @param  ReflectionFunction   $reflectionFunction
      * @param  string               $path
-     * @return Unsafe<array<mixed>>
+     * @return Result<array<mixed>>
      */
     private function findRouteOpenApiPathParameters(
         ReflectionFunction $reflectionFunction,
         string $path
-    ):Unsafe {
+    ):Result {
         $parametersReflections = $reflectionFunction->getParameters();
         $configurations        = PathResolver::findMatchingPathConfigurations($path, $parametersReflections)->unwrap($error);
         if ($error) {
@@ -542,9 +542,9 @@ class SimpleRouter implements RouterInterface {
 
     /**
      * @param  Route        $route
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    private function registerRouteForOpenApi(Route $route):Unsafe {
+    private function registerRouteForOpenApi(Route $route):Result {
         $responses = [];
         $requests  = [];
 
@@ -743,9 +743,9 @@ class SimpleRouter implements RouterInterface {
      * @param  string       $originalSymbolicMethod http method of the 2 parameters.
      * @param  string       $originalSymbolicPath   path name to capture.
      * @param  string       $aliasSymbolicPath      alias path name.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function alias(string $originalSymbolicMethod, string $originalSymbolicPath, string $aliasSymbolicPath):Unsafe {
+    public function alias(string $originalSymbolicMethod, string $originalSymbolicPath, string $aliasSymbolicPath):Result {
         if ($this->context->routeExists($originalSymbolicMethod, $originalSymbolicPath)) {
             $originalRoute = $this->context->findRoute($originalSymbolicMethod, $originalSymbolicPath);
             $this->custom($originalSymbolicMethod, $aliasSymbolicPath, $originalRoute->function);
@@ -760,9 +760,9 @@ class SimpleRouter implements RouterInterface {
      * @param  string                  $method   the name of the http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function custom(string $method, string $path, callable|Closure $function):Unsafe {
+    public function custom(string $method, string $path, callable|Closure $function):Result {
         return $this->initialize($method, $path, $function);
     }
 
@@ -770,9 +770,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "COPY" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function copy(string $path, callable|Closure $function):Unsafe {
+    public function copy(string $path, callable|Closure $function):Result {
         return $this->initialize('COPY', $path, $function);
     }
 
@@ -780,9 +780,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "DELETE" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function delete(string $path, callable|Closure $function):Unsafe {
+    public function delete(string $path, callable|Closure $function):Result {
         return $this->initialize('DELETE', $path, $function);
     }
 
@@ -790,9 +790,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "GET" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function get(string $path, callable|Closure $function):Unsafe {
+    public function get(string $path, callable|Closure $function):Result {
         return $this->initialize('GET', $path, $function);
     }
 
@@ -800,9 +800,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "HEAD" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function head(string $path, callable|Closure $function):Unsafe {
+    public function head(string $path, callable|Closure $function):Result {
         return $this->initialize('HEAD', $path, $function);
     }
 
@@ -810,9 +810,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "LINK" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function link(string $path, callable|Closure $function):Unsafe {
+    public function link(string $path, callable|Closure $function):Result {
         return $this->initialize('LINK', $path, $function);
     }
 
@@ -821,9 +821,9 @@ class SimpleRouter implements RouterInterface {
      *
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function lock(string $path, callable|Closure $function):Unsafe {
+    public function lock(string $path, callable|Closure $function):Result {
         return $this->initialize('LOCK', $path, $function);
     }
 
@@ -831,9 +831,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "OPTIONS" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function options(string $path, callable|Closure $function):Unsafe {
+    public function options(string $path, callable|Closure $function):Result {
         return $this->initialize('OPTIONS', $path, $function);
     }
 
@@ -841,9 +841,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "PATCH" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function patch(string $path, callable|Closure $function):Unsafe {
+    public function patch(string $path, callable|Closure $function):Result {
         return $this->initialize('PATCH', $path, $function);
     }
 
@@ -851,9 +851,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "POST" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function post(string $path, callable|Closure $function):Unsafe {
+    public function post(string $path, callable|Closure $function):Result {
         return $this->initialize('POST', $path, $function);
     }
 
@@ -861,9 +861,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "PROPFIND" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function propfind(string $path, callable|Closure $function):Unsafe {
+    public function propfind(string $path, callable|Closure $function):Result {
         return $this->initialize('PROPFIND', $path, $function);
     }
 
@@ -871,9 +871,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "PURGE" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function purge(string $path, callable|Closure $function):Unsafe {
+    public function purge(string $path, callable|Closure $function):Result {
         return $this->initialize('PURGE', $path, $function);
     }
 
@@ -881,9 +881,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "PUT" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function put(string $path, callable|Closure $function):Unsafe {
+    public function put(string $path, callable|Closure $function):Result {
         return $this->initialize('PUT', $path, $function);
     }
 
@@ -891,9 +891,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "UNKNOWN" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function unknown(string $path, callable|Closure $function):Unsafe {
+    public function unknown(string $path, callable|Closure $function):Result {
         return $this->initialize('UNKNOWN', $path, $function);
     }
 
@@ -901,9 +901,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "UNLINK" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function unlink(string $path, callable|Closure $function):Unsafe {
+    public function unlink(string $path, callable|Closure $function):Result {
         return $this->initialize('UNLINK', $path, $function);
     }
 
@@ -911,9 +911,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "UNLOCK" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function unlock(string $path, callable|Closure $function):Unsafe {
+    public function unlock(string $path, callable|Closure $function):Result {
         return $this->initialize('UNLOCK', $path, $function);
     }
 
@@ -921,9 +921,9 @@ class SimpleRouter implements RouterInterface {
      * Define an event callback for the "VIEW" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function view(string $path, callable|Closure $function):Unsafe {
+    public function view(string $path, callable|Closure $function):Result {
         return $this->initialize('VIEW', $path, $function);
     }
 }

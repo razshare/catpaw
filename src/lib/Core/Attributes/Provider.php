@@ -7,8 +7,8 @@ use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Interfaces\OnClassInstantiation;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
+use CatPaw\Core\Result;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
-use CatPaw\Core\Unsafe;
 use ReflectionClass;
 use Throwable;
 
@@ -87,9 +87,9 @@ final class Provider implements AttributeInterface, OnClassInstantiation {
      * so that you can get an instance of that class from the container.\
      * This is mostly used internally, there shouldn't be any need to call this method directly.
      * @param  string                     $interfaceName Name of the interface.
-     * @return Unsafe<false|class-string> Name of the provider.
+     * @return Result<false|class-string> Name of the provider.
      */
-    public static function findNameByInterface(string $interfaceName):Unsafe {
+    public static function findNameByInterface(string $interfaceName):Result {
         /** @var array<ReflectionClass<object>> */
         $classesWithoutAttribute = [];
         /** @var array<ReflectionClass<object>> */
@@ -147,7 +147,7 @@ final class Provider implements AttributeInterface, OnClassInstantiation {
                     TEXT
             );
         } else if (1 === $countPossibleClasses) {
-            /** @var Unsafe<false|class-string> */
+            /** @var Result<false|class-string> */
             return ok($possibleClasses[0]->getName());
         }
 
@@ -164,7 +164,7 @@ final class Provider implements AttributeInterface, OnClassInstantiation {
             );
         }
 
-        /** @var Unsafe<false|class-string> */
+        /** @var Result<false|class-string> */
         return ok(false);
     }
 
@@ -183,10 +183,10 @@ final class Provider implements AttributeInterface, OnClassInstantiation {
      * @param  ReflectionClass<object> $reflection
      * @param  mixed                   $instance
      * @param  array<int,mixed>        $dependencies
-     * @return Unsafe<None>
+     * @return Result<None>
      * @internal
      */
-    public function onClassInstantiation(ReflectionClass $reflection, mixed &$instance, array $dependencies): Unsafe {
+    public function onClassInstantiation(ReflectionClass $reflection, mixed &$instance, array $dependencies): Result {
         try {
             $name = $reflection->getName();
             if ($this->singleton) {

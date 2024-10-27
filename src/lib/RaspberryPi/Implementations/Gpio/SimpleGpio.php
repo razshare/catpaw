@@ -7,7 +7,7 @@ use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\RaspberryPi\Interfaces\GpioInterface;
 use CatPaw\RaspberryPi\Interfaces\GpioReaderInterface;
 use CatPaw\RaspberryPi\Interfaces\GpioWriterInterface;
@@ -30,9 +30,9 @@ class SimpleGpio implements GpioInterface {
      * Export the pin and return its file handler.
      * @param  string       $pin       can be one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`.
      * @param  int          $direction direction of the pin, `0` means `read` and `1` means `write`.
-     * @return Unsafe<File>
+     * @return Result<File>
      */
-    private function export(string $pin, int $direction): Unsafe {
+    private function export(string $pin, int $direction): Result {
         $originalPin = $pin;
         $pin         = match ($pin) {
             '7'     => self::HEADER7,
@@ -115,13 +115,13 @@ class SimpleGpio implements GpioInterface {
             private File|false $file = false;
             /**
              *
-             * @param  callable():Unsafe<File> $export
+             * @param  callable():Result<File> $export
              * @return void
              */
             public function __construct(private $export) {
             }
 
-            public function read():Unsafe {
+            public function read():Result {
                 if (!$this->file) {
                     $export = $this->export;
                     $file   = $export()->unwrap($error);
@@ -150,7 +150,7 @@ class SimpleGpio implements GpioInterface {
             private File|false $file = false;
             /**
              *
-             * @param  callable():Unsafe<File> $export
+             * @param  callable():Result<File> $export
              * @return void
              */
             public function __construct(private $export) {
@@ -159,9 +159,9 @@ class SimpleGpio implements GpioInterface {
             /**
              *
              * @param  string       $data
-             * @return Unsafe<None>
+             * @return Result<None>
              */
-            public function write(string $data):Unsafe {
+            public function write(string $data):Result {
                 if (!$this->file) {
                     $export = $this->export;
                     $file   = $export()->unwrap($error);

@@ -3,12 +3,12 @@ namespace CatPaw\Web\Interfaces;
 
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 interface RouteResolverInterface {
     /**
      * @param  Request                $request
-     * @return Unsafe<false|Response>
+     * @return Result<false|Response>
      */
-    public function resolve(Request $request):Unsafe;
+    public function resolve(Request $request):Result;
 }

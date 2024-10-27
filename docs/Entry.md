@@ -15,13 +15,13 @@ namespace App;
 use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Service;
 use CatPaw\Core\Attributes\Singleton;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use function CatPaw\Core\ok;
 use function CatPaw\Core\error;
 
 #[Singleton]
 class TheWeirdCat {
-    #[Entry] public function setup(WeirdCatService $service):Unsafe{
+    #[Entry] public function setup(WeirdCatService $service): Result {
         $theCatBarks = $service->doesTheCatBark();
         if ($theCatBarks) {
             return error('This cat barks');
@@ -32,7 +32,7 @@ class TheWeirdCat {
 
 #[Service]
 class WeirdCatService {
-    public function doesTheCatBark():bool{
+    public function doesTheCatBark(): bool {
         return true;
     }
 }

@@ -24,9 +24,9 @@ class Bootstrap {
     /**
      * Initialize an application from a source file (that usually defines a global "main" function).
      * @param  string        $fileName
-     * @return Unsafe<mixed>
+     * @return Result<mixed>
      */
-    public static function initialize(string $fileName):Unsafe {
+    public static function initialize(string $fileName):Result {
         if (!File::exists($fileName)) {
             return error("Could not find main file $fileName.");
         }

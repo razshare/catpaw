@@ -15,9 +15,9 @@ class Directory {
     /**
      * Delete a directory recursively.
      * @param  string       $directoryName name of the directory to delete.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public static function delete(string $directoryName):Unsafe {
+    public static function delete(string $directoryName):Result {
         if (!$directoryName) {
             return error("Invalid directory $directoryName.");
         }
@@ -56,9 +56,9 @@ class Directory {
      * Create a directory recursively.
      * @param  string       $directoryName the directory path.
      * @param  int          $mode          the permissions are 0777 by default, which means the widest possible access. For more information on permissions, read the details on the [chmod()](https://www.php.net/manual/en/function.chmod.php) page.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public static function create(string $directoryName, int $mode = 0777):Unsafe {
+    public static function create(string $directoryName, int $mode = 0777):Result {
         try {
             createDirectoryRecursively($directoryName, $mode);
             return ok();
@@ -70,9 +70,9 @@ class Directory {
     /**
      * List all files inside a directory recursively.
      * @param  string                $directoryName the directory path.
-     * @return Unsafe<array<string>>
+     * @return Result<array<string>>
      */
-    public static function flat(string $directoryName):Unsafe {
+    public static function flat(string $directoryName):Result {
         try {
             $result = [];
             $list   = Directory::list($directoryName)->unwrap($error);
@@ -99,9 +99,9 @@ class Directory {
     /**
      * List files and directories in a directory.
      * @param  string                    $directoryName the directory path.
-     * @return Unsafe<array<int,string>>
+     * @return Result<array<int,string>>
      */
-    public static function list(string $directoryName):Unsafe {
+    public static function list(string $directoryName):Result {
         try {
             if (!str_ends_with($directoryName, DIRECTORY_SEPARATOR)) {
                 $directoryName = $directoryName.DIRECTORY_SEPARATOR;
@@ -124,9 +124,9 @@ class Directory {
      * @param  string       $from
      * @param  string       $to
      * @param  false|string $pattern regex pattern to match while scanning.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public static function copy(string $from, string $to, false|string $pattern = false):Unsafe {
+    public static function copy(string $from, string $to, false|string $pattern = false):Result {
         if (!isDirectory($from)) {
             return error("Directory $from not found.");
         }

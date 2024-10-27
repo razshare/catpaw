@@ -4,7 +4,7 @@ namespace CatPaw\Core\Interfaces;
 
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use ReflectionParameter;
 
 interface OnParameterMount {
@@ -13,7 +13,7 @@ interface OnParameterMount {
      * @param  ReflectionParameter $reflection Reflection of the parameter.
      * @param  mixed               $value      Current value of the parameter.
      * @param  DependenciesOptions $options    Options used to find dependencies.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe;
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Result;
 }

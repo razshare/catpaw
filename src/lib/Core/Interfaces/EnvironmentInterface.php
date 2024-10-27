@@ -2,7 +2,7 @@
 namespace CatPaw\Core\Interfaces;
 
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 interface EnvironmentInterface {
     /**
@@ -31,9 +31,9 @@ interface EnvironmentInterface {
      * Parse the first valid environment file and update all variables in memory.
      * Multiple calls are allowed.\
      * This function is invoked automatically when the application starts.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function load():Unsafe;
+    public function load():Result;
 
 
     /**

@@ -3,7 +3,7 @@ namespace CatPaw\Web;
 
 use CatPaw\Core\File;
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 readonly class FormFile {
     public function __construct(
@@ -15,9 +15,9 @@ readonly class FormFile {
     /**
      * Save the file with a name.
      * @param  string       $fileName The full name of the file where to save this data.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function saveAs(string $fileName):Unsafe {
+    public function saveAs(string $fileName):Result {
         return File::writeFile($fileName, $this->fileContents);
     }
 }

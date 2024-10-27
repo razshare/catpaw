@@ -10,8 +10,8 @@ use CatPaw\Core\Interfaces\OnParameterMount;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Result;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
-use CatPaw\Core\Unsafe;
 
 use CatPaw\Web\RequestContext;
 use ReflectionParameter;
@@ -40,7 +40,7 @@ class Header implements AttributeInterface, OnParameterMount {
         return $this->key;
     }
 
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Result {
         /** @var false|RequestContext $context */
         $context = $options->context;
 

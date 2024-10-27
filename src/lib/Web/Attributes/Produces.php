@@ -7,8 +7,8 @@ use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
+use CatPaw\Core\Result;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
-use CatPaw\Core\Unsafe;
 use CatPaw\Web\ErrorItem;
 use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use CatPaw\Web\ProducedResponse;
@@ -83,9 +83,9 @@ class Produces implements AttributeInterface {
     /**
      *
      * @param  OpenApiStateInterface $openApiState
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    #[Entry] public function start(OpenApiStateInterface $openApiState):Unsafe {
+    #[Entry] public function start(OpenApiStateInterface $openApiState):Result {
         foreach ($this->response as $response) {
             $response->start($openApiState)->unwrap($error);
             if ($error) {

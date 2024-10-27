@@ -17,10 +17,10 @@ class CommandBuilder {
      * Add a command option.
      * @param  string         $shortName
      * @param  string         $longName
-     * @param  Unsafe<string> $value
+     * @param  Result<string> $value
      * @return CommandBuilder
      */
-    public function withOption(string $shortName, string $longName, false|Unsafe $value = false):self {
+    public function withOption(string $shortName, string $longName, false|Result $value = false):self {
         $option = CommandOption::create(
             longName: $longName,
             shortName: $shortName,
@@ -33,33 +33,12 @@ class CommandBuilder {
     }
 
     /**
-     * Add a flag command option.\
-     * Flags, as apposed to normal options, don't accept values and are meant to be used as booleans.
+     * Add required command option.
      * @param  string         $shortName
      * @param  string         $longName
      * @return CommandBuilder
      */
-    public function withFlag(string $shortName, string $longName):self {
-        $option = CommandOption::create(
-            longName: $longName,
-            shortName: $shortName,
-            isFlag: true,
-            value: ok('0'),
-        );
-        $this->options[$shortName] = $option;
-        $this->options[$longName]  = $option;
-        return $this;
-    }
-
-    /**
-     * Add a required flag command option.\
-     * Flags, as apposed to normal options, don't accept values and are meant to be used as booleans.\
-     * If the console user doesn't issue this required flag, the command will not trigger under any circumstances.
-     * @param  string         $shortName
-     * @param  string         $longName
-     * @return CommandBuilder
-     */
-    public function withRequiredFlag(string $shortName, string $longName):self {
+    public function withRequiredOption(string $shortName, string $longName):self {
         $option = CommandOption::create(
             longName: $longName,
             shortName: $shortName,

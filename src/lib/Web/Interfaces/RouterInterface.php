@@ -2,7 +2,7 @@
 namespace CatPaw\Web\Interfaces;
 
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Web\Route;
 use Closure;
 use ReflectionMethod;
@@ -14,14 +14,14 @@ interface RouterInterface {
      * @param  string                  $symbolicPath
      * @param  callable|Closure        $function
      * @param  string                  $workDirectory
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
     public function initialize(
         string $symbolicMethod,
         string $symbolicPath,
         callable|Closure $function,
         string $workDirectory = '',
-    ):Unsafe;
+    ):Result;
 
     /**
      * @param  ReflectionMethod     $reflectionMethod
@@ -57,13 +57,13 @@ interface RouterInterface {
      * @param  string       $originalSymbolicMethod http method of the 2 parameters.
      * @param  string       $originalSymbolicPath   path name to capture.
      * @param  string       $aliasSymbolicPath      alias path name.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
     public function alias(
         string $originalSymbolicMethod,
         string $originalSymbolicPath,
         string $aliasSymbolicPath,
-    ):Unsafe;
+    ):Result;
 
 
     /**
@@ -71,136 +71,136 @@ interface RouterInterface {
      * @param  string                  $method   the name of the http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function custom(string $method, string $path, callable|Closure $function):Unsafe;
+    public function custom(string $method, string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "COPY" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function copy(string $path, callable|Closure $function):Unsafe;
+    public function copy(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "DELETE" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function delete(string $path, callable|Closure $function):Unsafe;
+    public function delete(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "GET" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function get(string $path, callable|Closure $function):Unsafe;
+    public function get(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "HEAD" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function head(string $path, callable|Closure $function):Unsafe;
+    public function head(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "LINK" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function link(string $path, callable|Closure $function):Unsafe;
+    public function link(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "LOCK" http method.
      *
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function lock(string $path, callable|Closure $function):Unsafe;
+    public function lock(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "OPTIONS" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function options(string $path, callable|Closure $function):Unsafe;
+    public function options(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "PATCH" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function patch(string $path, callable|Closure $function):Unsafe;
+    public function patch(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "POST" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function post(string $path, callable|Closure $function):Unsafe;
+    public function post(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "PROPFIND" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function propfind(string $path, callable|Closure $function):Unsafe;
+    public function propfind(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "PURGE" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function purge(string $path, callable|Closure $function):Unsafe;
+    public function purge(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "PUT" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function put(string $path, callable|Closure $function):Unsafe;
+    public function put(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "UNKNOWN" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function unknown(string $path, callable|Closure $function):Unsafe;
+    public function unknown(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "UNLINK" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function unlink(string $path, callable|Closure $function):Unsafe;
+    public function unlink(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "UNLOCK" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function unlock(string $path, callable|Closure $function):Unsafe;
+    public function unlock(string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "VIEW" http method.
      * @param  string                  $path     the path the event should listen to.
      * @param  callable|Closure        $function the callback to execute.
-     * @return Unsafe<RouterInterface>
+     * @return Result<RouterInterface>
      */
-    public function view(string $path, callable|Closure $function):Unsafe;
+    public function view(string $path, callable|Closure $function):Result;
 }

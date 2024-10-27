@@ -1,7 +1,7 @@
 <?php
 namespace CatPaw\Schedule\Interfaces;
 
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Schedule\ScheduleEntry;
 use DateTime;
 
@@ -16,21 +16,21 @@ interface ScheduleInterface {
     /**
      * @param  string                  $due      When the schedule should trigger.
      * @param  callable(callable):void $function The function to execute when the schedule triggers.
-     * @return Unsafe<ScheduleEntry>
+     * @return Result<ScheduleEntry>
      */
-    public function after(string $due, callable $function):Unsafe;
+    public function after(string $due, callable $function):Result;
 
     /**
      * @param  string                  $due      When the schedule should trigger.
      * @param  callable(callable):void $function The function to execute when the schedule triggers.
-     * @return Unsafe<ScheduleEntry>
+     * @return Result<ScheduleEntry>
      */
-    public function every(string $due, callable $function):Unsafe;
+    public function every(string $due, callable $function):Result;
 
     /**
      * @param  string                  $due      When the schedule should trigger.
      * @param  callable(callable):void $function The function to execute when the schedule triggers.
-     * @return Unsafe<ScheduleEntry>
+     * @return Result<ScheduleEntry>
      */
-    public function daily(string $due, callable $function):Unsafe;
+    public function daily(string $due, callable $function):Result;
 }

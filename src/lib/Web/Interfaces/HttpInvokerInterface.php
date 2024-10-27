@@ -2,13 +2,13 @@
 namespace CatPaw\Web\Interfaces;
 
 use Amp\Http\Server\Response;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Web\RequestContext;
 
 interface HttpInvokerInterface {
     /**
      * @param  RequestContext   $context
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    public function invoke(RequestContext $context):Unsafe;
+    public function invoke(RequestContext $context):Result;
 }

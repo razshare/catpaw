@@ -25,10 +25,7 @@
     "prod:start": "php -dphar.readonly=0 -dopcache.enable_cli=1 -dopcache.jit_buffer_size=100M ./bin/start --libraries=src/lib --main=src/main.php",
     "prod:build": "@prod:start --environment=build.ini --build --optimize",
     "prod:fix": "php -dxdebug.mode=off vendor/bin/php-cs-fixer fix .",
-    "prod:test": [
-      "@prod:start --gompile tests/main.go",
-      "php vendor/bin/phpunit tests"
-    ],
+    "prod:test": "php vendor/bin/phpunit tests",
     "dev:preview": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --libraries=src/lib --main=preview/main.php --resources=preview --watch --php='php -dxdebug.mode=debug -dxdebug.start_with_request=yes'",
     "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries=src/lib --main=src/main.php",
     "dev:test": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests",
@@ -98,7 +95,7 @@
     }
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "ext-mbstring": "*",
     "ext-pcntl": "*",
     "ext-openssl": "*",
@@ -114,7 +111,6 @@
     "amphp/http-client": "^5.0",
     "amphp/parallel": "^2.0",
     "amphp/websocket-server": "^4.0",
-    "latte/latte": "^3.0",
     "amphp/http-server-form-parser": "^2.0"
   },
   "require-dev": {

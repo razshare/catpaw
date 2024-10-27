@@ -9,15 +9,15 @@ use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\CommandInterface as InterfacesCommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 class SimpleCommand implements InterfacesCommandInterface {
     /**
      * 
      * @param  CommandRunnerInterface $command
-     * @return Unsafe<bool>
+     * @return Result<bool>
      */
-    public function register(CommandRunnerInterface $command):Unsafe {
+    public function register(CommandRunnerInterface $command):Result {
         $builder = new CommandBuilder;
         $command->build($builder)->unwrap($error);
         if ($error) {

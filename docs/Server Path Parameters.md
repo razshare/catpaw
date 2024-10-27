@@ -1,134 +1,47 @@
+# Path Parameters
+
+You can define path parameters when [mapping routes](./Server%20Router.md).
+
+Any path parameter has two components
+1. a path component
+2. a route handler component
+
+# Path
+
+Path parameters are wrapped in `{}`
+| Path                                                        | Parameters Names Detected            |
+|-------------------------------------------------------------|--------------------------------------|
+| /`{username}`/about                                         | `username`                           |
+| /`{username}`/articles/`{articleId}`                        | `username`, `articleId`              |
+| /`{username}`/articles/`{articleId}`/comments               | `username`, `articleId`              |
+| /`{username}`/articles/`{articleId}`/comments/`{commentId}` | `username`, `articleId`, `commentId` |
+| ...                                                         | ...                                  |
+
+# Route Handler
+
+[Route handlers](./Server%20Router.md) can inject these parameters by name
+
+```php
+// PATH: /`{username}`/articles/`{articleId}`/comments/`{commentId}`
+function(string $username, string $articleId, string $commendId){};
+```
+
 > [!NOTE]
-> _Attributes used in this document_
-> - `#[Param]` - _supported by the open api service_ ✅
+> It is important that the variables names match exactly the parameter names.
 
-# Path parameters
+# Type safety
 
-You can specify variable parts in your route paths.\
-Those variable parts can then be passed to your route handler function as parameters.
+Route handlers have the authority to define how parameters are matched.
 
-```php
-<?php
-use CatPaw\Web\Interfaces\ServerInterface;
-use CatPaw\Web\Interfaces\RouterInterface;
-use function CatPaw\Core\anyError;
-use function CatPaw\Core\success;
-use CatPaw\Core\Unsafe;
-
-function handler(string $name) {
-    return  success("This is $name's about page.");
-}
-
-function main(ServerInterface $server, RouterInterface $router): Unsafe {
-    return anyError(function() use($server, $router) {
-        $router->get('/about/{name}', handler(...))->try();
-        $server->start()->try();
-    });
-}
-```
-
-## Types
-
-Since they're just regular php parameters, path parameters can specify a primitive type.
-
-The server will enforce this type matching, meaning all incoming requests to the given route _must_ comply with the
-types of the path parameters.
-
-The server will respond with _400 Bad Request_ when an incoming request doesn't comply with a path parameter's type.
-
-Given this definition
+You can configure this behavior using a `#[Param]` attribute
 
 ```php
-<?php
-use CatPaw\Web\Interfaces\ServerInterface;
-use CatPaw\Web\Interfaces\RouterInterface;
-use function CatPaw\Core\anyError;
-use function CatPaw\Core\success;
-use CatPaw\Core\Unsafe;
-
-function handler(int $age) {
-    return success("This cat is now $age years old.");
-}
-
-function main(ServerInterface $server, RouterInterface $router): Unsafe {
-    return anyError(function() use($server, $router) {
-        $router->post('/set/age/{age}', handler(...))->try();
-        $server->start()->try();
-    });
-}
-```
-
-Sending _POST /set/age/yes_ will result into a _400 Bad Request_ answer from the server.\
-Instead, an appropriate request would be _POST /set/age/3_.
-
-## More customization
-
-Sometimes you need more than php primitives to enforce your path parameters' values.
-
-Use _CatPaw\Web\Attributes\Param_ to modify the matching pattern for your path parameters.
-
-```php
-<?php
-use CatPaw\Web\Interfaces\ServerInterface;
-use CatPaw\Web\Interfaces\RouterInterface;
-use function CatPaw\Core\anyError;
-use function CatPaw\Core\success;
 use CatPaw\Web\Attributes\Param;
-use CatPaw\Core\Unsafe;
 
-function handler(#[Param('\w{3,15}')] string $name) {
-    return  success("This is $name's about page.");
-}
-
-function main(ServerInterface $server, RouterInterface $router): Unsafe {
-    return anyError(function() use($server, $router) {
-        $router->get('/about/{name}', handler(...))->try();
-        $server->start()->try();
-    });
-}
+// PATH: /`{username}`/articles/`{articleId}`/comments/`{commentId}`
+function(
+    #[Param('\w{3,}')]    string $username,  // Require $username to be at least 3 characters long.
+    #[Param('[A-z0-9-]')] string $articleId, // Require $articleId to include only characters from A to z, numbers and '-'
+    #[Param('[A-z0-9-]')] string $commendId, // Require $articleId to include only characters from A to z, numbers and '-'
+){};
 ```
-
-The above path parameter will match strings that are at least 3 characters and at most 15 characters long.
-
-## More on variable parts
-
-As you would expect, a symbolic path can contain multiple variable parts
-
-```php
-<?php
-use CatPaw\Web\Interfaces\ServerInterface;
-use CatPaw\Web\Interfaces\RouterInterface;
-use function CatPaw\Core\anyError;
-use function CatPaw\Core\success;
-use CatPaw\Core\Unsafe;
-
-function handler(string $name, string $childName) {
-    return  success("This is $childName's about page, who is $name's kitten.");
-}
-
-function main(ServerInterface $server, RouterInterface $router): Unsafe {
-    return anyError(function() use($server, $router) {
-        $router->get('/about/{name}/child/{childName}', handler(...))->try();
-        $server->start()->try();
-    });
-}
-```
-
-But variable parts are more powerful than that because they are not bound to any common web path rules.
-
-Variable parts can be defined **anywhere** within the symbolic path, even as a partial part of a sub-path.
-
-```php
-'/about/{name}/child-{childName}'
-```
-
-That is a valid symbolic path and _string $childName_ would still be a valid path parameter.
-
-As a matter of fact we don't need the inner slashes (`/`) at all, the following is also valid
-
-```php
-'/parent:{name},child:{childName}'
-```
-
-> [!NOTE]
-> The first forward slash is always required.

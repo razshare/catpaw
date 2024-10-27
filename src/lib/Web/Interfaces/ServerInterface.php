@@ -4,16 +4,16 @@ namespace CatPaw\Web\Interfaces;
 use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use CatPaw\Core\None;
+use CatPaw\Core\Result;
 use CatPaw\Core\Signal;
-use CatPaw\Core\Unsafe;
 
 interface ServerInterface {
     /**
      * Invoke a function when the server starts.
-     * @param  callable(HttpServer):(void|Unsafe<void>) $function the function to invoke, with the http server as parameter.
-     * @return Unsafe<None>
+     * @param  callable(HttpServer):(void|Result<void>) $function the function to invoke, with the http server as parameter.
+     * @return Result<None>
      */
-    public function onStart(callable $function):Unsafe;
+    public function onStart(callable $function):Result;
 
     /**
      * Get the location of the static files the server is serving.
@@ -93,14 +93,14 @@ interface ServerInterface {
      *
      * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
      * @param  false|Signal $ready This signal triggers whenever the server is ready to serve requests.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function start(false|Signal $ready = false):Unsafe ;
+    public function start(false|Signal $ready = false):Result ;
 
 
     /**
      * Stop the server.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function stop(): Unsafe;
+    public function stop(): Result;
 }

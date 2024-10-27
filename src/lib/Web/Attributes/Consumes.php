@@ -8,8 +8,8 @@ use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
+use CatPaw\Core\Result;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
-use CatPaw\Core\Unsafe;
 
 use CatPaw\Web\ConsumedRequest;
 use CatPaw\Web\Interfaces\OpenApiStateInterface;
@@ -46,7 +46,7 @@ class Consumes implements AttributeInterface {
 
     /**
      * @param string $contentType the http content-type, like `application/json`, `text/html` etc.
-     * @param string $className      usually `string`, but can also be a class name to indicate the structure of the content.
+     * @param string $className   usually `string`, but can also be a class name to indicate the structure of the content.
      * @param mixed  $example
      */
     public function __construct(
@@ -64,9 +64,9 @@ class Consumes implements AttributeInterface {
     /**
      *
      * @param  OpenApiStateInterface $openApiState
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    #[Entry] public function start(OpenApiStateInterface $openApiState):Unsafe {
+    #[Entry] public function start(OpenApiStateInterface $openApiState):Result {
         foreach ($this->request as $request) {
             $request->start($openApiState)->unwrap($error);
             if ($error) {

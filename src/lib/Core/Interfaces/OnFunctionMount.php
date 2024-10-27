@@ -4,7 +4,7 @@ namespace CatPaw\Core\Interfaces;
 
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use Closure;
 use ReflectionFunction;
 
@@ -16,7 +16,7 @@ interface OnFunctionMount {
      * @param  ReflectionFunction  $reflection Reflection of the function.
      * @param  Closure             $value      Function to which this attribute is attached to.
      * @param  DependenciesOptions $options    Options used to find dependencies.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function onFunctionMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):Unsafe;
+    public function onFunctionMount(ReflectionFunction $reflection, Closure &$value, DependenciesOptions $options):Result;
 }

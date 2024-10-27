@@ -12,16 +12,16 @@ use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use Exception;
 use Phar;
 
 /**
  *
  * @param  bool         $optimize
- * @return Unsafe<None>
+ * @return Result<None>
  */
-function build(bool $optimize = false):Unsafe {
+function build(bool $optimize = false):Result {
     if (ini_get('phar.readonly')) {
         return error('Cannot build using readonly phar, please disable the phar.readonly flag by running the builder with "php -dphar.readonly=0"'.PHP_EOL);
     }

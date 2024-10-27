@@ -8,8 +8,8 @@ use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Result;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
-use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use ReflectionClass;
 
@@ -121,9 +121,9 @@ class ConsumedRequest implements AttributeInterface {
     /**
      *
      * @param  OpenApiStateInterface $openApiState
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    #[Entry] public function start(OpenApiStateInterface $openApiState):Unsafe {
+    #[Entry] public function start(OpenApiStateInterface $openApiState):Result {
         $isClass = class_exists($this->className);
         if ($isClass) {
             $openApiState->withComponentObject($this->className)->unwrap($error);

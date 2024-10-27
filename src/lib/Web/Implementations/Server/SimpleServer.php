@@ -16,13 +16,12 @@ use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
+use CatPaw\Core\Result;
 use CatPaw\Core\Signal;
-use CatPaw\Core\Unsafe;
 use CatPaw\Web\Interfaces\RouteResolverInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\SessionInterface;
-use CatPaw\Web\Interfaces\ViewEngineInterface;
 use CatPaw\Web\ServerErrorHandler;
 use CatPaw\Web\SessionWithMemory;
 use Psr\Log\LoggerInterface;
@@ -58,23 +57,22 @@ class SimpleServer implements ServerInterface {
         public readonly LoggerInterface $logger,
         public readonly RouteResolverInterface $routeResolver,
         public readonly RequestHandler $requestHandler,
-        public readonly ViewEngineInterface $viewEngine,
     ) {
     }
 
-    /** @var array<callable(HttpServer):(void|Unsafe<void>)> */
+    /** @var array<callable(HttpServer):(void|Result<void>)> */
     private array $onStartListeners = [];
 
     /**
      * Invoke a function when the server starts.
-     * @param  callable(HttpServer):(void|Unsafe<void>) $function the function to invoke, with the http server as parameter.
-     * @return Unsafe<None>
+     * @param  callable(HttpServer):(void|Result<void>) $function the function to invoke, with the http server as parameter.
+     * @return Result<None>
      */
-    public function onStart(callable $function):Unsafe {
+    public function onStart(callable $function):Result {
         $this->onStartListeners[] = $function;
         if (isset($this->httpServer) && $this->httpServerStarted) {
             $result = $function($this->httpServer);
-            if ($result instanceof Unsafe) {
+            if ($result instanceof Result) {
                 $result->unwrap($error);
                 if ($error) {
                     return error($error);
@@ -180,9 +178,9 @@ class SimpleServer implements ServerInterface {
      *
      * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
      * @param  false|Signal $ready the server will trigger this signal whenever it's ready to serve requests.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function start(false|Signal $ready = false):Unsafe {
+    public function start(false|Signal $ready = false):Result {
         $logger = Container::get(LoggerInterface::class)->unwrap($error);
         if ($error) {
             return error($error);
@@ -250,7 +248,7 @@ class SimpleServer implements ServerInterface {
 
             foreach ($this->onStartListeners as $function) {
                 $result = $function($this->httpServer);
-                if ($result instanceof Unsafe) {
+                if ($result instanceof Result) {
                     $result->unwrap($error);
                     if ($error) {
                         return error($error);
@@ -270,9 +268,9 @@ class SimpleServer implements ServerInterface {
 
     /**
      * Stop the server.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function stop(): Unsafe {
+    public function stop(): Result {
         if (isset($this->httpServer)) {
             try {
                 $this->httpServer->stop();
@@ -287,15 +285,10 @@ class SimpleServer implements ServerInterface {
     /**
      * @param  string       $apiPrefix
      * @param  string       $apiLocation
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    private function initializeRoutes(string $apiPrefix, string $apiLocation): Unsafe {
+    private function initializeRoutes(string $apiPrefix, string $apiLocation): Result {
         if ($apiLocation) {
-            $this->viewEngine->loadComponentsFromDirectory($apiLocation)->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
-
             $flatList = Directory::flat($apiLocation)->unwrap($error);
             if ($error) {
                 return error($error);
@@ -324,7 +317,7 @@ class SimpleServer implements ServerInterface {
 
                         $symbolicPath   = $apiPrefix.$matches[1];
                         $symbolicPath   = preg_replace(['/^\/+/','/\/index$/'], ['/',''], $symbolicPath);
-                        $symbolicMethod = strtoupper($matches[3] ?? 'get');
+                        $symbolicMethod = strtoupper($matches[3]);
 
                         $routeExists = $this->router->routeExists($symbolicMethod, $symbolicPath);
 

@@ -7,7 +7,7 @@ use CatPaw\Core\File;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use Dotenv\Dotenv;
 use function function_exists;
 use Psr\Log\LoggerInterface;
@@ -66,9 +66,9 @@ class SimpleEnvironment implements EnvironmentInterface {
      * Parse the first valid environment file and update all variables in memory.
      * Multiple calls are allowed.\
      * This function is invoked automatically when the application starts.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function load():Unsafe {
+    public function load():Result {
         $fileName = $this->fileName;
 
         $file = File::open($fileName)->unwrap($error);

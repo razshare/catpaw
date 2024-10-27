@@ -13,13 +13,13 @@ readonly class ApplicationBundled implements CommandRunnerInterface {
     ) {
     }
 
-    public function build(CommandBuilder $builder): Unsafe {
+    public function build(CommandBuilder $builder): Result {
         // Options.
         $builder->withOption('e', 'environment');
         return ok();
     }
 
-    public function run(CommandContext $context): Unsafe {
+    public function run(CommandContext $context): Result {
         return anyError(function() use ($context) {
             // Options.
             $environment = $context->get('environment')->try();

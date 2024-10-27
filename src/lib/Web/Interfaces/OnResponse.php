@@ -4,7 +4,7 @@ namespace CatPaw\Web\Interfaces;
 use Amp\Http\Server\Request;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 /**
  * Attach this to route handlers in order intercept their events.
@@ -17,7 +17,7 @@ interface OnResponse extends AttributeInterface {
      * @see https://github.com/tncrazvan/catpaw/blob/main/docs/9.Filters.md
      * @param  Request          $request  this is the incoming request.
      * @param  ResponseModifier $modifier this is the result of the route handler.
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function onResponse(Request $request, ResponseModifier $modifier):Unsafe;
+    public function onResponse(Request $request, ResponseModifier $modifier):Result;
 }

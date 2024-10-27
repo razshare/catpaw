@@ -11,7 +11,7 @@ use CatPaw\Core\File;
 use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use function CatPaw\Core\uuid;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\ByteRangeInterface;
@@ -30,9 +30,9 @@ readonly class SimpleByteRange implements ByteRangeInterface {
     /**
      *
      * @param  string                                $rangeQuery
-     * @return Unsafe<SplFixedArray<array{int,int}>>
+     * @return Result<SplFixedArray<array{int,int}>>
      */
-    private function parse(string $rangeQuery): Unsafe {
+    private function parse(string $rangeQuery): Result {
         $rangeQuery = str_replace('bytes=', '', $rangeQuery);
         $ranges     = preg_split('/,\s*/', $rangeQuery);
         $cranges    = count($ranges);
@@ -91,9 +91,9 @@ readonly class SimpleByteRange implements ByteRangeInterface {
     /**
      *
      * @param  ByteRangeWriterInterface $interface
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    public function response(ByteRangeWriterInterface $interface): Unsafe {
+    public function response(ByteRangeWriterInterface $interface): Result {
         $headers    = [];
         $rangeQuery = $interface->rangeQuery()->unwrap($error);
         if ($error) {
@@ -214,9 +214,9 @@ readonly class SimpleByteRange implements ByteRangeInterface {
      *
      * @param  string           $fileName
      * @param  string           $rangeQuery
-     * @return Unsafe<Response>
+     * @return Result<Response>
      */
-    public function file(string $fileName, string $rangeQuery):Unsafe {
+    public function file(string $fileName, string $rangeQuery):Result {
         return $this->response(
             interface: new class($rangeQuery, $fileName) implements ByteRangeWriterInterface {
                 private File $file;
@@ -227,15 +227,15 @@ readonly class SimpleByteRange implements ByteRangeInterface {
                 ) {
                 }
 
-                public function rangeQuery():Unsafe {
+                public function rangeQuery():Result {
                     return ok($this->rangeQuery);
                 }
 
-                public function contentType():Unsafe {
+                public function contentType():Result {
                     return ok(Mime::findContentType($this->fileName));
                 }
 
-                public function contentLength():Unsafe {
+                public function contentLength():Result {
                     $size = File::size($this->fileName)->unwrap($error);
                     if ($error) {
                         return error($error);
@@ -245,9 +245,9 @@ readonly class SimpleByteRange implements ByteRangeInterface {
 
                 /**
                  *
-                 * @return Unsafe<None>
+                 * @return Result<None>
                  */
-                public function start():Unsafe {
+                public function start():Result {
                     $file = File::open($this->fileName)->unwrap($error);
                     if ($error) {
                         return error($error);
@@ -256,7 +256,7 @@ readonly class SimpleByteRange implements ByteRangeInterface {
                     return ok();
                 }
 
-                public function send(int $start, int $length):Unsafe {
+                public function send(int $start, int $length):Result {
                     if (!isset($this->file)) {
                         return error("Trying to send payload but the file is not opened.");
                     }
@@ -264,7 +264,7 @@ readonly class SimpleByteRange implements ByteRangeInterface {
                     return $this->file->read($length);
                 }
 
-                public function close():Unsafe {
+                public function close():Result {
                     if (!isset($this->file)) {
                         return error("Trying to close the stream but the file is not opened.");
                     }

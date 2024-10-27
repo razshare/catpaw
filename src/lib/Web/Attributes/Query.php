@@ -11,8 +11,8 @@ use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Result;
 use CatPaw\Core\Traits\CoreAttributeDefinition;
-use CatPaw\Core\Unsafe;
 use CatPaw\Web\RequestContext;
 use ReflectionException;
 use ReflectionParameter;
@@ -51,9 +51,9 @@ class Query implements AttributeInterface, OnParameterMount {
      * @param  mixed               $value
      * @param  DependenciesOptions $options
      * @throws ReflectionException
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Unsafe {
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Result {
         /** @var RequestContext $context */
         $context = $options->context;
         $type    = ReflectionTypeManager::unwrap($reflection);
@@ -90,9 +90,9 @@ class Query implements AttributeInterface, OnParameterMount {
     /**
      * @param  RequestContext $http
      * @param  string         $key
-     * @return Unsafe<string>
+     * @return Result<string>
      */
-    public function toString(RequestContext $http, string $key):Unsafe {
+    public function toString(RequestContext $http, string $key):Result {
         if (isset($http->requestQueries[$key])) {
             return ok(urldecode($http->requestQueries[$key]));
         }
@@ -103,9 +103,9 @@ class Query implements AttributeInterface, OnParameterMount {
     /**
      * @param  RequestContext $http
      * @param  string         $key
-     * @return Unsafe<int>
+     * @return Result<int>
      */
-    private function toInteger(RequestContext $http, string $key):Unsafe {
+    private function toInteger(RequestContext $http, string $key):Result {
         if (isset($http->requestQueries[$key])) {
             $value = urldecode($http->requestQueries[$key]);
             if (is_numeric($value)) {
@@ -121,9 +121,9 @@ class Query implements AttributeInterface, OnParameterMount {
     /**
      * @param  RequestContext $http
      * @param  string         $key
-     * @return Unsafe<bool>
+     * @return Result<bool>
      */
-    private function toBool(RequestContext $http, string $key):Unsafe {
+    private function toBool(RequestContext $http, string $key):Result {
         if (isset($http->requestQueries[$key])) {
             return ok(filter_var(urldecode($http->requestQueries[$key]), FILTER_VALIDATE_BOOLEAN));
         }
@@ -133,9 +133,9 @@ class Query implements AttributeInterface, OnParameterMount {
     /**
      * @param  RequestContext $http
      * @param  string         $key
-     * @return Unsafe<float>
+     * @return Result<float>
      */
-    private function toFloat(RequestContext $http, string $key):Unsafe {
+    private function toFloat(RequestContext $http, string $key):Result {
         if (isset($http->requestQueries[$key])) {
             $value = urldecode($http->requestQueries[$key]);
             if (is_numeric($value)) {

@@ -16,9 +16,9 @@ use Throwable;
 readonly class File {
     /**
      * @param  string      $fileName
-     * @return Unsafe<int>
+     * @return Result<int>
      */
-    public static function size(string $fileName):Unsafe {
+    public static function size(string $fileName):Result {
         $size = filesize($fileName);
         if (false === $size) {
             return error("Could not retrieve size of file $fileName.");
@@ -32,9 +32,9 @@ readonly class File {
      * @param  string       $fileNameA
      * @param  string       $fileNameB
      * @param  bool         $binary
-     * @return Unsafe<bool>
+     * @return Result<bool>
      */
-    public static function checksum(string $fileNameA, string $fileNameB, bool $binary = false):Unsafe {
+    public static function checksum(string $fileNameA, string $fileNameB, bool $binary = false):Result {
         $fileA = File::open($fileNameA)->unwrap($error);
         if ($error) {
             return error($error);
@@ -66,9 +66,9 @@ readonly class File {
      * Copy a file.
      * @param  string       $from
      * @param  string       $to
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public static function copy(string $from, string $to):Unsafe {
+    public static function copy(string $from, string $to):Result {
         $source = File::open($from)->unwrap($error);
         if ($error) {
             return error($error);
@@ -118,9 +118,9 @@ readonly class File {
 
     /**
      * @param  string               $fileName
-     * @return Unsafe<array<mixed>>
+     * @return Result<array<mixed>>
      */
-    public static function status(string $fileName):Unsafe {
+    public static function status(string $fileName):Result {
         $status = getStatus($fileName);
         if (null === $status) {
             return error("Could not get status of file $fileName because it doesn't exist.");
@@ -130,9 +130,9 @@ readonly class File {
 
     /**
      * @param  string      $fileName
-     * @return Unsafe<int>
+     * @return Result<int>
      */
-    public static function modificationTime(string $fileName):Unsafe {
+    public static function modificationTime(string $fileName):Result {
         try {
             $mtime = getModificationTime($fileName);
             return ok($mtime);
@@ -151,9 +151,9 @@ readonly class File {
 
     /**
      * @param  string       $fileName
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public static function delete(string $fileName):Unsafe {
+    public static function delete(string $fileName):Result {
         try {
             deleteFile($fileName);
             return ok();
@@ -166,9 +166,9 @@ readonly class File {
      * Write contents to a file.\
      * If the file doesn't exist it will be created.
      * @param  string       $filename
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public static function writeFile(string $filename, string $contents):Unsafe {
+    public static function writeFile(string $filename, string $contents):Result {
         $file = File::open($filename, 'w+')->unwrap($error);
         if ($error) {
             return error($error);
@@ -185,9 +185,9 @@ readonly class File {
      * Stream contents to a file.\
      * If the file doesn't exist it will be created.
      * @param  ReadableStream $readableStream
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public static function writeStreamFile(string $filename, ReadableStream $readableStream):Unsafe {
+    public static function writeStreamFile(string $filename, ReadableStream $readableStream):Result {
         $file = File::open($filename, 'w+')->unwrap($error);
         if ($error) {
             return error($error);
@@ -203,9 +203,9 @@ readonly class File {
     /**
      * Read the contents of a file.
      * @param  string         $filename
-     * @return Unsafe<string>
+     * @return Result<string>
      */
-    public static function readFile(string $filename):Unsafe {
+    public static function readFile(string $filename):Result {
         $file = File::open($filename)->unwrap($error);
         if ($error) {
             return error($error);
@@ -237,9 +237,9 @@ readonly class File {
      * > **Note**\
      * > The `mode` is ignored for `php://output`, `php://input`, `php://stdin`, `php://stdout`, `php://stderr` and `php://fd` stream wrappers.
      * @see https://www.php.net/manual/en/function.fopen.php
-     * @return Unsafe<File>
+     * @return Result<File>
      */
-    public static function open(string $fileName, string $mode = 'r'):Unsafe {
+    public static function open(string $fileName, string $mode = 'r'):Result {
         try {
             $file = openFile($fileName, $mode);
         } catch(Throwable $e) {
@@ -253,9 +253,9 @@ readonly class File {
      * @template T
      * @param  class-string<T> $interface Interface of the resulting object.
      * @param  string          $fileName
-     * @return Unsafe<T>
+     * @return Result<T>
      */
-    public static function readIni(string $interface, string $fileName):Unsafe {
+    public static function readIni(string $interface, string $fileName):Result {
         $file = File::open($fileName, 'r')->unwrap($error);
         if ($error) {
             return error($error);
@@ -272,7 +272,7 @@ readonly class File {
         if (false === $parsed) {
             return error("Couldn't parse yaml file.");
         }
-        /** @var Unsafe<T> */
+        /** @var Result<T> */
         return ok((object)$parsed);
     }
 
@@ -281,9 +281,9 @@ readonly class File {
      * @template T
      * @param  class-string<T> $interface Interface of the resulting object.
      * @param  string          $fileName
-     * @return Unsafe<T>
+     * @return Result<T>
      */
-    public static function readYaml(string $interface, string $fileName):Unsafe {
+    public static function readYaml(string $interface, string $fileName):Result {
         if (!File::exists($fileName)) {
             $variants = [];
 
@@ -318,7 +318,7 @@ readonly class File {
                     if (false === $parsed) {
                         return error("Couldn't parse yaml file.");
                     }
-                    /** @var Unsafe<T> */
+                    /** @var Result<T> */
                     return ok((object)$parsed);
                 }
 
@@ -345,7 +345,7 @@ readonly class File {
         if (false === $parsed) {
             return error("Couldn't parse yaml file.");
         }
-        /** @var Unsafe<T> */
+        /** @var Result<T> */
         return ok((object)$parsed);
     }
 
@@ -354,9 +354,9 @@ readonly class File {
      * @template T
      * @param  class-string<T> $interface Interface of the resulting object.
      * @param  string          $fileName
-     * @return Unsafe<T>
+     * @return Result<T>
      */
-    public static function readJson(string $interface, string $fileName):Unsafe {
+    public static function readJson(string $interface, string $fileName):Result {
         $file = File::open($fileName, 'r')->unwrap($error);
         if ($error) {
             return error($error);
@@ -377,9 +377,9 @@ readonly class File {
      * @template T
      * @param  class-string<T> $interface Interface of the resulting object.
      * @param  string          $fileName
-     * @return Unsafe<T>
+     * @return Result<T>
      */
-    public static function readEnv(string $interface, string $fileName):Unsafe {
+    public static function readEnv(string $interface, string $fileName):Result {
         $file = File::open($fileName, 'r')->unwrap($error);
         if ($error) {
             return error($error);
@@ -393,7 +393,7 @@ readonly class File {
         } catch(Throwable $error) {
             return error($error);
         }
-        /** @var Unsafe<T> */
+        /** @var Result<T> */
         return ok((object)$parsed);
     }
 
@@ -417,9 +417,9 @@ readonly class File {
     /**
      * @param  string       $content
      * @param  int          $chunkSize
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function write(string $content, int $chunkSize = 8192):Unsafe {
+    public function write(string $content, int $chunkSize = 8192):Result {
         try {
             $wroteSoFar = 0;
             $length     = strlen($content);
@@ -439,9 +439,9 @@ readonly class File {
 
     /**
      * @param  ReadableStream $readableStream
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function writeStream(ReadableStream $readableStream):Unsafe {
+    public function writeStream(ReadableStream $readableStream):Result {
         $ampFile = $this->ampFile;
         try {
             while (true) {
@@ -469,9 +469,9 @@ readonly class File {
      * Read content from the file in chunks.
      * @param  int            $length    how much content to read.
      * @param  int            $chunkSize size of each chunk.
-     * @return Unsafe<string>
+     * @return Result<string>
      */
-    public function read(int $length = 8192, int $chunkSize = 8192):Unsafe {
+    public function read(int $length = 8192, int $chunkSize = 8192):Result {
         $ampFile = $this->ampFile;
         try {
             $readSoFar = 0;
@@ -500,9 +500,9 @@ readonly class File {
     /**
      * Read the whole file in chunks.
      * @param  int            $chunkSize size of each chunk.
-     * @return Unsafe<string>
+     * @return Result<string>
      */
-    public function readAll(int $chunkSize = 8192):Unsafe {
+    public function readAll(int $chunkSize = 8192):Result {
         $fileName = $this->fileName;
         try {
             $fileSize = getSize($fileName);

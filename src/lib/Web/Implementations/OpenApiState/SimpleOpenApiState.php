@@ -12,7 +12,7 @@ use CatPaw\Core\None;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use ReflectionClass;
 use Throwable;
@@ -203,9 +203,9 @@ class SimpleOpenApiState implements OpenApiStateInterface {
     /**
      *
      * @param  string       $className
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function withComponentObject(string $className):Unsafe {
+    public function withComponentObject(string $className):Result {
         try {
             $resolvedProperties = [];
             $reflection         = new ReflectionClass($className);

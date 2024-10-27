@@ -6,7 +6,7 @@ use Amp\Cancellation;
 use Amp\Http\Server\Request;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use Throwable;
 
 class Body {
@@ -35,9 +35,9 @@ class Body {
     /**
      * @template T
      * @param  class-string<T> $className
-     * @return Unsafe<T>
+     * @return Result<T>
      */
-    public function asObject(string $className = 'stdClass'):Unsafe {
+    public function asObject(string $className = 'stdClass'):Result {
         try {
             return BodyParser::parseAsObject(
                 request: $this->request,
@@ -50,9 +50,9 @@ class Body {
     }
 
     /**
-     * @return Unsafe<string>
+     * @return Result<string>
      */
-    public function asText():Unsafe {
+    public function asText():Result {
         try {
             return ok($this->request->getBody()->buffer());
         } catch(Throwable $error) {
@@ -61,9 +61,9 @@ class Body {
     }
 
     /**
-     * @return Unsafe<int>
+     * @return Result<int>
      */
-    public function asInt():Unsafe {
+    public function asInt():Result {
         try {
             $body = $this->request->getBody()->buffer();
             if (is_numeric($body)) {
@@ -78,9 +78,9 @@ class Body {
 
 
     /**
-     * @return Unsafe<bool>
+     * @return Result<bool>
      */
-    public function asBool():Unsafe {
+    public function asBool():Result {
         try {
             $body = $this->request->getBody()->buffer();
             return ok(filter_var($body, FILTER_VALIDATE_BOOLEAN));
@@ -90,9 +90,9 @@ class Body {
     }
 
     /**
-     * @return Unsafe<float>
+     * @return Result<float>
      */
-    public function asFloat():Unsafe {
+    public function asFloat():Result {
         try {
             $body = $this->request->getBody()->buffer();
             if (is_numeric($body)) {

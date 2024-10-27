@@ -2,7 +2,7 @@
 namespace CatPaw\Web\Interfaces;
 
 use CatPaw\Core\None;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 
 interface OpenApiStateInterface {
     /**
@@ -56,9 +56,9 @@ interface OpenApiStateInterface {
     /**
      *
      * @param  string       $className
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function withComponentObject(string $className):Unsafe;
+    public function withComponentObject(string $className):Result;
 
 
     /**

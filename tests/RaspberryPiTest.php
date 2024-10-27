@@ -8,7 +8,7 @@ use CatPaw\Core\None;
 
 // use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
-use CatPaw\Core\Unsafe;
+use CatPaw\Core\Result;
 use CatPaw\RaspberryPi\Interfaces\GpioInterface;
 use PHPUnit\Framework\TestCase;
 use Revolt\EventLoop;
@@ -26,9 +26,9 @@ class RaspberryPiTest extends TestCase {
     /**
      *
      * @param  GpioInterface $gpio
-     * @return Unsafe<None>
+     * @return Result<None>
      */
-    public function blink(GpioInterface $gpio): Unsafe {
+    public function blink(GpioInterface $gpio): Result {
         // $writer = $gpio->createWriter('12');
         $active = false;
         for ($i = 0; $i < 3; $i++) {
