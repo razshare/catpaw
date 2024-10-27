@@ -26,9 +26,9 @@ readonly class Application implements CommandRunnerInterface {
     public function run(CommandContext $context): Result {
         return anyError(function() use ($context) {
             // Required.
-            $dieOnChange = $context->get('die-on-change')->try();
-            $watch       = $context->get('watch')->try();
-            
+            $dieOnChange = $context->get('die-on-change')->unwrap() or false;
+            $watch       = $context->get('watch')->unwrap()         or false;
+
             // Optionals.
             $php         = $context->get('php')->try();
             $name        = $context->get('name')->try();
