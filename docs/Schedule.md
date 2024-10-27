@@ -1,8 +1,8 @@
 # Schedule
 
-You can schedule operations using _ScheduleService_.
+You can schedule operations using `ScheduleService`.
 
-## after()
+# After
 
 You can schedule functions to execute after a certain amount of time.
 
@@ -21,25 +21,25 @@ function main(ScheduleService $schedule): Result {
 ```
 This will schedule your function to execute in 2 minutes.
 
-The _due_ parameter must be a string in one of the following formats
+The `due` parameter must be a string in one of the following formats
 
-| Execute after _T_ time |
+| Execute after `T` time |
 |------------------------|
-| _T_ seconds            |
-| _T_ minutes            |
-| _T_ hours              |
-| _T_ days               |
-| _T_ weeks              |
-| _T_ months             |
-| _T_ years              |
+| `T` seconds            |
+| `T` minutes            |
+| `T` hours              |
+| `T` days               |
+| `T` weeks              |
+| `T` months             |
+| `T` years              |
 
 > [!NOTE]
-> Replace _T_ with an _integer_ value.
+> Replace `T` with an `integer` value.
 
 
-## every()
+# Every
 
-Just like _after()_, _every()_ allows you to countdown before executing the function, with the added effect that the schedule restarts whenever it ends and the callback function accepts a callable which when invoked will cancel the schedule immediately.
+Just like `after()`, `every()` allows you to countdown before executing the function, with the added effect that the schedule restarts whenever it ends and the callback function accepts a callable which when invoked will cancel the schedule immediately.
 
 ```php
 <?php
@@ -56,24 +56,24 @@ function main(ScheduleService $schedule): Result {
 }
 ```
 
-The _due_ parameter must be a string in one of the following formats
+The `due` parameter must be a string in one of the following formats
 
-| Execute after _T_ time |
+| Execute after `T` time |
 |------------------------|
-| _T_ seconds            |
-| _T_ minutes            |
-| _T_ hours              |
-| _T_ days               |
-| _T_ weeks              |
-| _T_ months             |
-| _T_ years              |
+| `T` seconds            |
+| `T` minutes            |
+| `T` hours              |
+| `T` days               |
+| `T` weeks              |
+| `T` months             |
+| `T` years              |
 
 > [!NOTE]
-> Where _T_ is an _integer_ value.
+> Where `T` is an `integer` value.
 
 
 
-## daily()
+# Daily
 
 Schedule a function to execute daily.
 
@@ -92,8 +92,8 @@ function main(ScheduleService $schedule): Result {
 }
 ```
 
-Similarly to _every()_, the callback function accepts a cancel function, which you can invoke to cancel the schedule immediately.
+Similarly to `every()`, the callback function accepts a cancel function, which you can invoke to cancel the schedule immediately.
 
-The _due_ parameter must be a string formatted as `at hh:mm:ss` or `at hh:mm:ss AM` (or _PM_).
+The `due` parameter must be a string formatted as `at hh:mm:ss` or `at hh:mm:ss AM` (or _PM_).
 The format `hh:mm:ss` indicates `hours:minutes:seconds`, all of which are optional.
 When omitting hours, minutes or seconds, the equivalent current system value will be used instead.

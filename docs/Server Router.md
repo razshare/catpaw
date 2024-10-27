@@ -57,7 +57,7 @@ Create a new _src/api_ directory
 ```shell
 mkdir -p src/api
 ```
-Scan the directory using `ServerInterface::withApiLocation()`
+Scan the directory using `$server->withApiLocation()`
 ```php
 function main(ServerInterface $server): void {
     $server

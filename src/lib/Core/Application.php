@@ -4,15 +4,13 @@ namespace CatPaw\Core;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 
 readonly class Application implements CommandRunnerInterface {
-    public function __construct(
-        public string $startFileName
-    ) {
+    public function __construct(public string $startFileName) {
     }
 
     public function build(CommandBuilder $builder): Result {
         // Flags.
-        $builder->withId('d', "die-on-change");
-        $builder->withId('w', "watch");
+        $builder->withRequiredOption('d', "die-on-change");
+        $builder->withRequiredOption('w', "watch");
 
         // Options.
         $builder->withOption('p', 'php', ok('php'));
@@ -27,11 +25,11 @@ readonly class Application implements CommandRunnerInterface {
 
     public function run(CommandContext $context): Result {
         return anyError(function() use ($context) {
-            // Flags.
+            // Required.
             $dieOnChange = $context->get('die-on-change')->try();
             $watch       = $context->get('watch')->try();
             
-            // Options.
+            // Optionals.
             $php         = $context->get('php')->try();
             $name        = $context->get('name')->try();
             $main        = $context->get('main')->try();

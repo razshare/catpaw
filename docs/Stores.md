@@ -2,7 +2,7 @@
 
 Stores are observable objects that contain a value.
 
-Each store has a _subscribe()_ method which allows the execution of a _callable_ whenever the value of the store changes, this callable provides the new value of the store as a parameter.
+Each store has a `subscribe()` method which allows the execution of a _callable_ whenever the value of the store changes, this callable provides the new value of the store as a parameter.
 
 Stores can be of 2 types:
 
@@ -10,9 +10,9 @@ Stores can be of 2 types:
 - Writable stores
 
 
-Both stores implement the _subscribe_ and _get_ methods, but only the _Writable_ store implements the _set_ method.
+Both stores implement the `subscribe()` and `get()` methods, but only the `Writable` store implements the `set()` method.
 
-# writable()
+# Writable
 
 ```php
 namespace CatPaw\Store;
@@ -23,7 +23,7 @@ namespace CatPaw\Store;
 function writable($value);
 ```
 
-A writable store's value can be set on creation or some time after by using the _set()_ method.
+A writable store's value can be set on creation or some time after by using the `set()` method.
 
 ```php
 <?php
@@ -37,9 +37,9 @@ function main() {
 }
 ```
 
- As mentioned above stores provide a _subscribe()_ method.<br/>
+ As mentioned above stores provide a `subscribe()` method.<br/>
  This method makes it possible to watch over the value of the store.<br/>
- Once called, the _subscribe()_ method will return itself a function, which when called will cancel the store subscription.
+ Once called, the `subscribe()` method will return itself a function, which when called will cancel the store subscription.
 
 ```php
 <?php
@@ -66,9 +66,9 @@ A
 B
 ```
 to the console.<br/>
-It won't print _C_ because by the time _C_ is set, _$unsubscribe()_ has already been invoked.
+It won't print `C` because by the time `C` is set, `$unsubscribe()` has already been invoked.
 
-# readable()
+# Readable
 
 ```php
 namespace CatPaw\Store;
@@ -83,10 +83,10 @@ function readable($value, $start = false);
 A readable store is very similar to a writable store.<br/>
 Two things differentiate a readable store from a writable one:
 
-1. A readable store does not offer a public _set()_ method.
+1. A readable store does not offer a public `set()` method.
 2. A readable store requires a start _callable_ when created, this _callable_ will be invoked when the first subscriber subscribes to the store.<br/>
    The start _callable_ takes  _1 parameter_ and *should* _return a function_.<br/>
-      - The _parameter_ is a _$set_ function which can be used to set the store's value.<br/>
+      - The _parameter_ is a `$set` function which can be used to set the store's value.<br/>
       - The _function_ it returns is a cleanup function.\
         It will be invoked when there are no subscribers left.
 

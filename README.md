@@ -13,10 +13,8 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 | 🌐 [Server Open Api](./docs/Server%20Open%20Api.md)               | Generate an Open Api definition. |
 | 🌐 [Server Session](./docs/Server%20Session.md)                   | Create and manage server sessions. |
 | 🌐 [Server Websockets](./docs/Server%20Websockets.md)             | Serve websockets. |
-| 🌐 [Server Views](./docs/Server%20Views.md)                       | Serve views using Latte. |
 | ⚡ [Entry](./docs/Entry.md)                                       | Execute code when a dependency is resolved. |
 | ⚡ [Command](./docs/Command.md)                                   | Create a console command. |
-| ⚡ [Custom Attributes](./docs/Custom%20Attributes.md)             | An easy way to define custom attributes with hooks that pierce into the framework. |
 | ⚡ [Stores](./docs/Stores.md)                                     | Store data in memory and react to changes in said data. |
 | ⚡ [Queues](./docs/Queues.md)                                     | Create in memory queues and tag them. |
 | ⚡ [Schedule](./docs/Schedule.md)                                 | Schedule code execution using a human readable format. |

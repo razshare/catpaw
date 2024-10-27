@@ -1,6 +1,6 @@
 # Command
 
-You can register console commands using `CommandInterface::register()`
+You can register console commands using `$command->register()`
 
 ```php
 use CatPaw\Core\Interfaces\CommandInterface;

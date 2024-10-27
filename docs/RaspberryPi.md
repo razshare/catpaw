@@ -1,11 +1,11 @@
 # RaspberryPi
 
-You can interact with your RaspberryPi's Gpio interface through _GpioService_.<br/>
+You can interact with your RaspberryPi's Gpio interface through `GpioInterface`.<br/>
 
-The service provides two methods: _createReader()_
-and _createWriter()_.
+1. Use `$gpio->createReader()` to create a pin reader.
+2. Use `$gpio->createWriter()` to create a pin writer.
 
-Both take one argument, the pin.
+Both methods take one argument, the pin.
 
 The pin is a string that can have one of the following
 values: _7_, _11_, _12_, _13rv1_, _13_, _13rv2_, _15_, _16_, _18_, _22_.\
@@ -24,9 +24,9 @@ Here's an example of a blinking LED on pin _12_<br/>
 use function Amp\delay;
 use function CatPaw\Core\error;
 use function CatPaw\Core\anyError;
-use CatPaw\Core\RaspberryPi\Services\GpioService;
+use CatPaw\RaspberryPi\Interfaces\GpioInterface;
 
-function main(GpioService $gpio): void {
+function main(GpioInterface $gpio): void {
     $writer = $gpio->createWriter('12');
     $active = true;
     while (true) {

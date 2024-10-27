@@ -6,7 +6,7 @@ Each queue is identified by a unique tag, a name.
 
 Queues can overlap while executing, but callables within the queues themselves will never overlap.
 
-The _QueueService_ provides 2 methods, _queue()_ and _consume()_
+The `QueueService` provides 2 methods, `queue()` and `consume()`
 
 ```php
 /**

@@ -1,13 +1,9 @@
 # Entry attribute
 
-The _#[Entry]_ attribute is an attribute that can be attached to any service or singleton method.
+The `#[Entry]` attribute is an attribute that can be attached to any service or singleton method.
 
-Any method annotated with _#[Entry]_ will be invoked right after the container constructs an instance.\
+Any method annotated with `#[Entry]` will be invoked right after the container constructs an instance.\
 The method will benefit from dependency injection, just like a constructor.
-
-An _#[Entry]_ method differs from a constructor because it can return _Unsafe_, which
-the container will inspect.\
-If any errors are found, the container will stop and log them.
 
  ```php
 namespace App;
