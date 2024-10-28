@@ -3,20 +3,18 @@ namespace CatPaw\Core\Interfaces;
 
 use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
-use CatPaw\Core\None;
-use CatPaw\Core\Result;
 
 interface CommandRunnerInterface {
     /**
      * Build the command.
      * @param  CommandBuilder $builder
-     * @return Result<None>
+     * @return void
      */
-    public function build(CommandBuilder $builder):Result;
+    public function build(CommandBuilder $builder): void;
 
     /**
      * Run the command.
-     * @return Result<None>
+     * @return void
      */
-    public function run(CommandContext $context):Result;
+    public function run(CommandContext $context): void;
 }

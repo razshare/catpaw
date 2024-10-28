@@ -1,18 +1,14 @@
 <?php
-
-use function CatPaw\Core\anyError;
+use function CatPaw\Core\asFileName;
 use function CatPaw\Core\Build\build;
-
 use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
-
 use function CatPaw\Core\error;
-
 use CatPaw\Core\File;
 use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
+use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
-
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
 use function CatPaw\Core\Precommit\installPreCommit;
@@ -20,22 +16,24 @@ use function CatPaw\Core\Precommit\uninstallPreCommit;
 use CatPaw\Core\Result;
 use function CatPaw\Text\foreground;
 use function CatPaw\Text\nocolor;
+use Psr\Log\LoggerInterface;
 
 class TipsCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder):Result {
+    public function build(CommandBuilder $builder): void {
         $builder->withOption('t', 'tips', error('no match'));
-        return ok();
     }
 
-    public function run(CommandContext $context): Result {
-        try {
-            $context->get('t')->try();
+    public function run(CommandContext $context): void {
+            $context->get('t')->unwrap($error);
+            if ($error) {
+                echo $error.PHP_EOL;
+                return;
+            }
+            $context->accept();
+
             $message = '';
     
-            if (
-                File::exists('.git/hooks')
-                && !File::exists('.git/hooks/pre-commit')
-            ) {
+            if (File::exists('.git/hooks') && !File::exists('.git/hooks/pre-commit')) {
                 $message = join([
                     foreground(170, 140, 40),
                     "Remember to run `",
@@ -49,78 +47,72 @@ class TipsCommand implements CommandRunnerInterface {
             }
     
             out()->write($message?:"No more tips.\n");
-            return ok();
-        } catch (Throwable $error) {
-            return error($error);
-        }
     }
 }
 
 class InstallPreCommitCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): Result {
+    public function build(CommandBuilder $builder): void {
         $builder->withOption('i', 'install-pre-commit', error('no match'));
-        return ok();
     }
 
-    public function run(CommandContext $context): Result {
-        return anyError(function() use ($context) {
-            $command = $context->get('install-pre-commit')->try();
-            return installPreCommit($command);
-        });
+    public function run(CommandContext $context): void {
+        $command = $context->get('install-pre-commit')->unwrap($error);
+        if ($error) {
+            echo $error.PHP_EOL;
+            return;
+        }
+        $context->accept();
+
+        installPreCommit($command)->unwrap($error);
+        if ($error) {
+            echo $error.PHP_EOL;
+            return;
+        }
     }
 }
 
 class UninstallPreCommitCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): Result {
+    public function build(CommandBuilder $builder): void {
         $builder->withOption('u', 'uninstall-pre-commit', error('no match'));
-        return ok();
     }
 
-    public function run(CommandContext $context): Result {
-        return anyError(function() use ($context) {
-            $context->get('u')->try();
-            return uninstallPreCommit();
-        });
-    }
-}
+    public function run(CommandContext $context): void {
+        $context->get('u')->unwrap($error);
+        if ($error) {
+            echo $error.PHP_EOL;
+            return;
+        }
+        $context->accept();
 
-class BuildCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): Result {
-        $builder->withOption('b', 'build', error('no match'));
-        $builder->withOption('o', 'optimize', ok('0'));
-        return ok();
-    }
-
-    public function run(CommandContext $context): Result {
-        return anyError(function() use ($context) {
-            $context->get('b')->try();
-            $optimize = (bool)$context->get('optimize')->try();
-            return build($optimize);
-        });
+        uninstallPreCommit()->unwrap($error);
+        if ($error) {
+            echo $error.PHP_EOL;
+            return;
+        }
     }
 }
 
 class HiCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): Result {
+    public function build(CommandBuilder $builder): void {
         $builder->withOption('h', 'hi', error('no match'));
-        return ok();
     }
 
-    public function run(CommandContext $context): Result {
-        return anyError(function() use ($context) {
-            $context->get('h')->try();
-            echo "Hi.\n";
-            return ok();
-        });
+    public function run(CommandContext $context): void {
+        $context->get('h')->unwrap($error);
+        if ($error) {
+            echo $error.PHP_EOL;
+            return;
+        }
+        $context->accept();
+        echo "Hi.\n";
     }
 }
 
 class HelpCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder):Result {
-        return ok();
-    }
+    public function build(CommandBuilder $builder): void {}
 
-    public function run(CommandContext $context): Result {
+    public function run(CommandContext $context): void {
+        $context->accept();
         echo <<<BASH
             \n
             -b,  --build [-o, --optimize]        Builds the project into a .phar.
@@ -130,7 +122,61 @@ class HelpCommand implements CommandRunnerInterface {
             -u,  --uninstall-pre-commit          Uninstalls the pre-commit hook.
             \n
             BASH;
-        return ok();
+    }
+}
+
+
+class BuildCommand implements CommandRunnerInterface {
+    public function __construct(
+        private LoggerInterface $logger,
+        private EnvironmentInterface $environment,
+    ) {
+    }
+
+    public function build(CommandBuilder $builder): void {
+        $builder->withOption('b', 'build', error('no match'));
+        $builder->withOption('o', 'optimize', ok('0'));
+        $builder->withOption('e', 'environment', ok('0'));
+    }
+
+    public function run(CommandContext $context): void {
+        $context->get('b')->unwrap($error);
+        if ($error) {
+            echo $error.PHP_EOL;
+            return;
+        }
+        
+        $context->accept();
+
+        $environmentFile = $context->get('e')->unwrap($error);
+        if ($error) {
+            echo $error.PHP_EOL;
+            return;
+        }
+
+        if(!$environmentFile){
+            echo "Please point to an environment file using the `--environment` or `-e` options.\n";
+            return;
+        }
+
+        if(!File::exists(asFileName($environmentFile))){
+            echo "File `$environmentFile` doesn't seem to exist.";
+            return;
+        }
+
+        $this->environment->load($environmentFile)->unwrap($error);
+        if ($error) {
+            echo $error.PHP_EOL;
+            return;
+        }
+
+        $optimize = (bool)$context->get('optimize')->unwrap() or false;
+
+        build($optimize)->unwrap($error);
+        if ($error) {
+            echo $error.PHP_EOL;
+            return;
+        }
     }
 }
 
@@ -140,13 +186,12 @@ class HelpCommand implements CommandRunnerInterface {
  * @param  CommandInterface $command
  * @return Result<None>
  */
-function main(CommandInterface $command) {
-    return anyError(fn () => match (true) {
-        $command->register(new BuildCommand)->unwrap()              => ok(),
-        $command->register(new TipsCommand)->unwrap()               => ok(),
-        $command->register(new HiCommand)->unwrap()                 => ok(),
-        $command->register(new InstallPreCommitCommand)->unwrap()   => ok(),
-        $command->register(new UninstallPreCommitCommand)->unwrap() => ok(),
-        default                                                     => $command->register(new HelpCommand)->unwrap()
-    });
+function main(CommandInterface $command, LoggerInterface $logger, EnvironmentInterface $environment) {
+    return 
+        $command->register(new BuildCommand($logger, $environment))->unwrap()
+        or $command->register(new TipsCommand)->unwrap()
+        or $command->register(new HiCommand)->unwrap()
+        or $command->register(new InstallPreCommitCommand)->unwrap()
+        or $command->register(new UninstallPreCommitCommand)->unwrap()
+        or $command->register(new HelpCommand);
 }

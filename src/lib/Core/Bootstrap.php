@@ -81,7 +81,6 @@ class Bootstrap {
 
             $main = $mainLocal;
 
-
             $logger = Container::get(LoggerInterface::class)->unwrap($loggerError);
             if ($loggerError) {
                 self::kill((string)$loggerError);

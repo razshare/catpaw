@@ -18,12 +18,8 @@ class SimpleCommand implements InterfacesCommandInterface {
      * @return Result<bool>
      */
     public function register(CommandRunnerInterface $command):Result {
-        global $argv;
         $builder = new CommandBuilder;
-        $command->build($builder)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
+        $command->build($builder);
         /** @var array<string,CommandOption> */
         $map = [];
         foreach ($builder->options() as $option) {
@@ -109,10 +105,7 @@ class SimpleCommand implements InterfacesCommandInterface {
         }
 
         $commandContext = CommandContext::create($map);
-        $command->run($commandContext)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-        return ok(true);
+        $command->run($commandContext);
+        return ok($commandContext->accepted());
     }
 }

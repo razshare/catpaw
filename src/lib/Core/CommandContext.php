@@ -1,7 +1,7 @@
 <?php
 namespace CatPaw\Core;
 
-readonly class CommandContext {
+class CommandContext {
     /**
      * 
      * @param  array<string,CommandOption> $options
@@ -17,6 +17,24 @@ readonly class CommandContext {
      * @return void
      */
     private function __construct(private array $options) {
+    }
+
+    private bool $accepted = false;
+
+    /**
+     * Accepts the command.
+     * @return void 
+     */
+    public function accept(): void {
+        $this->accepted = true;
+    }
+
+    /**
+     * 
+     * @return bool `true` if the command has been accepted, `false` otherwise.
+     */
+    public function accepted(): bool {
+        return (bool)$this->accepted;
     }
 
     /**

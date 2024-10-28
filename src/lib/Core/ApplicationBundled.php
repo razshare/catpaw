@@ -13,16 +13,19 @@ readonly class ApplicationBundled implements CommandRunnerInterface {
     ) {
     }
 
-    public function build(CommandBuilder $builder): Result {
+    public function build(CommandBuilder $builder): void {
         // Options.
         $builder->withOption('e', 'environment', ok('env.ini'));
-        return ok();
     }
 
-    public function run(CommandContext $context): Result {
-        return anyError(function() use ($context) {
+    public function run(CommandContext $context): void {
             // Options.
-            $environment = $context->get('environment')->try();
+            $environment = $context->get('environment')->unwrap($error);
+            if ($error) {
+                echo $error.PHP_EOL;
+                return;
+            }
+
             if (!$environment) {
                 $environment = $this->environment;
             }
@@ -34,7 +37,5 @@ readonly class ApplicationBundled implements CommandRunnerInterface {
                 environment: $environment,
                 dieOnChange: false
             );
-            return ok();
-        });
     }
 }
