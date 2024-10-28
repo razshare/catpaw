@@ -12,6 +12,7 @@ use CatPaw\Core\File;
 use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use function CatPaw\Core\out;
 use function CatPaw\Core\Precommit\installPreCommit;
@@ -133,17 +134,19 @@ class HelpCommand implements CommandRunnerInterface {
     }
 }
 
+
 /**
  * 
+ * @param  CommandInterface $command
  * @return Result<None>
  */
 function main(CommandInterface $command) {
     return anyError(fn () => match (true) {
-        $command->register(new BuildCommand)->try()              => ok(),
-        $command->register(new TipsCommand)->try()               => ok(),
-        $command->register(new HiCommand)->try()                 => ok(),
-        $command->register(new InstallPreCommitCommand)->try()   => ok(),
-        $command->register(new UninstallPreCommitCommand)->try() => ok(),
-        default                                                  => $command->register(new HelpCommand)->try()
+        $command->register(new BuildCommand)->unwrap()              => ok(),
+        $command->register(new TipsCommand)->unwrap()               => ok(),
+        $command->register(new HiCommand)->unwrap()                 => ok(),
+        $command->register(new InstallPreCommitCommand)->unwrap()   => ok(),
+        $command->register(new UninstallPreCommitCommand)->unwrap() => ok(),
+        default                                                     => $command->register(new HelpCommand)->unwrap()
     });
 }

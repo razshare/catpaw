@@ -18,6 +18,7 @@ class SimpleCommand implements InterfacesCommandInterface {
      * @return Result<bool>
      */
     public function register(CommandRunnerInterface $command):Result {
+        global $argv;
         $builder = new CommandBuilder;
         $command->build($builder)->unwrap($error);
         if ($error) {
@@ -52,8 +53,8 @@ class SimpleCommand implements InterfacesCommandInterface {
 
             if ($error) {
                 // Not optional.
-                $longOptions[] = "{$option->longName}:";
-                $shortOptions .= "{$option->shortName}:";
+                $longOptions[] = "{$option->longName}::";
+                $shortOptions .= "{$option->shortName}::";
             } else {
                 if (!is_string($value)) {
                     $type = gettype($value);
@@ -64,7 +65,7 @@ class SimpleCommand implements InterfacesCommandInterface {
                 $shortOptions .= "{$option->shortName}::";
             }
         }
-
+        
         $opts = getopt($shortOptions, $longOptions);
 
         $removableKeys = [];
@@ -107,7 +108,8 @@ class SimpleCommand implements InterfacesCommandInterface {
             }
         }
 
-        $command->run(CommandContext::create($map))->unwrap($error);
+        $commandContext = CommandContext::create($map);
+        $command->run($commandContext)->unwrap($error);
         if ($error) {
             return error($error);
         }

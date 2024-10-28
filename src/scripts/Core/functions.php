@@ -242,26 +242,26 @@ function get(string $command): Result {
  * @return Result<T>
  */
 function anyError(callable $function): Result {
-    $result = $function();
-
-    if (!($result instanceof Generator)) {
-        if ($result instanceof Result) {
-            return $result;
-        }
-        /** @var Result<T> */
-        return ok($result);
-    }
-
-    for ($result->rewind(); $result->valid(); $result->next()) {
-        $value = $result->current();
-        if ($value instanceof Error) {
-            return error($value);
-        } elseif ($value instanceof Result && $value->error) {
-            return error($value->error);
-        }
-    }
-
     try {
+        $result = $function();
+
+        if (!($result instanceof Generator)) {
+            if ($result instanceof Result) {
+                return $result;
+            }
+            /** @var Result<T> */
+            return ok($result);
+        }
+
+        for ($result->rewind(); $result->valid(); $result->next()) {
+            $value = $result->current();
+            if ($value instanceof Error) {
+                return error($value);
+            } elseif ($value instanceof Result && $value->error) {
+                return error($value->error);
+            }
+        }
+
         $return = $result->getReturn() ?? true;
 
         if ($return instanceof Error) {
