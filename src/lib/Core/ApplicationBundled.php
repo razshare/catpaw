@@ -14,17 +14,13 @@ readonly class ApplicationBundled implements CommandRunnerInterface {
     }
 
     public function build(CommandBuilder $builder): void {
-        $builder->withOption('e', 'environment', error('No value provided.'));
+        $builder->withOption('e', 'environment', ok('0'));
         $builder->requires('e');
     }
 
     public function run(CommandContext $context): Result {
         $environment = $context->get('environment')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        if (!$environment) {
+        if ($error || !$environment) {
             $environment = $this->environment;
         }
 
