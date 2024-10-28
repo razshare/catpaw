@@ -5,12 +5,14 @@ use function Amp\File\isDirectory;
 use function Amp\File\isFile;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
+use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Container;
 use CatPaw\Core\File;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\ByteRangeInterface;
 use CatPaw\Web\Interfaces\FileServerInterface;
+use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Mime;
 use Psr\Log\LoggerInterface;
@@ -21,11 +23,12 @@ use Psr\Log\LoggerInterface;
  * @package CatPaw\Web
  */
 #[Provider]
-readonly class SimpleFileServer implements FileServerInterface {
+class SimpleFileServer implements FileServerInterface {
+    private FileServerOverwriteInterface|false $overwrite = false;
     public string $fallback;
     public function __construct(
-        private LoggerInterface $logger,
-        private ByteRangeInterface $byteRange
+        readonly private LoggerInterface $logger,
+        readonly private ByteRangeInterface $byteRange,
     ) {
         $this->fallback = "index.html";
     }
@@ -43,6 +46,14 @@ readonly class SimpleFileServer implements FileServerInterface {
         );
     }
 
+    #[Entry] public function start():void {
+        $overwrite = Container::get(\CatPaw\Web\Interfaces\FileServerOverwriteInterface::class)->unwrap($error);
+        if ($error) {
+            $this->logger->info("File server couldn't find an overwrite interface, proceeding without one.");
+            return;
+        }
+        $this->overwrite = $overwrite;
+    }
 
     /**
      * Success response.
@@ -87,14 +98,10 @@ readonly class SimpleFileServer implements FileServerInterface {
     }
 
     public function serve(Request $request):Response {
-        $logger    = $this->logger;
-        $path      = urldecode($request->getUri()->getPath());
-        $fallback  = $this->fallback;
-        $overwrite = Container::get(\CatPaw\Web\Interfaces\FileServerOverwriteInterface::class)->unwrap($error);
-        if ($error) {
-            $overwrite = false;
-            $logger->info("File server couldn't find an overwrite interface, proceeding without one.");
-        }
+        $logger   = $this->logger;
+        $path     = urldecode($request->getUri()->getPath());
+        $fallback = $this->fallback;
+        
         $byteRange = $this->byteRange;
         $server    = Container::get(ServerInterface::class)->unwrap($error);
 
@@ -109,8 +116,8 @@ readonly class SimpleFileServer implements FileServerInterface {
 
         $fileName = $server->staticsLocation().$path;
 
-        if ($overwrite) {
-            $fileName = $overwrite->overwrite($fileName, $path);
+        if ($this->overwrite) {
+            $fileName = $this->overwrite->overwrite($fileName, $path);
         }
 
 
