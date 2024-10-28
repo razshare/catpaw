@@ -15,7 +15,7 @@ readonly class ApplicationBundled implements CommandRunnerInterface {
 
     public function build(CommandBuilder $builder): Result {
         // Options.
-        $builder->withOption('e', 'environment');
+        $builder->withOption('e', 'environment', ok('env.ini'));
         return ok();
     }
 

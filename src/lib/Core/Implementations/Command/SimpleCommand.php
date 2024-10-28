@@ -50,11 +50,7 @@ class SimpleCommand implements InterfacesCommandInterface {
 
             $value = $option->value->unwrap($error);
 
-            if ($option->isFlag) {
-                // Not optional and doesn't accept a value.
-                $longOptions[] = "{$option->longName}";
-                $shortOptions .= "{$option->shortName}";
-            } else if ($error) {
+            if ($error) {
                 // Not optional.
                 $longOptions[] = "{$option->longName}:";
                 $shortOptions .= "{$option->shortName}:";

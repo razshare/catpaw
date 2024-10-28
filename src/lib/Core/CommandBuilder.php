@@ -20,33 +20,14 @@ class CommandBuilder {
      * @param  Result<string> $value
      * @return CommandBuilder
      */
-    public function withOption(string $shortName, string $longName, false|Result $value = false):self {
+    public function withOption(string $shortName, string $longName, Result $value):self {
         $option = CommandOption::create(
             longName: $longName,
             shortName: $shortName,
-            isFlag: false,
-            value: $value?:ok(''),
+            value: $value,
         );
         $this->options[$longName]  = $option;
         $this->options[$shortName] = $option;
-        return $this;
-    }
-
-    /**
-     * Add required command option.
-     * @param  string         $shortName
-     * @param  string         $longName
-     * @return CommandBuilder
-     */
-    public function withRequiredOption(string $shortName, string $longName):self {
-        $option = CommandOption::create(
-            longName: $longName,
-            shortName: $shortName,
-            isFlag: true,
-            value: error("Required flag `--$longName (-$shortName)` is missing."),
-        );
-        $this->options[$shortName] = $option;
-        $this->options[$longName]  = $option;
         return $this;
     }
 }

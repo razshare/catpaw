@@ -8,28 +8,23 @@ readonly class Application implements CommandRunnerInterface {
     }
 
     public function build(CommandBuilder $builder): Result {
-        // Flags.
-        $builder->withRequiredOption('d', "die-on-change");
-        $builder->withRequiredOption('w', "watch");
-
         // Options.
+        $builder->withOption('d', "die-on-change", ok('0'));
+        $builder->withOption('w', "watch", ok('0'));
         $builder->withOption('p', 'php', ok('php'));
         $builder->withOption('n', 'name', ok('App'));
         $builder->withOption('m', 'main', error('Missing main file.'));
-        $builder->withOption('l', 'libraries');
-        $builder->withOption('r', 'resources');
-        $builder->withOption('e', 'environment');
+        $builder->withOption('l', 'libraries', ok('0'));
+        $builder->withOption('r', 'resources', ok('0'));
+        $builder->withOption('e', 'environment', ok('0'));
 
         return ok();
     }
 
     public function run(CommandContext $context): Result {
         return anyError(function() use ($context) {
-            // Required.
-            $dieOnChange = $context->get('die-on-change')->unwrap() or false;
-            $watch       = $context->get('watch')->unwrap()         or false;
-
-            // Optionals.
+            $dieOnChange = $context->get('die-on-change')->try();
+            $watch       = $context->get('watch')->try();
             $php         = $context->get('php')->try();
             $name        = $context->get('name')->try();
             $main        = $context->get('main')->try();
@@ -44,7 +39,7 @@ readonly class Application implements CommandRunnerInterface {
             }
 
             if ($watch) {
-                $arguments   = array_filter(array_slice($argv, 1), fn ($option) => trim($option) !== '--watch');
+                $arguments   = array_filter(array_slice($argv, 1), fn ($option) => trim($option) !== '--watch' && trim($option) !== '-w');
                 $arguments[] = '--die-on-change';
                 Bootstrap::spawn(
                     binary: $php,

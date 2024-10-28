@@ -8,6 +8,8 @@ use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
 use CatPaw\Core\Container;
 use function CatPaw\Core\env;
+use function CatPaw\Core\error;
+
 use CatPaw\Core\File;
 use CatPaw\Core\Implementations\Command\SimpleCommand;
 use CatPaw\Core\Interfaces\CommandInterface;
@@ -105,14 +107,17 @@ class CoreTest extends TestCase {
                 public CommandBuilder $builder;
                 public function build(CommandBuilder $builder): Result {
                     $this->builder = $builder;
-                    $builder->withRequiredOption('r', 'run');
+                    $builder->withOption('r', 'run', error('no match'));
                     $builder->withOption('p', 'port', ok('80'));
-                    $builder->withOption('c', 'certificate');
+                    $builder->withOption('c', 'certificate', ok('0'));
                     return ok();
                 }
             
                 public function run(CommandContext $context): Result {
-                    return ok();
+                    return anyError(function() use ($context) {
+                        $context->get('r')->try();
+                        return ok();
+                    });
                 }
             });
 
@@ -137,19 +142,15 @@ class CoreTest extends TestCase {
             $certificate = $options['certificate'];
             $this->assertEquals($c, $certificate);
 
-            $this->assertTrue($r->isFlag);
-            $this->assertFalse($p->isFlag);
-            $this->assertFalse($c->isFlag);
-
             $runValue = $run->value->unwrap($error);
             $this->assertNull($runValue);
-            $this->assertEquals("Required flag `--run (-r)` is missing.", $error->getMessage());
+            $this->assertEquals("no match", $error->getMessage());
 
             $portValue = $port->value->unwrap($error);
             $this->assertEquals('80', $portValue);
 
             $certificateValue = $certificate->value->unwrap($error);
-            $this->assertEquals('', $certificateValue);
+            $this->assertEquals('0', $certificateValue);
 
             return ok();
         });

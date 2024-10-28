@@ -18,18 +18,17 @@ use function CatPaw\Core\Precommit\installPreCommit;
 use function CatPaw\Core\Precommit\uninstallPreCommit;
 use CatPaw\Core\Result;
 use function CatPaw\Text\foreground;
-
 use function CatPaw\Text\nocolor;
-use Psr\Log\LoggerInterface;
 
 class TipsCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):Result {
-        $builder->withRequiredOption('t', 'tips');
+        $builder->withOption('t', 'tips', error('no match'));
         return ok();
     }
 
     public function run(CommandContext $context): Result {
         try {
+            $context->get('t')->try();
             $message = '';
     
             if (
@@ -58,7 +57,7 @@ class TipsCommand implements CommandRunnerInterface {
 
 class InstallPreCommitCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder): Result {
-        $builder->withRequiredOption('i', 'install-pre-commit');
+        $builder->withOption('i', 'install-pre-commit', error('no match'));
         return ok();
     }
 
@@ -72,24 +71,28 @@ class InstallPreCommitCommand implements CommandRunnerInterface {
 
 class UninstallPreCommitCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder): Result {
-        $builder->withRequiredOption('u', 'uninstall-pre-commit');
-        return ok();
-    }
-
-    public function run(CommandContext $context): Result {
-        return uninstallPreCommit();
-    }
-}
-
-class BuildCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): Result {
-        $builder->withRequiredOption('b', 'build');
-        $builder->withOption('o', 'optimize');
+        $builder->withOption('u', 'uninstall-pre-commit', error('no match'));
         return ok();
     }
 
     public function run(CommandContext $context): Result {
         return anyError(function() use ($context) {
+            $context->get('u')->try();
+            return uninstallPreCommit();
+        });
+    }
+}
+
+class BuildCommand implements CommandRunnerInterface {
+    public function build(CommandBuilder $builder): Result {
+        $builder->withOption('b', 'build', error('no match'));
+        $builder->withOption('o', 'optimize', ok('0'));
+        return ok();
+    }
+
+    public function run(CommandContext $context): Result {
+        return anyError(function() use ($context) {
+            $context->get('b')->try();
             $optimize = (bool)$context->get('optimize')->try();
             return build($optimize);
         });
@@ -98,12 +101,13 @@ class BuildCommand implements CommandRunnerInterface {
 
 class HiCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder): Result {
-        $builder->withRequiredOption('h', 'hi');
+        $builder->withOption('h', 'hi', error('no match'));
         return ok();
     }
 
     public function run(CommandContext $context): Result {
-        return anyError(function() {
+        return anyError(function() use ($context) {
+            $context->get('h')->try();
             echo "Hi.\n";
             return ok();
         });
@@ -133,7 +137,7 @@ class HelpCommand implements CommandRunnerInterface {
  * 
  * @return Result<None>
  */
-function main(CommandInterface $command, LoggerInterface $logger) {
+function main(CommandInterface $command) {
     return anyError(fn () => match (true) {
         $command->register(new BuildCommand)->try()              => ok(),
         $command->register(new TipsCommand)->try()               => ok(),
