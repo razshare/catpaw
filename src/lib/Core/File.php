@@ -19,12 +19,11 @@ readonly class File {
      * @return Result<int>
      */
     public static function size(string $fileName):Result {
-        $size = filesize($fileName);
-        if (false === $size) {
-            return error("Could not retrieve size of file $fileName.");
+        try {
+            return ok(getSize($fileName));
+        } catch(Throwable $error) {
+            return error("Could not retrieve size of file `$fileName`. $error");
         }
-
-        return ok($size);
     }
 
     /**
