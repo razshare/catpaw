@@ -34,31 +34,33 @@ class SimpleEnvironment implements EnvironmentInterface {
      * \
      * This may overwrite keys defined in your environment file.\
      * Call `load()` again to recover the lost keys.
-     * @return void
+     * @return self
      */
-    public function includeSystemEnvironment():void {
+    public function includeSystemEnvironment(): self {
         $this->variables = [
             ...$this->variables,
             ...$_ENV,
             ...getenv(),
         ];
+        return $this;
     }
 
 
     /**
      * Set the environment file name.
      * @param  string $fileName
-     * @return void
+     * @return self
      */
-    public function withFileName(string $fileName):void {
+    public function withFileName(string $fileName): self {
         $this->fileName = $fileName;
+        return $this;
     }
 
     /**
      * Clear all environment variables.
      * @return void
      */
-    public function clear():void {
+    public function clear(): void {
         $this->variables = [];
     }
 
@@ -68,7 +70,7 @@ class SimpleEnvironment implements EnvironmentInterface {
      * This function is invoked automatically when the application starts.
      * @return Result<None>
      */
-    public function load():Result {
+    public function load(): Result {
         $fileName = $this->fileName;
 
         $file = File::open($fileName)->unwrap($error);
@@ -116,9 +118,9 @@ class SimpleEnvironment implements EnvironmentInterface {
      *
      * @param  string $query
      * @param  mixed  $value
-     * @return void
+     * @return self
      */
-    public function set(string $query, mixed $value):void {
+    public function set(string $query, mixed $value): self {
         $reference = &$this->variables;
         foreach (explode('.', $query) as $key) {
             if (!isset($reference[$key])) {
@@ -130,10 +132,11 @@ class SimpleEnvironment implements EnvironmentInterface {
         if ($reference === $this->variables) {
             // When reference has not changed it
             // means `$name` is invalid or was not found.
-            return;
+            return $this;
         }
 
         $reference = $value;
+        return $this;
     }
 
     /**
@@ -148,7 +151,7 @@ class SimpleEnvironment implements EnvironmentInterface {
      * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
      * @return mixed  value of the variable.
      */
-    public function get(string $query):mixed {
+    public function get(string $query): mixed {
         if (isset($this->variables[$query])) {
             return $this->variables[$query];
         }

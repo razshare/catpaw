@@ -3,6 +3,8 @@ namespace CatPaw\Core\Interfaces;
 
 use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
+use CatPaw\Core\None;
+use CatPaw\Core\Result;
 
 interface CommandRunnerInterface {
     /**
@@ -14,7 +16,7 @@ interface CommandRunnerInterface {
 
     /**
      * Run the command.
-     * @return void
+     * @return Result<None>
      */
-    public function run(CommandContext $context): void;
+    public function run(CommandContext $context): Result;
 }

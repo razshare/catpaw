@@ -11,6 +11,7 @@ use function CatPaw\Core\env;
 use function CatPaw\Core\error;
 
 use CatPaw\Core\File;
+use CatPaw\Core\Implementations\Command\NoMatchError;
 use CatPaw\Core\Implementations\Command\SimpleCommand;
 use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
@@ -22,7 +23,7 @@ use CatPaw\Core\Signal;
 use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
-    public function testAll():void {
+    public function testAll(): void {
         Container::provide(CommandInterface::class, new SimpleCommand);
         Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
@@ -50,7 +51,7 @@ class CoreTest extends TestCase {
         $this->assertEquals('test-value', $test);
     }
 
-    public function makeSureUnsafeWorks():void {
+    public function makeSureUnsafeWorks(): void {
         // open file
         $file = File::open(asFileName(__DIR__, 'file.txt'))->unwrap($error);
         $this->assertNull($error);
@@ -67,7 +68,7 @@ class CoreTest extends TestCase {
         echo $contents.PHP_EOL;
     }
 
-    public function makeSureUnsafeWorksWithAnyError():void {
+    public function makeSureUnsafeWorksWithAnyError(): void {
         $contents = anyError(function() {
             // open file
             $file = File::open(asFileName(__DIR__, 'file.txt'))->try();
@@ -88,7 +89,7 @@ class CoreTest extends TestCase {
         echo $contents.PHP_EOL;
     }
 
-    public function makeSureSignalsWork():void {
+    public function makeSureSignalsWork(): void {
         $signal  = Signal::create();
         $counter = 0;
         $signal->listen(function() use (&$counter) {
@@ -101,25 +102,28 @@ class CoreTest extends TestCase {
     /**
      * @return Result<None>
      */
-    public function makeSureCommandWorks(CommandInterface $command):Result {
+    public function makeSureCommandWorks(CommandInterface $command): Result {
         return anyError(function() use ($command) {
             $command->register($runner = new class implements CommandRunnerInterface {
                 public CommandBuilder $builder;
-                public function build(CommandBuilder $builder): Result {
+                public function build(CommandBuilder $builder): void {
                     $this->builder = $builder;
-                    $builder->withOption('r', 'run', error('no match'));
+                    $builder->withOption('r', 'run', error('No value provided.'));
                     $builder->withOption('p', 'port', ok('80'));
                     $builder->withOption('c', 'certificate', ok('0'));
-                    return ok();
+                    $builder->requires('r');
                 }
             
                 public function run(CommandContext $context): Result {
-                    return anyError(function() use ($context) {
-                        $context->get('r')->try();
-                        return ok();
-                    });
+                    $context->get('r')->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                    return ok();
                 }
-            });
+            })->unwrap($error);
+
+            $this->assertEquals(NoMatchError::class, $error::class);
 
             $options = $runner->builder->options();
 
@@ -144,7 +148,7 @@ class CoreTest extends TestCase {
 
             $runValue = $run->value->unwrap($error);
             $this->assertNull($runValue);
-            $this->assertEquals("no match", $error->getMessage());
+            $this->assertEquals("No value provided.", $error->getMessage());
 
             $portValue = $port->value->unwrap($error);
             $this->assertEquals('80', $portValue);

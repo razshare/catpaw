@@ -10,22 +10,22 @@ interface EnvironmentInterface {
      * \
      * This may overwrite keys defined in your environment file.\
      * Call `load()` again to recover the lost keys.
-     * @return void
+     * @return self
      */
-    public function includeSystemEnvironment():void;
+    public function includeSystemEnvironment(): self;
 
     /**
      * Set the environment file name.
      * @param  string $fileName
-     * @return void
+     * @return self
      */
-    public function withFileName(string $fileName):void;
+    public function withFileName(string $fileName): self;
 
     /**
      * Clear all environment variables.
      * @return void
      */
-    public function clear():void;
+    public function clear(): void;
 
     /**
      * Parse the first valid environment file and update all variables in memory.
@@ -33,7 +33,7 @@ interface EnvironmentInterface {
      * This function is invoked automatically when the application starts.
      * @return Result<None>
      */
-    public function load():Result;
+    public function load(): Result;
 
 
     /**
@@ -44,9 +44,9 @@ interface EnvironmentInterface {
      *                       $environment->set('database.username','admin');
      *                       ```
      * @param  mixed  $value
-     * @return void
+     * @return self
      */
-    public function set(string $query, mixed $value):void;
+    public function set(string $query, mixed $value): self;
 
 
     /**
@@ -64,5 +64,5 @@ interface EnvironmentInterface {
      *                       ```
      * @return mixed  The value of the property.
      */
-    public function get(string $query):mixed;
+    public function get(string $query): mixed;
 }

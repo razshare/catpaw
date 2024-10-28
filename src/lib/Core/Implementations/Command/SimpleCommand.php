@@ -5,17 +5,28 @@ use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
 use CatPaw\Core\CommandOption;
 use function CatPaw\Core\error;
-
 use CatPaw\Core\Interfaces\CommandInterface as InterfacesCommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
+use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
+use Error;
+use Throwable;
+
+class NoMatchError extends Error {
+    public function __construct(string $message, int $code = 0, Throwable $previous = null) {
+        parent::__construct($message, $code, $previous);
+    }
+    public function __toString() {
+        return __CLASS__.": [{$this->code}]: {$this->message}\n";
+    }
+}
 
 class SimpleCommand implements InterfacesCommandInterface {
     /**
      * 
      * @param  CommandRunnerInterface $command
-     * @return Result<bool>
+     * @return Result<None>
      */
     public function register(CommandRunnerInterface $command):Result {
         $builder = new CommandBuilder;
@@ -90,7 +101,7 @@ class SimpleCommand implements InterfacesCommandInterface {
             $shortOptionsCount = count($shortOptionsArray);
             $optionals += $shortOptionsCount;
             if ($mapCount - $optionals > 0) {
-                return ok(false);
+                return error(new NoMatchError("Some required options are missing."));
             }
         }
 
@@ -105,7 +116,18 @@ class SimpleCommand implements InterfacesCommandInterface {
         }
 
         $commandContext = CommandContext::create($map);
-        $command->run($commandContext);
-        return ok($commandContext->accepted());
+
+        foreach ($builder->required() as $key => $required) {
+            if (!$required) {
+                continue;
+            }
+            $commandContext->get($key)->unwrap($error);
+            if ($error) {
+                return error(new NoMatchError($error));
+            }
+        }
+
+
+        return $command->run($commandContext);
     }
 }
