@@ -60,7 +60,7 @@ class Bootstrap {
         string $resources,
         string $environment,
         bool $dieOnChange = false,
-    ): void {
+    ):void {
         try {
             foreach (explode(',', $libraries) as $library) {
                 Container::requireLibraries($library)->unwrap($requireError);
@@ -158,7 +158,7 @@ class Bootstrap {
      * @param  callable():(void) $function
      * @return void
      */
-    public static function onKill(callable $function): void {
+    public static function onKill(callable $function):void {
         self::$onKillActions[] = $function;
     }
 
@@ -320,7 +320,7 @@ class Bootstrap {
         array $libraries,
         array $resources,
         callable $function,
-    ): void {
+    ):void {
         async(function() use (
             $main,
             $libraries,

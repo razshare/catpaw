@@ -9,7 +9,7 @@ class StringExpansion {
      * @param  array<string,mixed> $parameters
      * @return Result<string>
      */
-    public static function variable(string $content, array $parameters): Result {
+    public static function variable(string $content, array $parameters):Result {
         $result      = '';
         $stack       = StringStack::of($content);
         $occurrences = $stack->expect("{", "}");
@@ -61,7 +61,7 @@ class StringExpansion {
      * @param  false|callable(string,int,string):Result<bool|int> $validator
      * @return Result<bool>
      */
-    public static function linearCondition(string $content, false|callable $validator = false): Result {
+    public static function linearCondition(string $content, false|callable $validator = false):Result {
         $previousValue = false;
 
         $stack       = StringStack::of($content);
@@ -175,7 +175,7 @@ class StringExpansion {
      * @param  false|callable(string,int,string):Result<bool|int> $validator
      * @return Result<bool>
      */
-    public static function groupCondition(string $content, int $depth = 0, false|callable $validator = false): Result {
+    public static function groupCondition(string $content, int $depth = 0, false|callable $validator = false):Result {
         if ($depth > 10) {
             return error("Too many nested groups in the condition (max 10).");
         }
@@ -239,7 +239,7 @@ class StringExpansion {
      * @param  array<string,mixed> $parameters
      * @return Result<bool>
      */
-    public static function condition(string $content, array $parameters): Result {
+    public static function condition(string $content, array $parameters):Result {
         $variable = self::variable($content, $parameters)->unwrap($error);
         if ($error) {
             return error($error);
@@ -253,7 +253,7 @@ class StringExpansion {
      * @param  callable(mixed,int,mixed):Result<bool|int> $validator
      * @return Result<bool>
      */
-    public static function conditionCustomized(string $content, array $parameters, callable $validator): Result {
+    public static function conditionCustomized(string $content, array $parameters, callable $validator):Result {
         $variable = self::variable($content, $parameters)->unwrap($error);
         if ($error) {
             return error($error);
@@ -268,7 +268,7 @@ class StringExpansion {
      * @param  array<string>  $delimiters
      * @return Result<string>
      */
-    public static function delimit(string $text, array $delimiters): Result {
+    public static function delimit(string $text, array $delimiters):Result {
         foreach ($delimiters as $delimiter) {
             $stack         = StringStack::of($text);
             $occurrences   = $stack->expect($delimiter, '\\');

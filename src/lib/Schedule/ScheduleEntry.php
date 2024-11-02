@@ -17,7 +17,7 @@ readonly class ScheduleEntry {
         string $callbackId,
         Future $future,
         ScheduleConfiguration $scheduleConfiguration,
-    ): ScheduleEntry {
+    ):ScheduleEntry {
         return new self(
             callbackId: $callbackId,
             future: $future,
@@ -39,7 +39,7 @@ readonly class ScheduleEntry {
     ) {
     }
 
-    public function cancel(): void {
+    public function cancel():void {
         EventLoop::cancel($this->callbackId);
     }
 }

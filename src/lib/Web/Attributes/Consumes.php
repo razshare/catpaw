@@ -81,7 +81,7 @@ class Consumes implements AttributeInterface {
      *
      * @return array<string>
      */
-    public function contentType(): array {
+    public function contentType():array {
         $contentType = [];
         foreach ($this->request as $request) {
             $contentType[] = $request->contentType();

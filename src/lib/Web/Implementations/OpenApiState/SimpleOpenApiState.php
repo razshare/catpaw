@@ -561,7 +561,7 @@ class SimpleOpenApiState implements OpenApiStateInterface {
         string $contentType,
         string|array $schema,
         mixed $example = []
-    ): array {
+    ):array {
         return [
             "$contentType" => [
                 "schema"  => $schema,

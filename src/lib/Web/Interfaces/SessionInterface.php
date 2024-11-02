@@ -28,7 +28,7 @@ interface SessionInterface {
      * @param  string $key
      * @return bool
      */
-    public function has(string $key): bool;
+    public function has(string $key):bool;
     /**
      * Create and return a reference to an item the session.\
      * If the `$key` already exists, return its relative item instead of creating a new one.

@@ -21,7 +21,7 @@ class StateTest extends TestCase {
         EventLoop::run();
     }
     
-    private function makingSureStateInterfaceWorks(StateInterface $state): void {
+    private function makingSureStateInterfaceWorks(StateInterface $state):void {
         $test = $state->of("test");
         $test->set("test");
         $this->assertEquals("test", $test->get());

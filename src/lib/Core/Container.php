@@ -329,7 +329,7 @@ class Container {
      * @param  Closure|ReflectionFunction $function
      * @return Result<None>
      */
-    public static function touch(Closure|ReflectionFunction $function): Result {
+    public static function touch(Closure|ReflectionFunction $function):Result {
         try {
             if ($function instanceof Closure) {
                 $reflection = new ReflectionFunction($function);
@@ -407,7 +407,7 @@ class Container {
      * @return ReflectionMethod|false
      */
     // @phpstan-ignore-next-line
-    private static function findEntryMethod(ReflectionClass $reflectionClass): ReflectionMethod|false {
+    private static function findEntryMethod(ReflectionClass $reflectionClass):ReflectionMethod|false {
         foreach ($reflectionClass->getMethods() as $method) {
             if (($attributes = $method->getAttributes(Entry::class))) {
                 // @phpstan-ignore-next-line
@@ -424,7 +424,7 @@ class Container {
      * @param  string $name
      * @return bool
      */
-    public static function isProvided(string $name): bool {
+    public static function isProvided(string $name):bool {
         return  Provider::isset($name);
     }
 
@@ -435,7 +435,7 @@ class Container {
      *                                otherwise if it's a callable the container will invoke it to provide the dependency.
      * @return void
      */
-    public static function provide(string $name, callable|object $value): void {
+    public static function provide(string $name, callable|object $value):void {
         if (is_callable($value)) {
             Provider::set($name, $value);
             return;
@@ -447,7 +447,7 @@ class Container {
      * Remove all providers.
      * @return void
      */
-    public static function clearAll(): void {
+    public static function clearAll():void {
         Provider::clearAll();
     }
 

@@ -15,7 +15,7 @@ readonly class ServerErrorHandler implements ErrorHandler {
     private function __construct(private LoggerInterface $logger) {
     }
 
-    public function handleError(int $status, ?string $reason = null, ?Request $request = null): Response {
+    public function handleError(int $status, ?string $reason = null, ?Request $request = null):Response {
         $this->logger->error($reason ?? 'Unknown reason.');
         return new Response(HttpStatus::INTERNAL_SERVER_ERROR);
     }

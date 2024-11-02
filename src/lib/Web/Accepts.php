@@ -14,7 +14,7 @@ class Accepts implements Stringable {
     private function __construct(private array $accepts) {
     }
 
-    public function __toString(): string {
+    public function __toString():string {
         return join(',', $this->accepts);
     }
 

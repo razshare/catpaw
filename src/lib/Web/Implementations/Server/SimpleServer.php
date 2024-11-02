@@ -216,10 +216,10 @@ class SimpleServer implements ServerInterface {
                 Bootstrap::kill();
             };
 
-            EventLoop::onSignal(SIGHUP, $stopper);
-            EventLoop::onSignal(SIGINT, $stopper);
-            EventLoop::onSignal(SIGQUIT, $stopper);
-            EventLoop::onSignal(SIGTERM, $stopper);
+            $sighupId  = EventLoop::onSignal(SIGHUP, $stopper);
+            $sigintId  = EventLoop::onSignal(SIGINT, $stopper);
+            $sigquitId = EventLoop::onSignal(SIGQUIT, $stopper);
+            $sigtermId = EventLoop::onSignal(SIGTERM, $stopper);
 
             $stackedHandler   = stackMiddleware($this->requestHandler, ...$this->middlewares);
             $errorHandler     = ServerErrorHandler::create($logger);
@@ -232,7 +232,17 @@ class SimpleServer implements ServerInterface {
                 allowedMethods: $this->allowedMethods?:null,
             );
 
-            $this->httpServer->onStop(static function() use ($endSignal) {
+            $this->httpServer->onStop(static function() use (
+                $endSignal,
+                $sighupId,
+                $sigintId,
+                $sigquitId,
+                $sigtermId,
+            ) {
+                EventLoop::cancel($sighupId);
+                EventLoop::cancel($sigintId);
+                EventLoop::cancel($sigquitId);
+                EventLoop::cancel($sigtermId);
                 if (!$endSignal->isComplete()) {
                     $endSignal->complete();
                 }
@@ -270,7 +280,7 @@ class SimpleServer implements ServerInterface {
      * Stop the server.
      * @return Result<None>
      */
-    public function stop(): Result {
+    public function stop():Result {
         if (isset($this->httpServer)) {
             try {
                 $this->httpServer->stop();
@@ -287,7 +297,7 @@ class SimpleServer implements ServerInterface {
      * @param  string       $apiLocation
      * @return Result<None>
      */
-    private function initializeRoutes(string $apiPrefix, string $apiLocation): Result {
+    private function initializeRoutes(string $apiPrefix, string $apiLocation):Result {
         if ($apiLocation) {
             $flatList = Directory::flat($apiLocation)->unwrap($error);
             if ($error) {

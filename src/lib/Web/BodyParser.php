@@ -22,7 +22,7 @@ class BodyParser {
         Request $request,
         int $sizeLimit,
         null|Cancellation $cancellation = null
-    ): Result {
+    ):Result {
         $contentType = $request->getHeader("Content-Type") ?? '';
 
         if ('' === $contentType) {

@@ -49,6 +49,10 @@ class SimpleRouter implements RouterInterface {
         $this->context = RouterContext::create();
     }
 
+    public function getContext():RouterContext {
+        return $this->context;
+    }
+
     /**
      * Initialize a new route.
      * @param  string                  $symbolicMethod
@@ -79,7 +83,6 @@ class SimpleRouter implements RouterInterface {
             } catch(Throwable $e) {
                 return error($e);
             }
-
 
             if ($reflectionFunction->hasReturnType()) {
                 $successType = SuccessResponseModifier::class;
@@ -145,7 +148,6 @@ class SimpleRouter implements RouterInterface {
             $onRequest  = [];
             $onResponse = [];
             $onMount    = [];
-
             $parameters = $reflectionFunction->getParameters();
 
             // This will cache the path resolver so that it will be ready for the first request.
@@ -162,8 +164,7 @@ class SimpleRouter implements RouterInterface {
 
                 /** @var false|AttributeInterface $attributeInstance */
 
-                $attributeInstance = $attributeName::findByFunction($reflectionFunction)->try($error);
-
+                $attributeInstance = $attributeName::findByFunction($reflectionFunction)->unwrap($error);
                 // @phpstan-ignore-next-line
                 if ($error) {
                     return error($error);
@@ -214,7 +215,7 @@ class SimpleRouter implements RouterInterface {
                 context: $route,
             );
 
-            $this->context->withRoute($symbolicMethod, $symbolicPath, $route);
+            $this->context->addRoute($symbolicMethod, $symbolicPath, $route);
 
             $route->withOptions($options);
 
@@ -545,9 +546,8 @@ class SimpleRouter implements RouterInterface {
      * @return Result<None>
      */
     private function registerRouteForOpenApi(Route $route):Result {
-        $responses = [];
-        $requests  = [];
-
+        $responses          = [];
+        $requests           = [];
         $consumes           = $route->consumes;
         $produces           = $route->produces;
         $reflectionFunction = $route->reflectionFunction;
@@ -683,7 +683,7 @@ class SimpleRouter implements RouterInterface {
      * @param  ReflectionMethod     $reflectionMethod
      * @return array{string,string}
      */
-    public function mappedParameters(ReflectionMethod $reflectionMethod): array {
+    public function mappedParameters(ReflectionMethod $reflectionMethod):array {
         $reflectionParameters = $reflectionMethod->getParameters();
         $namedAndTypedParams  = [];
         $namedParams          = [];
@@ -712,7 +712,7 @@ class SimpleRouter implements RouterInterface {
     public function findRoute(
         string $symbolicMethod,
         string $symbolicPath,
-    ): false|Route {
+    ):false|Route {
         if (!$this->context->routeExists($symbolicMethod, $symbolicPath)) {
             return false;
         }
@@ -725,7 +725,7 @@ class SimpleRouter implements RouterInterface {
      * @param  string $symbolicPath
      * @return bool
      */
-    public function routeExists(string $symbolicMethod, string $symbolicPath): bool {
+    public function routeExists(string $symbolicMethod, string $symbolicPath):bool {
         return $this->context->routeExists($symbolicMethod, $symbolicPath);
     }
 
@@ -734,7 +734,7 @@ class SimpleRouter implements RouterInterface {
      * @param  string       $symbolicMethod
      * @return array<Route>
      */
-    public function findRoutesByMethod(string $symbolicMethod): array {
+    public function findRoutesByMethod(string $symbolicMethod):array {
         return $this->context->findRoutesByMethod($symbolicMethod);
     }
 

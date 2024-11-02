@@ -7,7 +7,7 @@ namespace CatPaw\Store;
  * @param  T           $value The initial value of the store
  * @return Writable<T>
  */
-function writable($value): Writable {
+function writable($value):Writable {
     return Writable::create($value);
 }
 
@@ -21,7 +21,7 @@ function writable($value): Writable {
 function readable(
     $value,
     false|callable $start = false,
-): Readable {
+):Readable {
     if (!$start) {
         $start = function() {
             return function() {

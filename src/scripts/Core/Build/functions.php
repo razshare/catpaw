@@ -92,7 +92,7 @@ function build(bool $optimize = false):Result {
                 libraries: "$libraries",
                 resources: '',
                 environment: $environmentFallbackStringified,
-            ))->try();
+            ))->unwrap(\$error) or die(\$error);
             PHP)->unwrap($error);
 
         $file->close();

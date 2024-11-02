@@ -33,7 +33,7 @@ class Writable {
      * Get the value of the store.
      * @return T
      */
-    public function get(): mixed {
+    public function get():mixed {
         return $this->value;
     }
 
@@ -42,7 +42,7 @@ class Writable {
      * @param  T    $value
      * @return void
      */
-    public function set(mixed $value): void {
+    public function set(mixed $value):void {
         $this->value = $value;
         for ($this->functions->rewind(); $this->functions->valid(); $this->functions->next()) {
             /** @var callable $function */
@@ -67,7 +67,7 @@ class Writable {
      *                                           it takes 1 parameter, the new value of the store.
      * @return callable():void         a function that cancels this subscription.
      */
-    public function subscribe(callable $function): callable {
+    public function subscribe(callable $function):callable {
         $this->functions->push($function);
 
         ($function)($this->value);

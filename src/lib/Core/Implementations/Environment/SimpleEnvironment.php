@@ -36,7 +36,7 @@ class SimpleEnvironment implements EnvironmentInterface {
      * Call `load()` again to recover the lost keys.
      * @return self
      */
-    public function includeSystemEnvironment(): self {
+    public function includeSystemEnvironment():self {
         $this->variables = [
             ...$this->variables,
             ...$_ENV,
@@ -51,7 +51,7 @@ class SimpleEnvironment implements EnvironmentInterface {
      * @param  string $fileName
      * @return self
      */
-    public function withFileName(string $fileName): self {
+    public function withFileName(string $fileName):self {
         $this->fileName = $fileName;
         return $this;
     }
@@ -60,7 +60,7 @@ class SimpleEnvironment implements EnvironmentInterface {
      * Clear all environment variables.
      * @return void
      */
-    public function clear(): void {
+    public function clear():void {
         $this->variables = [];
     }
 
@@ -70,7 +70,7 @@ class SimpleEnvironment implements EnvironmentInterface {
      * This function is invoked automatically when the application starts.
      * @return Result<None>
      */
-    public function load(): Result {
+    public function load():Result {
         $fileName = $this->fileName;
 
         $file = File::open($fileName)->unwrap($error);
@@ -120,7 +120,7 @@ class SimpleEnvironment implements EnvironmentInterface {
      * @param  mixed  $value
      * @return self
      */
-    public function set(string $query, mixed $value): self {
+    public function set(string $query, mixed $value):self {
         $reference = &$this->variables;
         foreach (explode('.', $query) as $key) {
             if (!isset($reference[$key])) {
@@ -151,7 +151,7 @@ class SimpleEnvironment implements EnvironmentInterface {
      * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
      * @return mixed  value of the variable.
      */
-    public function get(string $query): mixed {
+    public function get(string $query):mixed {
         if (isset($this->variables[$query])) {
             return $this->variables[$query];
         }

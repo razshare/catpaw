@@ -194,5 +194,5 @@ interface OpenApiStateInterface {
         string $contentType,
         string|array $schema,
         mixed $example = []
-    ): array;
+    ):array;
 }

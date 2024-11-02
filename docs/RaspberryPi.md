@@ -26,11 +26,11 @@ use function CatPaw\Core\error;
 use function CatPaw\Core\anyError;
 use CatPaw\RaspberryPi\Interfaces\GpioInterface;
 
-function main(GpioInterface $gpio): void {
+function main(GpioInterface $gpio):void {
     $writer = $gpio->createWriter('12');
     $active = true;
     while (true) {
-        $writer->write($active?'1':'0')->try();
+        $writer->write($active?'1':'0')->unwrap($error) or die($error);
         $active = !$active;
         delay(1);
     }

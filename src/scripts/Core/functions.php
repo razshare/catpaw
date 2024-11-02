@@ -28,7 +28,7 @@ use Throwable;
  * Get current time in milliseconds.
  * @return float
  */
-function milliseconds(): float {
+function milliseconds():float {
     return floor(microtime(true) * 1000);
 }
 
@@ -38,7 +38,7 @@ function milliseconds(): float {
  * @param  array<T> $arr
  * @return bool     true if the array is associative, false otherwise.
  */
-function isAssoc(array $arr): bool {
+function isAssoc(array $arr):bool {
     if ([] === $arr) {
         return false;
     }
@@ -52,7 +52,7 @@ function isAssoc(array $arr): bool {
  * *Caution*: this function does not generate cryptographically secure values, and must not be used for cryptographic purposes, or purposes that require returned values to be unguessable.
  * @return string the uuid
  */
-function uuid(): string {
+function uuid():string {
     return sprintf(
         '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
         // 32 bits for "time_low"
@@ -82,7 +82,7 @@ function uuid(): string {
  * Check if the current application is running inside a .phar archive or not.
  * @return bool
  */
-function isPhar(): bool {
+function isPhar():bool {
     return strlen(Phar::running()) > 0 ? true : false;
 }
 
@@ -91,7 +91,7 @@ function isPhar(): bool {
  * @param  string         $prompt message to display along with the input request.
  * @return Result<string>
  */
-function readLineSilent(string $prompt): Result {
+function readLineSilent(string $prompt):Result {
     $command = "/usr/bin/env bash -c 'echo OK'";
     if (rtrim(shell_exec($command)) !== 'OK') {
         return error("Can't invoke bash");
@@ -111,7 +111,7 @@ function readLineSilent(string $prompt): Result {
  * @param  bool     $completely if true, flatten the array completely
  * @return array<T>
  */
-function flatten(array $array, bool $completely = false): array {
+function flatten(array $array, bool $completely = false):array {
     if ($completely) {
         return iterator_to_array(new RecursiveIteratorIterator(new RecursiveArrayIterator($array)), false);
     }
@@ -122,14 +122,14 @@ function flatten(array $array, bool $completely = false): array {
 /**
  * Get the stdout as a stream.
  */
-function out(): WritableResourceStream {
+function out():WritableResourceStream {
     return getStdout();
 }
 
 /**
  * Get the stdin as a stream.
  */
-function in(): ReadableResourceStream {
+function in():ReadableResourceStream {
     return getStdin();
 }
 
@@ -139,7 +139,7 @@ function in(): ReadableResourceStream {
  * @param  T         $value
  * @return Result<T>
  */
-function ok(mixed $value = NONE): Result {
+function ok(mixed $value = NONE):Result {
     return new Result($value, null);
 }
 
@@ -148,7 +148,7 @@ function ok(mixed $value = NONE): Result {
  * @param  string|Error  $message
  * @return Result<mixed>
  */
-function error(string|Error $message): Result {
+function error(string|Error $message):Result {
     if (is_string($message)) {
         /** @var Result<mixed> */
         $error = new Result(null, new Error($message));
@@ -172,7 +172,7 @@ function execute(
     false|WritableStream $output = false,
     false|string $workDirectory = false,
     false|Signal $kill = false,
-): Result {
+):Result {
     try {
         $logger = Container::get(LoggerInterface::class)->unwrap($error);
         if ($error) {
@@ -210,7 +210,7 @@ function execute(
  * @param  string         $command command to run
  * @return Result<string>
  */
-function get(string $command): Result {
+function get(string $command):Result {
     [$reader, $writer] = duplex();
     execute($command, $writer)->unwrap($error);
     if ($error) {
@@ -241,7 +241,7 @@ function get(string $command): Result {
  * @param  callable():(Generator<string>|Result<T>|T) $function
  * @return Result<T>
  */
-function anyError(callable $function): Result {
+function anyError(callable $function):Result {
     try {
         $result = $function();
 
@@ -283,7 +283,7 @@ function anyError(callable $function): Result {
  * @param  int                                                      $bufferSize
  * @return array{0:ReadableIterableStream,1:WritableIterableStream}
  */
-function duplex(int $bufferSize = 8192): array {
+function duplex(int $bufferSize = 8192):array {
     $writer = new WritableIterableStream($bufferSize);
     $reader = new ReadableIterableStream($writer);
     return [$reader, $writer];
@@ -293,7 +293,7 @@ function duplex(int $bufferSize = 8192): array {
  * Resolve on the next event loop tick.
  * @return Future<void>
  */
-function tick(): Future {
+function tick():Future {
     /** @var Future<void> */
     return (new DeferredFuture)->getFuture()->complete();
 }
@@ -302,7 +302,7 @@ function tick(): Future {
 /**
  * @return DeferredFuture<mixed>
  */
-function deferred(): DeferredFuture {
+function deferred():DeferredFuture {
     /** @var DeferredFuture<mixed> */
     return new DeferredFuture;
 }
@@ -320,7 +320,7 @@ function deferred(): DeferredFuture {
  * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
  * @return mixed  value of the variable.
  */
-function env(string $query): mixed {
+function env(string $query):mixed {
     /** @var false|EnvironmentInterface */
     static $env = false;
 

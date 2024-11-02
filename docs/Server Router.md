@@ -19,9 +19,9 @@ function handler() {
     return success('there are no cats here');
 }
 
-function main(ServerInterface $server, RouterInterface $router): void {
-    $router->get('/cats', handler(...))->try();
-    $server->start()->try();
+function main(ServerInterface $server, RouterInterface $router):void {
+    $router->get('/cats', handler(...))->unwrap($error) or die($error);
+    $server->start()->unwrap($error) or die($error);
 }
 ```
 
@@ -43,9 +43,9 @@ function handler(Body $body){
     return "Received body: {$body->asText()}\n";
 }
 
-function main(ServerInterface $server, RouterInterface $router): void {
-    $router->post('/cats', handler(...))->try();
-    $server->start()->try();
+function main(ServerInterface $server, RouterInterface $router):void {
+    $router->post('/cats', handler(...))->unwrap($error) or die($error);
+    $server->start()->unwrap($error) or die($error);
 }
 ```
 
@@ -59,12 +59,12 @@ mkdir -p src/api
 ```
 Scan the directory using `$server->withApiLocation()`
 ```php
-function main(ServerInterface $server): void {
+function main(ServerInterface $server):void {
     $server
         ->withApiLocation('src/api')
         ->withApiPrefix('/api/v1')
         ->start()
-        ->try();
+        ->unwrap($error) or die($error);
 }
 ```
 

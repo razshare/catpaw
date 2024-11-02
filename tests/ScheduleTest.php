@@ -25,7 +25,7 @@ class ScheduleTest extends TestCase {
         EventLoop::run();
     }
 
-    private function scheduleDaily(ScheduleInterface $schedule): void {
+    private function scheduleDaily(ScheduleInterface $schedule):void {
         $hour     = $schedule->date()->format('H');
         $value    = false;
         $schedule = $schedule->daily(
@@ -41,7 +41,7 @@ class ScheduleTest extends TestCase {
     }
 
 
-    private function scheduleAfter1Second(ScheduleInterface $schedule, LoggerInterface $logger): void {
+    private function scheduleAfter1Second(ScheduleInterface $schedule, LoggerInterface $logger):void {
         $signal  = Signal::create();
         $checked = false;
         $start   = time();
@@ -63,7 +63,7 @@ class ScheduleTest extends TestCase {
         });
     }
 
-    public function scheduleEvery1Second3Times(ScheduleInterface $scheduler, LoggerInterface $logger): void {
+    public function scheduleEvery1Second3Times(ScheduleInterface $scheduler, LoggerInterface $logger):void {
         $value = 0;
         $logger->info("Executing function every 1 second 3 times...");
         $schedule = $scheduler->every("1 seconds", static function(callable $cancel) use (&$value, $logger) {

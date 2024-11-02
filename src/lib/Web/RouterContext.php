@@ -64,7 +64,7 @@ class RouterContext {
         return $this->routes[$method][$path];
     }
 
-    public function withRoute(
+    public function addRoute(
         string $symbolicMethod,
         string $symbolicPath,
         Route $route,

@@ -21,7 +21,7 @@ readonly class SimpleRequestHandler implements RequestHandler {
     ) {
     }
 
-    private function createResponseFromError(Throwable $error): Response {
+    private function createResponseFromError(Throwable $error):Response {
         $message    = $error->getMessage();
         $fileName   = $error->getFile();
         $lineNumber = $error->getLine();
@@ -32,7 +32,7 @@ readonly class SimpleRequestHandler implements RequestHandler {
         return new Response(HttpStatus::INTERNAL_SERVER_ERROR, [], HttpStatus::reason(HttpStatus::INTERNAL_SERVER_ERROR));
     }
 
-    public function handleRequest(Request $request): Response {
+    public function handleRequest(Request $request):Response {
         try {
             $response = $this->routeResolver->resolve($request)->unwrap($error);
             if ($error) {

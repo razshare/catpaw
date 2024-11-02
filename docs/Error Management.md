@@ -11,8 +11,8 @@ readonly class Result {
   public Error $error;
 }
 
-function ok(mixed $value = NONE): Result;
-function error(string|Error $message): Result;
+function ok(mixed $value = NONE):Result;
+function error(string|Error $message):Result;
 ```
 
 # What is a result

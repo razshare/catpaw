@@ -16,7 +16,7 @@ class XMLSerializer {
      * @param  string   $node_name
      * @return string   xml string.
      */
-    public static function generateValidXmlFromObj(stdClass $obj, string $node_block = 'nodes', string $node_name = 'node'): string {
+    public static function generateValidXmlFromObj(stdClass $obj, string $node_block = 'nodes', string $node_name = 'node'):string {
         $arr = get_object_vars($obj);
         return self::generateValidXmlFromArray($arr, $node_block, $node_name);
     }
@@ -28,7 +28,7 @@ class XMLSerializer {
      * @param  string $node_name
      * @return string xml string.
      */
-    public static function generateValidXmlFromArray(mixed $array, string $node_block = 'nodes', string $node_name = 'node'): string {
+    public static function generateValidXmlFromArray(mixed $array, string $node_block = 'nodes', string $node_name = 'node'):string {
         $xml = '<?xml version="1.0" encoding="UTF-8" ?>';
 
         $xml .= '<'.$node_block.'>';
@@ -43,7 +43,7 @@ class XMLSerializer {
      * @param  string $node_name
      * @return string
      */
-    private static function generateXmlFromArray(mixed $array, string $node_name): string {
+    private static function generateXmlFromArray(mixed $array, string $node_name):string {
         $xml = '';
 
         if (is_array($array) || is_object($array)) {

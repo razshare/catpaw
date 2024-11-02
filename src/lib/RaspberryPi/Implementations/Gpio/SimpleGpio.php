@@ -32,7 +32,7 @@ class SimpleGpio implements GpioInterface {
      * @param  int          $direction direction of the pin, `0` means `read` and `1` means `write`.
      * @return Result<File>
      */
-    private function export(string $pin, int $direction): Result {
+    private function export(string $pin, int $direction):Result {
         $originalPin = $pin;
         $pin         = match ($pin) {
             '7'     => self::HEADER7,

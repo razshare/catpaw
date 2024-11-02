@@ -18,7 +18,7 @@ class StandardDateParse {
     public static function DDMMYYYY(
         string $dateTime,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         return DateTime::createFromFormat("d{$dateSeparator}m{$dateSeparator}Y", $dateTime);
     }
 
@@ -30,7 +30,7 @@ class StandardDateParse {
      * @param  string         $dateTime
      * @return DateTime|false
      */
-    public static function YYYY(string $dateTime): DateTime|false {
+    public static function YYYY(string $dateTime):DateTime|false {
         return DateTime::createFromFormat("Y", $dateTime);
     }
 
@@ -47,7 +47,7 @@ class StandardDateParse {
     public static function YYYYMM(
         string $dateTime,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         return DateTime::createFromFormat("Y{$dateSeparator}m", $dateTime);
     }
 
@@ -65,7 +65,7 @@ class StandardDateParse {
     public static function YYYYMMDD(
         string $dateTime,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         return DateTime::createFromFormat("Y{$dateSeparator}m{$dateSeparator}d", $dateTime);
     }
 
@@ -86,7 +86,7 @@ class StandardDateParse {
         string $dateTime,
         bool $usingDateTimeSpace = false,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         $usingDateTimeSpace = $usingDateTimeSpace ? ' ' : '';
         return DateTime::createFromFormat("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H", $dateTime);
     }
@@ -111,7 +111,7 @@ class StandardDateParse {
         bool $usingDateTimeSpace = false,
         string $dateSeparator = '',
         string $timeSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         $usingDateTimeSpace = $usingDateTimeSpace ? ' ' : '';
         return DateTime::createFromFormat("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H{$timeSeparator}i", $dateTime);
     }
@@ -137,7 +137,7 @@ class StandardDateParse {
         bool $usingDateTimeSpace = false,
         string $dateSeparator = '',
         string $timeSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         $usingDateTimeSpace = $usingDateTimeSpace ? ' ' : '';
         return DateTime::createFromFormat("Y{$dateSeparator}m{$dateSeparator}d{$usingDateTimeSpace}H{$timeSeparator}i{$timeSeparator}s", $dateTime);
     }
@@ -156,7 +156,7 @@ class StandardDateParse {
     public static function YYMMDD(
         string $date,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         return DateTime::createFromFormat("y{$dateSeparator}m{$dateSeparator}d", $date);
     }
 
@@ -172,7 +172,7 @@ class StandardDateParse {
     public static function DDMMYY(
         string $date,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         return DateTime::createFromFormat("d{$dateSeparator}m{$dateSeparator}y", $date);
     }
 
@@ -187,7 +187,7 @@ class StandardDateParse {
     public static function HHII(
         string $time,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         return DateTime::createFromFormat("H{$dateSeparator}i", $time);
     }
 
@@ -203,7 +203,7 @@ class StandardDateParse {
     public static function HHIISS(
         string $time,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         return DateTime::createFromFormat("H{$dateSeparator}i{$dateSeparator}s", $time);
     }
 
@@ -219,7 +219,7 @@ class StandardDateParse {
     public static function MMYY(
         string $date,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         return DateTime::createFromFormat("m{$dateSeparator}y", $date);
     }
 
@@ -236,7 +236,7 @@ class StandardDateParse {
     public static function YYDDD(
         string $date,
         string $dateSeparator = ''
-    ): DateTime|false {
+    ):DateTime|false {
         return DateTime::createFromFormat("y{$dateSeparator}z", $date);
     }
 }

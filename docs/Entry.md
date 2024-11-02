@@ -16,12 +16,12 @@ use function CatPaw\Core\ok;
 use function CatPaw\Core\error;
 
 interface CatInterface {
-    public function doesTheCatBark(): bool;
+    public function doesTheCatBark():bool;
 }
 
 #[Provider]
 class WeirdCat implements CatInterface {
-    public function doesTheCatBark(): bool {
+    public function doesTheCatBark():bool {
         return true;
     }
 }
@@ -29,7 +29,7 @@ class WeirdCat implements CatInterface {
 #[Provider]
 class CatOwner {
     #[Entry]
-    public function setup(CatInterface $cat): Result {
+    public function setup(CatInterface $cat):Result {
         if ($cat->doesTheCatBark()) {
             return error('You gave me a cat that barks');
         }

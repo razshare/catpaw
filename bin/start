@@ -8,4 +8,4 @@ use CatPaw\Core\Interfaces\CommandInterface;
 require 'vendor/autoload.php';
 
 Container::provide(CommandInterface::class, $command = new SimpleCommand);
-$command->register(new Application(__FILE__))->try();
+$command->register(new Application(__FILE__))->unwrap($error) or die($error);

@@ -77,7 +77,7 @@ class ProducesError implements AttributeInterface {
      * @param  OpenApiStateInterface $openApiState
      * @return Result<None>
      */
-    #[Entry] public function start(OpenApiStateInterface $openApiState): Result {
+    #[Entry] public function start(OpenApiStateInterface $openApiState):Result {
         foreach ($this->produces->response() as $response) {
             $response->start($openApiState)->unwrap($error);
             if ($error) {

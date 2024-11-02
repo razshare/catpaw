@@ -17,7 +17,7 @@ $runner = new class implements CommandRunnerInterface {
      * @param  CommandBuilder $builder
      * @return Result<None>
      */
-    public function build(CommandBuilder $builder): void{
+    public function build(CommandBuilder $builder):void {
         $builder->withOption('o','--option', error('No value provided.'));
         $builder->requires('o');
     }
@@ -26,7 +26,7 @@ $runner = new class implements CommandRunnerInterface {
      * Run the command.
      * @return Result<None>
      */
-    public function run(CommandContext $context): Result{
+    public function run(CommandContext $context):Result {
         $value = $context->get('o')->unwrap($error);
         if($error){
             return error($error);

@@ -25,7 +25,7 @@ class CommandContext {
      * @param  string         $name Name of the option, short or long.
      * @return Result<string>
      */
-    public function get(string $name): Result {
+    public function get(string $name):Result {
         if (!isset($this->options[$name])) {
             return error("Command option `$name` not found.");
         }

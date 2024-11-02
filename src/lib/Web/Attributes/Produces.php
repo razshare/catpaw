@@ -145,7 +145,7 @@ class Produces implements AttributeInterface {
      *
      * @return array<string>
      */
-    public function contentType(): array {
+    public function contentType():array {
         $contentType = [];
         foreach ($this->response as $response) {
             $contentType[] = $response->contentType();

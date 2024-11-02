@@ -23,7 +23,7 @@ readonly class Result {
     ) {
     }
 
-    public function toResponseModifier(): ResponseModifier {
+    public function toResponseModifier():ResponseModifier {
         if ($this->error) {
             return failure($this->error->getMessage());
         }
@@ -53,6 +53,7 @@ readonly class Result {
     /**
      * Get the value or throw the error if present.
      * @throws Error
+     * @deprecated in favor of `unwrap()`.
      * @return T
      */
     public function try() {

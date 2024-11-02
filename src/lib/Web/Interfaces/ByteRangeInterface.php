@@ -10,7 +10,7 @@ interface ByteRangeInterface {
      * @param  ByteRangeWriterInterface $interface
      * @return Result<Response>
      */
-    public function response(ByteRangeWriterInterface $interface): Result;
+    public function response(ByteRangeWriterInterface $interface):Result;
 
     /**
      *

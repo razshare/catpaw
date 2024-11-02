@@ -16,7 +16,7 @@ class LoggerFactory {
      * @param  string                  $loggerName
      * @return Result<LoggerInterface>
      */
-    public static function create(string $loggerName = 'Logger'): Result {
+    public static function create(string $loggerName = 'Logger'):Result {
         try {
             $handler = new StreamHandler(STDOUT);
             $handler->setFormatter(new \Monolog\Formatter\SyslogFormatter($loggerName));

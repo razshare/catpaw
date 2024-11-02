@@ -57,7 +57,7 @@ abstract class Mime {
      * @param  string $path
      * @return string the mime type of the given resource as a String.
      */
-    public static function findContentType(string $path): string {
+    public static function findContentType(string $path):string {
         $extension = self::findExtension($path);
         return match (strtolower($extension)) {
             "wasm" => "application/wasm",

@@ -15,7 +15,7 @@ class AttributeResolver {
      * @param  string                                   $attributeName
      * @return false|array<ReflectionAttribute<object>>
      */
-    public static function classAttributeArguments(ReflectionClass $reflectionClass, string $attributeName): false|array {
+    public static function classAttributeArguments(ReflectionClass $reflectionClass, string $attributeName):false|array {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
@@ -32,7 +32,7 @@ class AttributeResolver {
      * @param  string                  $attributeName
      * @return false|string
      */
-    public static function classAttribute(ReflectionClass $reflectionClass, string $attributeName): false|string {
+    public static function classAttribute(ReflectionClass $reflectionClass, string $attributeName):false|string {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
@@ -49,7 +49,7 @@ class AttributeResolver {
      * @param  string             $attributeName
      * @return false|array<mixed>
      */
-    public static function functionAllAttributesArguments(ReflectionFunction $reflection_function, string $attributeName): false|array {
+    public static function functionAllAttributesArguments(ReflectionFunction $reflection_function, string $attributeName):false|array {
         $arguments  = [];
         $attributes = $reflection_function->getAttributes();
         foreach ($attributes as $attribute) {
@@ -67,7 +67,7 @@ class AttributeResolver {
      * @param  string             $attributeName
      * @return false|array<mixed>
      */
-    public static function functionAttributeArguments(ReflectionFunction $reflection_function, string $attributeName): false|array {
+    public static function functionAttributeArguments(ReflectionFunction $reflection_function, string $attributeName):false|array {
         $attributes = $reflection_function->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
@@ -84,7 +84,7 @@ class AttributeResolver {
      * @param  string              $attributeName
      * @return false|array<string>
      */
-    public static function functionAttributes(ReflectionFunction $reflectionFunction, string $attributeName): false|array {
+    public static function functionAttributes(ReflectionFunction $reflectionFunction, string $attributeName):false|array {
         $attributes = $reflectionFunction->getAttributes();
         $result     = [];
         foreach ($attributes as $attribute) {
@@ -107,7 +107,7 @@ class AttributeResolver {
      * @param  string             $attributeName
      * @return false|string
      */
-    public static function functionAttribute(ReflectionFunction $reflectionFunction, string $attributeName): false|string {
+    public static function functionAttribute(ReflectionFunction $reflectionFunction, string $attributeName):false|string {
         $attributes = $reflectionFunction->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
@@ -124,7 +124,7 @@ class AttributeResolver {
      * @param  string             $attributeName
      * @return false|array<mixed>
      */
-    public static function methodAttributeArguments(ReflectionMethod $reflectionMethod, string $attributeName): false|array {
+    public static function methodAttributeArguments(ReflectionMethod $reflectionMethod, string $attributeName):false|array {
         $attributes = $reflectionMethod->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
@@ -141,7 +141,7 @@ class AttributeResolver {
      * @param  string           $attributeName
      * @return false|string
      */
-    public static function methodAttribute(ReflectionMethod $reflectionMethod, string $attributeName): false|string {
+    public static function methodAttribute(ReflectionMethod $reflectionMethod, string $attributeName):false|string {
         $attributes = $reflectionMethod->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
@@ -158,7 +158,7 @@ class AttributeResolver {
      * @param  string             $attributeName
      * @return false|array<mixed>
      */
-    public static function propertyAttributeArguments(ReflectionProperty $reflectionProperty, string $attributeName): false|array {
+    public static function propertyAttributeArguments(ReflectionProperty $reflectionProperty, string $attributeName):false|array {
         $attributes = $reflectionProperty->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
@@ -175,7 +175,7 @@ class AttributeResolver {
      * @param  string             $attributeName
      * @return false|string
      */
-    public static function propertyAttribute(ReflectionProperty $reflectionProperty, string $attributeName): false|string {
+    public static function propertyAttribute(ReflectionProperty $reflectionProperty, string $attributeName):false|string {
         $attributes = $reflectionProperty->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
@@ -192,7 +192,7 @@ class AttributeResolver {
      * @param  string              $attributeName
      * @return false|array<mixed>
      */
-    public static function parameterAttributeArguments(ReflectionParameter $reflectionParameter, string $attributeName): false|array {
+    public static function parameterAttributeArguments(ReflectionParameter $reflectionParameter, string $attributeName):false|array {
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
@@ -209,7 +209,7 @@ class AttributeResolver {
      * @param  string              $attributeName
      * @return false|array<mixed>
      */
-    public static function parameterAllAttributeArguments(ReflectionParameter $reflectionParameter, string $attributeName): false|array {
+    public static function parameterAllAttributeArguments(ReflectionParameter $reflectionParameter, string $attributeName):false|array {
         $arguments  = [];
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
@@ -227,7 +227,7 @@ class AttributeResolver {
      * @param  string              $attributeName
      * @return false|array<string>
      */
-    public static function parameterAttributes(ReflectionParameter $reflectionParameter, string $attributeName): false|array {
+    public static function parameterAttributes(ReflectionParameter $reflectionParameter, string $attributeName):false|array {
         $attributes = $reflectionParameter->getAttributes();
         $result     = [];
         foreach ($attributes as $attribute) {
@@ -250,7 +250,7 @@ class AttributeResolver {
      * @param  string              $attributeName
      * @return false|string
      */
-    public static function parameterAttribute(ReflectionParameter $reflectionParameter, string $attributeName): false|string {
+    public static function parameterAttribute(ReflectionParameter $reflectionParameter, string $attributeName):false|string {
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();

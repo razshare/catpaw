@@ -32,7 +32,7 @@ readonly class SimpleByteRange implements ByteRangeInterface {
      * @param  string                                $rangeQuery
      * @return Result<SplFixedArray<array{int,int}>>
      */
-    private function parse(string $rangeQuery): Result {
+    private function parse(string $rangeQuery):Result {
         $rangeQuery = str_replace('bytes=', '', $rangeQuery);
         $ranges     = preg_split('/,\s*/', $rangeQuery);
         $cranges    = count($ranges);
@@ -93,7 +93,7 @@ readonly class SimpleByteRange implements ByteRangeInterface {
      * @param  ByteRangeWriterInterface $interface
      * @return Result<Response>
      */
-    public function response(ByteRangeWriterInterface $interface): Result {
+    public function response(ByteRangeWriterInterface $interface):Result {
         $headers    = [];
         $rangeQuery = $interface->rangeQuery()->unwrap($error);
         if ($error) {

@@ -11,11 +11,11 @@ You can schedule functions to execute after a certain amount of time.
 use CatPaw\Schedule\Services\ScheduleService;
 use CatPaw\Core\Result;
 
-function sayHi(): void {
+function sayHi():void {
     echo 'Hi.';
 }
 
-function main(ScheduleService $schedule): Result {
+function main(ScheduleService $schedule):Result {
     return $schedule->after(due:'2 minutes', function:sayHi(...));
 }
 ```
@@ -46,12 +46,12 @@ Just like `after()`, `every()` allows you to countdown before executing the func
 use CatPaw\Schedule\Services\ScheduleService;
 use CatPaw\Core\Result;
 
-function sayHi(callable $cancel): void {
+function sayHi(callable $cancel):void {
     echo "Hi.";
     $cancel();  // this will cancel the schedule
 }
 
-function main(ScheduleService $schedule): Result {
+function main(ScheduleService $schedule):Result {
     return $schedule->every(due:'2 minutes', function: sayHi(...));
 }
 ```
@@ -82,12 +82,12 @@ Schedule a function to execute daily.
 use CatPaw\Schedule\Services\ScheduleService;
 use CatPaw\Core\Result;
 
-function sayHi(callable $cancel): void {
+function sayHi(callable $cancel):void {
     echo "Hi.";
     $cancel();  // this will cancel the schedule
 }
 
-function main(ScheduleService $schedule): Result {
+function main(ScheduleService $schedule):Result {
     return $schedule->daily(due:'at 13:00', function: sayHi(...));
 }
 ```

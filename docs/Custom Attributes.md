@@ -17,7 +17,7 @@ use function CatPaw\Core\ok;
 #[Attribute]
 class HelloWorldAttribute implements AttributeInterface, OnParameterMount {
     use CoreAttributeDefinition;
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options) : Result {
+    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Result {
         $value = "hello world";
         return ok();
     }
@@ -27,9 +27,9 @@ function handler(#[HelloWorldAttribute] string $greeting){
   return $greeting;
 }
 
-function main(ServerInterface $server, RouterInterface $router): void {
-  $router->get("/", handler(...))->try();
-  $server->start()->try();
+function main(ServerInterface $server, RouterInterface $router):Result {
+  $router->get("/", handler(...))->unwrap($error) or die($error);
+  $server->start()->unwrap($error) or die($error);
 }
 ```
 

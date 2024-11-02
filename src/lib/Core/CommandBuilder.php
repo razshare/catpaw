@@ -30,7 +30,7 @@ class CommandBuilder {
      * @param  string $name
      * @return void
      */
-    public function requires(string $name): void {
+    public function requires(string $name):void {
         $this->required[$name] = true;
     }
 

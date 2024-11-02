@@ -12,7 +12,7 @@ $handler = new class implements WebsocketClientHandler {
         WebsocketClient $client,
         Request $request,
         Response $response,
-    ): void {
+    ):void {
         $client->sendText("welcome!");
 
         foreach ($client as $message) {

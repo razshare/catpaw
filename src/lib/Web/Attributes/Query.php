@@ -37,11 +37,11 @@ class Query implements AttributeInterface, OnParameterMount {
     ) {
     }
 
-    public function withName(string $name): void {
+    public function withName(string $name):void {
         $this->name = $name;
     }
 
-    public function name(): string {
+    public function name():string {
         return $this->name;
     }
 

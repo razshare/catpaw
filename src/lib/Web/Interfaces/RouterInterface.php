@@ -4,10 +4,17 @@ namespace CatPaw\Web\Interfaces;
 use CatPaw\Core\None;
 use CatPaw\Core\Result;
 use CatPaw\Web\Route;
+use CatPaw\Web\RouterContext;
 use Closure;
 use ReflectionMethod;
 
 interface RouterInterface {
+    /**
+     * Get the context of the router.
+     * @return RouterContext
+     */
+    public function getContext():RouterContext;
+
     /**
      * Initialize a new route.
      * @param  string                  $symbolicMethod
@@ -27,7 +34,7 @@ interface RouterInterface {
      * @param  ReflectionMethod     $reflectionMethod
      * @return array{string,string}
      */
-    public function mappedParameters(ReflectionMethod $reflectionMethod): array;
+    public function mappedParameters(ReflectionMethod $reflectionMethod):array;
 
     /**
      * Find a route.
@@ -35,7 +42,7 @@ interface RouterInterface {
      * @param  string      $symbolicPath
      * @return false|Route
      */
-    public function findRoute(string $symbolicMethod, string $symbolicPath): false|Route;
+    public function findRoute(string $symbolicMethod, string $symbolicPath):false|Route;
 
     /**
      * Check if a route exists.
@@ -43,14 +50,14 @@ interface RouterInterface {
      * @param  string $symbolicPath
      * @return bool
      */
-    public function routeExists(string $symbolicMethod, string $symbolicPath): bool;
+    public function routeExists(string $symbolicMethod, string $symbolicPath):bool;
 
     /**
      * Find routes of a method.
      * @param  string       $symbolicMethod
      * @return array<Route>
      */
-    public function findRoutesByMethod(string $symbolicMethod): array;
+    public function findRoutesByMethod(string $symbolicMethod):array;
 
     /**
      * Define an alias for an already existing web server path name.

@@ -102,5 +102,5 @@ interface ServerInterface {
      * Stop the server.
      * @return Result<None>
      */
-    public function stop(): Result;
+    public function stop():Result;
 }

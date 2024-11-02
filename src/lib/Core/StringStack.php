@@ -16,7 +16,7 @@ readonly class StringStack {
      * @param  string      $content
      * @return StringStack
      */
-    public static function of(string $content): StringStack {
+    public static function of(string $content):StringStack {
         return new self($content);
     }
 
@@ -26,7 +26,7 @@ readonly class StringStack {
      * @param  string                                                ...$tokens
      * @return SplDoublyLinkedList<array{false|string,false|string}>
      */
-    public function expect(string ...$tokens): SplDoublyLinkedList {
+    public function expect(string ...$tokens):SplDoublyLinkedList {
         $name  = $this->content;
         $len   = strlen($name);
         $stack = '';

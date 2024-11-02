@@ -22,12 +22,12 @@ use function CatPaw\Text\foreground;
 use function CatPaw\Text\nocolor;
 
 class TipsCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): void {
+    public function build(CommandBuilder $builder):void {
         $builder->withOption('t', 'tips', error('No value provided.'));
         $builder->requires('t');
     }
 
-    public function run(CommandContext $context): Result {
+    public function run(CommandContext $context):Result {
         $message = '';
     
         if (File::exists('.git/hooks') && !File::exists('.git/hooks/pre-commit')) {
@@ -50,12 +50,12 @@ class TipsCommand implements CommandRunnerInterface {
 }
 
 class InstallPreCommitCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): void {
+    public function build(CommandBuilder $builder):void {
         $builder->withOption('i', 'install-pre-commit', error('No value provided.'));
         $builder->requires('i');
     }
 
-    public function run(CommandContext $context): Result {
+    public function run(CommandContext $context):Result {
         $command = $context->get('install-pre-commit')->unwrap($error);
         if ($error) {
             return error($error);
@@ -71,12 +71,12 @@ class InstallPreCommitCommand implements CommandRunnerInterface {
 }
 
 class UninstallPreCommitCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): void {
+    public function build(CommandBuilder $builder):void {
         $builder->withOption('u', 'uninstall-pre-commit', error('No value provided.'));
         $builder->requires('u');
     }
 
-    public function run(CommandContext $context): Result {
+    public function run(CommandContext $context):Result {
         uninstallPreCommit()->unwrap($error);
         if ($error) {
             return error($error);
@@ -87,22 +87,22 @@ class UninstallPreCommitCommand implements CommandRunnerInterface {
 }
 
 class HiCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): void {
+    public function build(CommandBuilder $builder):void {
         $builder->withOption('h', 'hi', error('No value provided.'));
         $builder->requires('h');
     }
 
-    public function run(CommandContext $context): Result {
+    public function run(CommandContext $context):Result {
         echo "Hi.\n";
         return ok();
     }
 }
 
 class HelpCommand implements CommandRunnerInterface {
-    public function build(CommandBuilder $builder): void {
+    public function build(CommandBuilder $builder):void {
     }
 
-    public function run(CommandContext $context): Result {
+    public function run(CommandContext $context):Result {
         echo <<<BASH
             \n
             -b,  --build [-o, --optimize]        Builds the project into a .phar.
@@ -121,7 +121,7 @@ class BuildCommand implements CommandRunnerInterface {
     public function __construct(private EnvironmentInterface $environment) {
     }
 
-    public function build(CommandBuilder $builder): void {
+    public function build(CommandBuilder $builder):void {
         $builder->withOption('b', 'build', error('No value provided.'));
         $builder->withOption('o', 'optimize', ok('0'));
         $builder->withOption('e', 'environment', ok('0'));
@@ -130,7 +130,7 @@ class BuildCommand implements CommandRunnerInterface {
         $builder->requires('e');
     }
 
-    public function run(CommandContext $context): Result {
+    public function run(CommandContext $context):Result {
         $environmentFile = $context->get('e')->unwrap($error);
         if ($error) {
             return error($error);
@@ -168,7 +168,7 @@ class BuildCommand implements CommandRunnerInterface {
  * @param  EnvironmentInterface $environment
  * @return Result<None>
  */
-function main(CommandInterface $command, EnvironmentInterface $environment): Result {
+function main(CommandInterface $command, EnvironmentInterface $environment):Result {
     // Build.
     $command->register(new BuildCommand($environment))->unwrap($error);
     if ($error) {

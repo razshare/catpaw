@@ -76,7 +76,7 @@ class WebTest extends TestCase {
         $this->assertEquals('1', $actual);
     }
 
-    private function makeSureXmlConversionWorks(HttpClient $http): void {
+    private function makeSureXmlConversionWorks(HttpClient $http):void {
         $request = new Request("http://127.0.0.1:5858/api/object/user1", "GET");
         $request->setHeader("Accept", APPLICATION_XML);
         $response          = $http->request($request);
@@ -86,7 +86,7 @@ class WebTest extends TestCase {
         $this->assertStringStartsWith("<?xml version=\"1.0\"", $actualBody);
     }
 
-    private function makeSureJsonConversionWorks(HttpClient $http): void {
+    private function makeSureJsonConversionWorks(HttpClient $http):void {
         $request = new Request("http://127.0.0.1:5858/api/object/user1", "GET");
         $request->setHeader("Accept", APPLICATION_JSON);
         $response          = $http->request($request);
@@ -96,7 +96,7 @@ class WebTest extends TestCase {
         $this->assertJson($actualBody);
     }
 
-    private function makeSureProducesHintsWork(RouterInterface $router): void {
+    private function makeSureProducesHintsWork(RouterInterface $router):void {
         $api         = $router->findRoute('GET', '/api');
         $apiUsername = $router->findRoute('GET', '/api/{username}');
 
@@ -115,7 +115,7 @@ class WebTest extends TestCase {
         }
     }
 
-    private function makeSureContentNegotiationWorks(HttpClient $http): void {
+    private function makeSureContentNegotiationWorks(HttpClient $http):void {
         $response1 = $http->request(new Request("http://127.0.0.1:5858/api", "GET"));
         $actual    = $response1->getBody()->buffer();
         $this->assertEquals("hello", $actual);
@@ -127,7 +127,7 @@ class WebTest extends TestCase {
         $this->assertEquals("text/html", $response2->getHeader("Content-Type"));
     }
 
-    private function makeSureParamHintsWork(RouterInterface $router, HttpClient $http): void {
+    private function makeSureParamHintsWork(RouterInterface $router, HttpClient $http):void {
         $router->get("/get-with-params/{name}", fn (#[Param] string $name) => success("hello $name"));
         $response = $http->request(new Request("http://127.0.0.1:5858/get-with-params/user1"));
         $this->assertEquals("hello user1", $response->getBody()->buffer());
@@ -135,7 +135,7 @@ class WebTest extends TestCase {
         $this->assertEquals("hello user2", $response->getBody()->buffer());
     }
 
-    private function makeSureOpenApiDataIsGeneratedCorrectly(HttpClient $http): void {
+    private function makeSureOpenApiDataIsGeneratedCorrectly(HttpClient $http):void {
         $response = $http->request(new Request("http://127.0.0.1:5858/api/openapi", "GET"));
         $text     = $response->getBody()->buffer();
         $json     = json_decode($text, true);

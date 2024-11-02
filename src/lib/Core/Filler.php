@@ -13,7 +13,7 @@ class Filler {
      * @param  string           $filler
      * @return string
      */
-    public static function fill(int $length, string|int|float $content, int $fillDirection = 1, string $filler = ' '): string {
+    public static function fill(int $length, string|int|float $content, int $fillDirection = 1, string $filler = ' '):string {
         if (is_float($content)) {
             $content = (int)$content * 100;
         }

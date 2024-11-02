@@ -38,7 +38,7 @@ Two callables that are delayed by 5 and 2 seconds using different tags _tag-a_ a
 use CatPaw\Queue\Services\QueueService;
 use function Amp\delay;
 
-function main(QueueService $queue): void {
+function main(QueueService $queue):void {
     $start = time();
 
     $queue->queue("tag-a", function() {
@@ -75,7 +75,7 @@ Two callables that are delayed by 5 and 2 seconds both using the same tag _my-ta
 use CatPaw\Queue\Services\QueueService;
 use function Amp\delay;
 
-function main(QueueService $queue): void {
+function main(QueueService $queue):void {
     $start = time();
 
     $queue->queue("my-tag", function() {

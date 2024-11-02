@@ -33,7 +33,7 @@ trait CoreAttributeDefinition {
      * @param  ReflectionFunction  $reflectionFunction
      * @return Result<array<self>>
      */
-    public static function findAllByFunction(ReflectionFunction $reflectionFunction): Result {
+    public static function findAllByFunction(ReflectionFunction $reflectionFunction):Result {
         self::initializeCache();
         if (!($trueClassNames = AttributeResolver::functionAttributes($reflectionFunction, static::class))) {
             /** @var Result<array<self>> */
@@ -67,7 +67,7 @@ trait CoreAttributeDefinition {
      * @param  ReflectionFunction $reflectionFunction
      * @return Result<false|self>
      */
-    public static function findByFunction(ReflectionFunction $reflectionFunction): Result {
+    public static function findByFunction(ReflectionFunction $reflectionFunction):Result {
         self::initializeCache();
         if (self::$coreDefinitionCache->contains($reflectionFunction)) {
             $instance = self::$coreDefinitionCache->offsetGet($reflectionFunction);
@@ -251,7 +251,7 @@ trait CoreAttributeDefinition {
      * @param  ReflectionParameter $reflectionParameter
      * @return Result<array<self>>
      */
-    public static function findAllByParameter(ReflectionParameter $reflectionParameter): Result {
+    public static function findAllByParameter(ReflectionParameter $reflectionParameter):Result {
         self::initializeCache();
         if (!($trueClassNames = AttributeResolver::parameterAttributes($reflectionParameter, static::class))) {
             /** @var Result<array<self>> */

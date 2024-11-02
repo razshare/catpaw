@@ -45,7 +45,7 @@ class Readable {
      * Get the value of the store.
      * @return T
      */
-    public function get(): mixed {
+    public function get():mixed {
         return $this->value;
     }
 
@@ -54,7 +54,7 @@ class Readable {
      * @param  T    $value
      * @return void
      */
-    private function set(mixed $value): void {
+    private function set(mixed $value):void {
         $this->value = $value;
         for ($this->functions->rewind(); $this->functions->valid(); $this->functions->next()) {
             /** @var callable(T) $function */

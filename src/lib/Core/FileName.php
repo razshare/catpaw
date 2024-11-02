@@ -68,15 +68,16 @@ class FileName implements Stringable {
     }
 
     /**
-     * Lookup the file in in the `.phar` before falling back to the file system.
+     * Ignore files and directories bundled into the `.phar` bundle when invoked from within a `.phar` bundle.\
+     * This makes it so that the resulting file name is always relative to the host machine, instead of it being relative to the `.phar` bundle.
      * @return self
      */
-    public function withoutPhar(): self {
+    public function withoutPhar():self {
         $this->usingPhar = false;
         return $this;
     }
 
-    public function __toString(): string {
+    public function __toString():string {
         if (isPhar()) {
             $phar              = Phar::running();
             $localizedFileName = str_replace("$phar/", '', self::asFileName($this->path));

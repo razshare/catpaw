@@ -36,11 +36,11 @@ class Param implements AttributeInterface, OnParameterMount {
         $this->withRegex($regex);
     }
 
-    public function regex(): string {
+    public function regex():string {
         return $this->regex;
     }
 
-    public function withRegex(string $value): void {
+    public function withRegex(string $value):void {
         $this->regex = $value;
     }
 

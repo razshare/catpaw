@@ -12,20 +12,20 @@ interface EnvironmentInterface {
      * Call `load()` again to recover the lost keys.
      * @return self
      */
-    public function includeSystemEnvironment(): self;
+    public function includeSystemEnvironment():self;
 
     /**
      * Set the environment file name.
      * @param  string $fileName
      * @return self
      */
-    public function withFileName(string $fileName): self;
+    public function withFileName(string $fileName):self;
 
     /**
      * Clear all environment variables.
      * @return void
      */
-    public function clear(): void;
+    public function clear():void;
 
     /**
      * Parse the first valid environment file and update all variables in memory.
@@ -33,7 +33,7 @@ interface EnvironmentInterface {
      * This function is invoked automatically when the application starts.
      * @return Result<None>
      */
-    public function load(): Result;
+    public function load():Result;
 
 
     /**
@@ -46,7 +46,7 @@ interface EnvironmentInterface {
      * @param  mixed  $value
      * @return self
      */
-    public function set(string $query, mixed $value): self;
+    public function set(string $query, mixed $value):self;
 
 
     /**
@@ -64,5 +64,5 @@ interface EnvironmentInterface {
      *                       ```
      * @return mixed  The value of the property.
      */
-    public function get(string $query): mixed;
+    public function get(string $query):mixed;
 }

@@ -30,7 +30,7 @@ class StoreTest extends TestCase {
         EventLoop::run();
     }
 
-    private function basic(): void {
+    private function basic():void {
         $store = readable("hello", function($set) {
             delay(.5);
             $set("hello world");
@@ -50,7 +50,7 @@ class StoreTest extends TestCase {
         $unsubscribe();
     }
 
-    private function multipleSubscribers(): void {
+    private function multipleSubscribers():void {
         $unsubscribers = [];
 
         $value1 = '';
@@ -125,7 +125,7 @@ class StoreTest extends TestCase {
         $this->assertEquals(true, $cleanedUp);
     }
 
-    private function withDelay(): void {
+    private function withDelay():void {
         $cleanedUp = false;
         $store     = readable("default", function($set) use (&$cleanedUp) {
             $set("hello world");
@@ -182,14 +182,14 @@ class StoreTest extends TestCase {
         });
     }
 
-    private function set(): void {
+    private function set():void {
         $store = writable("hello");
         $this->assertEquals("hello", $store->get());
         $store->set("hello world");
         $this->assertEquals("hello world", $store->get());
     }
 
-    private function subscribe(): void {
+    private function subscribe():void {
         $startTime = time();
         delay(1);
         $store = writable(time());
@@ -197,7 +197,7 @@ class StoreTest extends TestCase {
         $store->set(time());
     }
 
-    private function update(): void {
+    private function update():void {
         $store       = writable(0);
         $unsubscribe = $store->subscribe(function($value) {
             $this->assertEquals(0, $value);

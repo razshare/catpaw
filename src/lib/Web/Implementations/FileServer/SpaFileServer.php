@@ -32,7 +32,7 @@ readonly class SpaFileServer implements FileServerInterface {
             public function __construct(private ServerInterface $server) {
             }
         
-            public function overwrite(string $fileName, string $path): string {
+            public function overwrite(string $fileName, string $path):string {
                 // Required for Spa mode
                 if (isDirectory($fileName) || !File::exists($fileName)) {
                     return "{$this->server->staticsLocation()}/index.html";

@@ -9,6 +9,7 @@ use Amp\File\File as AmpFile;
 use function Amp\File\getModificationTime;
 use function Amp\File\getSize;
 use function Amp\File\getStatus;
+use function Amp\File\isDirectory;
 use function Amp\File\openFile;
 use Dotenv\Dotenv;
 use Throwable;
@@ -164,11 +165,15 @@ readonly class File {
     /**
      * Write contents to a file.\
      * If the file doesn't exist it will be created.
-     * @param  string       $filename
+     * @param  string       $fileName
      * @return Result<None>
      */
-    public static function writeFile(string $filename, string $contents):Result {
-        $file = File::open($filename, 'w+')->unwrap($error);
+    public static function writeFile(string $fileName, string $contents):Result {
+        if (isDirectory($fileName)) {
+            return error("`$fileName` is a directory, you cannot write contents directly into a directory.");
+        }
+        
+        $file = File::open($fileName, 'w+')->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -186,8 +191,8 @@ readonly class File {
      * @param  ReadableStream $readableStream
      * @return Result<None>
      */
-    public static function writeStreamFile(string $filename, ReadableStream $readableStream):Result {
-        $file = File::open($filename, 'w+')->unwrap($error);
+    public static function writeStreamFile(string $fileName, ReadableStream $readableStream):Result {
+        $file = File::open($fileName, 'w+')->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -201,11 +206,11 @@ readonly class File {
 
     /**
      * Read the contents of a file.
-     * @param  string         $filename
+     * @param  string         $fileName
      * @return Result<string>
      */
-    public static function readFile(string $filename):Result {
-        $file = File::open($filename)->unwrap($error);
+    public static function readFile(string $fileName):Result {
+        $file = File::open($fileName)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -460,7 +465,7 @@ readonly class File {
      * @param  int $position
      * @return int
      */
-    public function seek(int $position): int {
+    public function seek(int $position):int {
         return $this->ampFile->seek($position);
     }
 
@@ -525,7 +530,7 @@ readonly class File {
     /**
      * @return void
      */
-    public function close(): void {
+    public function close():void {
         if ($this->ampFile->isClosed()) {
             return;
         }

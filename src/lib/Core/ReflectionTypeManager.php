@@ -19,9 +19,9 @@ class ReflectionTypeManager {
      * @param  string                                 $defaultClassName
      * @return WrappedType
      */
-    public static function wrap(ReflectionParameter|ReflectionProperty $reflection, string $defaultClassName = 'bool'): WrappedType {
+    public static function wrap(ReflectionParameter|ReflectionProperty $reflection, string $defaultClassName = 'bool'):WrappedType {
         $reflectionType = ReflectionTypeManager::unwrap($reflection);
-        $className      = $reflectionType?$reflectionType->getName(): $defaultClassName;
+        $className      = $reflectionType?$reflectionType->getName():$defaultClassName;
 
         $rtype = $reflection->getType();
 
@@ -61,7 +61,7 @@ class ReflectionTypeManager {
      * @param  ReflectionParameter|ReflectionProperty|ReflectionType $subject
      * @return ReflectionNamedType|false
      */
-    public static function unwrap(ReflectionParameter|ReflectionProperty|ReflectionType $subject): ReflectionNamedType|false {
+    public static function unwrap(ReflectionParameter|ReflectionProperty|ReflectionType $subject):ReflectionNamedType|false {
         if ($subject instanceof ReflectionType) {
             $type = $subject;
         } else {

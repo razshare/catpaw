@@ -91,14 +91,14 @@ class SessionWithMemory implements SessionInterface {
     /**
      * @inheritdoc
      */
-    public function has(string $key): bool {
+    public function has(string $key):bool {
         return isset($this->data[$key]);
     }
 
     /**
      * @inheritdoc
      */
-    public function &ref(string $key, mixed $default = null): mixed {
+    public function &ref(string $key, mixed $default = null):mixed {
         if (!$this->has($key)) {
             $this->data[$key] = $default;
         }
@@ -108,14 +108,14 @@ class SessionWithMemory implements SessionInterface {
     /**
      * @inheritdoc
      */
-    public function id(): string {
+    public function id():string {
         return $this->id;
     }
 
     /**
      * @inheritdoc
      */
-    public function destroy(): void {
+    public function destroy():void {
         $this->stopped = time();
         unset(self::$cache[$this->id]);
     }

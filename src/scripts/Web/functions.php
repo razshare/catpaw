@@ -135,7 +135,7 @@ function queries(UriInterface $uri):array {
  * ```php
  * return fn() => websocket(
  *  handler: new class implements WebsocketClientHandler {
- *      public function handleClient(WebsocketClient $client): void {
+ *      public function handleClient(WebsocketClient $client):void {
  *          $client->sendText("hello!");
  *          foreach ($client as $message) {
  *              echo "client says: $message\n";
@@ -147,7 +147,7 @@ function queries(UriInterface $uri):array {
  * @param  WebsocketClientHandler $handler Websocket handler.
  * @return Result<Websocket>
  */
-function websocket(WebsocketClientHandler $handler): Result {
+function websocket(WebsocketClientHandler $handler):Result {
     $websocket = Container::get(WebsocketInterface::class)->unwrap($error);
     if ($error) {
         return error($error);

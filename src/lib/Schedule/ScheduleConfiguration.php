@@ -2,7 +2,7 @@
 namespace CatPaw\Schedule;
 
 readonly class ScheduleConfiguration {
-    public static function create(int $value, bool $repeat): ScheduleConfiguration {
+    public static function create(int $value, bool $repeat):ScheduleConfiguration {
         return new self(value:$value, repeat: $repeat);
     }
 

@@ -23,7 +23,7 @@ use CatPaw\Core\Signal;
 use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
-    public function testAll(): void {
+    public function testAll():void {
         Container::provide(CommandInterface::class, new SimpleCommand);
         Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
@@ -40,7 +40,7 @@ class CoreTest extends TestCase {
     }
 
 
-    private function makeSureEnvWorks(EnvironmentInterface $environment): void {
+    private function makeSureEnvWorks(EnvironmentInterface $environment):void {
         $environment->withFileName(asFileName(__DIR__, 'env.ini'));
         $environment->load()->unwrap($error);
         $this->assertNull($error);
@@ -51,45 +51,28 @@ class CoreTest extends TestCase {
         $this->assertEquals('test-value', $test);
     }
 
-    public function makeSureUnsafeWorks(): void {
-        // open file
+    public function makeSureUnsafeWorks():void {
         $file = File::open(asFileName(__DIR__, 'file.txt'))->unwrap($error);
         $this->assertNull($error);
-
-        // read contents
         $contents = $file->readAll()->unwrap($error);
         $this->assertNull($error);
-
         $this->assertEquals("hello\n", $contents);
-
-        // close file
         $file->close();
-
         echo $contents.PHP_EOL;
     }
 
-    public function makeSureUnsafeWorksWithAnyError(): void {
-        $contents = anyError(function() {
-            // open file
-            $file = File::open(asFileName(__DIR__, 'file.txt'))->try();
-
-            // read contents
-            $contents = $file->readAll()->try();
-
-            // close file
-            $file->close();
-
-            return $contents;
-        })->unwrap($error);
-
+    public function makeSureUnsafeWorksWithAnyError():void {
+        $file = File::open(asFileName(__DIR__, 'file.txt'))->unwrap($error);
         $this->assertNull($error);
-
+        $contents = $file->readAll()->unwrap($error);
+        $this->assertNull($error);
+        $file->close();
+        $this->assertNull($error);
         $this->assertEquals("hello\n", $contents);
-
         echo $contents.PHP_EOL;
     }
 
-    public function makeSureSignalsWork(): void {
+    public function makeSureSignalsWork():void {
         $signal  = Signal::create();
         $counter = 0;
         $signal->listen(function() use (&$counter) {
@@ -102,11 +85,11 @@ class CoreTest extends TestCase {
     /**
      * @return Result<None>
      */
-    public function makeSureCommandWorks(CommandInterface $command): Result {
+    public function makeSureCommandWorks(CommandInterface $command):Result {
         return anyError(function() use ($command) {
             $command->register($runner = new class implements CommandRunnerInterface {
                 public CommandBuilder $builder;
-                public function build(CommandBuilder $builder): void {
+                public function build(CommandBuilder $builder):void {
                     $this->builder = $builder;
                     $builder->withOption('r', 'run', error('No value provided.'));
                     $builder->withOption('p', 'port', ok('80'));
@@ -114,7 +97,7 @@ class CoreTest extends TestCase {
                     $builder->requires('r');
                 }
             
-                public function run(CommandContext $context): Result {
+                public function run(CommandContext $context):Result {
                     $context->get('r')->unwrap($error);
                     if ($error) {
                         return error($error);

@@ -28,7 +28,7 @@ class StandardDateFormat {
     public static function DDMMYYYY(
         int|Datetime $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -44,7 +44,7 @@ class StandardDateFormat {
      * @param  int|DateTime $dateTime unix timestamp or DateTime
      * @return string
      */
-    public static function YYYY(int|Datetime $dateTime): string {
+    public static function YYYY(int|Datetime $dateTime):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -64,7 +64,7 @@ class StandardDateFormat {
     public static function YYYYMM(
         int|Datetime $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -85,7 +85,7 @@ class StandardDateFormat {
     public static function YYYYMMDD(
         int|Datetime $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -109,7 +109,7 @@ class StandardDateFormat {
         int|Datetime $dateTime,
         bool $usingDateTimeSpace = false,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -137,7 +137,7 @@ class StandardDateFormat {
         bool $usingDateTimeSpace = false,
         string $dateSeparator = '',
         string $timeSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -166,7 +166,7 @@ class StandardDateFormat {
         bool $usingDateTimeSpace = false,
         string $dateSeparator = '',
         string $timeSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -188,7 +188,7 @@ class StandardDateFormat {
     public static function YYMMDD(
         int|Datetime $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -207,7 +207,7 @@ class StandardDateFormat {
     public static function DDMMYY(
         int|Datetime $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -225,7 +225,7 @@ class StandardDateFormat {
     public static function HHII(
         int|Datetime $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -244,7 +244,7 @@ class StandardDateFormat {
     public static function HHIISS(
         int|Datetime $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -263,7 +263,7 @@ class StandardDateFormat {
     public static function MMYY(
         int|DateTime $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -283,7 +283,7 @@ class StandardDateFormat {
     public static function YYDDD(
         int|DateTime $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }
@@ -310,7 +310,7 @@ class StandardDateFormat {
     public static function CCYYMMDD(
         int|DateTime|null $dateTime,
         string $dateSeparator = ''
-    ): string {
+    ):string {
         if (is_int($dateTime)) {
             $dateTime = self::unix($dateTime);
         }

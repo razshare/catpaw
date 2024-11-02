@@ -24,7 +24,7 @@ class QueueTest extends TestCase {
         $this->assertNull($error);
     }
 
-    private function execution(QueueInterface $queue): void {
+    private function execution(QueueInterface $queue):void {
         $executed = false;
         $queue->queue("my-tag", function() use (&$executed) {
             $executed = true;
@@ -33,7 +33,7 @@ class QueueTest extends TestCase {
         $this->assertTrue($executed);
     }
 
-    private function tag(QueueInterface $queue): void {
+    private function tag(QueueInterface $queue):void {
         $queue->queue("my-tag", function($tag) {
             $this->assertEquals("my-tag", $tag);
         });
@@ -41,7 +41,7 @@ class QueueTest extends TestCase {
         echo "DONE\n";
     }
 
-    private function order(QueueInterface $queue): void {
+    private function order(QueueInterface $queue):void {
         /** @var array<mixed> */
         $stack = [];
         $queue->queue("my-tag-1", function($tag) use (&$stack) {
@@ -60,7 +60,7 @@ class QueueTest extends TestCase {
         $this->assertEquals("my-tag-2", $stack[1]);
     }
 
-    private function timedQueue(QueueInterface $queue, LoggerInterface $logger): void {
+    private function timedQueue(QueueInterface $queue, LoggerInterface $logger):void {
         $queue->queue("my-tag-1", function($tag) use ($logger) {
             delay(.005);
             $logger->info("Executed $tag");

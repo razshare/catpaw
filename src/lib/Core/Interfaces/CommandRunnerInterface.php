@@ -12,11 +12,11 @@ interface CommandRunnerInterface {
      * @param  CommandBuilder $builder
      * @return void
      */
-    public function build(CommandBuilder $builder): void;
+    public function build(CommandBuilder $builder):void;
 
     /**
      * Run the command.
      * @return Result<None>
      */
-    public function run(CommandContext $context): Result;
+    public function run(CommandContext $context):Result;
 }
