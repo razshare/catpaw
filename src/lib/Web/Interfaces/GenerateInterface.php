@@ -13,5 +13,5 @@ interface GenerateInterface {
      * @param  string       $outputDirectory The output directory where the documents will be written.
      * @return Result<None>
      */
-    public function generate(string $interface, string $outputDirectory):Result;
+    public function generate(string $interface = '127.0.0.1:8080', string $outputDirectory = 'generated'):Result;
 }
