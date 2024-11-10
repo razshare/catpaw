@@ -97,7 +97,7 @@ sure php is installed on whatever machine you're trying to run it on.
 
 - Install xdebug
   ```php
-  apt install php8.2-xdebug
+  apt install php8.3-xdebug
   ```
 
 - Put this configuration in your `./.vscode/launch.json` file
