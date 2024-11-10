@@ -88,7 +88,7 @@ The resulting `.phar`, by default (check `build.ini`), includes the following di
 - `./src`
 - `./vendor`
 - `./bin`
-- `./.build-cache` (created at comptile time)
+- `./.build-cache` (created at build time)
 
 which means it's a portable binary, you just need to make
 sure php is installed on whatever machine you're trying to run it on.
