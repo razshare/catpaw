@@ -7,7 +7,7 @@ use CatPaw\Core\Interfaces\CommandRunnerInterface;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 
 #[Provider]
-class BuildCommand implements CommandRunnerInterface {
+final class BuildCommand implements CommandRunnerInterface {
     public function __construct(private EnvironmentInterface $environment) {
     }
 

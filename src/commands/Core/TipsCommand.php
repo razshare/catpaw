@@ -7,7 +7,7 @@ use function CatPaw\Text\foreground;
 use function CatPaw\Text\nocolor;
 
 #[Provider]
-class TipsCommand implements CommandRunnerInterface {
+final class TipsCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):void {
         $builder->withOption('t', 'tips', error('No value provided.'));
         $builder->requires('t');

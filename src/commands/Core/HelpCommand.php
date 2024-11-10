@@ -5,7 +5,7 @@ use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 
 #[Provider]
-class HelpCommand implements CommandRunnerInterface {
+final class HelpCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):void {
     }
 

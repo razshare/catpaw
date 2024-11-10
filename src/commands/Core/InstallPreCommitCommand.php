@@ -6,7 +6,7 @@ use CatPaw\Core\Interfaces\CommandRunnerInterface;
 use function CatPaw\Core\Precommit\installPreCommit;
 
 #[Provider]
-class InstallPreCommitCommand implements CommandRunnerInterface {
+final class InstallPreCommitCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):void {
         $builder->withOption('i', 'install-pre-commit', error('No value provided.'));
         $builder->requires('i');
