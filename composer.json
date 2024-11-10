@@ -44,25 +44,12 @@
   "autoload": {
     "psr-4": {
       "CatPaw\\Core\\": [
-        "src/lib/Core"
-      ],
-      "CatPaw\\Screen\\": [
-        "src/lib/Screen"
-      ],
-      "CatPaw\\Cui\\": [
-        "src/lib/Cui"
-      ],
-      "CatPaw\\Go\\": [
-        "src/lib/Go"
-      ],
-      "CatPaw\\Ast\\": [
-        "src/lib/Ast"
-      ],
-      "CatPaw\\Build\\": [
-        "src/lib/Build"
+        "src/lib/Core",
+        "src/commands/Core"
       ],
       "CatPaw\\Web\\": [
-        "src/lib/Web"
+        "src/lib/Web",
+        "src/commands/Web"
       ],
       "CatPaw\\Queue\\": [
         "src/lib/Queue"
@@ -82,10 +69,10 @@
       "src/scripts/Core/functions.php",
       "src/scripts/Core/Build/functions.php",
       "src/scripts/Core/Precommit/functions.php",
-      "src/scripts/Web/constants.php",
-      "src/scripts/Web/functions.php",
       "src/scripts/Store/functions.php",
-      "src/scripts/Text/functions.php"
+      "src/scripts/Text/functions.php",
+      "src/scripts/Web/constants.php",
+      "src/scripts/Web/functions.php"
     ]
   },
   "minimum-stability": "stable",
