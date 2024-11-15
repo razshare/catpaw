@@ -15,7 +15,11 @@ use Throwable;
 #[Provider(singleton:true)]
 class MysqlDatabase {
     /** @var Result<MysqlConnectionPool> */
-    private Result $poolResult = error("Mysql database pool not initialized.");
+    private Result $poolResult;
+
+    public function __construct() {
+        $this->poolResult = error("Mysql database pool not initialized.");
+    }
 
     /**
      * @return Result<None>
