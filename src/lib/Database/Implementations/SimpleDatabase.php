@@ -10,7 +10,7 @@ use function CatPaw\Core\error;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
-use CatPaw\Database\Interface\DatabaseInterface;
+use CatPaw\Database\Interfaces\DatabaseInterface;
 use Throwable;
 
 #[Provider(singleton:true)]

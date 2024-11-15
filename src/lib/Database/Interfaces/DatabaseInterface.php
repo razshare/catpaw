@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Database\Interface;
+namespace CatPaw\Database\Interfaces;
 
 use CatPaw\Core\Result;
 
