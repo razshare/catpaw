@@ -102,6 +102,7 @@ class Container {
             class_exists($className = \CatPaw\Web\Implementations\Server\SimpleServer::class)                 => error("Could not load class $className"),
             class_exists($className = \CatPaw\Web\Implementations\Websocket\SimpleWebsocket::class)           => error("Could not load class $className"),
             class_exists($className = \CatPaw\Web\Implementations\Generate\SimpleGenerate::class)             => error("Could not load class $className"),
+            class_exists($className = \CatPaw\Database\Implementations\SimpleDatabase::class)                 => error("Could not load class $className"),
             default                                                                                           => ok()
         };
 
