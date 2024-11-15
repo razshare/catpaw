@@ -47,6 +47,9 @@
         "src/lib/Core",
         "src/commands/Core"
       ],
+      "CatPaw\\Database\\": [
+        "src/lib/Database"
+      ],
       "CatPaw\\Web\\": [
         "src/lib/Web",
         "src/commands/Web"

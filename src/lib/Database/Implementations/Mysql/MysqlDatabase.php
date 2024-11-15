@@ -1,5 +1,5 @@
 <?php
-namespace CatPaw\Database\Implementations\Query;
+namespace CatPaw\Database\Implementations\Mysql;
 
 use Amp\Mysql\MysqlConfig;
 use Amp\Mysql\MysqlConnectionPool;
