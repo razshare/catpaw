@@ -41,13 +41,8 @@ class SimpleDatabase implements DatabaseInterface {
             return error($error);
         }
     }
-
-    /**
-     * @param  string                              $query
-     * @param  array<string,string|int|float|bool> $parameters
-     * @return Result<array<array<string,mixed>>>
-     */
-    public function execute(string $query, array $parameters):Result {
+    
+    public function send(string $query, array $parameters):Result {
         try {
             $pool = $this->mysqlPoolResult->unwrap($error);
             if ($error) {
