@@ -10,15 +10,16 @@ use function CatPaw\Core\error;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
+use CatPaw\Database\Interface\DatabaseInterface;
 use Throwable;
 
 #[Provider(singleton:true)]
-class MysqlDatabase {
+class SimpleDatabase implements DatabaseInterface {
     /** @var Result<MysqlConnectionPool> */
-    private Result $poolResult;
+    private Result $mysqlPoolResult;
 
     public function __construct() {
-        $this->poolResult = error("Mysql database pool not initialized.");
+        $this->mysqlPoolResult = error("Mysql database pool not initialized.");
     }
 
     /**
@@ -32,8 +33,8 @@ class MysqlDatabase {
                 return error("You're trying to use the MysqlDatabase service, but environment key `mysql` was not found. Consider specifying a MySql connection string using the key `mysql`. The connection string should be formatted as `host=localhost user=username password=password db=test`.");
             }
 
-            $config           = MysqlConfig::fromString($stringConfiguration);
-            $this->poolResult = ok(new MysqlConnectionPool($config));
+            $config                = MysqlConfig::fromString($stringConfiguration);
+            $this->mysqlPoolResult = ok(new MysqlConnectionPool($config));
             
             return ok();
         } catch(Throwable $error) {
@@ -48,7 +49,7 @@ class MysqlDatabase {
      */
     public function execute(string $query, array $parameters):Result {
         try {
-            $pool = $this->poolResult->unwrap($error);
+            $pool = $this->mysqlPoolResult->unwrap($error);
             if ($error) {
                 return error($error);
             }
