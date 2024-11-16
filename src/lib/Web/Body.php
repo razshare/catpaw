@@ -37,7 +37,7 @@ class Body {
      * @param  class-string<T> $className
      * @return Result<T>
      */
-    public function asObject(string $className = 'stdClass'):Result {
+    public function object(string $className = 'stdClass'):Result {
         try {
             return BodyParser::parseAsObject(
                 request: $this->request,
@@ -52,7 +52,7 @@ class Body {
     /**
      * @return Result<string>
      */
-    public function asText():Result {
+    public function text():Result {
         try {
             return ok($this->request->getBody()->buffer());
         } catch(Throwable $error) {
@@ -63,7 +63,7 @@ class Body {
     /**
      * @return Result<int>
      */
-    public function asInt():Result {
+    public function int():Result {
         try {
             $body = $this->request->getBody()->buffer();
             if (is_numeric($body)) {
@@ -80,7 +80,7 @@ class Body {
     /**
      * @return Result<bool>
      */
-    public function asBool():Result {
+    public function bool():Result {
         try {
             $body = $this->request->getBody()->buffer();
             return ok(filter_var($body, FILTER_VALIDATE_BOOLEAN));
@@ -92,7 +92,7 @@ class Body {
     /**
      * @return Result<float>
      */
-    public function asFloat():Result {
+    public function float():Result {
         try {
             $body = $this->request->getBody()->buffer();
             if (is_numeric($body)) {

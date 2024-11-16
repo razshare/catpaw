@@ -13,4 +13,4 @@ class SchemaConsumeSomething {
 
 return
 #[Consumes(APPLICATION_JSON, SchemaConsumeSomething::class)]
-fn (Body $body) => success($body->asText())->as(APPLICATION_JSON);
+fn (Body $body) => success($body->text())->as(APPLICATION_JSON);
