@@ -1,7 +1,6 @@
 # Container
 
 You can use `Container::provide()` to provide a dependency
-
 ```php
 <?php
 use CatPaw\Core\Container;
@@ -12,7 +11,6 @@ Container::provide(HttpClient::class, static fn () => HttpClientBuilder::buildDe
 ```
 
 You can use `Container::get()` to get a dependency by name.\
-Although it is technically not required, it's good practice to name and provide your dependency using the name of an interface
 
 ```php
 <?php
