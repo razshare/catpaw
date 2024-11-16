@@ -3,11 +3,12 @@
 When [mapping routes](./Server%20Router.md), you can use attributes to define Open Api metadata
 ```php
 // src/api/get.php
+use function CatPaw\Web\success;
 use CatPaw\Web\Attributes\ProducesItem;
 
 return
-#[ProducesItem(200, 'text/plain', 'Success!', string::class)]
-fn() => success('hello')->item();
+    #[ProducesItem(200, 'text/plain', 'Success!', string::class)]
+    fn () => success('hello')->item();
 ```
 
 # Available Attributes
@@ -33,14 +34,10 @@ fn() => success('hello')->item();
 For SwaggerUi to work as intended, you will need to export all this metadata you define through attributes as Json
 
 ```php
-function main(
-  RouterInterface $router,
-  OpenApiInterface $oa,
-  // ...
-){
-  $router->get('/openapi', $oa->data(...));
-  // ...
-}
+// src/api/openapi/get.php
+use function CatPaw\Web\success;
+use CatPaw\Web\Interfaces\OpenApiInterface;
+return fn (OpenApiInterface $oa) => success($oa->data())->as('application/json');
 ```
 
 Then feed the data to your SwaggerUi (or any other user interface compliant with Open Api).
