@@ -1,17 +1,5 @@
 # Container
 
-You can use `Container::get()` to get a dependency by name.
-
-Although it is technically not required, it's good practice to name and provide your dependency using the name of an interface
-
-```php
-<?php
-use CatPaw\Core\Container;
-use Psr\Log\LoggerInterface;
-
-$logger = Container::get(LoggerInterface::class)->unwrap($error);
-```
-
 You can use `Container::provide()` to provide a dependency
 
 ```php
@@ -23,7 +11,18 @@ use Amp\Http\Client\HttpClientBuilder;
 Container::provide(HttpClient::class, static fn () => HttpClientBuilder::buildDefault());
 ```
 
-You can provide a dependency as a singleton
+You can use `Container::get()` to get a dependency by name.\
+Although it is technically not required, it's good practice to name and provide your dependency using the name of an interface
+
+```php
+<?php
+use CatPaw\Core\Container;
+use Psr\Log\LoggerInterface;
+
+$logger = Container::get(LoggerInterface::class)->unwrap($error);
+```
+
+You can provide a dependency as a singleton by simply passing in the object to `Container::provide()`
 
 ```php
 <?php
@@ -34,7 +33,7 @@ use Amp\Http\Client\HttpClientBuilder;
 Container::provide(HttpClient::class, HttpClientBuilder::buildDefault());
 ```
 
-And you can provide a dependency using the `#[Provider]` attribute
+You can also provide a dependency using the `#[Provider]` attribute
 
 ```php
 <?php
