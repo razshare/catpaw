@@ -4,9 +4,10 @@ Sessions start automatically when injected.
 
 ```php
 <?php
+// src/api/get.php
 use CatPaw\Web\Interfaces\ServerInterface;
 
-function(SessionInterface $session){
+return function(SessionInterface $session){
     // Session has now started.
     return $session->id();
 }
@@ -18,9 +19,10 @@ Session contents are mutable and can be modified by reference.
 
 ```php
 <?php
+// src/api/get.php
 use CatPaw\Web\Interfaces\ServerInterface;
 
-function(SessionInterface $session){
+return function(SessionInterface $session){
     $username = &$session->ref('username');
     $username = "John";
 }
@@ -29,9 +31,10 @@ function(SessionInterface $session){
 # Destroy Session
 
 ```php
+// src/api/get.php
 use CatPaw\Web\Interfaces\ServerInterface;
 
-function(SessionInterface $session){
+return function(SessionInterface $session){
     $session->destroy();
     // Any changes to the session below this point will be lost.
 }

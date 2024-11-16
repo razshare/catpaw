@@ -42,7 +42,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
      * @param  Result<mixed>            $value
      * @return Result<ResponseModifier>
      */
-    private static function renderUnsafe(Result $value):Result {
+    private static function renderResult(Result $value):Result {
         static $pico      = '';
         static $style     = '';
         static $allStyles = '';
@@ -109,7 +109,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             try {
                 $modifier = success((string)$result)->as(TEXT_HTML);
             } catch(Throwable $error) {
-                $modifier = self::renderUnsafe(error($error))->unwrap($error);
+                $modifier = self::renderResult(error($error))->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
@@ -128,6 +128,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             $modifier = failure(join("\n", $badRequestEntries), HttpStatus::BAD_REQUEST);
             return $modifier->response();
         }
+
         $onRequests         = $context->route->onRequest;
         $onResponses        = $context->route->onResponse;
         $reflectionFunction = $context->route->reflectionFunction;
@@ -153,7 +154,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         $modifier = $function(...$dependencies);
 
         if ($modifier instanceof Result) {
-            $modifier = self::renderUnsafe($modifier)->unwrap($error);
+            $modifier = self::renderResult($modifier)->unwrap($error);
             if ($error) {
                 return error($error);
             }

@@ -36,10 +36,10 @@ Route handlers have the authority to define how parameters are matched.
 You can configure this behavior using a `#[Param]` attribute
 
 ```php
+// src/api/{username}/articles/{articleId}/comments/{commentId}/get.php
 use CatPaw\Web\Attributes\Param;
 
-// PATH: /`{username}`/articles/`{articleId}`/comments/`{commentId}`
-function(
+return function(
     #[Param('\w{3,}')]    string $username,  // Require $username to be at least 3 characters long.
     #[Param('[A-z0-9-]')] string $articleId, // Require $articleId to include only characters from A to z, numbers and '-'
     #[Param('[A-z0-9-]')] string $commendId, // Require $articleId to include only characters from A to z, numbers and '-'

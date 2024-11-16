@@ -4,6 +4,7 @@ You can upgrade an http connection to websockets [RFC 6455](https://www.rfc-edit
 
 ```php
 <?php
+// src/api/get.php
 use Amp\Http\Server\Request;
 use function CatPaw\Web\websocket;
 
@@ -21,5 +22,5 @@ $handler = new class implements WebsocketClientHandler {
     }
 }
 
-fn(Request $request) => websocket($request, $handler);
+return fn(Request $request) => websocket($request, $handler);
 ```

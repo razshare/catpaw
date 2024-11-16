@@ -2,8 +2,10 @@
 
 When [mapping routes](./Server%20Router.md), you can use attributes to define Open Api metadata
 ```php
+// src/api/get.php
 use CatPaw\Web\Attributes\ProducesItem;
 
+return
 #[ProducesItem(200, 'text/plain', 'Success!', string::class)]
 fn() => success('hello')->item();
 ```
