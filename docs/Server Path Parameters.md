@@ -22,8 +22,8 @@ Path parameters are wrapped in `{}`
 [Route handlers](./Server%20Router.md) can inject these parameters by name
 
 ```php
-// PATH: /`{username}`/articles/`{articleId}`/comments/`{commentId}`
-function(string $username, string $articleId, string $commendId){};
+// src/api/{username}/articles/{articleId}/comments/{commentId}
+return function(string $username, string $articleId, string $commendId){};
 ```
 
 > [!NOTE]
