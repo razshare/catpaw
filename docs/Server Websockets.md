@@ -5,7 +5,9 @@ You can upgrade an http connection to websockets [RFC 6455](https://www.rfc-edit
 ```php
 // src/api/get.php
 use Amp\Http\Server\Request;
+use Amp\Http\Server\Response;
 use Amp\Websocket\Server\WebsocketClientHandler;
+use Amp\Websocket\WebsocketClient;
 use function CatPaw\Web\websocket;
 
 $handler = new class implements WebsocketClientHandler {
@@ -20,7 +22,7 @@ $handler = new class implements WebsocketClientHandler {
             echo $message.PHP_EOL;
         }
     }
-}
+};
 
-return fn(Request $request) => websocket($request, $handler);
+return fn () => websocket($handler);
 ```
