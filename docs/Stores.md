@@ -26,7 +26,6 @@ function writable($value);
 A writable store's value can be set on creation or some time after by using the `set()` method.
 
 ```php
-<?php
 use function CatPaw\Store\writable;
 
 function main() {
@@ -42,7 +41,6 @@ function main() {
  Once called, the `subscribe()` method will return itself a function, which when called will cancel the store subscription.
 
 ```php
-<?php
 use function CatPaw\Store\writable;
 
 function main() {
@@ -91,7 +89,6 @@ Two things differentiate a readable store from a writable one:
         It will be invoked when there are no subscribers left.
 
 ```php
-<?php
 use function CatPaw\Store\readable;
 use function CatPaw\Store\writable;
 

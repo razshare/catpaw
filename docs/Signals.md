@@ -10,7 +10,6 @@ When a signal is _triggered_ all listener functions will be invoked.
 - Use `Signal::send()` to trigger the signal
 
 ```php
-<?php
 use CatPaw\Core\Signal;
 use function Amp\delay;
 
@@ -38,7 +37,6 @@ function main(){
 Use `clear()` in order to remove all listeners of the signal.
 
 ```php
-<?php
 use CatPaw\Core\Signal;
 use function Amp\delay;
 

@@ -3,7 +3,6 @@
 Sessions start automatically when injected.
 
 ```php
-<?php
 // src/api/get.php
 use CatPaw\Web\Interfaces\ServerInterface;
 
@@ -18,7 +17,6 @@ return function(SessionInterface $session){
 Session contents are mutable and can be modified by reference.
 
 ```php
-<?php
 // src/api/get.php
 use CatPaw\Web\Interfaces\ServerInterface;
 

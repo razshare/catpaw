@@ -6,10 +6,9 @@ Routes are defined through __route handlers__, which are functions that trigger 
 
 # Routes
 
-You can map a __GET__ route using `RouterInterface::get`
+You can map a __GET__ route using `$router->get()`
 
 ```php
-<?php
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use function CatPaw\Core\anyError;
@@ -31,10 +30,9 @@ This creates a _GET /cats_ route which responds with _"there are no cats here"_.
 > All paths _MUST_ start with `/`.
 
 
-Similarly to the _GET_ example, `RouterInterface::post` will map a **POST** route
+Similarly to the _GET_ example, `$router->post()` will map a **POST** route
 
 ```php
-<?php
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Body;
@@ -82,7 +80,6 @@ There are some rules you will need to follow.
    | ...                                 | ...                                 |
 2. Each file must return a function.
    ```php
-   <?php
    // src/api/get.php
    use function CatPaw\Core\success;
    return function(){

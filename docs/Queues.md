@@ -34,7 +34,6 @@ public function consume();
 Two callables that are delayed by 5 and 2 seconds using different tags _tag-a_ and _tag-b_.
 
  ```php
-<?php
 use CatPaw\Queue\Services\QueueService;
 use function Amp\delay;
 
@@ -71,7 +70,6 @@ a
 Two callables that are delayed by 5 and 2 seconds both using the same tag _my-tag_.
 
 ```php
-<?php
 use CatPaw\Queue\Services\QueueService;
 use function Amp\delay;
 

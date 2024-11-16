@@ -3,7 +3,6 @@
 Create the class, annotate it with _#[Attribute]_ and implement _AttributeInterface_
 
 ```php
-<?php
 use CatPaw\Core\Result;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\Interfaces\AttributeInterface;

@@ -7,7 +7,6 @@ You can schedule operations using `ScheduleService`.
 You can schedule functions to execute after a certain amount of time.
 
 ```php
-<?php
 use CatPaw\Schedule\Services\ScheduleService;
 use CatPaw\Core\Result;
 
@@ -42,7 +41,6 @@ The `due` parameter must be a string in one of the following formats
 Just like `after()`, `every()` allows you to countdown before executing the function, with the added effect that the schedule restarts whenever it ends and the callback function accepts a callable which when invoked will cancel the schedule immediately.
 
 ```php
-<?php
 use CatPaw\Schedule\Services\ScheduleService;
 use CatPaw\Core\Result;
 
@@ -78,7 +76,6 @@ The `due` parameter must be a string in one of the following formats
 Schedule a function to execute daily.
 
 ```php
-<?php
 use CatPaw\Schedule\Services\ScheduleService;
 use CatPaw\Core\Result;
 

@@ -20,7 +20,6 @@ Here's an example of a blinking LED on pin _12_<br/>
 ![image](https://user-images.githubusercontent.com/6891346/152228030-7d1f5cba-6308-42be-bc14-c62df1a81554.png)
 
 ```php
-<?php
 use function Amp\delay;
 use function CatPaw\Core\error;
 use function CatPaw\Core\anyError;

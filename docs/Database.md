@@ -14,7 +14,6 @@ apiLocation = src/api
 mysql="host=localhost user=root password=root db=test"
 ```
  ```php
-<?php
 // src/api/{email}/get.php
 use CatPaw\Database\Interfaces\DatabaseInterface;
 

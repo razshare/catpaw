@@ -3,7 +3,6 @@
 You can upgrade an http connection to websockets [RFC 6455](https://www.rfc-editor.org/rfc/rfc6455.html) using `websocket()`.
 
 ```php
-<?php
 // src/api/get.php
 use Amp\Http\Server\Request;
 use function CatPaw\Web\websocket;

@@ -8,11 +8,12 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 |-------------------------------------------------------------------|-------------|
 | 📦 [Container](./docs/Container.md)                               | Provide dependencies and retrieve them. |
 | ⚠️ [Error Management](./docs/Error%20Management.md)               | Manage errors. |
-| 🌄 [Server Router](./docs/Server%20Router.md)                     | Create a server and define routes. |
-| 🌄 [Server Path Parameters](./docs/Server%20Path%20Parameters.md) | Define path parameters in your routes. |
-| 🌐 [Server Open Api](./docs/Server%20Open%20Api.md)               | Generate an Open Api definition. |
-| 🎫 [Server Session](./docs/Server%20Session.md)                   | Create and manage server sessions. |
+| 🌠 [Server](./docs/Server.md)                                     | Start a server. |
+| 🚆 [Server Router](./docs/Server%20Router.md)                     | Define routes. |
+| 📃 [Server Path Parameters](./docs/Server%20Path%20Parameters.md) | Define path parameters for your routes. |
+| 🎫 [Server Session](./docs/Server%20Session.md)                   | Manage sessions. |
 | 📞 [Server Websockets](./docs/Server%20Websockets.md)             | Serve websockets. |
+| 💠 [Server Open Api](./docs/Server%20Open%20Api.md)               | Generate an Open Api definition. |
 | ↪️ [Entry](./docs/Entry.md)                                       | Execute code when a dependency is resolved. |
 | 🎛️ [Command](./docs/Command.md)                                   | Create a console command. |
 | 🗄️ [Database](./docs/Database.md)                                 | Connect to a database and send queries. |
@@ -47,7 +48,6 @@ Create a new project using one of the starter templates.
 Every application must declare a `main` function in the global scope, that will be your entry point:
 
 ```php
-<?php
 // src/main.php
 use Psr\Log\LoggerInterface;
 function main(LoggerInterface $logger){
