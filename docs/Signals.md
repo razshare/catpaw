@@ -6,7 +6,7 @@ When a signal is _triggered_ all listener functions will be invoked.
 # Usage
 
 - Use `Signal::create()` to create a signal
-- Use `Signal::listen()` to listen for the signal
+- Use `Signal::listen()` to listen for the signal trigger
 - Use `Signal::send()` to trigger the signal
 
 ```php
