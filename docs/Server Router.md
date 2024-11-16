@@ -11,16 +11,20 @@ You can map a __GET__ route using `$router->get()`
 ```php
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
-use function CatPaw\Core\anyError;
-use function CatPaw\Core\success;
 
 function handler() {
-    return success('there are no cats here');
+    return 'there are no cats here';
 }
 
-function main(ServerInterface $server, RouterInterface $router):void {
-    $router->get('/cats', handler(...))->unwrap($error) or die($error);
-    $server->start()->unwrap($error) or die($error);
+function main(
+    ServerInterface $server, 
+    RouterInterface $router,
+):void {
+    $router->get('/cats', handler(...))
+            ->unwrap($error) or die($error);
+
+    $server->start()
+            ->unwrap($error) or die($error);
 }
 ```
 
@@ -41,9 +45,15 @@ function handler(Body $body){
     return "Received body: {$body->asText()}\n";
 }
 
-function main(ServerInterface $server, RouterInterface $router):void {
-    $router->post('/cats', handler(...))->unwrap($error) or die($error);
-    $server->start()->unwrap($error) or die($error);
+function main(
+    ServerInterface $server, 
+    RouterInterface $router,
+):void {
+    $router->post('/cats', handler(...))
+            ->unwrap($error) or die($error);
+
+    $server->start()
+            ->unwrap($error) or die($error);
 }
 ```
 
