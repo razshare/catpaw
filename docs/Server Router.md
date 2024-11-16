@@ -42,7 +42,7 @@ use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Body;
 
 function handler(Body $body){
-    return "Received body: {$body->asText()}\n";
+    return "Received body: {$body->text()}\n";
 }
 
 function main(
