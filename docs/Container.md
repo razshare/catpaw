@@ -10,7 +10,7 @@ use Amp\Http\Client\HttpClientBuilder;
 Container::provide(HttpClient::class, static fn () => HttpClientBuilder::buildDefault());
 ```
 
-You can use `Container::get()` to get a dependency by name.\
+You can use `Container::get()` to get a dependency by name.
 
 ```php
 <?php
