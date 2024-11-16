@@ -7,6 +7,8 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 | Table of Contents                                                 | Description |
 |-------------------------------------------------------------------|-------------|
 | 📦 [Container](./docs/Container.md)                               | Provide dependencies and retrieve them. |
+| 📦 [Constructors](./docs/Constructors.md)                                       | Execute code when a dependency is resolved. |
+| 📦 [Entry](./docs/Entry.md)                                       | Execute code when a dependency is resolved. |
 | ⚠️ [Error Management](./docs/Error%20Management.md)               | Manage errors. |
 | 🌠 [Server](./docs/Server.md)                                     | Start a server. |
 | 🚆 [Server Router](./docs/Server%20Router.md)                     | Define routes. |
@@ -14,7 +16,6 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 | 🎫 [Server Session](./docs/Server%20Session.md)                   | Manage sessions. |
 | 📞 [Server Websockets](./docs/Server%20Websockets.md)             | Serve websockets. |
 | 💠 [Server Open Api](./docs/Server%20Open%20Api.md)               | Generate an Open Api definition. |
-| ↪️ [Entry](./docs/Entry.md)                                       | Execute code when a dependency is resolved. |
 | 🎛️ [Command](./docs/Command.md)                                   | Create a console command. |
 | 🗄️ [Database](./docs/Database.md)                                 | Connect to a database and send queries. |
 | 🗄️ [Stores](./docs/Stores.md)                                     | Store data in memory and react to changes in said data. |

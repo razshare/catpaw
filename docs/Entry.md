@@ -15,25 +15,35 @@ use CatPaw\Core\Result;
 use function CatPaw\Core\ok;
 use function CatPaw\Core\error;
 
-interface CatInterface {
+interface Cat {
+    public function saySomething():void;
     public function doesTheCatBark():bool;
 }
 
-#[Provider]
-class WeirdCat implements CatInterface {
+#[Provider] class WeirdCat implements Cat {
+    public function saySomething():void {
+        echo "woof";
+    }
     public function doesTheCatBark():bool {
         return true;
     }
 }
 
-#[Provider]
-class CatOwner {
-    #[Entry]
-    public function setup(CatInterface $cat):Result {
+#[Provider] class CatOwner {
+    /**
+     * @param Cat $cat
+     * @return Result<None>
+     */
+    #[Entry] public function setup(Cat $cat):Result {
         if ($cat->doesTheCatBark()) {
             return error('You gave me a cat that barks');
         }
+        
+        $cat->saySomething();
+
         return ok();
     }
 }
  ```
+
+Unlike [constructors](./Constructors.md), entry methods can return `Result<None>` objects, which will be managed by the [container](./Container.md).
