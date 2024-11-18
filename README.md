@@ -32,7 +32,10 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 
 # Get started
 
-You will need at least [php 8.3](https://www.php.net/downloads.php) and the `php-mbstring` extension (required for PHPUnit).
+You will need at least [php 8.3](https://www.php.net/downloads.php) and the `php8.3-mbstring` and `php8.3-dom` extensions (required for PHPUnit).
+
+> [!NOTE]
+> I recommend you also install `php8.3-curl` for faster project initialization through composer.
 
 Create a new project using one of the starter templates.
 
