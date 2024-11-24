@@ -88,10 +88,17 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 <div class="error-body">
                 HTML;
 
-            foreach ($trace as ['file' => $file, 'line' => $line]) {
+            foreach ($trace as $traceItem) {
+                if (!isset($traceItem['file'])) {
+                    continue;
+                }
+                    
+                ['file' => $file, 'line' => $line] = $traceItem;
+    
                 if ('' === trim($file)) {
                     continue;
                 }
+                    
                 $content .= <<<HTML
                         <div class="error-trace-entry">
                             <span class="error-trace-line">$line</span>
