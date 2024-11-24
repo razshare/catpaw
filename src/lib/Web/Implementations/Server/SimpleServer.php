@@ -301,9 +301,11 @@ class SimpleServer implements ServerInterface {
      */
     private function initializeRoutes(string $apiPrefix, string $apiLocation):Result {
         if ($apiLocation) {
-            $dir         = getcwd();
-            $apiLocation = (string)asFileName($dir, $apiLocation);
-            $flatList    = Directory::flat($apiLocation)->unwrap($error);
+            if (!str_starts_with($apiLocation, '/')) {
+                $dir         = getcwd();
+                $apiLocation = (string)asFileName($dir, $apiLocation);
+            }
+            $flatList = Directory::flat($apiLocation)->unwrap($error);
             if ($error) {
                 return error($error);
             }
