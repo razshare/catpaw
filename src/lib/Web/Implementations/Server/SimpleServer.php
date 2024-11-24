@@ -8,7 +8,9 @@ use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
 use Amp\Http\Server\RequestHandler;
+
 use Amp\Http\Server\SocketHttpServer;
+use function CatPaw\Core\asFileName;
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Bootstrap;
 use CatPaw\Core\Container;
@@ -196,7 +198,7 @@ class SimpleServer implements ServerInterface {
         )->unwrap($error);
 
         if ($error) {
-            $logger->error((string)$error);
+            return error($error);
         }
 
         Bootstrap::onKill(function() {
@@ -299,7 +301,9 @@ class SimpleServer implements ServerInterface {
      */
     private function initializeRoutes(string $apiPrefix, string $apiLocation):Result {
         if ($apiLocation) {
-            $flatList = Directory::flat($apiLocation)->unwrap($error);
+            $dir         = getcwd();
+            $apiLocation = (string)asFileName($dir, $apiLocation);
+            $flatList    = Directory::flat($apiLocation)->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -311,9 +315,13 @@ class SimpleServer implements ServerInterface {
                 $offset       = strpos($fileName, $apiLocation);
                 $offset       = $offset?:0;
                 $relativePath = substr($fileName, $offset + strlen($apiLocation));
-
+                
                 if (!str_starts_with($relativePath, '.'.DIRECTORY_SEPARATOR)) {
                     if ($handler = require_once $fileName) {
+                        if (!is_callable($handler)) {
+                            return error("File `$fileName` is a php file that lives under a filesystem router directory, hence it must return a callable function, but it doesn't. If this file is not needed, please consider deleting it or moving it to a different directory.");
+                        }
+
                         $fileName = preg_replace('/\.php$/i', '', preg_replace('/\.\/+/', '/', '.'.DIRECTORY_SEPARATOR.$relativePath));
 
                         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
