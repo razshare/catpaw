@@ -2,7 +2,7 @@
 
 Stores are observable objects that contain a value.
 
-Each store has a `->subscribe()` method which allows the execution of a _callable_ whenever the value of the store changes, this callable provides the new value of the store as a parameter.
+Each store has a `subscribe()` method which allows the execution of a _callable_ whenever the value of the store changes, this callable provides the new value of the store as a parameter.
 
 Stores can be of 2 types:
 
@@ -10,11 +10,11 @@ Stores can be of 2 types:
 - Writable stores
 
 
-Both stores implement the `->subscribe()` and `->get()` methods, but only the `Writable` store implements the `set()` method.
+Both stores implement the `subscribe()` and `get()` methods, but only the `Writable` store implements the `set()` method.
 
 # Writable
 
-A writable store's value can be set on creation or some time after by using the `->set()` method.
+A writable store's value can be set on creation or some time after by using the `set()` method.
 
 ```php
 use function CatPaw\Store\writable;
@@ -27,8 +27,8 @@ function main() {
 }
 ```
 
- Use `->subscribe()` to watch over the value of the store.\
- The `->subscribe()` method will return itself a function.\
+ Use `subscribe()` to watch over the value of the store.\
+ The `subscribe()` method will return itself a function.\
  You can use this function to cancel the store subscription.
 
 ```php
@@ -72,7 +72,7 @@ function readable($value, $start = false);
 A readable store is very similar to a writable store.<br/>
 Two things differentiate a readable store from a writable one:
 
-1. A readable store does not offer a public `->set()` method.
+1. A readable store does not offer a public `set()` method.
 2. A readable store requires a start _callable_ when created, this _callable_ will be invoked when the first subscriber subscribes to the store.<br/>
    The start _callable_ takes  _1 parameter_ and *should* _return a function_.<br/>
       - The _parameter_ is a `$set` function which can be used to set the store's value.<br/>
