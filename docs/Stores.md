@@ -12,7 +12,7 @@ Stores can be of 2 types
 
 # Writable
 
-You can read and write values into a writable store.
+You can read and write values in a writable store.
 
 You can set the value on creation or some time after by using the `set()` method.
 
