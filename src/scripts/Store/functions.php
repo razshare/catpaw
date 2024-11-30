@@ -4,7 +4,8 @@ namespace CatPaw\Store;
 
 /**
  * @template T
- * @param  T           $value The initial value of the store
+ * @param T $value The initial value of the store
+ * @deprecated in favor of `Writable::create()`.
  * @return Writable<T>
  */
 function writable($value):Writable {
@@ -17,6 +18,7 @@ function writable($value):Writable {
  * @param  T                                        $value initial value of the store
  * @param  false|callable(callable):(void|callable) $start
  * @return Readable<T>
+ * @deprecated in favor of `Readable::create()`.
  */
 function readable(
     $value,
