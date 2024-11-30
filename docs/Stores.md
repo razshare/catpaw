@@ -14,15 +14,6 @@ Both stores implement the `subscribe()` and `get()` methods, but only the `Writa
 
 # Writable
 
-```php
-namespace CatPaw\Store;
-/**
- * @param  mixed    $value The initial value of the store
- * @return Writable
- */
-function writable($value);
-```
-
 A writable store's value can be set on creation or some time after by using the `set()` method.
 
 ```php
@@ -36,9 +27,9 @@ function main() {
 }
 ```
 
- As mentioned above stores provide a `subscribe()` method.<br/>
- This method makes it possible to watch over the value of the store.<br/>
- Once called, the `subscribe()` method will return itself a function, which when called will cancel the store subscription.
+ Use `->subscribe()` to watch over the value of the store.\
+ The `->subscribe()` method will return itself a function.\
+ You can use this function to cancel the store subscription.
 
 ```php
 use function CatPaw\Store\writable;
