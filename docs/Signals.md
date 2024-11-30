@@ -1,13 +1,6 @@
 # Signals
 
-A signal is a container of functions.\
-When a signal is _triggered_ all listener functions will be invoked.
-
-# Usage
-
-- Use `Signal::create()` to create a signal
-- Use `Signal::listen()` to listen for the signal trigger
-- Use `Signal::send()` to trigger the signal
+A signal is an object that can `send` hints to its `listen`ers.
 
 ```php
 use CatPaw\Core\Signal;
