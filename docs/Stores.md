@@ -27,8 +27,9 @@ function main() {
 }
 ```
 
-Use `subscribe()` to watch over the value of the store.\
-Remember to `$unsubscribe()` from the store after you're done with it.
+Use `subscribe()` to watch over the value of the store.
+> [!NOTE]
+> Remember to `$unsubscribe()` from the store after you're done with it.
 
 ```php
 use function CatPaw\Store\Writable;
