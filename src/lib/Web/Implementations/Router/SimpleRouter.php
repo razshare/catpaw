@@ -20,7 +20,6 @@ use CatPaw\Web\Attributes\ProducesError;
 use CatPaw\Web\Attributes\ProducesErrorItem;
 use CatPaw\Web\Attributes\ProducesItem;
 use CatPaw\Web\Attributes\ProducesPage;
-use CatPaw\Web\Attributes\Query;
 use CatPaw\Web\Attributes\Summary;
 use CatPaw\Web\Attributes\Tag;
 use CatPaw\Web\ErrorResponseModifier;
@@ -30,6 +29,7 @@ use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Page;
 use CatPaw\Web\PathResolver;
+use CatPaw\Web\Query;
 use CatPaw\Web\Route;
 use CatPaw\Web\RouterContext;
 use CatPaw\Web\SuccessResponseModifier;
@@ -242,18 +242,15 @@ class SimpleRouter implements RouterInterface {
         /** @var array<mixed> */
         $result = [];
         foreach ($reflection->getParameters() as $paramReflection) {
-            /** @var false|Query $queryAttribute */
-            $queryAttribute = Query::findByParameter($paramReflection)->unwrap($error);
+            $type = \CatPaw\Core\ReflectionTypeManager::unwrap($paramReflection)->getName();
 
-            if ($error) {
-                return error($error);
-            }
-
-            if (!$queryAttribute) {
+            if (Query::class !== $type) {
                 continue;
             }
 
-            /** @var false|Summary $summaryAttribute */
+            /**
+             * @var false|Summary $summaryAttribute 
+             */
             $summaryAttribute = Summary::findByParameter($paramReflection)->unwrap($error);
             if ($error) {
                 return error($error);
@@ -271,23 +268,17 @@ class SimpleRouter implements RouterInterface {
                 return error($error);
             }
 
-
             $reflectionType = ReflectionTypeManager::unwrap($paramReflection);
-
-
-            $type = $reflectionType?$reflectionType->getName():'string';
-
-            $type = match ($type) {
+            $type           = $reflectionType?$reflectionType->getName():'string';
+            $type           = match ($type) {
                 'int'   => 'integer',
                 'float' => 'number',
                 'bool'  => 'boolean',
                 default => $type,
             };
 
-            $schema = ["type" => $type];
-
-
-            $name     = $queryAttribute->name();
+            $schema   = ["type" => $type];
+            $name     = $paramReflection->getName();
             $summary  = $summaryAttribute?$summaryAttribute->value():'';
             $examples = [];
             foreach ($exampleAttributes as $exampleAttribute) {
@@ -295,10 +286,6 @@ class SimpleRouter implements RouterInterface {
                     ...$examples,
                     ...($exampleAttribute->value() ?? []),
                 ];
-            }
-
-            if ('' === $name) {
-                $name = $paramReflection->getName();
             }
 
             $result = [

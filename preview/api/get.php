@@ -1,5 +1,7 @@
 <?php
 use CatPaw\Document\Interfaces\DocumentInterface;
-return static fn (DocumentInterface $doc) => $doc->run('hello', [
-    'name' => 'world',
+use CatPaw\Web\Query;
+
+return static fn (DocumentInterface $doc, Query $name) => $doc->run('hello', [
+    'name' => $name->text(),
 ]);

@@ -26,6 +26,7 @@ use CatPaw\Web\Interfaces\HttpInvokerInterface;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Interfaces\SessionInterface;
 use CatPaw\Web\Page;
+use CatPaw\Web\Query;
 use CatPaw\Web\RequestContext;
 
 use function CatPaw\Web\success;
@@ -231,8 +232,11 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 Request::class     => static fn () => $context->request,
                 RequestBody::class => static fn () => $context->request->getBody(),
                 Body::class        => static fn () => new Body($context->request),
-                Accepts::class     => static fn () => Accepts::createFromRequest($context->request),
-                Page::class        => static function() use ($context) {
+                Query::class       => static function(DependencySearchResultItem $result) use ($context) {
+                    return new Query($context->requestQueries[$result->name] ?? '');
+                } ,
+                Accepts::class => static fn () => Accepts::createFromRequest($context->request),
+                Page::class    => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
                     $size  = $context->requestQueries['size']  ?? 10;
                     return
