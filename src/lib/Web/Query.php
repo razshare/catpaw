@@ -14,6 +14,10 @@ class Query implements Stringable {
     ) {
     }
 
+    public function empty():bool {
+        return '' === $this->value;
+    }
+
     public function text():string {
         return $this->value;
     }
