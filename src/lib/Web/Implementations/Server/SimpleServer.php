@@ -321,6 +321,11 @@ class SimpleServer implements ServerInterface {
         }
 
         if ($documentsLocation) {
+            if (!str_starts_with($documentsLocation, '/')) {
+                $dir               = getcwd();
+                $documentsLocation = (string)asFileName($dir, $documentsLocation);
+            }
+
             $flatList = Directory::flat($documentsLocation)->unwrap($error);
             if ($error) {
                 return error($error);
