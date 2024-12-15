@@ -17,7 +17,7 @@ interface DocumentInterface {
      * # Warning
      * 
      * This method internally redirects the current buffer output.\
-     * __Do not__ run async code inside `$fileName`!
+     * __Do not__ run async code inside `$document`!
      * @param  string              $document   Name of the document.\
      *                                         This can be the actual file name or the document 
      *                                         name you've assigned to the document using `name()`.
