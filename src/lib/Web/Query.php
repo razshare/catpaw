@@ -5,9 +5,10 @@ namespace CatPaw\Web;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
+use Stringable;
 use Throwable;
 
-class Query {
+class Query implements Stringable {
     public function __construct(
         private readonly string $value,
     ) {
@@ -57,5 +58,9 @@ class Query {
         } catch(Throwable $error) {
             return error($error);
         }
+    }
+
+    public function __toString(): string {
+        return $this->value;
     }
 }
