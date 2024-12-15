@@ -79,18 +79,21 @@ class FileName implements Stringable {
 
     public function __toString():string {
         if (isPhar()) {
-            $phar              = Phar::running();
-            $localizedFileName = str_replace("$phar/", '', self::asFileName($this->path));
+            $phar             = Phar::running();
+            $fileName         = self::asFileName($this->path);
+            $fileNamePharless = str_replace("$phar/", '', $fileName);
 
             if ($this->usingPhar) {
-                $pharFileName = "$phar/$localizedFileName";
-                if (!file_exists($pharFileName)) {
-                    return self::absolutePath($localizedFileName);
+                $fileNameRootless = str_replace(getcwd(), '', $fileName);
+                $fileNameWithPhar = "$phar/$fileNameRootless";
+                if (file_exists($fileNameWithPhar)) {
+                    return $fileNameWithPhar;
                 }
-                return $pharFileName;
             }
-            return self::absolutePath($localizedFileName);
+
+            return self::absolutePath($fileNamePharless);
         } else {
+            // exit();
             return self::absolutePath(self::asFileName($this->path));
         }
     }
