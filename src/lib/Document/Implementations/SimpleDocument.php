@@ -40,9 +40,11 @@ class SimpleDocument implements DocumentInterface {
             }
 
             $this->documents[$path] = $config;
-            if ('' !== $config->documentName) {
-                $this->aliases[$config->documentName] = $path;
+            if ('' === $config->documentName) {
+                $config->documentName = basename($path, '.php');
             }
+            
+            $this->aliases[$config->documentName] = $path;
 
             $config->mounted = true;
 
@@ -72,15 +74,26 @@ class SimpleDocument implements DocumentInterface {
                     'float'  => (float)$properties[$key],
                     'bool'   => (bool)$properties[$key],
                     'string' => (bool)$properties[$key],
-                    default  => $properties[$key],
+                    default  => $properties[$key] ?? false,
                 };
             }
 
             ob_start();
             unset($properties);
-            require($document);
-            $result = ob_get_contents()?:'';
+            $result = require($document);
+            if (1 === $result) {
+                $result = ob_get_contents()?:'';
+            }
             ob_end_clean();
+
+            if ($result instanceof Result) {
+                $value = $result->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+                return ok($value);
+            }
+
             return ok($result);
         } catch(Throwable $error) {
             return error($error);
