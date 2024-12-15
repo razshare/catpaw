@@ -45,11 +45,17 @@ interface ServerInterface {
     public function withApiPrefix(string $apiPrefix):self;
 
     /**
-     * Where to serve the api from.\
+     * Directory containing your api file.\
      * This path should contain your `get.php`, `post.php` (etc) files.
      * @param string $apiLocation
      */
     public function withApiLocation(string $apiLocation):self;
+
+    /**
+     * Directory containing your rendering documents.
+     * @param string $documentsLocation
+     */
+    public function withDocumentsLocation(string $documentsLocation):self;
     
     /**
      * Where to serve static files from.

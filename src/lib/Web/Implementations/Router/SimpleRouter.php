@@ -24,8 +24,8 @@ use CatPaw\Web\Attributes\Query;
 use CatPaw\Web\Attributes\Summary;
 use CatPaw\Web\Attributes\Tag;
 use CatPaw\Web\ErrorResponseModifier;
-use CatPaw\Web\Interfaces\OnRequest;
-use CatPaw\Web\Interfaces\OnResponse;
+use CatPaw\Web\Interfaces\OnRequestInterface;
+use CatPaw\Web\Interfaces\OnResponseInterface;
 use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Page;
@@ -170,9 +170,9 @@ class SimpleRouter implements RouterInterface {
                     return error($error);
                 }
 
-                if ($attributeInstance instanceof OnRequest) {
+                if ($attributeInstance instanceof OnRequestInterface) {
                     $onRequest[] = $attributeInstance;
-                } else if ($attributeInstance instanceof OnResponse) {
+                } else if ($attributeInstance instanceof OnResponseInterface) {
                     $onResponse[] = $attributeInstance;
                 } else if ($attributeInstance instanceof AttributeInterface) {
                     $onMount[] = $attributeInstance;

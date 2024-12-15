@@ -1,5 +1,4 @@
 <?php
-
 namespace CatPaw\Web\Implementations\Server;
 
 use Amp\CompositeException;
@@ -8,7 +7,6 @@ use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
 use Amp\Http\Server\RequestHandler;
-
 use Amp\Http\Server\SocketHttpServer;
 use function CatPaw\Core\asFileName;
 use CatPaw\Core\Attributes\Provider;
@@ -20,6 +18,7 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Core\Signal;
+use CatPaw\Document\Interfaces\DocumentInterface;
 use CatPaw\Web\Interfaces\RouteResolverInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
@@ -42,6 +41,7 @@ class SimpleServer implements ServerInterface {
     private string $secureInterface   = '';
     private string $apiPrefix         = '/';
     private string $apiLocation       = '';
+    private string $documentsLocation = '';
     private string $staticsLocation   = '';
     private bool $compression         = false;
     private int $connectionLimit      = 1000;
@@ -61,6 +61,8 @@ class SimpleServer implements ServerInterface {
         public readonly RequestHandler $requestHandler,
     ) {
     }
+
+    
 
     /** @var array<callable(HttpServer):(void|Result<void>)> */
     private array $onStartListeners = [];
@@ -135,6 +137,11 @@ class SimpleServer implements ServerInterface {
         return $this;
     }
 
+    public function withDocumentsLocation(string $documentsLocation):self {
+        $this->documentsLocation = $documentsLocation;
+        return $this;
+    }
+
     /**
      * Where to serve static files from.
      * @param string $staticsLocation
@@ -195,6 +202,14 @@ class SimpleServer implements ServerInterface {
         $this->initializeRoutes(
             apiPrefix: $this->apiPrefix,
             apiLocation: $this->apiLocation,
+        )->unwrap($error);
+
+        if ($error) {
+            return error($error);
+        }
+
+        $this->initializeDocuments(
+            documentsLocation: $this->documentsLocation,
         )->unwrap($error);
 
         if ($error) {
@@ -270,11 +285,11 @@ class SimpleServer implements ServerInterface {
 
             $endSignal->getFuture()->await();
             return ok();
-        } catch (Throwable $e) {
+        } catch (Throwable $error) {
             if (!$endSignal->isComplete()) {
                 $endSignal->complete();
             }
-            return error($e);
+            return error($error);
         }
     }
 
@@ -291,6 +306,35 @@ class SimpleServer implements ServerInterface {
                 return error($e);
             }
         }
+        return ok();
+    }
+
+    /**
+     * 
+     * @param  string       $documentsLocation
+     * @return Result<None>
+     */
+    private function initializeDocuments(string $documentsLocation):Result {
+        $document = Container::get(DocumentInterface::class)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+
+        if ($documentsLocation) {
+            $flatList = Directory::flat($documentsLocation)->unwrap($error);
+            if ($error) {
+                return error($error);
+            }
+
+            foreach ($flatList as $fileName) {
+                $document->mount($fileName)->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
+        }
+
+
         return ok();
     }
 

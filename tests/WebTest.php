@@ -17,6 +17,7 @@ use const CatPaw\Web\TEXT_HTML;
 use const CatPaw\Web\TEXT_PLAIN;
 use function json_decode;
 use PHPUnit\Framework\TestCase;
+use Tests\Types\SchemaConsumeSomething;
 
 class WebTest extends TestCase {
     public function testAll():void {
@@ -28,9 +29,9 @@ class WebTest extends TestCase {
         $this->assertNull($error);
         $server
             ->withInterface('127.0.0.1:5858')
-            ->withApiLocation(asFileName(__DIR__, './api'))
+            ->withApiLocation(asFileName(__DIR__, './Api'))
             ->withStaticsLocation(asFileName(__DIR__, './www'))
-            ->withApiPrefix('api');
+            ->withApiPrefix('Api');
 
         $readySignal = Signal::create();
 
@@ -59,7 +60,7 @@ class WebTest extends TestCase {
     }
 
     public function makeSureSessionWorks(HttpClient $http):void {
-        $request  = new Request("http://127.0.0.1:5858/api/session", "GET");
+        $request  = new Request("http://127.0.0.1:5858/Api/Session", "GET");
         $response = $http->request($request);
         $actual   = $response->getBody()->buffer();
         $this->assertEquals('0', $actual);
@@ -69,7 +70,7 @@ class WebTest extends TestCase {
         $id = $matches[1];
         $this->assertNotEmpty($id);
 
-        $request = new Request("http://127.0.0.1:5858/api/session", "GET");
+        $request = new Request("http://127.0.0.1:5858/Api/Session", "GET");
         $request->setHeader('cookie', "session-id=$id");
         $response = $http->request($request);
         $actual   = $response->getBody()->buffer();
@@ -77,7 +78,7 @@ class WebTest extends TestCase {
     }
 
     private function makeSureXmlConversionWorks(HttpClient $http):void {
-        $request = new Request("http://127.0.0.1:5858/api/object/user1", "GET");
+        $request = new Request("http://127.0.0.1:5858/Api/Object/user1", "GET");
         $request->setHeader("Accept", APPLICATION_XML);
         $response          = $http->request($request);
         $actualContentType = $response->getHeader("Content-Type");
@@ -87,7 +88,7 @@ class WebTest extends TestCase {
     }
 
     private function makeSureJsonConversionWorks(HttpClient $http):void {
-        $request = new Request("http://127.0.0.1:5858/api/object/user1", "GET");
+        $request = new Request("http://127.0.0.1:5858/Api/Object/user1", "GET");
         $request->setHeader("Accept", APPLICATION_JSON);
         $response          = $http->request($request);
         $actualContentType = $response->getHeader("Content-Type");
@@ -97,8 +98,8 @@ class WebTest extends TestCase {
     }
 
     private function makeSureProducesHintsWork(RouterInterface $router):void {
-        $api         = $router->findRoute('GET', '/api');
-        $apiUsername = $router->findRoute('GET', '/api/{username}');
+        $api         = $router->findRoute('GET', '/Api');
+        $apiUsername = $router->findRoute('GET', '/Api/{username}');
 
         $this->assertTrue((bool)$api);
         $this->assertTrue((bool)$apiUsername);
@@ -116,47 +117,47 @@ class WebTest extends TestCase {
     }
 
     private function makeSureContentNegotiationWorks(HttpClient $http):void {
-        $response1 = $http->request(new Request("http://127.0.0.1:5858/api", "GET"));
+        $response1 = $http->request(new Request("http://127.0.0.1:5858/Api", "GET"));
         $actual    = $response1->getBody()->buffer();
         $this->assertEquals("hello", $actual);
         $this->assertEquals("text/plain", $response1->getHeader("Content-Type"));
 
-        $response2 = $http->request(new Request("http://127.0.0.1:5858/api/world", "GET"));
+        $response2 = $http->request(new Request("http://127.0.0.1:5858/Api/world", "GET"));
         $actual    = $response2->getBody()->buffer();
         $this->assertEquals("hello world", $actual);
         $this->assertEquals("text/html", $response2->getHeader("Content-Type"));
     }
 
     private function makeSureParamHintsWork(RouterInterface $router, HttpClient $http):void {
-        $router->get("/get-with-params/{name}", fn (#[Param] string $name) => success("hello $name"));
-        $response = $http->request(new Request("http://127.0.0.1:5858/get-with-params/user1"));
+        $router->get("/GetWithParams/{name}", fn (#[Param] string $name) => success("hello $name"));
+        $response = $http->request(new Request("http://127.0.0.1:5858/GetWithParams/user1"));
         $this->assertEquals("hello user1", $response->getBody()->buffer());
-        $response = $http->request(new Request("http://127.0.0.1:5858/get-with-params/user2"));
+        $response = $http->request(new Request("http://127.0.0.1:5858/GetWithParams/user2"));
         $this->assertEquals("hello user2", $response->getBody()->buffer());
     }
 
     private function makeSureOpenApiDataIsGeneratedCorrectly(HttpClient $http):void {
-        $response = $http->request(new Request("http://127.0.0.1:5858/api/openapi", "GET"));
+        $response = $http->request(new Request("http://127.0.0.1:5858/Api/OpenApi", "GET"));
         $text     = $response->getBody()->buffer();
         $json     = json_decode($text, true);
         $this->assertNotEmpty($text);
         $this->assertArrayHasKey('openapi', $json);
         $this->assertArrayHasKey('info', $json);
         $this->assertArrayHasKey('paths', $json);
-        $this->assertArrayHasKey('/api/{username}', $json['paths']);
-        $this->assertArrayHasKey('get', $json['paths']['/api/{username}']);
-        $this->assertArrayHasKey('summary', $json['paths']['/api/{username}']['get']);
+        $this->assertArrayHasKey('/Api/{username}', $json['paths']);
+        $this->assertArrayHasKey('get', $json['paths']['/Api/{username}']);
+        $this->assertArrayHasKey('summary', $json['paths']['/Api/{username}']['get']);
 
-        $this->assertArrayHasKey('/api/consume-something', $json['paths']);
-        $this->assertArrayHasKey('post', $json['paths']['/api/consume-something']);
-        $this->assertArrayHasKey('requestBody', $json['paths']['/api/consume-something']['post']);
-        $this->assertArrayHasKey('content', $json['paths']['/api/consume-something']['post']['requestBody']);
-        $this->assertArrayHasKey(APPLICATION_JSON, $json['paths']['/api/consume-something']['post']['requestBody']['content']);
-        $this->assertArrayHasKey('schema', $json['paths']['/api/consume-something']['post']['requestBody']['content'][APPLICATION_JSON]);
-        $this->assertArrayHasKey('$ref', $json['paths']['/api/consume-something']['post']['requestBody']['content'][APPLICATION_JSON]['schema']);
-        $this->assertArrayHasKey('key1', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
-        $this->assertArrayHasKey('key2', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
-        $this->assertArrayHasKey('key3', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
-        $this->assertArrayHasKey('key4', $json['components']['schemas']['SchemaConsumeSomething']['properties']);
+        $this->assertArrayHasKey('/Api/ConsumeSomething', $json['paths']);
+        $this->assertArrayHasKey('post', $json['paths']['/Api/ConsumeSomething']);
+        $this->assertArrayHasKey('requestBody', $json['paths']['/Api/ConsumeSomething']['post']);
+        $this->assertArrayHasKey('content', $json['paths']['/Api/ConsumeSomething']['post']['requestBody']);
+        $this->assertArrayHasKey(APPLICATION_JSON, $json['paths']['/Api/ConsumeSomething']['post']['requestBody']['content']);
+        $this->assertArrayHasKey('schema', $json['paths']['/Api/ConsumeSomething']['post']['requestBody']['content'][APPLICATION_JSON]);
+        $this->assertArrayHasKey('$ref', $json['paths']['/Api/ConsumeSomething']['post']['requestBody']['content'][APPLICATION_JSON]['schema']);
+        $this->assertArrayHasKey('key1', $json['components']['schemas'][SchemaConsumeSomething::class]['properties']);
+        $this->assertArrayHasKey('key2', $json['components']['schemas'][SchemaConsumeSomething::class]['properties']);
+        $this->assertArrayHasKey('key3', $json['components']['schemas'][SchemaConsumeSomething::class]['properties']);
+        $this->assertArrayHasKey('key4', $json['components']['schemas'][SchemaConsumeSomething::class]['properties']);
     }
 }

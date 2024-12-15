@@ -8,8 +8,8 @@ use CatPaw\Web\Attributes\IgnoreDescribe;
 use CatPaw\Web\Attributes\IgnoreOpenApi;
 use CatPaw\Web\Attributes\Produces;
 use CatPaw\Web\Attributes\Tag;
-use CatPaw\Web\Interfaces\OnRequest;
-use CatPaw\Web\Interfaces\OnResponse;
+use CatPaw\Web\Interfaces\OnRequestInterface;
+use CatPaw\Web\Interfaces\OnResponseInterface;
 use ReflectionFunction;
 
 readonly class Route {
@@ -17,19 +17,19 @@ readonly class Route {
     public DependenciesOptions $options;
 
     /**
-     * @param ReflectionFunction        $reflectionFunction
-     * @param string                    $workDirectory
-     * @param string                    $symbolicMethod
-     * @param string                    $symbolicPath
-     * @param callable                  $function
-     * @param array<Consumes>           $consumes
-     * @param array<Produces>           $produces
-     * @param array<OnRequest>          $onRequest
-     * @param array<OnResponse>         $onResponse
-     * @param array<AttributeInterface> $onMount
-     * @param array<Tag>                $tags
-     * @param false|IgnoreOpenApi       $ignoreOpenApi
-     * @param false|IgnoreDescribe      $ignoreDescribe
+     * @param ReflectionFunction         $reflectionFunction
+     * @param string                     $workDirectory
+     * @param string                     $symbolicMethod
+     * @param string                     $symbolicPath
+     * @param callable                   $function
+     * @param array<Consumes>            $consumes
+     * @param array<Produces>            $produces
+     * @param array<OnRequestInterface>  $onRequest
+     * @param array<OnResponseInterface> $onResponse
+     * @param array<AttributeInterface>  $onMount
+     * @param array<Tag>                 $tags
+     * @param false|IgnoreOpenApi        $ignoreOpenApi
+     * @param false|IgnoreDescribe       $ignoreDescribe
      */
     public static function create(
         ReflectionFunction $reflectionFunction,
@@ -65,19 +65,19 @@ readonly class Route {
 
     /**
      *
-     * @param ReflectionFunction        $reflectionFunction
-     * @param string                    $symbolicMethod
-     * @param string                    $symbolicPath
-     * @param string                    $workDirectory
-     * @param mixed                     $function
-     * @param array<Consumes>           $consumes
-     * @param array<Produces>           $produces
-     * @param array<OnRequest>          $onRequest
-     * @param array<OnResponse>         $onResponse
-     * @param array<AttributeInterface> $onMount
-     * @param array<Tag>                $tags
-     * @param false|IgnoreOpenApi       $ignoreOpenApi
-     * @param false|IgnoreDescribe      $ignoreDescribe
+     * @param ReflectionFunction         $reflectionFunction
+     * @param string                     $symbolicMethod
+     * @param string                     $symbolicPath
+     * @param string                     $workDirectory
+     * @param mixed                      $function
+     * @param array<Consumes>            $consumes
+     * @param array<Produces>            $produces
+     * @param array<OnRequestInterface>  $onRequest
+     * @param array<OnResponseInterface> $onResponse
+     * @param array<AttributeInterface>  $onMount
+     * @param array<Tag>                 $tags
+     * @param false|IgnoreOpenApi        $ignoreOpenApi
+     * @param false|IgnoreDescribe       $ignoreDescribe
      */
     private function __construct(
         public ReflectionFunction $reflectionFunction,
