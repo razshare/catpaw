@@ -68,10 +68,11 @@ class SimpleDocument implements DocumentInterface {
         try {
             foreach ($this->documents[$document]->propertyHints as $key => $type) {
                 $$key = match ($type) {
-                    'int'   => (int)$properties[$key],
-                    'float' => (float)$properties[$key],
-                    'bool'  => (bool)$properties[$key],
-                    default => (string)$properties[$key],
+                    'int'    => (int)$properties[$key],
+                    'float'  => (float)$properties[$key],
+                    'bool'   => (bool)$properties[$key],
+                    'string' => (bool)$properties[$key],
+                    default  => $properties[$key],
                 };
             }
 
