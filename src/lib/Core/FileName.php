@@ -86,13 +86,12 @@ class FileName implements Stringable {
             if ($this->usingPhar) {
                 $fileNameRootless = str_replace(getcwd(), '', $fileName);
                 if (str_starts_with($fileNameRootless, '/')) {
-                    $fileNameRootless = substr($fileNameRootless, 1) ?? '';
+                    $fileNameRootless = substr($fileNameRootless, 1);
                 }
                 $fileNameWithPhar = "$phar/$fileNameRootless";
                 if (file_exists($fileNameWithPhar)) {
                     return $fileNameWithPhar;
                 }
-                echo "File $fileNameWithPhar does not exist\n";
                 exit();
             }
 
