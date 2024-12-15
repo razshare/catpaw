@@ -93,7 +93,6 @@ class FileName implements Stringable {
 
             return self::absolutePath($fileNamePharless);
         } else {
-            // exit();
             return self::absolutePath(self::asFileName($this->path));
         }
     }
