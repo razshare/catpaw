@@ -2,101 +2,96 @@
 namespace CatPaw\Document\Implementations;
 
 use CatPaw\Core\Attributes\Provider;
-
 use function CatPaw\Core\error;
-use function CatPaw\Core\ok;
-use CatPaw\Core\Result;
-use CatPaw\Document\DocumentPropertyHint;
-use CatPaw\Document\DocumentRunConfiguration;
 
+use function CatPaw\Core\ok;
+
+use CatPaw\Core\ReflectionTypeManager;
+use CatPaw\Core\Result;
 use CatPaw\Document\Interfaces\DocumentInterface;
+use CatPaw\Document\Render;
+use CatPaw\Web\Query;
+use ReflectionFunction;
 use Throwable;
+use WeakMap;
 
 #[Provider(singleton:true)]
 class SimpleDocument implements DocumentInterface {
-    /** @var array<string,DocumentRunConfiguration> */
-    private array $documents = [];
     /** @var array<string,string> */
     private array $aliases = [];
+    /** @var WeakMap<object,Render> */
+    private WeakMap $cache;
 
-    public function mount(string $path): Result {
+    public function __construct() {
+        $this->cache = new WeakMap;
+    }
+
+    public function mount(string $fileName): Result {
         try {
-            $config  = $GLOBALS[DocumentRunConfiguration::class] = DocumentRunConfiguration::create($path);
-            $initial = [...get_defined_vars()];
-            ob_start();
-            require($path);
-            ob_get_contents()?:'';
-            ob_end_clean();
-            $final = [...get_defined_vars()];
+            require_once($fileName);
 
-            foreach ($final as $key => $value) {
-                if ('initial' === $key || 'fileName' === $key) {
-                    continue;
-                }
+            $functionResult = error("Every document must define a `mount` function, none found in `$fileName`.");
 
-                if (!isset($initial[$key]) && $value instanceof DocumentPropertyHint) {
-                    $config->propertyHints[$key] = $value;
+            $definedFunctions = get_defined_functions();
+            /** @var array<string> */
+            $userDefinedFunctions = $definedFunctions['user'];
+
+            foreach ($userDefinedFunctions as $functionName) {
+                if ('mount' === $functionName) {
+                    $functionResult = ok($functionName(...));
                 }
             }
 
-            $this->documents[$path] = $config;
-            if ('' === $config->documentName) {
-                $config->documentName = basename($path, '.php');
+            $function = $functionResult->unwrap($error);
+            if ($error) {
+                return error($error);
             }
-            
-            $this->aliases[$config->documentName] = $path;
 
-            $config->mounted = true;
+            if (isset($this->cache[$function])) {
+                return ok($this->cache[$function]);
+            }
 
-            return ok();
+            $reflectionFunction = new ReflectionFunction($function);
+            $complexReturnType  = $reflectionFunction->getReturnType();
+
+            if (null !== $complexReturnType) {
+                $returnType     = ReflectionTypeManager::unwrap($complexReturnType);
+                $returnTypeName = $returnType->getName();
+                $void           = 'void' === $returnTypeName;
+                if (!$void) {
+                    return error("Document functions must always return `void`.");
+                }
+            }
+
+
+            $render = new Render(
+                function: $function,
+                reflectionParameters: $reflectionFunction->getParameters(),
+            );
+
+            $alias = basename($fileName, '.php');
+
+            $this->aliases[$alias]  = $fileName;
+            $this->cache[$function] = $render;
+
+            return ok($render);
         } catch (Throwable $error) {
             return error($error);
         }
     }
 
-    public function run(string $document, array $properties = []):Result {
-        if (isset($this->aliases[$document])) {
-            $document = $this->aliases[$document];
-        }
+    public function render(string $document, array|Query $properties = []):Result {
+        $fileName = match (isset($this->aliases[$document])) {
+            true  => $this->aliases[$document],
+            false => $document
+        };
+        
+        $render = $this->mount($fileName)->unwrap($error);
 
-        if (!isset($this->documents[$document])) {
-            $this->mount($document)->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
-            return $this->run($document, $properties);
-        }
-
-        try {
-            foreach ($this->documents[$document]->propertyHints as $key => $type) {
-                $$key = match ($type) {
-                    'int'    => (int)$properties[$key],
-                    'float'  => (float)$properties[$key],
-                    'bool'   => (bool)$properties[$key],
-                    'string' => (bool)$properties[$key],
-                    default  => $properties[$key] ?? false,
-                };
-            }
-
-            ob_start();
-            unset($properties);
-            $result = require($document);
-            if (1 === $result) {
-                $result = ob_get_contents()?:'';
-            }
-            ob_end_clean();
-
-            if ($result instanceof Result) {
-                $value = $result->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-                return ok($value);
-            }
-
-            return ok($result);
-        } catch(Throwable $error) {
+        if ($error) {
             return error($error);
         }
+        
+        return $render->run($properties);
     }
 }

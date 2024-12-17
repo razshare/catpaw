@@ -27,6 +27,7 @@ use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Interfaces\SessionInterface;
 use CatPaw\Web\Page;
 use CatPaw\Web\Query;
+use CatPaw\Web\QueryItem;
 use CatPaw\Web\RequestContext;
 
 use function CatPaw\Web\success;
@@ -54,8 +55,8 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         }
 
         if ($error) {
-            $message = $error->getMessage();
-            $trace   = $error->getTrace();
+            $message    = $error->getMessage();
+            $traceItems = $error->getTrace();
 
             if ('' === $style) {
                 $style = File::readFile(asFileName(__DIR__, './error.css'))->unwrap($error);
@@ -76,7 +77,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             }
 
 
-            ["file" => $mainFile, "line" => $mainLine] = $trace[0];
+            ["file" => $mainFile, "line" => $mainLine] = $traceItems[0];
 
             $content = <<<HTML
                 $allStyles
@@ -89,7 +90,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 <div class="error-body">
                 HTML;
 
-            foreach ($trace as $traceItem) {
+            foreach ($traceItems as $traceItem) {
                 if (!isset($traceItem['file'])) {
                     continue;
                 }
@@ -232,9 +233,17 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 Request::class     => static fn () => $context->request,
                 RequestBody::class => static fn () => $context->request->getBody(),
                 Body::class        => static fn () => new Body($context->request),
-                Query::class       => static function(DependencySearchResultItem $result) use ($context) {
-                    return new Query($context->requestQueries[$result->name] ?? '');
-                } ,
+                QueryItem::class   => static function(DependencySearchResultItem $result) use ($context) {
+                    return new QueryItem($context->requestQueries[$result->name] ?? '');
+                },
+                Query::class => static function() use ($context) {
+                    $map = [];
+                    foreach ($context->requestQueries as $key => $value) {
+                        $map[$key] = new QueryItem($value);
+                    }
+
+                    return new Query($map);
+                },
                 Accepts::class => static fn () => Accepts::createFromRequest($context->request),
                 Page::class    => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;

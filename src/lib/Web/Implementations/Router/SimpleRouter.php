@@ -29,7 +29,7 @@ use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Page;
 use CatPaw\Web\PathResolver;
-use CatPaw\Web\Query;
+use CatPaw\Web\QueryItem;
 use CatPaw\Web\Route;
 use CatPaw\Web\RouterContext;
 use CatPaw\Web\SuccessResponseModifier;
@@ -244,7 +244,7 @@ class SimpleRouter implements RouterInterface {
         foreach ($reflection->getParameters() as $paramReflection) {
             $type = \CatPaw\Core\ReflectionTypeManager::unwrap($paramReflection)->getName();
 
-            if (Query::class !== $type) {
+            if (QueryItem::class !== $type) {
                 continue;
             }
 

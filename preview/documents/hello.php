@@ -1,12 +1,3 @@
-<?php
-name('hello');
-
-$name ??= input();
-
-
-if (!mounted()) {
-    return;
-}
-?>
-
-hello <?= $name ?>
+<?php function mount(string $name):void { ?>
+    hello <?=$name?>
+<?php } ?>

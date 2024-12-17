@@ -24,7 +24,7 @@ class DocumentTest extends TestCase {
 
 
     private function makeSureInputWorks(DocumentInterface $compiler):void {
-        $text = $compiler->run(asFileName(__DIR__, './Assets/HelloWorld.php'), ['username' => "world"])->unwrap($error);
+        $text = $compiler->render(asFileName(__DIR__, './Documents/hello.php'), ['name' => "world"])->unwrap($error);
         $this->assertNull($error);
         $this->assertEquals('<span>hello world</span>', trim($text));
     }
