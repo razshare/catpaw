@@ -9,6 +9,7 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Result;
+use CatPaw\Document\MountContext;
 use CatPaw\Web\Attributes\Consumes;
 use CatPaw\Web\Attributes\Example;
 use CatPaw\Web\Attributes\Header;
@@ -58,6 +59,7 @@ class SimpleRouter implements RouterInterface {
      * @param  string                  $symbolicMethod
      * @param  string                  $symbolicPath
      * @param  callable|Closure        $function
+     * @param  false|MountContext      $mountContext
      * @param  string                  $workDirectory
      * @return Result<RouterInterface>
      */
@@ -65,6 +67,7 @@ class SimpleRouter implements RouterInterface {
         string $symbolicMethod,
         string $symbolicPath,
         callable|Closure $function,
+        false|MountContext $mountContext = false,
         string $workDirectory = '',
     ):Result {
         try {
@@ -204,6 +207,7 @@ class SimpleRouter implements RouterInterface {
                 ignoreOpenApi     : $ignoreOpenApi,
                 ignoreDescribe    : $ignoreDescribe,
                 tags              : $tags,
+                mountContext: $mountContext,
             );
 
             $options = DependenciesOptions::create(

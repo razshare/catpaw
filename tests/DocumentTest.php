@@ -23,8 +23,8 @@ class DocumentTest extends TestCase {
     }
 
 
-    private function makeSureInputWorks(DocumentInterface $compiler):void {
-        $modifier = $compiler->render(asFileName(__DIR__, './Documents/hello.php'), ['name' => "world"]);
+    private function makeSureInputWorks(DocumentInterface $document):void {
+        $modifier = $document->render(asFileName(__DIR__, './Documents/hello.php'), ['name' => "world"]);
         $this->assertEquals(200, $modifier->status());
         $content = $modifier->data();
         $this->assertEquals('<span>hello world</span>', trim($content));

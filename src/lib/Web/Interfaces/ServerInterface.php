@@ -52,6 +52,12 @@ interface ServerInterface {
     public function withApiLocation(string $apiLocation):self;
 
     /**
+     * The prefix of the documents.
+     * @param string $documentsPrefix
+     */
+    public function withDocumentsPrefix(string $documentsPrefix):self;
+
+    /**
      * Directory containing your rendering documents.
      * @param string $documentsLocation
      */

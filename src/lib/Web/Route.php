@@ -3,6 +3,7 @@ namespace CatPaw\Web;
 
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\Interfaces\AttributeInterface;
+use CatPaw\Document\MountContext;
 use CatPaw\Web\Attributes\Consumes;
 use CatPaw\Web\Attributes\IgnoreDescribe;
 use CatPaw\Web\Attributes\IgnoreOpenApi;
@@ -30,6 +31,7 @@ readonly class Route {
      * @param array<Tag>                 $tags
      * @param false|IgnoreOpenApi        $ignoreOpenApi
      * @param false|IgnoreDescribe       $ignoreDescribe
+     * @param false|MountContext         $mountContext
      */
     public static function create(
         ReflectionFunction $reflectionFunction,
@@ -45,6 +47,7 @@ readonly class Route {
         array $tags,
         false|IgnoreOpenApi $ignoreOpenApi,
         false|IgnoreDescribe $ignoreDescribe,
+        false|MountContext $mountContext,
     ):self {
         return new self(
             reflectionFunction: $reflectionFunction,
@@ -60,6 +63,7 @@ readonly class Route {
             tags: $tags,
             ignoreOpenApi: $ignoreOpenApi,
             ignoreDescribe: $ignoreDescribe,
+            mountContext: $mountContext,
         );
     }
 
@@ -78,6 +82,7 @@ readonly class Route {
      * @param array<Tag>                 $tags
      * @param false|IgnoreOpenApi        $ignoreOpenApi
      * @param false|IgnoreDescribe       $ignoreDescribe
+     * @param false|MountContext         $mountContext
      */
     private function __construct(
         public ReflectionFunction $reflectionFunction,
@@ -93,6 +98,7 @@ readonly class Route {
         public array $tags,
         public false|IgnoreOpenApi $ignoreOpenApi,
         public false|IgnoreDescribe $ignoreDescribe,
+        public false|MountContext $mountContext,
     ) {
     }
     public function withOptions(DependenciesOptions $options):void {

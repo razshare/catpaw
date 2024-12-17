@@ -7,6 +7,7 @@ use function CatPaw\Core\ok;
 
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Result;
+use CatPaw\Web\Body;
 use CatPaw\Web\Query;
 use ReflectionParameter;
 use Throwable;
@@ -25,10 +26,10 @@ class Render {
 
     /**
      * 
-     * @param  array<string,mixed> $properties
+     * @param  array<string|int,mixed>|Query|Body $properties
      * @return Result<string>
      */
-    public function run(array|Query $properties) {
+    public function run(array|Query|Body $properties) {
         try {
             $parameters = [];
             if ($properties instanceof Query) {
@@ -63,6 +64,17 @@ class Render {
                         default => $value->text(),
                     };
                 }
+            } else if ($properties instanceof Body) {
+                $properties = (array)$properties->object()->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+                foreach ($this->reflectionParameters as $reflectionParameter) {
+                    $name         = $reflectionParameter->getName();
+                    $parameters[] = $properties[$name];
+                }
+            } else if (array_is_list($properties)) {
+                $parameters = $properties;
             } else {
                 foreach ($this->reflectionParameters as $reflectionParameter) {
                     $name         = $reflectionParameter->getName();

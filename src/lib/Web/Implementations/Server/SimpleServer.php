@@ -19,12 +19,15 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Core\Signal;
 use CatPaw\Document\Interfaces\DocumentInterface;
+use CatPaw\Document\MountContext;
 use CatPaw\Web\Interfaces\RouteResolverInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\SessionInterface;
 use CatPaw\Web\ServerErrorHandler;
 use CatPaw\Web\SessionWithMemory;
+use CatPaw\Web\Symbolics;
+use Closure;
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use Throwable;
@@ -41,6 +44,7 @@ class SimpleServer implements ServerInterface {
     private string $secureInterface   = '';
     private string $apiPrefix         = '/';
     private string $apiLocation       = '';
+    private string $documentsPrefix   = '/';
     private string $documentsLocation = '';
     private string $staticsLocation   = '';
     private bool $compression         = false;
@@ -137,6 +141,11 @@ class SimpleServer implements ServerInterface {
         return $this;
     }
 
+    public function withDocumentsPrefix(string $documentsPrefix):self {
+        $this->documentsPrefix = $documentsPrefix;
+        return $this;
+    }
+
     public function withDocumentsLocation(string $documentsLocation):self {
         $this->documentsLocation = $documentsLocation;
         return $this;
@@ -209,6 +218,7 @@ class SimpleServer implements ServerInterface {
         }
 
         $this->initializeDocuments(
+            documentsPrefix: $this->documentsPrefix,
             documentsLocation: $this->documentsLocation,
         )->unwrap($error);
 
@@ -309,36 +319,138 @@ class SimpleServer implements ServerInterface {
         return ok();
     }
 
+    // /**
+    //  * 
+    //  * @param  string       $documentsPrefix
+    //  * @param  string       $documentsLocation
+    //  * @return Result<None>
+    //  */
+    // private function initializeDocuments(string $documentsPrefix, string $documentsLocation):Result {
+    //     $document = Container::get(DocumentInterface::class)->unwrap($error);
+    //     if ($error) {
+    //         return error($error);
+    //     }
+
+    //     if ($documentsLocation) {
+    //         if (!str_starts_with($documentsLocation, '/')) {
+    //             $dir               = getcwd();
+    //             $documentsLocation = (string)asFileName($dir, $documentsLocation);
+    //         }
+
+    //         $flatList = Directory::flat($documentsLocation)->unwrap($error);
+    //         if ($error) {
+    //             return error($error);
+    //         }
+
+    //         foreach ($flatList as $fileName) {
+    //             $document->mount(
+    //                 fileName: $fileName,
+    //                 onLoad: fn (MountContext $context) 
+    //                         => $this->initializeRoutesFromDocumentMountContext(
+    //                             documentsPrefix: $documentsPrefix,
+    //                             documentsLocation: $documentsLocation,
+    //                             context: $context,
+    //                         )
+    //             )->unwrap($error);
+    //             if ($error) {
+    //                 return error($error);
+    //             }
+    //         }
+    //     }
+
+
+    //     return ok();
+    // }
+
     /**
      * 
+     * @param  string       $documentsPrefix
      * @param  string       $documentsLocation
      * @return Result<None>
      */
-    private function initializeDocuments(string $documentsLocation):Result {
+    private function initializeDocuments(
+        string $documentsPrefix,
+        string $documentsLocation,
+    ):Result {
+        if (!$documentsLocation) {
+            return ok();
+        }
+
+        if (!str_starts_with($documentsLocation, '/')) {
+            $dir               = getcwd();
+            $documentsLocation = (string)asFileName($dir, $documentsLocation);
+        }
+
         $document = Container::get(DocumentInterface::class)->unwrap($error);
         if ($error) {
             return error($error);
         }
+        
+        $flatList = Directory::flat($documentsLocation)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
 
-        if ($documentsLocation) {
-            if (!str_starts_with($documentsLocation, '/')) {
-                $dir               = getcwd();
-                $documentsLocation = (string)asFileName($dir, $documentsLocation);
+        foreach ($flatList as $fileName) {
+            if (!str_ends_with(strtolower($fileName), '.php')) {
+                continue;
+            }
+                
+            if (str_starts_with($fileName, '.'.DIRECTORY_SEPARATOR)) {
+                return error("Unexpected relative file name `$fileName` while initializing documents.");
             }
 
-            $flatList = Directory::flat($documentsLocation)->unwrap($error);
+            $symbolics = Symbolics::fromRootAndPrefixAndFileName(
+                prefix: $documentsPrefix,
+                root: $documentsLocation,
+                fileName: $fileName,
+            )->unwrap($error);
             if ($error) {
                 return error($error);
             }
 
-            foreach ($flatList as $fileName) {
-                $document->mount($fileName)->unwrap($error);
-                if ($error) {
-                    return error($error);
+            $mountAttempt = $document->mount($fileName, function(MountContext $mountContext) use (
+                $documentsLocation,
+                $fileName,
+                $symbolics,
+            ) {
+                // Cwd.
+                $cwd = dirname($documentsLocation.$fileName)?:'';
+
+                // Functions.
+                foreach ($mountContext->functions as $functionName => $function) {
+                    $this->router
+                        ->initialize($functionName, $symbolics->path, $function, $mountContext, $cwd)
+                        ->unwrap($error);
+
+                    if ($error) {
+                        return error($error);
+                    }
                 }
+
+                // Variable functions.
+                foreach ($mountContext->variables as $variableName => $variable) {
+                    if (!($variable instanceof Closure)) {
+                        continue;
+                    }
+
+                    $this->router
+                        ->initialize($variableName, $symbolics->path, $variable, $mountContext, $cwd)
+                        ->unwrap($error);
+
+                    if ($error) {
+                        return error($error);
+                    }
+                }
+
+                return ok();
+            });
+
+            $mountAttempt->unwrap($error);
+            if ($error) {
+                return error($error);
             }
         }
-
 
         return ok();
     }
@@ -349,60 +461,61 @@ class SimpleServer implements ServerInterface {
      * @return Result<None>
      */
     private function initializeRoutes(string $apiPrefix, string $apiLocation):Result {
-        if ($apiLocation) {
-            if (!str_starts_with($apiLocation, '/')) {
-                $dir         = getcwd();
-                $apiLocation = (string)asFileName($dir, $apiLocation);
-            }
-            $flatList = Directory::flat($apiLocation)->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
+        if (!$apiLocation) {
+            return ok();
+        }
 
-            foreach ($flatList as $fileName) {
-                if (!str_ends_with(strtolower($fileName), '.php')) {
-                    continue;
-                }
-                $offset       = strpos($fileName, $apiLocation);
-                $offset       = $offset?:0;
-                $relativePath = substr($fileName, $offset + strlen($apiLocation));
+        if (!str_starts_with($apiLocation, '/')) {
+            $dir         = getcwd();
+            $apiLocation = (string)asFileName($dir, $apiLocation);
+        }
+
+        $flatList = Directory::flat($apiLocation)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+
+        foreach ($flatList as $fileName) {
+            if (!str_ends_with(strtolower($fileName), '.php')) {
+                continue;
+            }
                 
-                if (!str_starts_with($relativePath, '.'.DIRECTORY_SEPARATOR)) {
-                    if ($handler = require_once $fileName) {
-                        if (!is_callable($handler)) {
-                            return error("File `$fileName` is a php file that lives under a filesystem router directory, hence it must return a callable function, but it doesn't. If this file is not needed, please consider deleting it or moving it to a different directory.");
-                        }
+            if (str_starts_with($fileName, '.'.DIRECTORY_SEPARATOR)) {
+                return error("Unexpected relative file name `$fileName` while initializing routes.");
+            }
 
-                        $fileName = preg_replace('/\.php$/i', '', preg_replace('/\.\/+/', '/', '.'.DIRECTORY_SEPARATOR.$relativePath));
+            if ($handler = require_once $fileName) {
+                if (!is_callable($handler)) {
+                    return error("File `$fileName` is a php file that lives under a filesystem router directory, hence it must return a callable function, but it doesn't. If this file is not needed, please consider deleting it or moving it to a different directory.");
+                }
 
-                        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                            $fileName = preg_replace('/\\\\/', '/', $fileName);
-                        }
+                $symbolics = Symbolics::fromRootAndPrefixAndFileName(
+                    prefix: $apiPrefix,
+                    root: $apiLocation,
+                    fileName: $fileName,
+                )->unwrap($error);
 
-                        if (!preg_match('/^(.*)(\.|\/)(.*)$/', $fileName, $matches)) {
-                            $this->logger->error("Invalid api path for $fileName.", ["matches" => $matches]);
-                            continue;
-                        }
+                if ($error) {
+                    return error($error);
+                }
 
-                        $symbolicPath   = $apiPrefix.$matches[1];
-                        $symbolicPath   = preg_replace(['/^\/+/','/\/index$/'], ['/',''], $symbolicPath);
-                        $symbolicMethod = strtoupper($matches[3]);
+                $routeExists = $this->router->routeExists($symbolics->path, $symbolics->path);
 
-                        $routeExists = $this->router->routeExists($symbolicMethod, $symbolicPath);
+                if ($routeExists) {
+                    return error("Route `$symbolics->method $symbolics->path` already exists. Will not overwrite.");
+                }
 
-                        if (!$routeExists) {
-                            $cwd = dirname($apiLocation.$fileName)?:'';
-                            $this->router->initialize($symbolicMethod, $symbolicPath, $handler, $cwd)->unwrap($error);
-                            if ($error) {
-                                return error($error);
-                            }
-                        } else {
-                            $this->logger->info("Route `$symbolicMethod $symbolicPath` already exists. Will not overwrite.");
-                        }
-                    }
+                $cwd = dirname($apiLocation.$fileName)?:'';
+                $this->router
+                    ->initialize($symbolics->method, $symbolics->path, $handler, false, $cwd)
+                    ->unwrap($error);
+
+                if ($error) {
+                    return error($error);
                 }
             }
         }
+        
         return ok();
     }
 }
