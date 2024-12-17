@@ -5,22 +5,20 @@ namespace CatPaw\Core;
 use Phar;
 use Stringable;
 
+/**
+ * A `FileName` is an object that will stringify itself 
+ * into `$path` when cast to `string`.\
+ * The unique feature of `FileName` is that it will 
+ * automatically detect if `$path`
+ * is included in the current `.phar` bundle and it 
+ * will return the correct string according to `.phar` semantics.
+ * @package CatPaw\Core
+ */
 class FileName implements Stringable {
-    /**
-     * Create a file name starting from a `$base` directory.
-     * @param  array<string> $base
-     * @return FileName
-     */
-    public static function create(array $base):self {
-        return new self($base);
-    }
-
-    private bool $usingPhar = true;
-
     /**
      * @param array<string> $path
      */
-    private function __construct(private array $path) {
+    public function __construct(private array $path) {
     }
 
     /**
@@ -28,7 +26,7 @@ class FileName implements Stringable {
      * @param  array<string> $path
      * @return string
      */
-    private static function asFileName(array $path):string {
+    private static function glue(array $path):string {
         $parts = [];
         $count = count($path);
         for ($index = 0; $index < $count; $index++) {
@@ -41,7 +39,7 @@ class FileName implements Stringable {
         return join($parts)?:'';
     }
 
-    private static function absolutePath(string $path):string {
+    private static function normalize(string $path):string {
         $root = match (true) {
             str_starts_with($path, './')  => './',
             str_starts_with($path, '../') => '../',
@@ -53,51 +51,72 @@ class FileName implements Stringable {
         $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), function($item) {
             return (bool)strlen($item);
         });
-        $absolutes = [];
+        $normalized = [];
         foreach ($parts as $part) {
             if ('.' == $part) {
                 continue;
             }
             if ('..' == $part) {
-                array_pop($absolutes);
+                array_pop($normalized);
             } else {
-                $absolutes[] = $part;
+                $normalized[] = $part;
             }
         }
-        return $root.implode(DIRECTORY_SEPARATOR, $absolutes);
+        return $root.implode(DIRECTORY_SEPARATOR, $normalized);
     }
 
+    private bool $scanPhar = true;
+
     /**
-     * Ignore files and directories bundled into the `.phar` bundle when invoked from within a `.phar` bundle.\
-     * This makes it so that the resulting file name is always relative to the host machine, instead of it being relative to the `.phar` bundle.
+     * Don't scan the `.phar` bundle,
+     * just stringify to the original `$path`.
      * @return self
      */
     public function withoutPhar():self {
-        $this->usingPhar = false;
+        $this->scanPhar = false;
+        return $this;
+    }
+    
+    private bool $absolute = false;
+
+    /**
+     * Convert to absolute file name.
+     * @return FileName
+     */
+    public function absolute():self {
+        $this->absolute = true;
         return $this;
     }
 
+    private false|string $cache = false;
+
     public function __toString():string {
+        if (false !== $this->cache) {
+            return $this->cache;
+        }
+
         if (isPhar()) {
             $phar             = Phar::running();
-            $fileName         = self::asFileName($this->path);
+            $fileName         = self::glue($this->path);
             $fileNamePharless = str_replace("$phar/", '', $fileName);
 
-            if ($this->usingPhar) {
+            if ($this->scanPhar) {
                 $fileNameRootless = str_replace(getcwd(), '', $fileName);
                 if (str_starts_with($fileNameRootless, '/')) {
                     $fileNameRootless = substr($fileNameRootless, 1);
                 }
                 $fileNameWithPhar = "$phar/$fileNameRootless";
                 if (file_exists($fileNameWithPhar)) {
-                    return $fileNameWithPhar;
+                    return $this->cache = $fileNameWithPhar;
                 }
-                exit();
             }
 
-            return self::absolutePath($fileNamePharless);
+            return $this->cache = self::normalize($fileNamePharless);
         } else {
-            return self::absolutePath(self::asFileName($this->path));
+            if ($this->absolute) {
+                return $this->cache = realpath(self::normalize(self::glue($this->path)));
+            }
+            return $this->cache = self::normalize(self::glue($this->path));
         }
     }
 }
