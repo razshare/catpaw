@@ -75,14 +75,12 @@ interface RouterInterface {
 
     /**
      * Define an event callback for a custom http method.
-     * @param  string                  $method           the name of the http method.
-     * @param  string                  $path             the path the event should listen to.
-     * @param  callable|Closure        $function         the callback to execute.
-     * @param  bool                    $usesOutputBuffer if true, the router will 
-     *                                                   capture the output buffer of the function.
+     * @param  string                  $method   the name of the http method.
+     * @param  string                  $path     the path the event should listen to.
+     * @param  callable|Closure        $function the callback to execute.
      * @return Result<RouterInterface>
      */
-    public function custom(string $method, string $path, callable|Closure $function, bool $usesOutputBuffer):Result;
+    public function custom(string $method, string $path, callable|Closure $function):Result;
 
     /**
      * Define an event callback for the "COPY" http method.

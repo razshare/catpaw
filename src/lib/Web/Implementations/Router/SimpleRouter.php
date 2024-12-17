@@ -59,7 +59,6 @@ class SimpleRouter implements RouterInterface {
      * @param  string                  $symbolicPath
      * @param  callable|Closure        $function
      * @param  string                  $workDirectory
-     * @param  bool                    $usesOutputBuffer
      * @return Result<RouterInterface>
      */
     public function initialize(
@@ -67,7 +66,6 @@ class SimpleRouter implements RouterInterface {
         string $symbolicPath,
         callable|Closure $function,
         string $workDirectory = '',
-        bool $usesOutputBuffer = false,
     ):Result {
         try {
             if (!str_starts_with($symbolicPath, '/')) {
@@ -206,7 +204,6 @@ class SimpleRouter implements RouterInterface {
                 ignoreOpenApi     : $ignoreOpenApi,
                 ignoreDescribe    : $ignoreDescribe,
                 tags              : $tags,
-                usesOutputBuffer  : $usesOutputBuffer,
             );
 
             $options = DependenciesOptions::create(
@@ -738,7 +735,7 @@ class SimpleRouter implements RouterInterface {
     public function alias(string $originalSymbolicMethod, string $originalSymbolicPath, string $aliasSymbolicPath):Result {
         if ($this->context->routeExists($originalSymbolicMethod, $originalSymbolicPath)) {
             $originalRoute = $this->context->findRoute($originalSymbolicMethod, $originalSymbolicPath);
-            $this->custom($originalSymbolicMethod, $aliasSymbolicPath, $originalRoute->function, false);
+            $this->custom($originalSymbolicMethod, $aliasSymbolicPath, $originalRoute->function);
         } else {
             return error("Trying to create alias \"$aliasSymbolicPath\" => \"$originalSymbolicPath\", but the original route \"$originalSymbolicPath\" has not been defined.");
         }
@@ -747,15 +744,13 @@ class SimpleRouter implements RouterInterface {
 
     /**
      * Define an event callback for a custom http method.
-     * @param  string                  $method           the name of the http method.
-     * @param  string                  $path             the path the event should listen to.
-     * @param  callable|Closure        $function         the callback to execute.
-     * @param  bool                    $usesOutputBuffer if true, the router will 
-     *                                                   capture the output buffer of the function.
+     * @param  string                  $method   the name of the http method.
+     * @param  string                  $path     the path the event should listen to.
+     * @param  callable|Closure        $function the callback to execute.
      * @return Result<RouterInterface>
      */
-    public function custom(string $method, string $path, callable|Closure $function, bool $usesOutputBuffer):Result {
-        return $this->initialize($method, $path, $function, '', $usesOutputBuffer);
+    public function custom(string $method, string $path, callable|Closure $function):Result {
+        return $this->initialize($method, $path, $function);
     }
 
     /**

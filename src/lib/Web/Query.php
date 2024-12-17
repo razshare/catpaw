@@ -13,7 +13,12 @@ class Query {
         return isset($this->map[$key]);
     }
 
-    public function get(string $key):mixed {
+    /**
+     * 
+     * @param  string    $key
+     * @return QueryItem
+     */
+    public function get(string $key):QueryItem {
         return $this->map[$key];
     }
 

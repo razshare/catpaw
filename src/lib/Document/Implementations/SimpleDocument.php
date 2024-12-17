@@ -7,15 +7,22 @@ use function CatPaw\Core\error;
 
 
 use function CatPaw\Core\ok;
-
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Result;
+
 use CatPaw\Document\Interfaces\DocumentInterface;
+
 use CatPaw\Document\Render;
-use CatPaw\Web\Interfaces\RouterInterface;
+use function CatPaw\Web\failure;
+
+use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Query;
+use function CatPaw\Web\success;
+use const CatPaw\Web\TEXT_HTML;
 use ReflectionFunction;
+
 use Throwable;
+
 use WeakMap;
 
 #[Provider(singleton:true)]
@@ -25,18 +32,13 @@ class SimpleDocument implements DocumentInterface {
     /** @var WeakMap<object,Render> */
     private WeakMap $cache;
 
-    public function __construct(private RouterInterface $router) {
+    public function __construct() {
         $this->cache = new WeakMap;
     }
 
     public function mount(string $fileName): Result {
         try {
-            unset($GLOBALS['CURRENT_DOCUMENT_EXPOSE']);
-
             require_once($fileName);
-
-            $path    = $GLOBALS['CURRENT_DOCUMENT_EXPOSE']['path']    ?? '';
-            $methods = $GLOBALS['CURRENT_DOCUMENT_EXPOSE']['methods'] ?? [];
 
             $functionResult = error("Every document must define a `mount` function, none found in `$fileName`.");
 
@@ -53,16 +55,6 @@ class SimpleDocument implements DocumentInterface {
             $function = $functionResult->unwrap($error);
             if ($error) {
                 return error($error);
-            }
-
-
-            if ('' !== $path) {
-                foreach ($methods as $method) {
-                    $this->router->custom($method, $path, $function(...), true)->unwrap($error);
-                    if ($error) {
-                        return error($error);
-                    }
-                }
             }
 
             if (isset($this->cache[$function])) {
@@ -98,18 +90,26 @@ class SimpleDocument implements DocumentInterface {
         }
     }
 
-    public function render(string $document, array|Query $properties = []):Result {
-        $fileName = match (isset($this->aliases[$document])) {
-            true  => $this->aliases[$document],
-            false => $document
+    public function render(string $documentName, array|Query $properties = []):ResponseModifier {
+        $fileName = match (isset($this->aliases[$documentName])) {
+            true  => $this->aliases[$documentName],
+            false => $documentName
         };
         
         $render = $this->mount($fileName)->unwrap($error);
 
         if ($error) {
-            return error($error);
+            return failure($error->getMessage())->as(TEXT_HTML);
         }
         
-        return $render->run($properties);
+        $content = $render->run($properties)->unwrap($error);
+
+        if ($error) {
+            return failure($error->getMessage())->as(TEXT_HTML);
+        }
+
+
+
+        return success($content)->as(TEXT_HTML);
     }
 }

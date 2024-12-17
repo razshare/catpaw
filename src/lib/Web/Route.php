@@ -30,7 +30,6 @@ readonly class Route {
      * @param array<Tag>                 $tags
      * @param false|IgnoreOpenApi        $ignoreOpenApi
      * @param false|IgnoreDescribe       $ignoreDescribe
-     * @param bool                       $usesOutputBuffer
      */
     public static function create(
         ReflectionFunction $reflectionFunction,
@@ -46,7 +45,6 @@ readonly class Route {
         array $tags,
         false|IgnoreOpenApi $ignoreOpenApi,
         false|IgnoreDescribe $ignoreDescribe,
-        bool $usesOutputBuffer,
     ):self {
         return new self(
             reflectionFunction: $reflectionFunction,
@@ -62,7 +60,6 @@ readonly class Route {
             tags: $tags,
             ignoreOpenApi: $ignoreOpenApi,
             ignoreDescribe: $ignoreDescribe,
-            usesOutputBuffer: $usesOutputBuffer,
         );
     }
 
@@ -81,7 +78,6 @@ readonly class Route {
      * @param array<Tag>                 $tags
      * @param false|IgnoreOpenApi        $ignoreOpenApi
      * @param false|IgnoreDescribe       $ignoreDescribe
-     * @param bool                       $usesOutputBuffer
      */
     private function __construct(
         public ReflectionFunction $reflectionFunction,
@@ -97,7 +93,6 @@ readonly class Route {
         public array $tags,
         public false|IgnoreOpenApi $ignoreOpenApi,
         public false|IgnoreDescribe $ignoreDescribe,
-        public bool $usesOutputBuffer,
     ) {
     }
     public function withOptions(DependenciesOptions $options):void {

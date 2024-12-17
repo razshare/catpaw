@@ -1,11 +1,6 @@
-<?php
-use CatPaw\Web\QueryItem;
-?>
-
-<?php expose('/') ?>
-<?php function mount(QueryItem $name):void { ?>
+<?php function mount(string $name = 'world'):void { ?>
     <form action="?" method="get">
-        <input type="text" name="name" value="<?=$name->text()?>">
+        <input type="text" name="name" value="<?=$name?>">
         <button type="submit">Submit</button>
     </form>
 <?php } ?>

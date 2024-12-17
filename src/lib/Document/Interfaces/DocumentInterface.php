@@ -3,6 +3,7 @@ namespace CatPaw\Document\Interfaces;
 
 use CatPaw\Core\Result;
 use CatPaw\Document\Render;
+use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Query;
 
 interface DocumentInterface {
@@ -18,12 +19,10 @@ interface DocumentInterface {
      * # Warning
      * 
      * This method internally redirects the current buffer output.\
-     * __Do not__ run async code inside `$document`!
-     * @param  string              $documentName Name of the document.\
-     *                                           This can be the actual file name or the document 
-     *                                           name you've assigned to the document using `name()`.
+     * __Do not__ run async code inside `$documentName`!
+     * @param  string              $documentName Name of the document.
      * @param  array<string,mixed> $properties   Properties for the document.
-     * @return Result<string>
+     * @return ResponseModifier
      */
-    public function render(string $documentName, array|Query $properties = []):Result;
+    public function render(string $documentName, array|Query $properties = []):ResponseModifier;
 }

@@ -26,11 +26,11 @@ use CatPaw\Web\QueryItem;
 use CatPaw\Web\RequestContext;
 
 use function CatPaw\Web\success;
-use const CatPaw\Web\TEXT_HTML;
 
 
 use Psr\Log\LoggerInterface;
 use Throwable;
+
 
 #[Provider]
 class SimpleHttpInvoker implements HttpInvokerInterface {
@@ -67,28 +67,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             }
         }
 
-
-        if ($context->route->usesOutputBuffer) {
-            ob_start();
-            $output = ($function)(...$dependencies);
-            if (null === $output) {
-                $output = ob_get_contents()?:'';
-            }
-            ob_end_clean();
-
-            if ($output instanceof Result) {
-                $content = $output->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-                $modifier = success($content)->as(TEXT_HTML);
-            } else {
-                $modifier = success($output)->as(TEXT_HTML);
-            }
-        } else {
-            $modifier = $function(...$dependencies);
-        }
-
+        $modifier = $function(...$dependencies);
 
         if ($modifier instanceof Result) {
             $value = $modifier->unwrap($error);
@@ -96,7 +75,11 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 return error($error);
             }
 
-            $modifier = success($value);
+            if ($value instanceof ResponseModifier) {
+                $modifier = $value;
+            } else {
+                $modifier = success($value);
+            }
         } else if ($modifier instanceof Websocket) {
             $websocket = $modifier;
             $modifier  = success($websocket->handleRequest($context->request));
