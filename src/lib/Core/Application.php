@@ -8,8 +8,8 @@ readonly class Application implements CommandRunnerInterface {
 
     public function build(CommandBuilder $builder):void {
         $builder->withOption('m', 'main', error('No value provided.'));
-        $builder->withOption('p', 'php', error('No value provided.'));
-        $builder->withOption('e', 'environment', error('No value provided.'));
+        $builder->withOption('p', 'php', ok('/usr/bin/php'));
+        $builder->withOption('e', 'environment', ok('env.ini'));
         $builder->withOption('d', "die-on-change", ok(''));
         $builder->withOption('w', "watch", ok(''));
         $builder->withOption('n', 'name', ok('App'));
@@ -35,9 +35,6 @@ readonly class Application implements CommandRunnerInterface {
         $php = $context->get('php')->unwrap($error);
         if ($error) {
             return error($error);
-        }
-        if ($php) {
-            $php = realpath($php)?:'';
         }
 
         $name = $context->get('name')->unwrap($error);
