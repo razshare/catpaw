@@ -42,13 +42,20 @@ class SimpleDatabase implements DatabaseInterface {
         }
     }
     
-    public function send(string $query, array $parameters):Result {
+    public function send(
+        string $query,
+        array|object $parameters,
+    ):Result {
         try {
             $pool = $this->mysqlPoolResult->unwrap($error);
             if ($error) {
                 return error($error);
             }
     
+            if (is_object($parameters)) {
+                $parameters = (array)$parameters;
+            }
+
             $items = $pool->execute($query, $parameters);
             /** @var array<array<string,mixed>> */
             $result = [];
