@@ -232,7 +232,11 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                     if (!isset($context->requestPathParameters[$result->name])) {
                         return null;
                     }
-                    return (string)$context->requestPathParameters[$result->name];
+                    $text = (string)$context->requestPathParameters[$result->name];
+                    return match ($text) {
+                        ''      => $result->defaultValue,
+                        default => $text,
+                    };
                 },
             ],
             defaultArguments: [],
