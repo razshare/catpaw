@@ -4,30 +4,32 @@ namespace CatPaw\Core;
 class CommandContext {
     /**
      * 
-     * @param  array<string,CommandOption> $options
+     * @param  array<int,CommandParameter> $parameters
      * @return void
      */
-    public function __construct(private array $options) {
+    public function __construct(private array $parameters) {
     }
 
     /**
-     * Get a command option.
-     * @param  string         $name Name of the option, short or long.
+     * Get a command parameter.
+     * @param  string $name Name of the option, short or long.
      * @return string
      */
     public function get(string $name):string {
-        if (!isset($this->options[$name]) || !$this->options[$name]) {
-            return '0';
-        }
-        $value = $this->options[$name]->valueResult->unwrap($error);
-        if ($error) {
-            return '0';
+        foreach ($this->parameters as $parameter) {
+            if ($name !== $parameter->longName && $name !== $parameter->shortName) {
+                continue;
+            }
+            $value   = $parameter->value;
+            $boolean = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+
+            if ('' !== $value && $boolean) {
+                return '1';
+            }
+
+            return $value;
         }
 
-        if('' === $value){
-            return '1';
-        }
-
-        return $value?:'0';
+        return '';
     }
 }

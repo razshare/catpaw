@@ -172,13 +172,10 @@ class Container {
         try {
             $reflectionParameters = $reflection->getParameters();
             $items                = [];
-            foreach ($reflectionParameters as $key => $reflectionParameter) {
+            foreach ($reflectionParameters as $reflectionParameter) {
                 $unwrappedType = ReflectionTypeManager::unwrap($reflectionParameter);
                 $wrappedType   = ReflectionTypeManager::wrap($reflectionParameter);
                 $type          = $unwrappedType?$unwrappedType->getName():'';
-                if (FileServerOverwriteInterface::class === $type) {
-                    echo "here\n";
-                }
                 $name       = $reflectionParameter->getName();
                 $attributes = $reflectionParameter->getAttributes();
 

@@ -3,12 +3,12 @@ namespace CatPaw\Core\Implementations\Command;
 
 use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
-use CatPaw\Core\CommandOption;
+use CatPaw\Core\CommandParameter;
 use function CatPaw\Core\error;
+
 use CatPaw\Core\Interfaces\CommandInterface as InterfacesCommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 use CatPaw\Core\None;
-use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use Error;
 use Throwable;
@@ -33,57 +33,48 @@ class SimpleCommand implements InterfacesCommandInterface {
         
         $builder = new CommandBuilder;
         $command->build($builder);
-
-        /** @var array<string,CommandOption> */
-        $map = [];
-        foreach ($builder->options() as $option) {
-            if (!isset($map[$option->longName])) {
-                $map[$option->longName] = $option;
-            }
-
-            if ('' !== $option->shortName) {
-                if ($len = strlen($option->shortName) > 1) {
-                    return error("Short names must be exactly 1 character long, received `{$option->shortName}`, which is $len characters long.");
-                }
-                if (!isset($map[$option->shortName])) {
-                    $map[$option->shortName] = $option;
-                }
-            }
-        }
-
+        $parameters = &$builder->parameters();
         parse_str(implode('&', array_slice($argv, 1)), $inputs);
 
-        /** @var array<string,mixed> $inputs */
-        /** @var array<string,CommandOption> $options */
-        $options = [];
-        foreach ($map as $name => $option) {
-            $value    = $option->valueResult->unwrap($error);
-            $required = null !== $error;
-            $updated = false;
+        foreach ($inputs as $key => $value) {
+            /** @var false|int */
+            $index = false;
 
-            if(isset($inputs["--$option->longName"])){
-                $value = $inputs["--$option->longName"] ?? '1';
-                $updated = true;
+            foreach ($parameters as $indexLocal => $parameterLocal) {
+                $longNameDashed  = "--$parameterLocal->longName";
+                $shortNameDashed = "-$parameterLocal->shortName";
+                if ($key === $longNameDashed || $key === $shortNameDashed) {
+                    $index = $indexLocal;
+                    break;
+                }
             }
 
-            if(isset($inputs["-$option->shortName"])){
-                $value = $inputs["-$option->shortName"] ?? '1';
-                $updated = true;
+            if (false === $index) {
+                continue;
             }
 
-            if(!$updated && $required){
-                return error(new NoMatchError('No match.'));
+            $value = preg_replace('/(?<!\\\\)"/', '', $value);
+            $value = stripcslashes($value);
+            if('' === $value){
+                $value = '1';
             }
-            
 
-            $options[$name] = new CommandOption(
-                longName: $option->longName,
-                shortName: $option->shortName,
-                valueResult: ok($value),
+            $parameters[$index] = new CommandParameter(
+                longName: $parameters[$index]->longName,
+                shortName: $parameters[$index]->shortName,
+                required: $parameters[$index]->required,
+                updated: true,
+                value: $value,
             );
         }
 
-        $commandContext = new CommandContext($options);
+        foreach ($parameters as $indexLocal => $parameter) {
+            if ($parameter->required && !$parameter->updated) {
+                return error(new NoMatchError("Command parameter `{$parameter->longName}` is required."));
+            }
+        }
+
+        $commandContext = new CommandContext($parameters);
 
         return $command->run($commandContext);
     }

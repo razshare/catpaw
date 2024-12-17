@@ -52,7 +52,6 @@ class SimpleGpio implements GpioInterface {
             return error("Pin name must be one of the following: `7`,`11`,`12`,`13rv1`,`13`,`13rv2`,`15`,`16`,`18`,`22`. Received '$originalPin'.");
         }
 
-        // execute('echo "'.$pin.'" > /sys/class/gpio/export');
         $exportFile = File::open('/sys/class/gpio/export', 'a')->unwrap($error);
         if ($error) {
             return error($error);

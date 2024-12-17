@@ -12,12 +12,9 @@ final class BuildCommand implements CommandRunnerInterface {
     }
 
     public function build(CommandBuilder $builder):void {
-        $builder->withOption('b', 'build', error('No value provided.'));
-        $builder->withOption('o', 'optimize', ok('0'));
-        $builder->withOption('e', 'environment', ok('0'));
-
-        $builder->requires('b');
-        $builder->requires('e');
+        $builder->required('b', 'build');
+        $builder->required('e', 'environment');
+        $builder->optional('o', 'optimize');
     }
 
     public function run(CommandContext $context):Result {

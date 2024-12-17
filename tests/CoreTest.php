@@ -8,10 +8,8 @@ use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
 use CatPaw\Core\Container;
 use function CatPaw\Core\env;
-use function CatPaw\Core\error;
 
 use CatPaw\Core\File;
-use CatPaw\Core\Implementations\Command\NoMatchError;
 use CatPaw\Core\Implementations\Command\SimpleCommand;
 use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
@@ -87,57 +85,48 @@ class CoreTest extends TestCase {
      */
     public function makeSureCommandWorks(CommandInterface $command):Result {
         return anyError(function() use ($command) {
+            global $argv;
+
+            $argv[] = '--run';
+            $argv[] = '--port="\\"80"';
+            $argv[] = '--certificate="some-certificate.txt"';
+            
             $command->register($runner = new class implements CommandRunnerInterface {
                 public CommandBuilder $builder;
                 public function build(CommandBuilder $builder):void {
                     $this->builder = $builder;
-                    $builder->withOption('r', 'run', error('No value provided.'));
-                    $builder->withOption('p', 'port', ok('80'));
-                    $builder->withOption('c', 'certificate', ok('0'));
-                    $builder->requires('r');
+                    $builder->required('r', 'run');
+                    $builder->optional('p', 'port');
+                    $builder->optional('c', 'certificate');
                 }
             
                 public function run(CommandContext $context):Result {
-                    $context->get('r')->unwrap($error);
-                    if ($error) {
-                        return error($error);
-                    }
+                    $context->get('run');
                     return ok();
                 }
             })->unwrap($error);
+            
+            $parameters = $runner->builder->parameters();
 
-            $this->assertEquals(NoMatchError::class, $error::class);
+            $this->assertArrayHasKey(0, $parameters);
+            $this->assertArrayHasKey(1, $parameters);
+            $this->assertArrayHasKey(2, $parameters);
 
-            $options = $runner->builder->options();
+            $parameterRun         = $parameters[0];
+            $parameterPort        = $parameters[1];
+            $parameterCertificate = $parameters[2];
 
-            $this->assertArrayHasKey('r', $options);
-            $this->assertArrayHasKey('run', $options);
-            $this->assertArrayHasKey('p', $options);
-            $this->assertArrayHasKey('port', $options);
-            $this->assertArrayHasKey('c', $options);
-            $this->assertArrayHasKey('certificate', $options);
+            $this->assertEquals('run', $parameterRun->longName);
+            $this->assertEquals('port', $parameterPort->longName);
+            $this->assertEquals('certificate', $parameterCertificate->longName);
 
-            $r   = $options['r'];
-            $run = $options['run'];
-            $this->assertEquals($r, $run);
+            $this->assertEquals('r', $parameterRun->shortName);
+            $this->assertEquals('p', $parameterPort->shortName);
+            $this->assertEquals('c', $parameterCertificate->shortName);
 
-            $p    = $options['p'];
-            $port = $options['port'];
-            $this->assertEquals($p, $port);
-
-            $c           = $options['c'];
-            $certificate = $options['certificate'];
-            $this->assertEquals($c, $certificate);
-
-            $runValue = $run->valueResult->unwrap($error);
-            $this->assertNull($runValue);
-            $this->assertEquals("No value provided.", $error->getMessage());
-
-            $portValue = $port->valueResult->unwrap($error);
-            $this->assertEquals('80', $portValue);
-
-            $certificateValue = $certificate->valueResult->unwrap($error);
-            $this->assertEquals('0', $certificateValue);
+            $this->assertEquals('1', $parameterRun->value);
+            $this->assertEquals('"80', $parameterPort->value);
+            $this->assertEquals('some-certificate.txt', $parameterCertificate->value);
 
             return ok();
         });

@@ -7,16 +7,14 @@ readonly class Application implements CommandRunnerInterface {
     }
 
     public function build(CommandBuilder $builder):void {
-        $builder->withOption('m', 'main', error('No value provided.'));
-        $builder->withOption('p', 'php');
-        $builder->withOption('e', 'environment');
-        $builder->withOption('n', 'name');
-        $builder->withOption('d', "die-on-change");
-        $builder->withOption('w', "watch");
-        $builder->withOption('l', 'libraries');
-        $builder->withOption('r', 'resources');
-
-        $builder->requires('m');
+        $builder->required('m', 'main');
+        $builder->optional('p', 'php');
+        $builder->optional('e', 'environment');
+        $builder->optional('n', 'name');
+        $builder->optional('d', "die-on-change");
+        $builder->optional('w', "watch");
+        $builder->optional('l', 'libraries');
+        $builder->optional('r', 'resources');
     }
 
     public function run(CommandContext $context):Result {
@@ -29,7 +27,24 @@ readonly class Application implements CommandRunnerInterface {
         $main        = $context->get('main')?:'';
         $libraries   = $context->get('libraries')?:'';
         $resources   = $context->get('resources')?:'';
-        $environment = $context->get('environment')?:'env.ini';
+        $environment = $context->get('environment')?:'';
+
+        if ($main) {
+            $main = realpath($main);
+        }
+        
+        if ($libraries) {
+            $libraries = realpath($libraries);
+        }
+        
+        if ($resources) {
+            $resources = realpath($resources);
+        }
+        
+        if ($environment) {
+            $environment = realpath($environment);
+        }
+
 
         if (!$main) {
             return error('No main file specified. Use `--main=src/main.php` to specify a main file.');

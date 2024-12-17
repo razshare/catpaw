@@ -8,8 +8,7 @@ use function CatPaw\Core\Precommit\uninstallPreCommit;
 #[Provider]
 final class UninstallPreCommitCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):void {
-        $builder->withOption('u', 'uninstall-pre-commit', error('No value provided.'));
-        $builder->requires('u');
+        $builder->required('u', 'uninstall-pre-commit');
     }
 
     public function run(CommandContext $context):Result {

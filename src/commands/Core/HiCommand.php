@@ -7,12 +7,10 @@ use CatPaw\Core\Interfaces\CommandRunnerInterface;
 #[Provider]
 final class HiCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):void {
-        $builder->withOption('h', 'hi', error('No value provided.'));
-        $builder->requires('h');
+        $builder->required('h', 'hi');
     }
 
     public function run(CommandContext $context):Result {
-        echo "Hi.\n";
         return ok();
     }
 }

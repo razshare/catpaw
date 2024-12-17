@@ -81,7 +81,7 @@ function main(
     } else {
         return ok();
     }
-
+    
     // Help.
     return $command->register($helpCommand);
 }

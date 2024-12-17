@@ -9,8 +9,7 @@ use function CatPaw\Text\nocolor;
 #[Provider]
 final class TipsCommand implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):void {
-        $builder->withOption('t', 'tips', error('No value provided.'));
-        $builder->requires('t');
+        $builder->required('t', 'tips');
     }
 
     public function run(CommandContext $context):Result {

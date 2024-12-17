@@ -18,8 +18,7 @@ $runner = new class implements CommandRunnerInterface {
      * @return Result<None>
      */
     public function build(CommandBuilder $builder):void {
-        $builder->withOption('o','--option', error('No value provided.'));
-        $builder->requires('o');
+        $builder->required('o','--option', error('No value provided.'));
     }
 
     /**
