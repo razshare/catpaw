@@ -29,8 +29,11 @@ class SimpleCommand implements InterfacesCommandInterface {
      * @return Result<None>
      */
     public function register(CommandRunnerInterface $command):Result {
+        global $argv;
+        
         $builder = new CommandBuilder;
         $command->build($builder);
+
         /** @var array<string,CommandOption> */
         $map = [];
         foreach ($builder->options() as $option) {
@@ -48,85 +51,35 @@ class SimpleCommand implements InterfacesCommandInterface {
             }
         }
 
-        $longOptions  = [];
-        $shortOptions = "";
+        parse_str(implode('&', array_slice($argv, 1)), $inputs);
 
-        foreach ($map as $key => $option) {
-            if (strlen($key) <= 1) {
-                continue;
-            }
+        /** @var array<string,mixed> $inputs */
+        /** @var array<string,CommandOption> $options */
+        $options = [];
+        foreach ($map as $name => $option) {
+            $value    = $option->valueResult->unwrap($error);
+            $required = null !== $error;
 
-            $value = $option->value->unwrap($error);
+            if ($required) {
+                $value = match (true) {
+                    isset($inputs["--$option->longName"]) => $inputs["--$option->longName"] ?? '',
+                    isset($inputs["-$option->shortName"]) => $inputs["-$option->shortName"] ?? '',
+                    default                               => false,
+                };
 
-            if ($error) {
-                // Not optional.
-                $longOptions[] = "{$option->longName}::";
-                $shortOptions .= "{$option->shortName}::";
-            } else {
-                if (!is_string($value)) {
-                    $type = gettype($value);
-                    return error("Command options can be either boolean or strings, received `$type` instead.");
-                }
-                // Optional and accepts a value.
-                $longOptions[] = "{$option->longName}::";
-                $shortOptions .= "{$option->shortName}::";
-            }
-        }
-        
-        $opts = getopt($shortOptions, $longOptions);
-
-        $removableKeys = [];
-
-        foreach ($opts as $key => $value) {
-            if (is_array($value)) {
-                $removableKeys[] = $key;
-            }
-        }
-
-        foreach ($removableKeys as $key) {
-            unset($opts[$key]);
-        }
-
-        $optsCount = count($opts);
-        $mapCount  = count($map);
-
-        if (0 === $optsCount && 0 !== $mapCount) {
-            $optionals = 0;
-            foreach ($longOptions as $longOption) {
-                if (str_ends_with($longOption, '::')) {
-                    $optionals++;
+                if (false === $value) {
+                    return error(new NoMatchError('No match.'));
                 }
             }
-            $shortOptionsArray = array_filter(explode('::', $shortOptions), fn ($item) => '' !== $item);
-            $shortOptionsCount = count($shortOptionsArray);
-            $optionals += $shortOptionsCount;
-            if ($mapCount - $optionals > 0) {
-                return error(new NoMatchError("Some required options are missing."));
-            }
+
+            $options[$name] = new CommandOption(
+                longName: $option->longName,
+                shortName: $option->shortName,
+                valueResult: ok($value),
+            );
         }
 
-        foreach ($opts as $key => $value) {
-            $option = $map[$key];
-            if (false === $value) {
-                $option->value = ok('1');
-            } else {
-                // @phpstan-ignore-next-line
-                $option->value = ok($value);
-            }
-        }
-
-        $commandContext = CommandContext::create($map);
-
-        foreach ($builder->required() as $key => $required) {
-            if (!$required) {
-                continue;
-            }
-            $commandContext->get($key)->unwrap($error);
-            if ($error) {
-                return error(new NoMatchError($error));
-            }
-        }
-
+        $commandContext = new CommandContext($options);
 
         return $command->run($commandContext);
     }

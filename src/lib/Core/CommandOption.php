@@ -5,31 +5,13 @@ class CommandOption {
     /**
      * @param  string         $longName
      * @param  string         $shortName
-     * @param  Result<string> $value
-     * @return self
-     */
-    public static function create(
-        string $longName,
-        string $shortName,
-        Result $value,
-    ) {
-        return new self(
-            longName: $longName,
-            shortName: $shortName,
-            value: $value,
-        );
-    }
-
-    /**
-     * @param  string         $longName
-     * @param  string         $shortName
-     * @param  Result<string> $value
+     * @param  Result<string> $valueResult
      * @return void
      */
-    private function __construct(
+    public function __construct(
         public readonly string $longName,
         public readonly string $shortName,
-        public Result $value,
+        public Result $valueResult,
     ) {
     }
 }

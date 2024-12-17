@@ -28,7 +28,7 @@
     "prod:test": "php vendor/bin/phpunit tests",
     "dev:preview": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes ./bin/start --libraries=src/lib --main=preview/main.php --resources=preview --watch --php='php -dxdebug.mode=debug -dxdebug.start_with_request=yes'",
     "dev:generate": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries=src/lib --main=src/generate.php",
-    "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries=src/lib --main=src/main.php",
+    "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/start --libraries=src/lib --environment=./build.ini --main=src/main.php --php=/usr/bin/php",
     "dev:test": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests",
     "dev:testone": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit",
     "dev:build": "@dev:start --environment=build.ini --build --optimize",
@@ -85,8 +85,7 @@
   "minimum-stability": "stable",
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "tests/",
-      "Preview\\": "preview/lib/"
+      "Tests\\": "tests/"
     }
   },
   "require": {

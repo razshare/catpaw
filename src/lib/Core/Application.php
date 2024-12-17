@@ -8,13 +8,13 @@ readonly class Application implements CommandRunnerInterface {
 
     public function build(CommandBuilder $builder):void {
         $builder->withOption('m', 'main', error('No value provided.'));
-        $builder->withOption('d', "die-on-change", ok('0'));
-        $builder->withOption('w', "watch", ok('0'));
-        $builder->withOption('p', 'php', ok('php'));
+        $builder->withOption('p', 'php', error('No value provided.'));
+        $builder->withOption('e', 'environment', error('No value provided.'));
+        $builder->withOption('d', "die-on-change", ok(''));
+        $builder->withOption('w', "watch", ok(''));
         $builder->withOption('n', 'name', ok('App'));
-        $builder->withOption('l', 'libraries', ok('0'));
-        $builder->withOption('r', 'resources', ok('0'));
-        $builder->withOption('e', 'environment', ok('0'));
+        $builder->withOption('l', 'libraries', ok(''));
+        $builder->withOption('r', 'resources', ok(''));
 
         $builder->requires('m');
     }
@@ -22,12 +22,12 @@ readonly class Application implements CommandRunnerInterface {
     public function run(CommandContext $context):Result {
         global $argv;
 
-        $dieOnChange = $context->get('die-on-change')->unwrap($error);
+        $dieOnChange = (bool)$context->get('die-on-change')->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $watch = $context->get('watch')->unwrap($error);
+        $watch = (bool)$context->get('watch')->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -35,6 +35,9 @@ readonly class Application implements CommandRunnerInterface {
         $php = $context->get('php')->unwrap($error);
         if ($error) {
             return error($error);
+        }
+        if ($php) {
+            $php = realpath($php)?:'';
         }
 
         $name = $context->get('name')->unwrap($error);
@@ -46,22 +49,33 @@ readonly class Application implements CommandRunnerInterface {
         if ($error) {
             return error($error);
         }
+        if ($main) {
+            $main = realpath($main)?:'';
+        }
 
         $libraries = $context->get('libraries')->unwrap($error);
         if ($error) {
             return error($error);
+        }
+        if ($libraries) {
+            $libraries = realpath($libraries)?:'';
         }
 
         $resources = $context->get('resources')->unwrap($error);
         if ($error) {
             return error($error);
         }
+        if ($resources) {
+            $resources = realpath($resources)?:'';
+        }
 
         $environment = $context->get('environment')->unwrap($error);
         if ($error) {
             return error($error);
         }
-
+        if ($environment) {
+            $environment = realpath($environment)?:'';
+        }
 
         if ('' === $main) {
             return error('No main file specified. Use `--main=src/main.php` to specify a main file.');
@@ -85,10 +99,7 @@ readonly class Application implements CommandRunnerInterface {
                 libraries: $libraries,
                 resources: $resources,
                 environment: $environment,
-                dieOnChange: match ($dieOnChange) {
-                    '1'     => true,
-                    default => false,
-                },
+                dieOnChange: $dieOnChange,
             );
         }
         return ok();

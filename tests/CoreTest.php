@@ -129,14 +129,14 @@ class CoreTest extends TestCase {
             $certificate = $options['certificate'];
             $this->assertEquals($c, $certificate);
 
-            $runValue = $run->value->unwrap($error);
+            $runValue = $run->valueResult->unwrap($error);
             $this->assertNull($runValue);
             $this->assertEquals("No value provided.", $error->getMessage());
 
-            $portValue = $port->value->unwrap($error);
+            $portValue = $port->valueResult->unwrap($error);
             $this->assertEquals('80', $portValue);
 
-            $certificateValue = $certificate->value->unwrap($error);
+            $certificateValue = $certificate->valueResult->unwrap($error);
             $this->assertEquals('0', $certificateValue);
 
             return ok();

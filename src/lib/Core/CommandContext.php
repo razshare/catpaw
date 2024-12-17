@@ -5,18 +5,9 @@ class CommandContext {
     /**
      * 
      * @param  array<string,CommandOption> $options
-     * @return self
-     */
-    public static function create(array $options) {
-        return new self($options);
-    }
-
-    /**
-     * 
-     * @param  array<string,CommandOption> $options
      * @return void
      */
-    private function __construct(private array $options) {
+    public function __construct(private array $options) {
     }
 
     /**
@@ -30,7 +21,7 @@ class CommandContext {
             return error("Command option `$name` not found.");
         }
 
-        $value = $this->options[$name]->value->unwrap($error);
+        $value = $this->options[$name]->valueResult->unwrap($error);
         if ($error) {
             return error($error);
         }

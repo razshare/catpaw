@@ -38,14 +38,14 @@ class CommandBuilder {
      * Add a command option.
      * @param  string         $shortName
      * @param  string         $longName
-     * @param  Result<string> $value
+     * @param  Result<string> $valueResult
      * @return CommandBuilder
      */
-    public function withOption(string $shortName, string $longName, Result $value):self {
-        $option = CommandOption::create(
+    public function withOption(string $shortName, string $longName, Result $valueResult):self {
+        $option = new CommandOption(
             longName: $longName,
             shortName: $shortName,
-            value: $value,
+            valueResult: $valueResult,
         );
         $this->options[$longName]  = $option;
         $this->options[$shortName] = $option;
