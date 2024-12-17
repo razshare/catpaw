@@ -47,7 +47,11 @@ readonly class Application implements CommandRunnerInterface {
             return error($error);
         }
         if ($main) {
-            $main = realpath($main)?:'';
+            $mainReal = realpath($main)?:'';
+            if (!$mainReal) {
+                return error("Could not find main file `$main`.");
+            }
+            $main = $mainReal;
         }
 
         $libraries = $context->get('libraries')->unwrap($error);
@@ -55,7 +59,11 @@ readonly class Application implements CommandRunnerInterface {
             return error($error);
         }
         if ($libraries) {
-            $libraries = realpath($libraries)?:'';
+            $librariesReal = realpath($libraries)?:'';
+            if (!$librariesReal) {
+                return error("Could not find libraries directory `$libraries`.");
+            }
+            $libraries = $librariesReal;
         }
 
         $resources = $context->get('resources')->unwrap($error);
@@ -63,7 +71,11 @@ readonly class Application implements CommandRunnerInterface {
             return error($error);
         }
         if ($resources) {
-            $resources = realpath($resources)?:'';
+            $resourcesReal = realpath($resources)?:'';
+            if (!$resourcesReal) {
+                return error("Could not find libraries directory `$resources`.");
+            }
+            $resources = $resourcesReal;
         }
 
         $environment = $context->get('environment')->unwrap($error);
@@ -71,7 +83,11 @@ readonly class Application implements CommandRunnerInterface {
             return error($error);
         }
         if ($environment) {
-            $environment = realpath($environment)?:'';
+            $environmentReal = realpath($environment)?:'';
+            if (!$environmentReal) {
+                return error("Could not find environment file `$environment`.");
+            }
+            $environment = $environmentReal;
         }
 
         if ('' === $main) {

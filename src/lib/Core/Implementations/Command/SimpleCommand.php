@@ -60,16 +60,14 @@ class SimpleCommand implements InterfacesCommandInterface {
             $value    = $option->valueResult->unwrap($error);
             $required = null !== $error;
 
-            if ($required) {
-                $value = match (true) {
-                    isset($inputs["--$option->longName"]) => $inputs["--$option->longName"] ?? '',
-                    isset($inputs["-$option->shortName"]) => $inputs["-$option->shortName"] ?? '',
-                    default                               => false,
-                };
+            $value = match (true) {
+                isset($inputs["--$option->longName"]) => $inputs["--$option->longName"] ?? '',
+                isset($inputs["-$option->shortName"]) => $inputs["-$option->shortName"] ?? '',
+                default                               => false,
+            };
 
-                if (false === $value) {
-                    return error(new NoMatchError('No match.'));
-                }
+            if ($required && false === $value) {
+                return error(new NoMatchError('No match.'));
             }
 
             $options[$name] = new CommandOption(
