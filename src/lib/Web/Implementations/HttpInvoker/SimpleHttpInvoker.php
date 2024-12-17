@@ -6,17 +6,12 @@ use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestBody;
 use Amp\Http\Server\Response;
 use Amp\Websocket\Server\Websocket;
-use function CatPaw\Core\asFileName;
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
-use CatPaw\Core\File;
-use CatPaw\Core\None;
 
-use const CatPaw\Core\NONE;
-use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Web\Accepts;
 use CatPaw\Web\Body;
@@ -39,94 +34,6 @@ use Throwable;
 
 #[Provider]
 class SimpleHttpInvoker implements HttpInvokerInterface {
-    /**
-     * 
-     * @param  Result<mixed>            $value
-     * @return Result<ResponseModifier>
-     */
-    private static function renderResult(Result $value):Result {
-        static $pico      = '';
-        static $style     = '';
-        static $allStyles = '';
-        $result           = $value->unwrap($error);
-
-        if (NONE === $result || $result instanceof None) {
-            $result = '';
-        }
-
-        if ($error) {
-            $message    = $error->getMessage();
-            $traceItems = $error->getTrace();
-
-            if ('' === $style) {
-                $style = File::readFile(asFileName(__DIR__, './error.css'))->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-            }
-
-            if ('' === $pico) {
-                $pico = File::readFile(asFileName(__DIR__, './pico.css'))->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-            }
-
-            if ('' === $allStyles) {
-                $allStyles = "<style>$pico\n$style</style>";
-            }
-
-
-            ["file" => $mainFile, "line" => $mainLine] = $traceItems[0];
-
-            $content = <<<HTML
-                $allStyles
-                <div class="error-screen">
-                <div class="error-header">
-                    <h1>Error</h1>
-                    <div class="error-message">$message</div>
-                    <a href="vscode://file$mainFile:$mainLine:0" class="error-jump-main">Jump to error</a>
-                </div>
-                <div class="error-body">
-                HTML;
-
-            foreach ($traceItems as $traceItem) {
-                if (!isset($traceItem['file'])) {
-                    continue;
-                }
-                    
-                ['file' => $file, 'line' => $line] = $traceItem;
-    
-                if ('' === trim($file)) {
-                    continue;
-                }
-                    
-                $content .= <<<HTML
-                        <div class="error-trace-entry">
-                            <span class="error-trace-line">$line</span>
-                            <a href="vscode://file$file:$line:0" class="error-trace-file">$file</a>
-                        </div>
-                    HTML;
-            }
-
-            $content .= <<<HTML
-                </div>
-                </div>
-                HTML;
-            $modifier = success($content)->as(TEXT_HTML);
-        } else {
-            try {
-                $modifier = success((string)$result)->as(TEXT_HTML);
-            } catch(Throwable $error) {
-                $modifier = self::renderResult(error($error))->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-            }
-        }
-        return ok($modifier);
-    }
-
     /**
      * @param  RequestContext   $context
      * @return Result<Response>
@@ -160,13 +67,36 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             }
         }
 
-        $modifier = $function(...$dependencies);
+
+        if ($context->route->usesOutputBuffer) {
+            ob_start();
+            $output = ($function)(...$dependencies);
+            if (null === $output) {
+                $output = ob_get_contents()?:'';
+            }
+            ob_end_clean();
+
+            if ($output instanceof Result) {
+                $content = $output->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+                $modifier = success($content)->as(TEXT_HTML);
+            } else {
+                $modifier = success($output)->as(TEXT_HTML);
+            }
+        } else {
+            $modifier = $function(...$dependencies);
+        }
+
 
         if ($modifier instanceof Result) {
-            $modifier = self::renderResult($modifier)->unwrap($error);
+            $value = $modifier->unwrap($error);
             if ($error) {
                 return error($error);
             }
+
+            $modifier = success($value);
         } else if ($modifier instanceof Websocket) {
             $websocket = $modifier;
             $modifier  = success($websocket->handleRequest($context->request));

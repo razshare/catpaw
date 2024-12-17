@@ -2,7 +2,9 @@
 namespace CatPaw\Document\Implementations;
 
 use CatPaw\Core\Attributes\Provider;
+
 use function CatPaw\Core\error;
+
 
 use function CatPaw\Core\ok;
 
@@ -10,6 +12,7 @@ use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Result;
 use CatPaw\Document\Interfaces\DocumentInterface;
 use CatPaw\Document\Render;
+use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Query;
 use ReflectionFunction;
 use Throwable;
@@ -22,13 +25,18 @@ class SimpleDocument implements DocumentInterface {
     /** @var WeakMap<object,Render> */
     private WeakMap $cache;
 
-    public function __construct() {
+    public function __construct(private RouterInterface $router) {
         $this->cache = new WeakMap;
     }
 
     public function mount(string $fileName): Result {
         try {
+            unset($GLOBALS['CURRENT_DOCUMENT_EXPOSE']);
+
             require_once($fileName);
+
+            $path    = $GLOBALS['CURRENT_DOCUMENT_EXPOSE']['path']    ?? '';
+            $methods = $GLOBALS['CURRENT_DOCUMENT_EXPOSE']['methods'] ?? [];
 
             $functionResult = error("Every document must define a `mount` function, none found in `$fileName`.");
 
@@ -45,6 +53,16 @@ class SimpleDocument implements DocumentInterface {
             $function = $functionResult->unwrap($error);
             if ($error) {
                 return error($error);
+            }
+
+
+            if ('' !== $path) {
+                foreach ($methods as $method) {
+                    $this->router->custom($method, $path, $function(...), true)->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                }
             }
 
             if (isset($this->cache[$function])) {
