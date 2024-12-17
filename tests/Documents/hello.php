@@ -1,3 +1,3 @@
-<?php function mount(string $name):void { ?>
+<?php return function(string $name):void { ?>
         <span>hello <?= $name ?></span>
 <?php } ?>

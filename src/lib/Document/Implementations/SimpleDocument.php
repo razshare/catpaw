@@ -23,42 +23,22 @@ use ReflectionFunction;
 
 use Throwable;
 
-use WeakMap;
 
 #[Provider(singleton:true)]
 class SimpleDocument implements DocumentInterface {
     /** @var array<string,string> */
     private array $aliases = [];
-    /** @var WeakMap<object,Render> */
-    private WeakMap $cache;
-
-    public function __construct() {
-        $this->cache = new WeakMap;
-    }
+    /** @var array<string,Render> */
+    private array $cache = [];
 
     public function mount(string $fileName): Result {
         try {
-            require_once($fileName);
-
-            $functionResult = error("Every document must define a `mount` function, none found in `$fileName`.");
-
-            $definedFunctions = get_defined_functions();
-            /** @var array<string> */
-            $userDefinedFunctions = $definedFunctions['user'];
-
-            foreach ($userDefinedFunctions as $functionName) {
-                if ('mount' === $functionName) {
-                    $functionResult = ok($functionName(...));
-                }
+            if (!$function = require_once($fileName)) {
+                return error("A document must always return a function, non detected in `$fileName`.");
             }
 
-            $function = $functionResult->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
-
-            if (isset($this->cache[$function])) {
-                return ok($this->cache[$function]);
+            if (isset($this->cache[$fileName])) {
+                return ok($this->cache[$fileName]);
             }
 
             $reflectionFunction = new ReflectionFunction($function);
@@ -82,7 +62,7 @@ class SimpleDocument implements DocumentInterface {
             $alias = basename($fileName, '.php');
 
             $this->aliases[$alias]  = $fileName;
-            $this->cache[$function] = $render;
+            $this->cache[$fileName] = $render;
 
             return ok($render);
         } catch (Throwable $error) {
