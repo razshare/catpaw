@@ -11,20 +11,23 @@ class CommandContext {
     }
 
     /**
-     * Get a command option.\
-     * Flags are excluded. Use `isset()` to check for flags.
+     * Get a command option.
      * @param  string         $name Name of the option, short or long.
-     * @return Result<string>
+     * @return string
      */
-    public function get(string $name):Result {
-        if (!isset($this->options[$name])) {
-            return error("Command option `$name` not found.");
+    public function get(string $name):string {
+        if (!isset($this->options[$name]) || !$this->options[$name]) {
+            return '0';
         }
-
         $value = $this->options[$name]->valueResult->unwrap($error);
         if ($error) {
-            return error($error);
+            return '0';
         }
-        return ok($value);
+
+        if('' === $value){
+            return '1';
+        }
+
+        return $value?:'0';
     }
 }

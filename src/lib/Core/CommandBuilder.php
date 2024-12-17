@@ -1,6 +1,8 @@
 <?php
 namespace CatPaw\Core;
 
+define('ZERO_RESULT', ok('0'));
+
 class CommandBuilder {
     /** @var array<string,CommandOption> */
     private array $options = [];
@@ -38,14 +40,14 @@ class CommandBuilder {
      * Add a command option.
      * @param  string         $shortName
      * @param  string         $longName
-     * @param  Result<string> $valueResult
+     * @param  Result<string> $fallback
      * @return CommandBuilder
      */
-    public function withOption(string $shortName, string $longName, Result $valueResult):self {
+    public function withOption(string $shortName, string $longName, Result $fallback = ZERO_RESULT):self {
         $option = new CommandOption(
             longName: $longName,
             shortName: $shortName,
-            valueResult: $valueResult,
+            valueResult: $fallback,
         );
         $this->options[$longName]  = $option;
         $this->options[$shortName] = $option;

@@ -8,13 +8,13 @@ readonly class Application implements CommandRunnerInterface {
 
     public function build(CommandBuilder $builder):void {
         $builder->withOption('m', 'main', error('No value provided.'));
-        $builder->withOption('p', 'php', ok('/usr/bin/php'));
-        $builder->withOption('e', 'environment', ok('env.ini'));
-        $builder->withOption('d', "die-on-change", ok(''));
-        $builder->withOption('w', "watch", ok(''));
-        $builder->withOption('n', 'name', ok('App'));
-        $builder->withOption('l', 'libraries', ok(''));
-        $builder->withOption('r', 'resources', ok(''));
+        $builder->withOption('p', 'php');
+        $builder->withOption('e', 'environment');
+        $builder->withOption('n', 'name');
+        $builder->withOption('d', "die-on-change");
+        $builder->withOption('w', "watch");
+        $builder->withOption('l', 'libraries');
+        $builder->withOption('r', 'resources');
 
         $builder->requires('m');
     }
@@ -22,75 +22,16 @@ readonly class Application implements CommandRunnerInterface {
     public function run(CommandContext $context):Result {
         global $argv;
 
-        $dieOnChange = (bool)$context->get('die-on-change')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
+        $dieOnChange = (bool)$context->get('die-on-change');
+        $watch       = (bool)$context->get('watch');
+        $php         = $context->get('php')?:'/usr/bin/php';
+        $name        = $context->get('name')?:'App';
+        $main        = $context->get('main')?:'';
+        $libraries   = $context->get('libraries')?:'';
+        $resources   = $context->get('resources')?:'';
+        $environment = $context->get('environment')?:'env.ini';
 
-        $watch = (bool)$context->get('watch')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        $php = $context->get('php')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        $name = $context->get('name')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        $main = $context->get('main')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-        if ($main) {
-            $mainReal = realpath($main)?:'';
-            if (!$mainReal) {
-                return error("Could not find main file `$main`.");
-            }
-            $main = $mainReal;
-        }
-
-        $libraries = $context->get('libraries')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-        if ($libraries) {
-            $librariesReal = realpath($libraries)?:'';
-            if (!$librariesReal) {
-                return error("Could not find libraries directory `$libraries`.");
-            }
-            $libraries = $librariesReal;
-        }
-
-        $resources = $context->get('resources')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-        if ($resources) {
-            $resourcesReal = realpath($resources)?:'';
-            if (!$resourcesReal) {
-                return error("Could not find libraries directory `$resources`.");
-            }
-            $resources = $resourcesReal;
-        }
-
-        $environment = $context->get('environment')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-        if ($environment) {
-            $environmentReal = realpath($environment)?:'';
-            if (!$environmentReal) {
-                return error("Could not find environment file `$environment`.");
-            }
-            $environment = $environmentReal;
-        }
-
-        if ('' === $main) {
+        if (!$main) {
             return error('No main file specified. Use `--main=src/main.php` to specify a main file.');
         }
 

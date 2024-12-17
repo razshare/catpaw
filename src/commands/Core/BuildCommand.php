@@ -21,10 +21,7 @@ final class BuildCommand implements CommandRunnerInterface {
     }
 
     public function run(CommandContext $context):Result {
-        $environmentFile = $context->get('e')->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
+        $environmentFile = $context->get('e');
 
         if (!$environmentFile) {
             return error("Please point to an environment file using the `--environment` or `-e` options.\n");
@@ -40,7 +37,7 @@ final class BuildCommand implements CommandRunnerInterface {
             return error($error);
         }
 
-        $optimize = (bool)$context->get('optimize')->unwrap() or false;
+        $optimize = (bool)$context->get('optimize');
 
         build($optimize)->unwrap($error);
         if ($error) {
