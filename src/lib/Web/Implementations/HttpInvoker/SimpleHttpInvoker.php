@@ -55,7 +55,6 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
 
         $options = $this->createDependenciesOptions($context);
 
-
         $dependencies = Container::dependencies($reflectionFunction, $options)->unwrap($error);
 
         if ($error) {
@@ -73,8 +72,17 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         $modifier = $function(...$dependencies);
 
         if ($mountContext = $context->route->mountContext) {
+            if ($modifier instanceof Result) {
+                $modifier = $modifier->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
             $GLOBALS['DOCUMENT_VERB'] = $context->route->symbolicMethod;
-            $modifier                 = $this->document->render($mountContext->fileName, $modifier);
+            $modifier                 = $this->document->render(
+                $mountContext->fileName,
+                $modifier,
+            );
             unset($GLOBALS['DOCUMENT_VERB']);
         }
 
