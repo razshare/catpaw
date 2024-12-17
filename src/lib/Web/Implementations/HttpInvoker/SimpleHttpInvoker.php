@@ -73,7 +73,9 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         $modifier = $function(...$dependencies);
 
         if ($mountContext = $context->route->mountContext) {
-            $modifier = $this->document->render($mountContext->fileName, $modifier);
+            $GLOBALS['DOCUMENT_VERB'] = $context->route->symbolicMethod;
+            $modifier                 = $this->document->render($mountContext->fileName, $modifier);
+            unset($GLOBALS['DOCUMENT_VERB']);
         }
 
         if ($modifier instanceof Result) {

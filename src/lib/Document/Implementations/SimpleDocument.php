@@ -36,9 +36,11 @@ class SimpleDocument implements DocumentInterface {
             $initialDefinedVariables = get_defined_vars();
             $initialDefinedFunctions = get_defined_functions()['user'];
             $initialDefinedConstants = get_defined_constants();
+            
             if (!$function = require_once($fileName)) {
                 return error("A document must always return a function, non detected in `$fileName`.");
             }
+
             $finalDefinedVariables = get_defined_vars();
             $finalDefinedFunctions = get_defined_functions()['user'];
             $finalDefinedConstants = get_defined_constants();
@@ -47,11 +49,13 @@ class SimpleDocument implements DocumentInterface {
                 $functions = [];
                 $variables = [];
                 $constants = [];
+
                 foreach ($finalDefinedFunctions as $functionName) {
                     if (!in_array($functionName, $initialDefinedFunctions)) {
                         $functions[$functionName] = $functionName(...);
                     }
                 }
+
                 foreach ($finalDefinedVariables as $key => $value) {
                     if (in_array($key, [
                         'initialDefinedVariables',
@@ -66,6 +70,7 @@ class SimpleDocument implements DocumentInterface {
                         $variables[$key] = $value;
                     }
                 }
+
                 foreach ($finalDefinedConstants as $key => $value) {
                     if (in_array($key, [
                         'NULL',
@@ -76,6 +81,7 @@ class SimpleDocument implements DocumentInterface {
                         $constants[$key] = $value;
                     }
                 }
+
                 $context = new MountContext(
                     fileName: $fileName,
                     functions: $functions,
@@ -83,6 +89,7 @@ class SimpleDocument implements DocumentInterface {
                     constants: $constants,
                     mountFunction: $function,
                 );
+
                 $onLoad($context)->unwrap($error);
                 if ($error) {
                     return error($error);
