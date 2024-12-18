@@ -44,7 +44,7 @@ class SimpleDatabase implements DatabaseInterface {
     
     public function send(
         string $query,
-        array|object $parameters,
+        mixed $parameters,
     ):Result {
         try {
             $pool = $this->mysqlPoolResult->unwrap($error);
@@ -52,7 +52,7 @@ class SimpleDatabase implements DatabaseInterface {
                 return error($error);
             }
     
-            if (is_object($parameters)) {
+            if ($parameters instanceof \stdClass) {
                 $parameters = (array)$parameters;
             }
 

@@ -65,7 +65,7 @@ class Render {
                     };
                 }
             } else if ($properties instanceof Body) {
-                $properties = (array)$properties->object()->unwrap($error);
+                $properties = (array)$properties->parse()->unwrap($error);
                 if ($error) {
                     return error($error);
                 }
