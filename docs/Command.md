@@ -15,7 +15,7 @@ $runner = new class implements CommandRunnerInterface {
     /**
      * Build the command.
      * @param  CommandBuilder $builder
-     * @return Result<None>
+     * @return void
      */
     public function build(CommandBuilder $builder):void {
         $builder->required('o','option');
