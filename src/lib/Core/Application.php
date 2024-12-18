@@ -37,10 +37,8 @@ readonly class Application implements CommandRunnerInterface {
             $libraries = realpath($libraries);
         }
         
-        if ($resources) {
-            foreach ($resources as &$resource) {
-                $resource = realpath($resource);
-            }
+        foreach ($resources as &$resource) {
+            $resource = realpath($resource);
         }
         $resources = join(',', $resources);
         
