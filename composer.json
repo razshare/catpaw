@@ -47,9 +47,6 @@
         "src/lib/Core",
         "src/commands/Core"
       ],
-      "CatPaw\\Document\\": [
-        "src/lib/Document"
-      ],
       "CatPaw\\Database\\": [
         "src/lib/Database"
       ],
@@ -73,7 +70,6 @@
     "files": [
       "src/scripts/Core/constants.php",
       "src/scripts/Core/functions.php",
-      "src/scripts/Document/functions.php",
       "src/scripts/Core/Build/functions.php",
       "src/scripts/Core/Precommit/functions.php",
       "src/scripts/Store/functions.php",

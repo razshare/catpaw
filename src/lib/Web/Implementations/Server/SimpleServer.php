@@ -18,8 +18,6 @@ use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Core\Signal;
-use CatPaw\Document\Interfaces\DocumentInterface;
-use CatPaw\Document\MountContext;
 use CatPaw\Web\Interfaces\RouteResolverInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
@@ -27,7 +25,6 @@ use CatPaw\Web\Interfaces\SessionInterface;
 use CatPaw\Web\ServerErrorHandler;
 use CatPaw\Web\SessionWithMemory;
 use CatPaw\Web\Symbolics;
-use Closure;
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
 use Throwable;
@@ -44,8 +41,6 @@ class SimpleServer implements ServerInterface {
     private string $secureInterface   = '';
     private string $apiPrefix         = '/';
     private string $apiLocation       = '';
-    private string $documentsPrefix   = '/';
-    private string $documentsLocation = '';
     private string $staticsLocation   = '';
     private bool $compression         = false;
     private int $connectionLimit      = 1000;
@@ -141,16 +136,6 @@ class SimpleServer implements ServerInterface {
         return $this;
     }
 
-    public function withDocumentsPrefix(string $documentsPrefix):self {
-        $this->documentsPrefix = $documentsPrefix;
-        return $this;
-    }
-
-    public function withDocumentsLocation(string $documentsLocation):self {
-        $this->documentsLocation = $documentsLocation;
-        return $this;
-    }
-
     /**
      * Where to serve static files from.
      * @param string $staticsLocation
@@ -211,15 +196,6 @@ class SimpleServer implements ServerInterface {
         $this->initializeRoutes(
             apiPrefix: $this->apiPrefix,
             apiLocation: $this->apiLocation,
-        )->unwrap($error);
-
-        if ($error) {
-            return error($error);
-        }
-
-        $this->initializeDocuments(
-            documentsPrefix: $this->documentsPrefix,
-            documentsLocation: $this->documentsLocation,
         )->unwrap($error);
 
         if ($error) {
@@ -319,142 +295,6 @@ class SimpleServer implements ServerInterface {
         return ok();
     }
 
-    // /**
-    //  * 
-    //  * @param  string       $documentsPrefix
-    //  * @param  string       $documentsLocation
-    //  * @return Result<None>
-    //  */
-    // private function initializeDocuments(string $documentsPrefix, string $documentsLocation):Result {
-    //     $document = Container::get(DocumentInterface::class)->unwrap($error);
-    //     if ($error) {
-    //         return error($error);
-    //     }
-
-    //     if ($documentsLocation) {
-    //         if (!str_starts_with($documentsLocation, '/')) {
-    //             $dir               = getcwd();
-    //             $documentsLocation = (string)asFileName($dir, $documentsLocation);
-    //         }
-
-    //         $flatList = Directory::flat($documentsLocation)->unwrap($error);
-    //         if ($error) {
-    //             return error($error);
-    //         }
-
-    //         foreach ($flatList as $fileName) {
-    //             $document->mount(
-    //                 fileName: $fileName,
-    //                 onLoad: fn (MountContext $context) 
-    //                         => $this->initializeRoutesFromDocumentMountContext(
-    //                             documentsPrefix: $documentsPrefix,
-    //                             documentsLocation: $documentsLocation,
-    //                             context: $context,
-    //                         )
-    //             )->unwrap($error);
-    //             if ($error) {
-    //                 return error($error);
-    //             }
-    //         }
-    //     }
-
-
-    //     return ok();
-    // }
-
-    /**
-     * 
-     * @param  string       $documentsPrefix
-     * @param  string       $documentsLocation
-     * @return Result<None>
-     */
-    private function initializeDocuments(
-        string $documentsPrefix,
-        string $documentsLocation,
-    ):Result {
-        if (!$documentsLocation) {
-            return ok();
-        }
-
-        if (!str_starts_with($documentsLocation, '/')) {
-            $dir               = getcwd();
-            $documentsLocation = (string)asFileName($dir, $documentsLocation);
-        }
-
-        $document = Container::get(DocumentInterface::class)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-        
-        $flatList = Directory::flat($documentsLocation)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-
-        foreach ($flatList as $fileName) {
-            if (!str_ends_with(strtolower($fileName), '.php')) {
-                continue;
-            }
-                
-            if (str_starts_with($fileName, '.'.DIRECTORY_SEPARATOR)) {
-                return error("Unexpected relative file name `$fileName` while initializing documents.");
-            }
-
-            $symbolics = Symbolics::fromRootAndPrefixAndFileName(
-                prefix: $documentsPrefix,
-                root: $documentsLocation,
-                fileName: $fileName,
-            )->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
-
-            $mountAttempt = $document->mount($fileName, function(MountContext $mountContext) use (
-                $documentsLocation,
-                $fileName,
-                $symbolics,
-            ) {
-                // Cwd.
-                $cwd = dirname($documentsLocation.$fileName)?:'';
-
-                // Functions.
-                foreach ($mountContext->functions as $functionName => $function) {
-                    $this->router
-                        ->initialize($functionName, $symbolics->path, $function, $mountContext, $cwd)
-                        ->unwrap($error);
-
-                    if ($error) {
-                        return error($error);
-                    }
-                }
-
-                // Variable functions.
-                foreach ($mountContext->variables as $variableName => $variable) {
-                    if (!($variable instanceof Closure)) {
-                        continue;
-                    }
-
-                    $this->router
-                        ->initialize($variableName, $symbolics->path, $variable, $mountContext, $cwd)
-                        ->unwrap($error);
-
-                    if ($error) {
-                        return error($error);
-                    }
-                }
-
-                return ok();
-            });
-
-            $mountAttempt->unwrap($error);
-            if ($error) {
-                return error($error);
-            }
-        }
-
-        return ok();
-    }
-
     /**
      * @param  string       $apiPrefix
      * @param  string       $apiLocation
@@ -507,7 +347,7 @@ class SimpleServer implements ServerInterface {
 
                 $cwd = dirname($apiLocation.$fileName)?:'';
                 $this->router
-                    ->initialize($symbolics->method, $symbolics->path, $handler, false, $cwd)
+                    ->initialize($symbolics->method, $symbolics->path, $handler, $cwd)
                     ->unwrap($error);
 
                 if ($error) {

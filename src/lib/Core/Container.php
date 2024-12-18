@@ -15,7 +15,6 @@ use CatPaw\Core\Interfaces\OnParameterMount;
 use CatPaw\Core\Interfaces\StorageInterface;
 use CatPaw\Store\Readable;
 use CatPaw\Store\Writable;
-use CatPaw\Web\Interfaces\FileServerOverwriteInterface;
 use Closure;
 use FFI;
 use Phar;
@@ -102,7 +101,6 @@ class Container {
             class_exists($className = \CatPaw\Web\Implementations\Server\SimpleServer::class)                 => error("Could not load class $className"),
             class_exists($className = \CatPaw\Web\Implementations\Websocket\SimpleWebsocket::class)           => error("Could not load class $className"),
             class_exists($className = \CatPaw\Web\Implementations\Generate\SimpleGenerate::class)             => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Document\Implementations\SimpleDocument::class)                 => error("Could not load class $className"),
             class_exists($className = \CatPaw\Database\Implementations\SimpleDatabase::class)                 => error("Could not load class $className"),
             default                                                                                           => ok()
         };
@@ -176,8 +174,8 @@ class Container {
                 $unwrappedType = ReflectionTypeManager::unwrap($reflectionParameter);
                 $wrappedType   = ReflectionTypeManager::wrap($reflectionParameter);
                 $type          = $unwrappedType?$unwrappedType->getName():'';
-                $name       = $reflectionParameter->getName();
-                $attributes = $reflectionParameter->getAttributes();
+                $name          = $reflectionParameter->getName();
+                $attributes    = $reflectionParameter->getAttributes();
 
                 $isOptional   = $wrappedType->allowsDefaultValue() || $wrappedType->allowsNullValue();
                 $defaultValue = match ($wrappedType->allowsDefaultValue()) {

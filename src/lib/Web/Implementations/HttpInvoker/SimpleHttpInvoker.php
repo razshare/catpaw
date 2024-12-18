@@ -12,10 +12,8 @@ use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
 
-use CatPaw\Core\None;
 
 use CatPaw\Core\Result;
-use CatPaw\Document\Interfaces\DocumentInterface;
 use CatPaw\Web\Accepts;
 use CatPaw\Web\Body;
 use function CatPaw\Web\failure;
@@ -37,7 +35,7 @@ use Throwable;
 
 #[Provider]
 class SimpleHttpInvoker implements HttpInvokerInterface {
-    public function __construct(private DocumentInterface $document) {
+    public function __construct() {
     }
     /**
      * @param  RequestContext   $context
@@ -72,24 +70,6 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         }
 
         $modifier = $function(...$dependencies);
-
-        if ($mountContext = $context->route->mountContext) {
-            if ($modifier instanceof Result) {
-                $modifier = $modifier->unwrap($error);
-                if ($error) {
-                    return error($error);
-                }
-            }
-            $GLOBALS['DOCUMENT_VERB'] = $context->route->symbolicMethod;
-            $modifier                 = $this->document->render(
-                $mountContext->fileName,
-                match ($modifier instanceof None) {
-                    true  => [],
-                    false => $modifier,
-                },
-            );
-            unset($GLOBALS['DOCUMENT_VERB']);
-        }
 
         if ($modifier instanceof Result) {
             $value = $modifier->unwrap($error);

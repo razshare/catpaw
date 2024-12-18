@@ -3,7 +3,6 @@ namespace CatPaw\Web\Interfaces;
 
 use CatPaw\Core\None;
 use CatPaw\Core\Result;
-use CatPaw\Document\MountContext;
 use CatPaw\Web\Route;
 use CatPaw\Web\RouterContext;
 use Closure;
@@ -21,7 +20,6 @@ interface RouterInterface {
      * @param  string                  $symbolicMethod
      * @param  string                  $symbolicPath
      * @param  callable|Closure        $function
-     * @param  false|MountContext      $mountContext
      * @param  string                  $workDirectory
      * @return Result<RouterInterface>
      */
@@ -29,7 +27,6 @@ interface RouterInterface {
         string $symbolicMethod,
         string $symbolicPath,
         callable|Closure $function,
-        false|MountContext $mountContext = false,
         string $workDirectory = '',
     ):Result;
 
