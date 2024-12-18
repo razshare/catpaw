@@ -18,7 +18,7 @@ $runner = new class implements CommandRunnerInterface {
      * @return Result<None>
      */
     public function build(CommandBuilder $builder):void {
-        $builder->required('o','--option');
+        $builder->required('o','option');
     }
 
     /**
@@ -26,7 +26,7 @@ $runner = new class implements CommandRunnerInterface {
      * @return Result<None>
      */
     public function run(CommandContext $context):Result {
-        $value = $context->get('o');
+        $value = $context->get('option');
         echo "$value\n";
         return ok();
     }
