@@ -149,7 +149,11 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 RequestBody::class => static fn () => $context->request->getBody(),
                 Body::class        => static fn () => new Body($context->request),
                 QueryItem::class   => static function(DependencySearchResultItem $result) use ($context) {
-                    return new QueryItem($context->requestQueries[$result->name] ?? '');
+                    $value = $context->requestQueries[$result->name] ?? false;
+                    if ('' === $value) {
+                        return new QueryItem(false);
+                    }
+                    return new QueryItem($value);
                 },
                 Query::class => static function() use ($context) {
                     $map = [];

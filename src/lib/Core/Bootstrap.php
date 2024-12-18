@@ -391,7 +391,7 @@ class Bootstrap {
                 }
 
                 $firstPass = false;
-                delay(0.1);
+                delay(2);
             }
         });
     }

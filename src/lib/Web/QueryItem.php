@@ -2,60 +2,57 @@
 
 namespace CatPaw\Web;
 
-use function CatPaw\Core\error;
-use function CatPaw\Core\ok;
-use CatPaw\Core\Result;
 use Throwable;
 
 class QueryItem {
     public function __construct(
-        private readonly string $value,
+        private readonly false|string $value,
     ) {
     }
 
-    public function text():string {
+    public function text():false|string {
         return $this->value;
     }
 
     /**
-     * @return Result<int>
+     * @return false|int
      */
-    public function int():Result {
+    public function int():false|int {
         try {
             if (is_numeric($this->value)) {
-                return ok((int)$this->value);
+                return (int)$this->value;
             } else {
-                return error('Body was expected to be numeric (int), but non numeric value has been provided instead `'.$this->value.'`');
+                return false;
             }
-        } catch(Throwable $error) {
-            return error($error);
+        } catch(Throwable) {
+            return false;
         }
     }
 
 
     /**
-     * @return Result<bool>
+     * @return bool
      */
-    public function bool():Result {
+    public function bool():bool {
         try {
-            return ok(filter_var($this->value, FILTER_VALIDATE_BOOLEAN));
-        } catch(Throwable $error) {
-            return error($error);
+            return filter_var($this->value, FILTER_VALIDATE_BOOLEAN);
+        } catch(Throwable) {
+            return false;
         }
     }
 
     /**
-     * @return Result<float>
+     * @return false|float
      */
-    public function float():Result {
+    public function float():false|float {
         try {
             if (is_numeric($this->value)) {
-                return ok((float)$this->value);
+                return (float)$this->value;
             } else {
-                return error('Body was expected to be numeric (float), but non numeric value has been provided instead `'.$this->value.'`');
+                return false;
             }
-        } catch(Throwable $error) {
-            return error($error);
+        } catch(Throwable) {
+            return false;
         }
     }
 }

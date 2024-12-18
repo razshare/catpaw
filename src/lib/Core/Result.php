@@ -7,6 +7,7 @@ use CatPaw\Web\Interfaces\ResponseModifier;
 use function CatPaw\Web\success;
 
 use Error;
+use Psr\Log\LoggerInterface;
 
 /**
  * @template T
@@ -33,6 +34,29 @@ readonly class Result {
         }
 
         return success($this->value);
+    }
+
+    public function logError() {
+        static $logger = false;
+        static $first  = true;
+
+        if (!$this->error) {
+            return;
+        }
+
+        if ($first) {
+            $first = false;
+            if (!$logger) {
+                $logger = Container::get(LoggerInterface::class)->unwrap($error);
+            }
+        }
+
+        if (!$logger) {
+            /** @var false|LoggerInterface $logger */
+            $logger->error($this->error->getMessage());
+        } else {
+            echo $this->error->getMessage();
+        }
     }
 
     /**
