@@ -18,7 +18,7 @@ $runner = new class implements CommandRunnerInterface {
      * @return Result<None>
      */
     public function build(CommandBuilder $builder):void {
-        $builder->required('o','--option', error('No value provided.'));
+        $builder->required('o','--option');
     }
 
     /**
@@ -26,10 +26,8 @@ $runner = new class implements CommandRunnerInterface {
      * @return Result<None>
      */
     public function run(CommandContext $context):Result {
-        $value = $context->get('o')->unwrap($error);
-        if($error){
-            return error($error);
-        }
+        $value = $context->get('o');
+        echo "$value\n";
         return ok();
     }
 }
@@ -39,4 +37,4 @@ function main(CommandInterface $command){
 }
 ```
 
-Your command will the execute whenever the console user issues the required options of your command.
+Your command will the execute whenever the console user issues the required parameters of your command.
