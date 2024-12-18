@@ -36,7 +36,11 @@ readonly class Result {
         return success($this->value);
     }
 
-    public function logError() {
+    /**
+     * Log the error.
+     * @return void
+     */
+    public function logError():void {
         static $logger = false;
         static $first  = true;
 
