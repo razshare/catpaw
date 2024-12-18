@@ -11,7 +11,7 @@ class Signal {
      * @return self
      */
     public static function create():self {
-        return new self(list: LinkedList::create());
+        return new self(list: new LinkedList);
     }
 
     /**

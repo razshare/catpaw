@@ -11,25 +11,25 @@ use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
-
+use function CatPaw\Core\ok;
 
 use CatPaw\Core\Result;
 use CatPaw\Web\Accepts;
+use CatPaw\Web\Attributes\Query;
 use CatPaw\Web\Body;
 use function CatPaw\Web\failure;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\HttpInvokerInterface;
+use CatPaw\Web\Interfaces\RenderInterface;
 use CatPaw\Web\Interfaces\ResponseModifier;
 use CatPaw\Web\Interfaces\SessionInterface;
 use CatPaw\Web\Page;
-use CatPaw\Web\Query;
 use CatPaw\Web\QueryItem;
 use CatPaw\Web\RequestContext;
 
 use function CatPaw\Web\success;
 
 
-use Psr\Log\LoggerInterface;
 use Throwable;
 
 
@@ -64,12 +64,28 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         foreach ($onRequests as $onRequest) {
             $onRequest->onRequest($context->request)->unwrap($error);
             if ($error) {
-                echo $error.PHP_EOL;
-                break;
+                return error($error);
             }
         }
 
         $modifier = $function(...$dependencies);
+
+        foreach ($dependencies as $dependency) {
+            if ($dependency instanceof RenderInterface) {
+                if (null !== $modifier) {
+                    return error("You cannot both return a value from your route handler and render at the same time, but route `{$context->route->symbolicMethod} {$context->route->symbolicPath}` is trying to do just that. Please pick one, either return a value or render a document.");
+                }
+                
+                $modifier = $dependency->response();
+            }
+        }
+
+        foreach ($onResponses as $onResponse) {
+            $onResponse->onResponse($context->request, $modifier)->unwrap($error);
+            if ($error) {
+                return error($error);
+            }
+        }
 
         if ($modifier instanceof Result) {
             $value = $modifier->unwrap($error);
@@ -103,129 +119,124 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             }
         }
 
-        foreach ($onResponses as $onResponse) {
-            $onResponse->onResponse($context->request, $modifier);
-            if ($error) {
-                echo $error.PHP_EOL;
-                break;
-            }
-        }
-
         return $modifier->response();
     }
 
     private function createDependenciesOptions(RequestContext $context):DependenciesOptions {
         $key = $context->key;
-        return DependenciesOptions::create(
+        return new DependenciesOptions(
             key: $key,
             overwrites: [
                 SessionInterface::class => function() use ($context) {
                     $result = Container::get(SessionInterface::class, $context->request)->unwrap($error);
                     if ($error) {
-                        $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
-                        if ($errorLogger) {
-                            echo $errorLogger.PHP_EOL;
-                            return false;
-                        }
-                        $logger->error($error);
-                        return false;
+                        return error($error);
                     }
                     if ($result instanceof Result) {
                         $result = $result->unwrap($error);
                         if ($error) {
-                            $logger = Container::get(LoggerInterface::class)->unwrap($errorLogger);
-                            if ($errorLogger) {
-                                echo $errorLogger.PHP_EOL;
-                                return false;
-                            }
-                            $logger->error($error);
-                            $logger->error($error);
-                            return false;
+                            return error($error);
                         }
                     }
-                    return $result;
+                    return ok($result);
                 },
                 Request::class     => static fn () => $context->request,
                 RequestBody::class => static fn () => $context->request->getBody(),
                 Body::class        => static fn () => new Body($context->request),
-                QueryItem::class   => static function(DependencySearchResultItem $result) use ($context) {
-                    $value = $context->requestQueries[$result->name] ?? false;
+                QueryItem::class   => static function(DependencySearchResultItem $item) use ($context) {
+                    $value = $context->requestQueries[$item->name] ?? false;
                     if ('' === $value) {
-                        return new QueryItem(false);
+                        return ok(new QueryItem(false));
                     }
-                    return new QueryItem($value);
-                },
-                Query::class => static function() use ($context) {
-                    $map = [];
-                    foreach ($context->requestQueries as $key => $value) {
-                        $map[$key] = new QueryItem($value);
-                    }
-
-                    return new Query($map);
+                    return ok(new QueryItem($value));
                 },
                 Accepts::class => static fn () => Accepts::createFromRequest($context->request),
                 Page::class    => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
                     $size  = $context->requestQueries['size']  ?? 10;
-                    return
+                    return ok(
                         Page::create(start: $start, size: $size)
-                            ->withUri($context->request->getUri());
+                            ->withUri($context->request->getUri())
+                    );
                 },
             ],
             provides: [
-                'bool' => static function(DependencySearchResultItem $result) use ($context) {
-                    if (!isset($context->requestPathParameters[$result->name])) {
-                        return null;
+                'bool' => static function(DependencySearchResultItem $item) use ($context) {
+                    if (!isset($context->requestPathParameters[$item->name])) {
+                        return ok(null);
                     }
-                    return (bool)$context->requestPathParameters[$result->name];
+                    return ok((bool)$context->requestPathParameters[$item->name]);
                 },
-                'float' => static function(DependencySearchResultItem $result) use ($context) {
-                    if (!isset($context->requestPathParameters[$result->name])) {
-                        return null;
+                'float' => static function(DependencySearchResultItem $item) use ($context) {
+                    if (!isset($context->requestPathParameters[$item->name])) {
+                        return ok(null);
                     }
-                    return (float)$context->requestPathParameters[$result->name];
+                    return ok((float)$context->requestPathParameters[$item->name]);
                 },
-                'int' => static function(DependencySearchResultItem $result) use ($context) {
-                    if (!isset($context->requestPathParameters[$result->name])) {
-                        return null;
+                'int' => static function(DependencySearchResultItem $item) use ($context) {
+                    if (!isset($context->requestPathParameters[$item->name])) {
+                        return ok(null);
                     }
-                    return (int)$context->requestPathParameters[$result->name];
+                    return ok((int)$context->requestPathParameters[$item->name]);
                 },
-                'string' => static function(DependencySearchResultItem $result) use ($context) {
-                    if (!isset($context->requestPathParameters[$result->name])) {
-                        return null;
+                'string' => static function(DependencySearchResultItem $item) use ($context) {
+                    if (!isset($context->requestPathParameters[$item->name])) {
+                        return ok(null);
                     }
-                    return (string)$context->requestPathParameters[$result->name];
+                    return ok((string)$context->requestPathParameters[$item->name]);
                 },
             ],
             fallbacks: [
-                'bool' => static function(DependencySearchResultItem $result) use ($context) {
-                    if (!isset($context->requestPathParameters[$result->name])) {
-                        return null;
+                'bool' => static function(DependencySearchResultItem $item) use ($context) {
+                    if (!isset($context->requestPathParameters[$item->name])) {
+                        $text  = $context->requestQueries[$item->name];
+                        $query = new Query();
+                        $query->resolve($item->reflectionParameter, $text, $context)->unwrap($error);
+                        if ($error) {
+                            return error($error);
+                        }
                     }
-                    return (bool)$context->requestPathParameters[$result->name];
+                    return ok((bool)$context->requestPathParameters[$item->name]);
                 },
-                'float' => static function(DependencySearchResultItem $result) use ($context) {
-                    if (!isset($context->requestPathParameters[$result->name])) {
-                        return null;
+                'float' => static function(DependencySearchResultItem $item) use ($context) {
+                    if (!isset($context->requestPathParameters[$item->name])) {
+                        $text  = $context->requestQueries[$item->name];
+                        $query = new Query();
+                        $query->resolve($item->reflectionParameter, $text, $context)->unwrap($error);
+                        if ($error) {
+                            return error($error);
+                        }
                     }
-                    return (float)$context->requestPathParameters[$result->name];
+                    return ok((float)$context->requestPathParameters[$item->name]);
                 },
-                'int' => static function(DependencySearchResultItem $result) use ($context) {
-                    if (!isset($context->requestPathParameters[$result->name])) {
-                        return null;
+                'int' => static function(DependencySearchResultItem $item) use ($context) {
+                    if (!isset($context->requestPathParameters[$item->name])) {
+                        $text  = $context->requestQueries[$item->name];
+                        $query = new Query();
+                        $query->resolve($item->reflectionParameter, $text, $context)->unwrap($error);
+                        if ($error) {
+                            return error($error);
+                        }
                     }
-                    return (int)$context->requestPathParameters[$result->name];
+                    return ok((int)$context->requestPathParameters[$item->name]);
                 },
-                'string' => static function(DependencySearchResultItem $result) use ($context) {
-                    if (!isset($context->requestPathParameters[$result->name])) {
-                        return null;
+                'string' => static function(DependencySearchResultItem $item) use ($context) {
+                    if (!isset($context->requestPathParameters[$item->name])) {
+                        $text  = $context->requestQueries[$item->name];
+                        $query = new Query();
+                        $query->resolve($item->reflectionParameter, $text, $context)->unwrap($error);
+                        if ($error) {
+                            return error($error);
+                        }
+                    } else {
+                        $text = (string)$context->requestPathParameters[$item->name];
                     }
-                    $text = (string)$context->requestPathParameters[$result->name];
-                    return match ($text) {
-                        ''      => $result->defaultValue,
-                        default => $text,
-                    };
+                    return ok(
+                        match ($text) {
+                            ''      => $item->defaultValue,
+                            default => $text,
+                        }
+                    );
                 },
             ],
             defaultArguments: [],

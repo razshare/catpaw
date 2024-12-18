@@ -1,13 +1,11 @@
 <?php
-
 namespace CatPaw\Web\Attributes;
 
 use Attribute;
 use CatPaw\Core\DependenciesOptions;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
-use CatPaw\Core\Interfaces\OnParameterMount;
-
+use CatPaw\Core\Interfaces\OnParameterMountInterface;
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
 use CatPaw\Core\Result;
@@ -27,12 +25,10 @@ use ReflectionParameter;
  * @package CatPaw\Web\Attributes
  */
 #[Attribute(flags:Attribute::TARGET_PARAMETER)]
-class Param implements AttributeInterface, OnParameterMount {
+class Param implements AttributeInterface, OnParameterMountInterface {
     use CoreAttributeDefinition;
 
-    public function __construct(
-        private string $regex = '',
-    ) {
+    public function __construct(private string $regex = '') {
         $this->withRegex($regex);
     }
 
@@ -47,13 +43,13 @@ class Param implements AttributeInterface, OnParameterMount {
     /** @var array<string,mixed>  */
     private static array $cache = [];
 
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Result {
+    public function onParameterMount(ReflectionParameter $reflectionParameter, mixed &$value, DependenciesOptions $options):Result {
         /** @var false|RequestContext $context */
         $context = $options->context;
-        $name    = $reflection->getName();
+        $name    = $reflectionParameter->getName();
 
         if (!isset(self::$cache[$context->key])) {
-            $type = ReflectionTypeManager::unwrap($reflection);
+            $type = ReflectionTypeManager::unwrap($reflectionParameter);
             if (!$type) {
                 return error("Every path parameter must specify a type but none has been detected in \"$context->key\" for parameter \"$name\". Try \"#[Param] string \$$name\".");
             }

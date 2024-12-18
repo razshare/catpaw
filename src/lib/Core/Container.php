@@ -10,11 +10,30 @@ use Amp\Http\Client\HttpClientBuilder;
 use Attribute;
 use CatPaw\Core\Attributes\Entry;
 use CatPaw\Core\Attributes\Provider;
+use CatPaw\Core\Implementations\Environment\SimpleEnvironment;
 use CatPaw\Core\Interfaces\AttributeInterface;
-use CatPaw\Core\Interfaces\OnParameterMount;
+use CatPaw\Core\Interfaces\OnParameterMountInterface;
 use CatPaw\Core\Interfaces\StorageInterface;
+use CatPaw\Database\Implementations\SimpleDatabase;
+use CatPaw\Queue\Implementations\Queue\SimpleQueue;
+use CatPaw\RaspberryPi\Implementations\Gpio\SimpleGpio;
+use CatPaw\Schedule\Implementations\Schedule\SimpleSchedule;
+use CatPaw\Store\Implementations\Store\SimpleState;
 use CatPaw\Store\Readable;
 use CatPaw\Store\Writable;
+use CatPaw\Web\Implementations\ByteRange\SimpleByteRange;
+use CatPaw\Web\Implementations\FileServer\SimpleFileServer;
+use CatPaw\Web\Implementations\FileServer\SpaFileServer;
+use CatPaw\Web\Implementations\Generate\SimpleGenerate;
+use CatPaw\Web\Implementations\HttpInvoker\SimpleHttpInvoker;
+use CatPaw\Web\Implementations\OpenApi\SimpleOpenApi;
+use CatPaw\Web\Implementations\OpenApiState\SimpleOpenApiState;
+use CatPaw\Web\Implementations\Render\SimpleRender;
+use CatPaw\Web\Implementations\RequestHandler\SimpleRequestHandler;
+use CatPaw\Web\Implementations\Router\SimpleRouter;
+use CatPaw\Web\Implementations\RouteResolver\SimpleRouteResolver;
+use CatPaw\Web\Implementations\Server\SimpleServer;
+use CatPaw\Web\Implementations\Websocket\SimpleWebsocket;
 use Closure;
 use FFI;
 use Phar;
@@ -73,7 +92,6 @@ class Container {
         return ok($phpFileNames);
     }
 
-
     /**
      * Load default providers, such as the logger and the http client providers.
      * @param  string       $applicationName Name of the application.
@@ -82,32 +100,32 @@ class Container {
     public static function loadDefaultProviders(string $applicationName):Result {
         Container::provide(FFI::class, static fn () => new FFI);
 
-        // Making sure providers load correctly.
-        $providersLoaded = match (false) {
-            class_exists($className = \CatPaw\Core\Implementations\Environment\SimpleEnvironment::class)      => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Queue\Implementations\Queue\SimpleQueue::class)                 => error("Could not load class $className"),
-            class_exists($className = \CatPaw\RaspberryPi\Implementations\Gpio\SimpleGpio::class)             => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Schedule\Implementations\Schedule\SimpleSchedule::class)        => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Store\Implementations\Store\SimpleState::class)                 => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\ByteRange\SimpleByteRange::class)           => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\FileServer\SimpleFileServer::class)         => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\FileServer\SpaFileServer::class)            => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\HttpInvoker\SimpleHttpInvoker::class)       => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\OpenApi\SimpleOpenApi::class)               => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\OpenApiState\SimpleOpenApiState::class)     => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\RequestHandler\SimpleRequestHandler::class) => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\RouteResolver\SimpleRouteResolver::class)   => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\Router\SimpleRouter::class)                 => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\Server\SimpleServer::class)                 => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\Websocket\SimpleWebsocket::class)           => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Web\Implementations\Generate\SimpleGenerate::class)             => error("Could not load class $className"),
-            class_exists($className = \CatPaw\Database\Implementations\SimpleDatabase::class)                 => error("Could not load class $className"),
-            default                                                                                           => ok()
-        };
+        $classNames = [
+            SimpleEnvironment::class,
+            SimpleQueue::class,
+            SimpleGpio::class,
+            SimpleSchedule::class,
+            SimpleState::class,
+            SimpleByteRange::class,
+            SimpleFileServer::class,
+            SpaFileServer::class,
+            SimpleHttpInvoker::class,
+            SimpleOpenApi::class,
+            SimpleOpenApiState::class,
+            SimpleRequestHandler::class,
+            SimpleRouteResolver::class,
+            SimpleRouter::class,
+            SimpleServer::class,
+            SimpleWebsocket::class,
+            SimpleGenerate::class,
+            SimpleDatabase::class,
+            SimpleRender::class,
+        ];
 
-        $providersLoaded->unwrap($error);
-        if ($error) {
-            return error($error);
+        foreach ($classNames as $className) {
+            if (!class_exists($className)) {
+                return error("Could not load class `$className`.");
+            }
         }
 
         /** @var LoggerInterface $logger */
@@ -213,7 +231,7 @@ class Container {
         false|DependenciesOptions $options = false,
     ):Result {
         if (!$options) {
-            $options = DependenciesOptions::create(
+            $options = new DependenciesOptions(
                 key: '',
                 overwrites: [],
                 provides: [],
@@ -240,12 +258,27 @@ class Container {
             $numberOfAttributes = count($result->attributes);
 
             if ($overwrite) {
-                $parameters[$key] = $overwrite($result);
+                $value = $overwrite($result);
+                if ($value instanceof Result) {
+                    $value = $value->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                }
+                $parameters[$key] = $value;
                 continue;
             }
 
             if ($provide) {
-                $parameters[$key] = $provide($result);
+                $value = $provide($result);
+                if ($value instanceof Result) {
+                    $value = $value->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                }
+
+                $parameters[$key] = $value;
             }
 
             if (
@@ -276,7 +309,15 @@ class Container {
 
             if (0 === $numberOfAttributes) {
                 if ($fallback) {
-                    $parameters[$key] = $fallback($result);
+                    $value = $fallback($result);
+                    if ($value instanceof Result) {
+                        $value = $value->unwrap($error);
+                        if ($error) {
+                            return error($error);
+                        }
+                    }
+
+                    $parameters[$key] = $value;
                 }
                 continue;
             }
@@ -301,7 +342,7 @@ class Container {
                         continue;
                     }
 
-                    if ($attributeInstance instanceof OnParameterMount) {
+                    if ($attributeInstance instanceof OnParameterMountInterface) {
                         $attributeInstance->onParameterMount($reflectionParameter, $parameters[$key], $options)->unwrap($error);
                         if ($error) {
                             return error($error);
@@ -450,43 +491,43 @@ class Container {
     }
 
     /**
-     * Get an instance of the given class.
+     * Given an interface or class name, get an instance.
      * @template T
-     * @param  class-string<T> $name
-     * @param  mixed           $args
+     * @param  class-string<T> $className Name of the interface or class.
+     * @param  mixed           $arguments Optional arguments to pass to the constructor (if it's a class).
      * @return Result<T>
      */
-    public static function get(string $name, ...$args):Result {
-        if (Provider::isset($name)) {
-            return ok(Provider::get($name)(...$args));
+    public static function get(string $className, ...$arguments):Result {
+        if (Provider::isset($className)) {
+            return ok(Provider::get($className)(...$arguments));
         }
 
-        if (interface_exists($name)) {
-            $providerClassName = Provider::findNameByInterface($name)->unwrap($error);
+        if (interface_exists($className)) {
+            $providerClassName = Provider::findNameByInterface($className)->unwrap($error);
             if ($error) {
                 return error($error);
             }
             if (!$providerClassName) {
-                return error("Interface `$name` doesn't seem to be provided.\nMake sure you're providing it by invoking `Container::provide()` or by adding the `#[Provider]` attribute to any class that implements it.");
+                return error("Interface `$className` doesn't seem to be provided.\nMake sure you're providing it by invoking `Container::provide()` or by adding the `#[Provider]` attribute to any class that implements it.");
             }
 
-            Provider::withAlias($providerClassName, $name);
+            Provider::withAlias($providerClassName, $className);
 
             // @phpstan-ignore-next-line
-            return self::get($providerClassName, ...$args);
+            return self::get($providerClassName, ...$arguments);
         }
 
-        if ('callable' === $name) {
+        if ('callable' === $className) {
             return error("Cannot instantiate callables.");
-        } else if ('object' === $name || 'stdClass' === $name) {
+        } else if ('object' === $className || 'stdClass' === $className) {
             /** @var Result<T> */
             return ok((object)[]);
         }
 
-        $reflection = new ReflectionClass($name);
+        $reflection = new ReflectionClass($className);
 
         if (AttributeResolver::classAttribute($reflection, Attribute::class)) {
-            return error("Cannot instantiate $name because it's meant to be an attribute.");
+            return error("Cannot instantiate $className because it's meant to be an attribute.");
         }
 
         $instance    = null;
@@ -514,7 +555,7 @@ class Container {
         }
 
         if (!$instance) {
-            return error("Instance of $name is null.");
+            return error("Instance of $className is null.");
         }
 
         self::entry($instance, $reflection->getMethods())->unwrap($error);

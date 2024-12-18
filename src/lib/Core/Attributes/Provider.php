@@ -180,15 +180,15 @@ final class Provider implements AttributeInterface, OnClassInstantiation {
 
     /**
      * Invoked whenever the instance is created.
-     * @param  ReflectionClass<object> $reflection
+     * @param  ReflectionClass<object> $reflectionClass
      * @param  mixed                   $instance
      * @param  array<int,mixed>        $dependencies
      * @return Result<None>
      * @internal
      */
-    public function onClassInstantiation(ReflectionClass $reflection, mixed &$instance, array $dependencies):Result {
+    public function onClassInstantiation(ReflectionClass $reflectionClass, mixed &$instance, array $dependencies):Result {
         try {
-            $name = $reflection->getName();
+            $name = $reflectionClass->getName();
             if ($this->singleton) {
                 $instance = new $name(...$dependencies);
                 $provider = static function() use ($instance) {

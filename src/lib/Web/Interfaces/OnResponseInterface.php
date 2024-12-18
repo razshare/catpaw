@@ -15,9 +15,9 @@ interface OnResponseInterface extends AttributeInterface {
      * Invoked after a route is executed.
      * @see https://github.com/tncrazvan/catpaw/blob/main/docs/1.RouteHandlers.md
      * @see https://github.com/tncrazvan/catpaw/blob/main/docs/9.Filters.md
-     * @param  Request          $request  this is the incoming request.
-     * @param  ResponseModifier $modifier this is the result of the route handler.
+     * @param  Request      $request   this is the incoming request.
+     * @param  mixed        &$response this is the result of the route handler.
      * @return Result<None>
      */
-    public function onResponse(Request $request, ResponseModifier $modifier):Result;
+    public function onResponse(Request $request, mixed &$response):Result;
 }

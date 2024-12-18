@@ -10,16 +10,6 @@ use SplDoublyLinkedList;
  * @extends SplDoublyLinkedList<T>
  */
 class LinkedList extends SplDoublyLinkedList {
-    private function __construct() {
-    }
-
-    /**
-     * @return LinkedList<T>
-     */
-    public static function create():self {
-        return new self();
-    }
-
     /**
      * Iterate the linked list.
      * @param int     $mode iteration mode (lookup constants).

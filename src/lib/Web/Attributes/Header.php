@@ -6,7 +6,7 @@ use Attribute;
 use CatPaw\Core\DependenciesOptions;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
-use CatPaw\Core\Interfaces\OnParameterMount;
+use CatPaw\Core\Interfaces\OnParameterMountInterface;
 
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
@@ -28,7 +28,7 @@ use ReflectionParameter;
  * @package CatPaw\Web\Attributes
  */
 #[Attribute(flags:Attribute::TARGET_PARAMETER)]
-class Header implements AttributeInterface, OnParameterMount {
+class Header implements AttributeInterface, OnParameterMountInterface {
     use CoreAttributeDefinition;
 
     public function __construct(
@@ -40,7 +40,7 @@ class Header implements AttributeInterface, OnParameterMount {
         return $this->key;
     }
 
-    public function onParameterMount(ReflectionParameter $reflection, mixed &$value, DependenciesOptions $options):Result {
+    public function onParameterMount(ReflectionParameter $reflectionParameter, mixed &$value, DependenciesOptions $options):Result {
         /** @var false|RequestContext $context */
         $context = $options->context;
 
@@ -49,10 +49,10 @@ class Header implements AttributeInterface, OnParameterMount {
         }
 
         if (!$this->key) {
-            $this->key = $reflection->getName();
+            $this->key = $reflectionParameter->getName();
         }
 
-        $className = ReflectionTypeManager::unwrap($reflection)->getName();
+        $className = ReflectionTypeManager::unwrap($reflectionParameter)->getName();
 
         $value = match ($className) {
             'bool'   => (bool)($context->request->getHeader($this->key) ?? ''),

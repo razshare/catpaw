@@ -172,9 +172,13 @@ class SimpleRouter implements RouterInterface {
 
                 if ($attributeInstance instanceof OnRequestInterface) {
                     $onRequest[] = $attributeInstance;
-                } else if ($attributeInstance instanceof OnResponseInterface) {
+                }
+                
+                if ($attributeInstance instanceof OnResponseInterface) {
                     $onResponse[] = $attributeInstance;
-                } else if ($attributeInstance instanceof AttributeInterface) {
+                }
+
+                if ($attributeInstance instanceof AttributeInterface) {
                     $onMount[] = $attributeInstance;
                 }
             }
@@ -206,7 +210,7 @@ class SimpleRouter implements RouterInterface {
                 tags              : $tags,
             );
 
-            $options = DependenciesOptions::create(
+            $options = new DependenciesOptions(
                 key: $key,
                 overwrites:[],
                 provides: [],

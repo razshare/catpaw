@@ -8,11 +8,11 @@ use ReflectionClass;
 interface OnClassInstantiation {
     /**
      * Invoked when an instance of this class is created through `Container::get`.
-     * @param  ReflectionClass<object> $reflection   Reflection of the class.
-     * @param  mixed                   $instance     Instance of the class.
-     * @param  array<int,mixed>        $dependencies Arguments for the constructor.\
-     *                                               These are provided by the `Container`.
+     * @param  ReflectionClass<object> $reflectionClass Reflection of the class.
+     * @param  mixed                   $instance        Instance of the class.
+     * @param  array<int,mixed>        $dependencies    Arguments for the constructor.\
+     *                                                  These are provided by the `Container`.
      * @return Result<None>
      */
-    public function onClassInstantiation(ReflectionClass $reflection, mixed &$instance, array $dependencies):Result;
+    public function onClassInstantiation(ReflectionClass $reflectionClass, mixed &$instance, array $dependencies):Result;
 }
