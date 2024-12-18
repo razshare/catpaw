@@ -114,7 +114,12 @@ class FileName implements Stringable {
             return $this->cache = self::normalize($fileNamePharless);
         } else {
             if ($this->absolute) {
-                return $this->cache = realpath(self::normalize(self::glue($this->path)));
+                $normalized = self::normalize(self::glue($this->path));
+                $real       = realpath($normalized);
+                if (false === $real) {
+                    return $this->cache = $normalized;
+                }
+                return $this->cache = $real;
             }
             return $this->cache = self::normalize(self::glue($this->path));
         }
