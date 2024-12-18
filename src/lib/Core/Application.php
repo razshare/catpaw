@@ -26,7 +26,7 @@ readonly class Application implements CommandRunnerInterface {
         $name        = $context->get('name')?:'App';
         $main        = $context->get('main')?:'';
         $libraries   = $context->get('libraries')?:'';
-        $resources   = $context->get('resources')?:'';
+        $resources   = explode(',', $context->get('resources')?:'');
         $environment = $context->get('environment')?:'';
 
         if ($main) {
@@ -38,8 +38,11 @@ readonly class Application implements CommandRunnerInterface {
         }
         
         if ($resources) {
-            $resources = realpath($resources);
+            foreach ($resources as &$resource) {
+                $resource = realpath($resource);
+            }
         }
+        $resources = join(',', $resources);
         
         if ($environment) {
             $environment = realpath($environment);
