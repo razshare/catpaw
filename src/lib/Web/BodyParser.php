@@ -16,7 +16,7 @@ class BodyParser {
     }
 
     /**
-     * @return Result<mixed>
+     * @return Result<\stdClass>
      */
     public static function parseAsObject(
         Request $request,

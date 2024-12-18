@@ -5,6 +5,8 @@ namespace CatPaw\Web;
 use Amp\Cancellation;
 use Amp\Http\Server\Request;
 use function CatPaw\Core\error;
+
+use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use Throwable;
@@ -33,20 +35,42 @@ class Body {
     }
 
     /**
-     * @template T
-     * @param  class-string<T> $className
-     * @return Result<T>
+     * Project the properties of the 
+     * resulting object/array onto `$target`.
+     * @param  object       &$target
+     * @return Result<None>
      */
-    public function object(string $className = 'stdClass'):Result {
-        try {
-            return BodyParser::parseAsObject(
-                request: $this->request,
-                sizeLimit: $this->sizeLimit,
-                cancellation: $this->cancellation,
-            );
-        } catch(Throwable $error) {
+    public function project(object &$target):Result {
+        $attempt = BodyParser::parseAsObject(
+            request: $this->request,
+            sizeLimit: $this->sizeLimit,
+            cancellation: $this->cancellation,
+        );
+
+        $response = $attempt->unwrap($error);
+
+        if ($error) {
             return error($error);
         }
+
+        foreach ($target as $key => &$value) {
+            if (isset($response->$key)) {
+                $value = $response->$key;
+            }
+        }
+
+        return ok();
+    }
+
+    /**
+     * @return Result<\stdClass>
+     */
+    public function parse():Result {
+        return BodyParser::parseAsObject(
+            request: $this->request,
+            sizeLimit: $this->sizeLimit,
+            cancellation: $this->cancellation,
+        );
     }
 
     /**
