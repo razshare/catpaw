@@ -7,7 +7,7 @@ use CatPaw\Web\Interfaces\ResponseModifier;
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
 
-#[Provider]
+#[Provider(singleton:false)]
 class SimpleRender implements RenderInterface {
     private string $data = '';
     private bool $open   = false;

@@ -33,15 +33,15 @@ class Query implements AttributeInterface, OnParameterMountInterface {
     use CoreAttributeDefinition;
 
     /**
-     * @param  ReflectionParameter $reflection
+     * @param  ReflectionParameter $reflectionParameter
      * @param  mixed               $value
      * @param  RequestContext      $context
      * @throws ReflectionException
      * @return Result<None>
      */
-    public function resolve(ReflectionParameter $reflection, mixed &$value, RequestContext $context):Result {
-        $type = ReflectionTypeManager::unwrap($reflection);
-        $key  = $reflection->getName();
+    public function resolve(ReflectionParameter $reflectionParameter, mixed &$value, RequestContext $context):Result {
+        $type = ReflectionTypeManager::unwrap($reflectionParameter);
+        $key  = $reflectionParameter->getName();
         if (!$type) {
             return error("Handler \"$context->key\" must specify at least 1 type for query \"$key\".");
         }
@@ -54,22 +54,23 @@ class Query implements AttributeInterface, OnParameterMountInterface {
             default => $this->toString($context, $key),
         };
 
-        if ($result->error) {
-            return error($result->error);
+        $value = $result->unwrap($error);
+        if ($error) {
+            return error($error);
         }
 
-        if ($result->value) {
-            $value = $result->value;
-        } elseif (!$reflection->allowsNull()) {
-            if (!$reflection->isDefaultValueAvailable()) {
-                return error(
-                    <<<TEXT
-                        Handler \"$context->key\" specifies a request query string parameter that is neither nullable nor has a default value.
-                        Any request query string parameter MUST be nullable or at least provide a default value.
-                        TEXT
-                );
-            } else {
-                $value = $reflection->getDefaultValue();
+        if (null === $value) {
+            if (!$reflectionParameter->allowsNull()) {
+                if (!$reflectionParameter->isDefaultValueAvailable()) {
+                    return error(
+                        <<<TEXT
+                            Handler \"$context->key\" specifies a request query string parameter that is neither nullable nor has a default value.
+                            Any request query string parameter MUST be nullable or at least provide a default value.
+                            TEXT
+                    );
+                } else {
+                    $value = $reflectionParameter->getDefaultValue();
+                }
             }
         }
 
@@ -89,62 +90,70 @@ class Query implements AttributeInterface, OnParameterMountInterface {
     }
 
     /**
-     * @param  RequestContext $http
-     * @param  string         $key
-     * @return Result<string>
+     * @param  RequestContext      $http
+     * @param  string              $key
+     * @return Result<null|string>
      */
     public function toString(RequestContext $http, string $key):Result {
         if (isset($http->requestQueries[$key])) {
+            // @phpstan-ignore return.type
             return ok(urldecode($http->requestQueries[$key]));
         }
-        return ok('');
+        // @phpstan-ignore return.type
+        return ok(null);
     }
 
 
     /**
-     * @param  RequestContext $http
-     * @param  string         $key
-     * @return Result<int>
+     * @param  RequestContext   $http
+     * @param  string           $key
+     * @return Result<null|int>
      */
     private function toInteger(RequestContext $http, string $key):Result {
         if (isset($http->requestQueries[$key])) {
             $value = urldecode($http->requestQueries[$key]);
             if (is_numeric($value)) {
+                // @phpstan-ignore return.type
                 return ok((int)$value);
             } else {
                 return error("Query $key was expected to be numeric, but non numeric value has been provided instead:$value.");
             }
         }
-        return ok(0);
+        // @phpstan-ignore return.type
+        return ok(null);
     }
 
 
     /**
-     * @param  RequestContext $http
-     * @param  string         $key
-     * @return Result<bool>
+     * @param  RequestContext    $http
+     * @param  string            $key
+     * @return Result<null|bool>
      */
     private function toBool(RequestContext $http, string $key):Result {
         if (isset($http->requestQueries[$key])) {
+            // @phpstan-ignore return.type
             return ok(filter_var(urldecode($http->requestQueries[$key]), FILTER_VALIDATE_BOOLEAN));
         }
-        return ok(false);
+        // @phpstan-ignore return.type
+        return ok(null);
     }
 
     /**
-     * @param  RequestContext $http
-     * @param  string         $key
-     * @return Result<float>
+     * @param  RequestContext     $http
+     * @param  string             $key
+     * @return Result<null|float>
      */
     private function toFloat(RequestContext $http, string $key):Result {
         if (isset($http->requestQueries[$key])) {
             $value = urldecode($http->requestQueries[$key]);
             if (is_numeric($value)) {
+                // @phpstan-ignore return.type
                 return ok((float)$value);
             } else {
                 return error("Query $key was expected to be numeric, but non numeric value has been provided instead:$value.");
             }
         }
-        return ok(0.0);
+        // @phpstan-ignore return.type
+        return ok(null);
     }
 }

@@ -13,7 +13,7 @@ use CatPaw\Core\Result;
 use CatPaw\Database\Interfaces\DatabaseInterface;
 use Throwable;
 
-#[Provider(singleton:true)]
+#[Provider]
 class SimpleDatabase implements DatabaseInterface {
     /** @var Result<MysqlConnectionPool> */
     private Result $mysqlPoolResult;

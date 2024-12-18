@@ -1,7 +1,7 @@
 <?php
 use CatPaw\Web\Interfaces\RenderInterface;
 ?>
-<?php return static function(RenderInterface $render, string $name = '') { ?>
+<?php return static function(RenderInterface $render, string $name = 'world') { ?>
     <?php $render->start() ?>
     <!DOCTYPE html>
     <html lang="en">
