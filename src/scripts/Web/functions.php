@@ -155,3 +155,37 @@ function websocket(WebsocketClientHandler $handler):Result {
 
     return ok($websocket->success($handler));
 }
+
+/**
+ * Render a document by redirecting the output buffer into a response modifier.
+ * # Warning
+ * __Do not__ execute async code inside `$function`, otherwise your output buffer may miss behave!
+ * 
+ * # Example
+ * ```php
+ * <?php return static fn () => \CatPaw\Web\render(function() { ?>
+ * <!DOCTYPE html>
+ * <html lang="en">
+ *     <head>
+ *         <meta charset="UTF-8">
+ *         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ *         <title>Document</title>
+ *     </head>
+ *     <body>
+ *         <span>Hello world</span>
+ *     </body>
+ * </html>
+ * <?php }); ?>
+ * ```
+ * @param  callable                       $function Function that will render the content.
+ * @return SuccessResponseModifier<mixed> Response modifier containing the rendered content.
+ */
+function render(callable $function) {
+    ob_start();
+    $content = $function();
+    if (null === $content) {
+        $content = ob_get_contents();
+    }
+    ob_end_clean(); 
+    return success($content)->as(TEXT_HTML);
+}

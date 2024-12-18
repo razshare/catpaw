@@ -324,7 +324,9 @@ class SimpleServer implements ServerInterface {
                 return error("Unexpected relative file name `$fileName` while initializing routes.");
             }
 
-            if ($handler = require_once $fileName) {
+            $handler = require_once($fileName);
+
+            if ($handler) {
                 if (!is_callable($handler)) {
                     return error("File `$fileName` is a php file that lives under a filesystem router directory, hence it must return a callable function, but it doesn't. If this file is not needed, please consider deleting it or moving it to a different directory.");
                 }

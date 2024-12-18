@@ -31,7 +31,7 @@ class Bootstrap {
             return error("Could not find main file $fileName.");
         }
 
-        require_once $fileName;
+        require_once($fileName);
 
         if (!function_exists('main')) {
             return error("could not find a global main function.");

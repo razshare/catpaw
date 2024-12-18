@@ -47,7 +47,7 @@ class Container {
         }
 
         if (isFile($librariesPath)) {
-            require_once($librariesPath);
+            include_once($librariesPath);
             /** @var Result<array<string>> */
             return ok([$librariesPath]);
         } else if (!isDirectory($librariesPath)) {
