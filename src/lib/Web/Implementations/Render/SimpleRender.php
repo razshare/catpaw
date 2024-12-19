@@ -12,18 +12,20 @@ class SimpleRender implements RenderInterface {
     private string $data = '';
     private bool $open   = false;
 
-    public function start():void {
+    public function start():self {
         $this->open = true;
         ob_start();
+        return $this;
     }
 
-    public function stop():void {
+    public function stop():self {
         $response = ob_get_contents();
         ob_end_clean();
         $this->open = false;
         if (false !== $response) {
             $this->data .= $response;
         }
+        return $this;
     }
 
     public function response():ResponseModifierInterface {

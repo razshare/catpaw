@@ -28,16 +28,16 @@ interface RenderInterface {
      *     </html>
      * <?php } ?>
      * 
-     * @return void
+     * @return self
      */
-    public function start():void;
+    public function start():self;
 
     /**
      * Cleans the output buffer.\
      * You can safely resume invoking async code after invoking this method.
-     * @return void
+     * @return self
      */
-    public function stop():void;
+    public function stop():self;
 
     /**
      * Get the response modifier.
