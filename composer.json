@@ -81,8 +81,7 @@
   "minimum-stability": "stable",
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "tests/",
-      "Preview\\": "preview/lib"
+      "Tests\\": "tests/"
     }
   },
   "require": {
