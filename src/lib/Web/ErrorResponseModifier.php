@@ -7,10 +7,10 @@ use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Core\XMLSerializer;
-use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Interfaces\ResponseModifierInterface;
 use Throwable;
 
-class ErrorResponseModifier implements ResponseModifier {
+class ErrorResponseModifier implements ResponseModifierInterface {
     /**
      *
      * @param  int                   $status
@@ -50,28 +50,32 @@ class ErrorResponseModifier implements ResponseModifier {
     ) {
     }
 
-
-    public function withCookies(ResponseCookie ...$cookies):void {
+    public function withCookies(ResponseCookie ...$cookies):self {
         $this->cookies = $cookies;
+        return $this;
     }
 
-    public function addCookies(ResponseCookie ...$cookies):void {
+    public function addCookies(ResponseCookie ...$cookies):self {
         $this->cookies = [...$this->cookies, ...$cookies];
+        return $this;
     }
 
-    public function withData(mixed $data):void {
+    public function withData(mixed $data):self {
+        return $this;
     }
 
-    public function withRequestContext(RequestContext $context):void {
-        // $this->context = $context;
+    public function withRequestContext(RequestContext $context):self {
+        return $this;
     }
 
-    public function withHeaders(array $headers):void {
+    public function withHeaders(array $headers):self {
         $this->headers = $headers;
+        return $this;
     }
 
-    public function withStatus(int $status):void {
+    public function withStatus(int $status):self {
         $this->status = $status;
+        return $this;
     }
 
     public function data():mixed {

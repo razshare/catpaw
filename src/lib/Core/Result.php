@@ -3,7 +3,7 @@
 namespace CatPaw\Core;
 
 use function CatPaw\Web\failure;
-use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Interfaces\ResponseModifierInterface;
 use function CatPaw\Web\success;
 
 use Error;
@@ -24,12 +24,12 @@ readonly class Result {
     ) {
     }
 
-    public function toResponseModifier():ResponseModifier {
+    public function toResponseModifier():ResponseModifierInterface {
         if ($this->error) {
             return failure($this->error->getMessage());
         }
 
-        if ($this->value instanceof ResponseModifier) {
+        if ($this->value instanceof ResponseModifierInterface) {
             return $this->value;
         }
 

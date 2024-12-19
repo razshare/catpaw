@@ -20,7 +20,7 @@ use function CatPaw\Web\failure;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\HttpInvokerInterface;
 use CatPaw\Web\Interfaces\RenderInterface;
-use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Interfaces\ResponseModifierInterface;
 use CatPaw\Web\Interfaces\SessionInterface;
 use CatPaw\Web\Page;
 use CatPaw\Web\QueryItem;
@@ -90,7 +90,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 return error($error);
             }
 
-            if ($value instanceof ResponseModifier) {
+            if ($value instanceof ResponseModifierInterface) {
                 $modifier = $value;
             } else {
                 $modifier = success($value);
@@ -100,7 +100,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             $modifier  = success($websocket->handleRequest($context->request));
         }
 
-        if (!$modifier instanceof ResponseModifier) {
+        if (!$modifier instanceof ResponseModifierInterface) {
             try {
                 $modifier = success($modifier);
             } catch(Throwable $error) {

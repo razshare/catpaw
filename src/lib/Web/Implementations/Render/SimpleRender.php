@@ -3,7 +3,7 @@ namespace CatPaw\Web\Implementations\Render;
 
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Web\Interfaces\RenderInterface;
-use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Interfaces\ResponseModifierInterface;
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
 
@@ -26,7 +26,7 @@ class SimpleRender implements RenderInterface {
         }
     }
 
-    public function response():ResponseModifier {
+    public function response():ResponseModifierInterface {
         if ($this->open) {
             $this->stop();
         }

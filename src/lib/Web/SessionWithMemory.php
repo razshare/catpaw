@@ -6,7 +6,7 @@ use Amp\Http\Server\Request;
 
 
 use function CatPaw\Core\uuid;
-use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Interfaces\ResponseModifierInterface;
 
 
 use CatPaw\Web\Interfaces\SessionInterface;
@@ -70,10 +70,10 @@ class SessionWithMemory implements SessionInterface {
     }
 
     /**
-     * @param  ResponseModifier $modifier
+     * @param  ResponseModifierInterface $modifier
      * @return void
      */
-    public function apply(ResponseModifier $modifier):void {
+    public function apply(ResponseModifierInterface $modifier):void {
         $modifier->withCookies(new ResponseCookie('session-id', $this->id));
     }
 

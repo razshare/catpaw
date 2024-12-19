@@ -14,10 +14,10 @@ interface SessionInterface {
      * Apply required modifications to the response modifier, for example a `session-id` cookie.
      * > **Note**\
      * > You don't need to invoke this method yourself, the router will handle this automatically.
-     * @param  ResponseModifier $modifier
+     * @param  ResponseModifierInterface $modifier
      * @return void
      */
-    public function apply(ResponseModifier $modifier):void;
+    public function apply(ResponseModifierInterface $modifier):void;
     /**
      * Validate the session.
      * @return bool _True_ if the session exists, is not expired and has not been stopped, otherwise _false_.

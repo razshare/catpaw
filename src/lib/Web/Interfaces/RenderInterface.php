@@ -41,7 +41,7 @@ interface RenderInterface {
 
     /**
      * Get the response modifier.
-     * @return ResponseModifier
+     * @return ResponseModifierInterface
      */
-    public function response():ResponseModifier;
+    public function response():ResponseModifierInterface;
 }

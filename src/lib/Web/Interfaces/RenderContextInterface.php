@@ -26,9 +26,9 @@ interface RenderContextInterface {
 
     /**
      * Create a response modifier.
-     * @param  int                  $status
-     * @param  array<string,string> $headers
-     * @return ResponseModifier
+     * @param  int                       $status
+     * @param  array<string,string>      $headers
+     * @return ResponseModifierInterface
      */
-    public function response(int $status = 200, array $headers = []):ResponseModifier;
+    public function response(int $status = 200, array $headers = []):ResponseModifierInterface;
 }

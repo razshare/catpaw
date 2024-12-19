@@ -8,14 +8,14 @@ use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Core\XMLSerializer;
-use CatPaw\Web\Interfaces\ResponseModifier;
+use CatPaw\Web\Interfaces\ResponseModifierInterface;
 use Throwable;
 
 /**
  * @template T
  * @package CatPaw\Web
  */
-class SuccessResponseModifier implements ResponseModifier {
+class SuccessResponseModifier implements ResponseModifierInterface {
     /**
      *
      * @param  T                          $data
@@ -62,41 +62,67 @@ class SuccessResponseModifier implements ResponseModifier {
         $this->update();
     }
 
-    public function withCookies(ResponseCookie ...$cookies):void {
+    /**
+     * 
+     * @param  ResponseCookie             ...$cookies
+     * @return SuccessResponseModifier<T>
+     */
+    public function withCookies(ResponseCookie ...$cookies):self {
         $this->cookies = $cookies;
-    }
-
-    public function addCookies(ResponseCookie ...$cookies):void {
-        $this->cookies = [...$this->cookies, ...$cookies];
+        return $this;
     }
 
     /**
-     *
-     * @param  T    $data
-     * @return void
+     * 
+     * @param  ResponseCookie             ...$cookies
+     * @return SuccessResponseModifier<T>
      */
-    public function withData(mixed $data):void {
+    public function addCookies(ResponseCookie ...$cookies):self {
+        $this->cookies = [...$this->cookies, ...$cookies];
+        return $this;
+    }
+
+    /**
+     * 
+     * @param  mixed                      $data
+     * @return SuccessResponseModifier<T>
+     */
+    public function withData(mixed $data):self {
         $this->data = $data;
         $this->update();
+        return $this;
     }
-
-    public function withRequestContext(RequestContext $context):void {
+    
+    /**
+     * 
+     * @param  RequestContext             $context
+     * @return SuccessResponseModifier<T>
+     */
+    public function withRequestContext(RequestContext $context):self {
         $this->context = $context;
+        return $this;
     }
 
     /**
-     *
-     * @param  array<string,string> $headers
-     * @return void
+     * 
+     * @param  array<string, string>      $headers
+     * @return SuccessResponseModifier<T>
      */
-    public function withHeaders(array $headers):void {
+    public function withHeaders(array $headers):self {
         $this->headers = $headers;
         $this->update();
+        return $this;
     }
 
-    public function withStatus(int $status):void {
+    /**
+     * 
+     * @param  int                        $status
+     * @return SuccessResponseModifier<T>
+     */
+    public function withStatus(int $status):self {
         $this->status = $status;
         $this->update();
+        return $this;
     }
 
     public function data():mixed {

@@ -9,4 +9,7 @@ return static function(
     <?php $layout->mount('My Document', static function() use ($name) { ?>
         <h3>Hello, <?=$name?>.</h3>
     <?php }) ?>
+    <?php return $render
+        ->response()
+        ->withStatus(203) ?>
 <?php } ?>

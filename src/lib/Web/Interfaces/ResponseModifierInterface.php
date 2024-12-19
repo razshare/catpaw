@@ -7,18 +7,17 @@ use CatPaw\Core\Result;
 use CatPaw\Web\RequestContext;
 
 
-interface ResponseModifier {
-    public function withData(mixed $data):void;
-    public function withRequestContext(RequestContext $context):void;
-    public function withCookies(ResponseCookie ...$cookies):void;
-    public function addCookies(ResponseCookie ...$cookies):void;
+interface ResponseModifierInterface {
+    public function withData(mixed $data):self;
+    public function withRequestContext(RequestContext $context):self;
+    public function withCookies(ResponseCookie ...$cookies):self;
+    public function addCookies(ResponseCookie ...$cookies):self;
     /**
-     *
      * @param  array<string,string> $headers
-     * @return void
+     * @return self
      */
-    public function withHeaders(array $headers):void;
-    public function withStatus(int $status):void;
+    public function withHeaders(array $headers):self;
+    public function withStatus(int $status):self;
     public function data():mixed;
     /**
      *
