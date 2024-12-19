@@ -70,14 +70,11 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
 
         $modifier = $function(...$dependencies);
 
-        foreach ($dependencies as $dependency) {
-            if ($dependency instanceof RenderInterface) {
-                $renderResponse = $dependency->response();
-
-                if (null !== $modifier) {
-                    return error("You cannot both return a value from your route handler and render at the same time, but route `{$context->route->symbolicMethod} {$context->route->symbolicPath}` is trying to do just that. Please pick one, either return a value or render a document.");
+        if (null === $modifier) {
+            foreach ($dependencies as $dependency) {
+                if ($dependency instanceof RenderInterface) {
+                    $modifier = $dependency->response();
                 }
-                $modifier = $renderResponse;
             }
         }
 
