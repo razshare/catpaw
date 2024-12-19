@@ -1,5 +1,4 @@
 <?php
-
 namespace CatPaw\Web\Implementations\RequestHandler;
 
 use Amp\Http\Server\Request;

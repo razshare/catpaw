@@ -1,5 +1,4 @@
 <?php
-
 namespace CatPaw\Web\Implementations\RouteResolver;
 
 use Amp\Http\Server\Request;
@@ -38,7 +37,6 @@ class SimpleRouteResolver implements RouteResolverInterface {
         $symbolicMethod = $requestMethod;
 
         $routes = $this->router->findRoutesByMethod($requestMethod);
-
 
         $requestPathParameters = false;
         /** @var false|array<string> */

@@ -14,7 +14,6 @@ use CatPaw\Core\Bootstrap;
 use CatPaw\Core\Container;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
-
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;

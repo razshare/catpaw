@@ -1,15 +1,11 @@
 <?php
-
 namespace CatPaw\Web;
 
-use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use Amp\Websocket\Server\Websocket;
 use Amp\Websocket\Server\WebsocketClientHandler;
-
 use CatPaw\Core\Container;
 use function CatPaw\Core\error;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Web\Interfaces\WebsocketInterface;
