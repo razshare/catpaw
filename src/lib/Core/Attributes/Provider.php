@@ -16,7 +16,7 @@ use Throwable;
  * Provide a dependency.
  */
 #[Attribute(flags: Attribute::TARGET_CLASS)]
-final class Provider implements AttributeInterface, OnClassInstantiation {
+class Provider implements AttributeInterface, OnClassInstantiation {
     use CoreAttributeDefinition;
     
     /**

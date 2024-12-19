@@ -41,6 +41,7 @@ class WebTest extends TestCase {
                 yield Container::run($this->makeSureXmlConversionWorks(...));
                 yield Container::run($this->makeSureJsonConversionWorks(...));
                 yield Container::run($this->makeSureProducesHintsWork(...));
+                yield Container::run($this->makeSureFallbackContentWorks(...));
                 yield Container::run($this->makeSureContentNegotiationWorks(...));
                 yield Container::run($this->makeSureParamHintsWork(...));
                 yield Container::run($this->makeSureOpenApiDataIsGeneratedCorrectly(...));
@@ -98,33 +99,50 @@ class WebTest extends TestCase {
     }
 
     private function makeSureProducesHintsWork(RouterInterface $router):void {
-        $api         = $router->findRoute('GET', '/Api');
-        $apiUsername = $router->findRoute('GET', '/Api/{username}');
+        $api     = $router->findRoute('GET', '/Api');
+        $apiName = $router->findRoute('GET', '/Api/{name}');
 
         $this->assertTrue((bool)$api);
-        $this->assertTrue((bool)$apiUsername);
+        $this->assertTrue((bool)$apiName);
 
         $this->assertNotEmpty($api->produces);
-        $this->assertNotEmpty($apiUsername->produces);
+        $this->assertNotEmpty($apiName->produces);
 
         foreach ($api->produces as $produces) {
             $this->assertContains(TEXT_PLAIN, $produces->contentType());
         }
 
-        foreach ($apiUsername->produces as $produces) {
+        foreach ($apiName->produces as $produces) {
             $this->assertContains(TEXT_HTML, $produces->contentType());
         }
+    }
+
+    private function makeSureFallbackContentWorks(HttpClient $http):void {
+        $response1 = $http->request(new Request("http://127.0.0.1:5858/Api/Fallback", "GET"));
+        $actual    = $response1->getBody()->buffer();
+        $this->assertEquals("hello world", $actual);
+        $this->assertEquals("text/plain", $response1->getHeader("Content-Type"));
+
+        $response2 = $http->request(new Request("http://127.0.0.1:5858/Api/Fallback/", "GET"));
+        $actual    = $response2->getBody()->buffer();
+        $this->assertEquals("hello world", $actual);
+        $this->assertEquals("text/plain", $response2->getHeader("Content-Type"));
+
+        $response2 = $http->request(new Request("http://127.0.0.1:5858/Api/Fallback/test", "GET"));
+        $actual    = $response2->getBody()->buffer();
+        $this->assertEquals("hello test", $actual);
+        $this->assertEquals("text/plain", $response2->getHeader("Content-Type"));
     }
 
     private function makeSureContentNegotiationWorks(HttpClient $http):void {
         $response1 = $http->request(new Request("http://127.0.0.1:5858/Api", "GET"));
         $actual    = $response1->getBody()->buffer();
-        $this->assertEquals("hello", $actual);
+        $this->assertEquals("root", $actual);
         $this->assertEquals("text/plain", $response1->getHeader("Content-Type"));
 
-        $response2 = $http->request(new Request("http://127.0.0.1:5858/Api/world", "GET"));
+        $response2 = $http->request(new Request("http://127.0.0.1:5858/Api/test", "GET"));
         $actual    = $response2->getBody()->buffer();
-        $this->assertEquals("hello world", $actual);
+        $this->assertEquals("test", $actual);
         $this->assertEquals("text/html", $response2->getHeader("Content-Type"));
     }
 
@@ -144,9 +162,9 @@ class WebTest extends TestCase {
         $this->assertArrayHasKey('openapi', $json);
         $this->assertArrayHasKey('info', $json);
         $this->assertArrayHasKey('paths', $json);
-        $this->assertArrayHasKey('/Api/{username}', $json['paths']);
-        $this->assertArrayHasKey('get', $json['paths']['/Api/{username}']);
-        $this->assertArrayHasKey('summary', $json['paths']['/Api/{username}']['get']);
+        $this->assertArrayHasKey('/Api/{name}', $json['paths']);
+        $this->assertArrayHasKey('get', $json['paths']['/Api/{name}']);
+        $this->assertArrayHasKey('summary', $json['paths']['/Api/{name}']['get']);
 
         $this->assertArrayHasKey('/Api/ConsumeSomething', $json['paths']);
         $this->assertArrayHasKey('post', $json['paths']['/Api/ConsumeSomething']);

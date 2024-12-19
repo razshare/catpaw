@@ -14,6 +14,7 @@ use CatPaw\Core\Bootstrap;
 use CatPaw\Core\Container;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
+
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
@@ -61,16 +62,8 @@ class SimpleServer implements ServerInterface {
     ) {
     }
 
-    
-
     /** @var array<callable(HttpServer):(void|Result<void>)> */
     private array $onStartListeners = [];
-
-    /**
-     * Invoke a function when the server starts.
-     * @param  callable(HttpServer):(void|Result<void>) $function the function to invoke, with the http server as parameter.
-     * @return Result<None>
-     */
     public function onStart(callable $function):Result {
         $this->onStartListeners[] = $function;
         if (isset($this->httpServer) && $this->httpServerStarted) {
@@ -89,21 +82,11 @@ class SimpleServer implements ServerInterface {
         return $this->staticsLocation;
     }
 
-    /**
-     * List of middlewares to execute.
-     * @param array<Middleware> $middlewares
-     */
     public function widthMiddlewares(array $middlewares):self {
         $this->middlewares = $middlewares;
         return $this;
     }
-    
-    /**
-     * Interface to bind to.\
-     * For example `0.0.0.0:80`.\
-     * The default interface is `127.0.0.1:8080`.
-     * @param string $interface
-     */
+
     public function withInterface(string $interface):self {
         $this->interface = $interface;
         return $this;
@@ -113,11 +96,7 @@ class SimpleServer implements ServerInterface {
         $this->secureInterface = $secureInterface;
         return $this;
     }
-
-    /**
-     * The prefix of the api.
-     * @param string $apiPrefix
-     */
+    
     public function withApiPrefix(string $apiPrefix):self {
         if (!str_starts_with($apiPrefix, '/')) {
             $apiPrefix = "/$apiPrefix";
@@ -125,29 +104,17 @@ class SimpleServer implements ServerInterface {
         $this->apiPrefix = $apiPrefix;
         return $this;
     }
-
-    /**
-     * Where to serve the api from.\
-     * This path should contain your `get.php`, `post.php` (etc) files.
-     * @param string $apiLocation
-     */
+    
     public function withApiLocation(string $apiLocation):self {
         $this->apiLocation = $apiLocation;
         return $this;
     }
-
-    /**
-     * Where to serve static files from.
-     * @param string $staticsLocation
-     */
+    
     public function withStaticsLocation(string $staticsLocation):self {
         $this->staticsLocation = $staticsLocation;
         return $this;
     }
-
-    /**
-     * Enables compression.
-     */
+    
     public function withCompression():self {
         $this->compression = true;
         return $this;
@@ -167,22 +134,12 @@ class SimpleServer implements ServerInterface {
         $this->concurrencyLimit = $concurrencyLimit;
         return $this;
     }
-
-    /**
-     * @param array<string> $allowedMethods
-     */
+    
     public function withAllowedMethods(array $allowedMethods):self {
         $this->allowedMethods = $allowedMethods;
         return $this;
     }
-
-    /**
-     * Start the server.
-     *
-     * This method will resolve when `::stop` is invoked or one of the following signals is sent to the program `SIGHUP`, `SIGINT`, `SIGQUIT`, `SIGTERM`.
-     * @param  false|Signal $ready the server will trigger this signal whenever it's ready to serve requests.
-     * @return Result<None>
-     */
+    
     public function start(false|Signal $ready = false):Result {
         $logger = Container::get(LoggerInterface::class)->unwrap($error);
         if ($error) {
@@ -193,10 +150,7 @@ class SimpleServer implements ServerInterface {
             Container::provide(SessionInterface::class, SessionWithMemory::create(...));
         }
 
-        $this->initializeRoutes(
-            apiPrefix: $this->apiPrefix,
-            apiLocation: $this->apiLocation,
-        )->unwrap($error);
+        $this->initializeRoutes()->unwrap($error);
 
         if ($error) {
             return error($error);
@@ -278,11 +232,7 @@ class SimpleServer implements ServerInterface {
             return error($error);
         }
     }
-
-    /**
-     * Stop the server.
-     * @return Result<None>
-     */
+    
     public function stop():Result {
         if (isset($this->httpServer)) {
             try {
@@ -294,23 +244,25 @@ class SimpleServer implements ServerInterface {
         }
         return ok();
     }
-
+    
     /**
-     * @param  string       $apiPrefix
-     * @param  string       $apiLocation
+     * Initialize api routes from a file system location.
      * @return Result<None>
      */
-    private function initializeRoutes(string $apiPrefix, string $apiLocation):Result {
-        if (!$apiLocation) {
+    private function initializeRoutes():Result {
+        $prefix   = $this->apiPrefix;
+        $location = $this->apiLocation;
+
+        if (!$location) {
             return ok();
         }
 
-        if (!str_starts_with($apiLocation, '/')) {
-            $dir         = getcwd();
-            $apiLocation = (string)asFileName($dir, $apiLocation);
+        if (!str_starts_with($location, '/')) {
+            $dir      = getcwd();
+            $location = (string)asFileName($dir, $location);
         }
 
-        $flatList = Directory::flat($apiLocation)->unwrap($error);
+        $flatList = Directory::flat($location)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -332,8 +284,8 @@ class SimpleServer implements ServerInterface {
                 }
 
                 $symbolics = Symbolics::fromRootAndPrefixAndFileName(
-                    prefix: $apiPrefix,
-                    root: $apiLocation,
+                    prefix: $prefix,
+                    root: $location,
                     fileName: $fileName,
                 )->unwrap($error);
 
@@ -347,7 +299,7 @@ class SimpleServer implements ServerInterface {
                     return error("Route `$symbolics->method $symbolics->path` already exists. Will not overwrite.");
                 }
 
-                $cwd = dirname($apiLocation.$fileName)?:'';
+                $cwd = dirname($location.$fileName)?:'';
                 $this->router
                     ->initialize($symbolics->method, $symbolics->path, $handler, $cwd)
                     ->unwrap($error);

@@ -55,6 +55,9 @@ class SimpleRouteResolver implements RouteResolverInterface {
                 /** @var PathResolver $pathResolver */
                 $pathResolver      = $this->cache[$key];
                 $parametersWrapper = $pathResolver->findParametersFromPath($requestPath);
+                if (!$parametersWrapper->ok && !str_ends_with($requestPath, '/')) {
+                    $parametersWrapper = $pathResolver->findParametersFromPath("$requestPath/");
+                }
                 if ($parametersWrapper->ok) {
                     if ($parametersWrapper->badRequestEntries) {
                         $badRequestEntries = $parametersWrapper->badRequestEntries;
@@ -86,8 +89,11 @@ class SimpleRouteResolver implements RouteResolverInterface {
 
             $this->cache[$key] = $pathResolver;
 
-
             $requestPathParametersWrapper = $pathResolver->findParametersFromPath($requestPath);
+
+            if (!$requestPathParametersWrapper->ok && !str_ends_with($requestPath, '/')) {
+                $requestPathParametersWrapper = $pathResolver->findParametersFromPath("$requestPath/");
+            }
 
             if ($requestPathParametersWrapper->ok) {
                 if ($requestPathParametersWrapper->badRequestEntries) {

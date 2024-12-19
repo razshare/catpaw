@@ -20,7 +20,7 @@ interface ServerInterface {
      * @return string
      */
     public function staticsLocation():string;
-
+    
     /**
      * List of middlewares to execute.
      * @param array<Middleware> $middlewares
@@ -35,6 +35,12 @@ interface ServerInterface {
      */
     public function withInterface(string $interface):self;
 
+    /**
+     * Interface to bind to.\
+     * For example `0.0.0.0:443`.\
+     * The default interface is `127.0.0.1:8383`.
+     * @param string $secureInterface
+     */
     public function withSecureInterface(string $secureInterface):self;
 
 

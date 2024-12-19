@@ -1,6 +1,10 @@
 <?php
 namespace CatPaw\Web\Interfaces;
 
+/**
+ * 
+ * @package CatPaw\Web\Interfaces
+ */
 interface RenderInterface {
     /**
      * Start rendering a document by redirecting the output buffer into a response modifier.
@@ -9,7 +13,7 @@ interface RenderInterface {
      * 
      * # Example
      * ```php
-     * <?php return static function(Render $render) { ?>
+     * <?php return static function(RenderInterface $render) { ?>
      *     <?php $render->start() ?>
      *     <!DOCTYPE html>
      *     <html lang="en">
@@ -23,6 +27,7 @@ interface RenderInterface {
      *         </body>
      *     </html>
      * <?php } ?>
+     * 
      * @return void
      */
     public function start():void;

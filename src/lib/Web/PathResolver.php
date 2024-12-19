@@ -1,13 +1,10 @@
 <?php
-
 namespace CatPaw\Web;
 
 use function CatPaw\Core\error;
 use CatPaw\Core\None;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\ReflectionTypeManager;
-
 use CatPaw\Core\Result;
 use CatPaw\Web\Attributes\Param;
 use ReflectionParameter;

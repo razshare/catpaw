@@ -15,7 +15,6 @@ use function CatPaw\Core\ok;
 
 use CatPaw\Core\Result;
 use CatPaw\Web\Accepts;
-use CatPaw\Web\Attributes\Query;
 use CatPaw\Web\Body;
 use function CatPaw\Web\failure;
 use CatPaw\Web\HttpStatus;
@@ -187,52 +186,31 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             fallbacks: [
                 'bool' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
-                        $text  = $context->requestQueries[$item->name] ?? null;
-                        $query = new Query();
-                        $query->resolve($item->reflectionParameter, $text, $context)->unwrap($error);
-                        if ($error) {
-                            return error($error);
-                        }
-                        return ok((bool)$text);
+                        return ok(null);
                     }
                     return ok((bool)$context->requestPathParameters[$item->name]);
                 },
                 'float' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
-                        $text  = $context->requestQueries[$item->name] ?? null;
-                        $query = new Query();
-                        $query->resolve($item->reflectionParameter, $text, $context)->unwrap($error);
-                        if ($error) {
-                            return error($error);
-                        }
-                        return ok((float)$text);
+                        return ok(null);
                     }
                     return ok((float)$context->requestPathParameters[$item->name]);
                 },
                 'int' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
-                        $text  = $context->requestQueries[$item->name] ?? null;
-                        $query = new Query();
-                        $query->resolve($item->reflectionParameter, $text, $context)->unwrap($error);
-                        if ($error) {
-                            return error($error);
-                        }
-                        return ok((int)$text);
+                        return ok(null);
                     }
                     return ok((int)$context->requestPathParameters[$item->name]);
                 },
                 'string' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
-                        $text  = $context->requestQueries[$item->name] ?? null;
-                        $query = new Query();
-                        $query->resolve($item->reflectionParameter, $text, $context)->unwrap($error);
-                        if ($error) {
-                            return error($error);
-                        }
-                        return ok((string)$text);
+                        return ok(null);
                     }
-
-                    return ok((string)$context->requestPathParameters[$item->name]);
+                    $value = (string)$context->requestPathParameters[$item->name];
+                    return ok(match ($value) {
+                        ''      => $item->defaultValue ?? '',
+                        default => $value,
+                    });
                 },
             ],
             defaultArguments: [],
