@@ -8,7 +8,7 @@ interface CommandInterface {
     /**
      * Register a command to run.
      * @param  CommandRunnerInterface $command
-     * @return Result<None>           `true` if the command attempted to run, `false` otherwise.
+     * @return Result<None>
      */
     public function register(CommandRunnerInterface $command):Result;
 }
