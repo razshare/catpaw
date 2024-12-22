@@ -9,6 +9,7 @@ readonly class Application implements CommandRunnerInterface {
     public function build(CommandBuilder $builder):void {
         $builder->optional('m', 'main');
         $builder->optional('p', 'php');
+        $builder->optional('s', 'spawner');
         $builder->optional('e', 'environment');
         $builder->optional('n', 'name');
         $builder->optional('d', "die-on-change");
@@ -22,7 +23,7 @@ readonly class Application implements CommandRunnerInterface {
 
         $dieOnChange = (bool)$context->get('die-on-change');
         $watch       = (bool)$context->get('watch');
-        $php         = $context->get('php')?:'/usr/bin/php';
+        $spawner     = $context->get('spawner')?:$context->get('php')?:'/usr/bin/php';
         $name        = $context->get('name')?:'App';
         $main        = $context->get('main')?:'';
         $libraries   = $context->get('libraries')?:'';
@@ -50,7 +51,7 @@ readonly class Application implements CommandRunnerInterface {
             $arguments   = array_filter(array_slice($argv, 1), fn ($option) => trim($option) !== '--watch' && trim($option) !== '-w');
             $arguments[] = '--die-on-change';
             Bootstrap::spawn(
-                binary: $php,
+                command: $spawner,
                 fileName: $this->startFileName,
                 arguments: $arguments,
                 main: $main,

@@ -182,7 +182,7 @@ class Bootstrap {
     }
 
     /**
-     * @param  string        $binary
+     * @param  string        $command
      * @param  string        $fileName
      * @param  array<string> $arguments
      * @param  string        $main
@@ -191,7 +191,7 @@ class Bootstrap {
      * @return void
      */
     public static function spawn(
-        string $binary,
+        string $command,
         string $fileName,
         array $arguments,
         string $main,
@@ -217,7 +217,7 @@ class Bootstrap {
             }
 
             async(static function() use (
-                $binary,
+                $command,
                 $fileName,
                 $arguments,
                 $main,
@@ -250,7 +250,7 @@ class Bootstrap {
                 }
 
                 $argumentsStringified = join(' ', $arguments);
-                $instruction          = "$binary $fileName $argumentsStringified";
+                $instruction          = "$command $fileName $argumentsStringified";
 
                 echo "Spawning $instruction".PHP_EOL;
 
