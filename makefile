@@ -21,7 +21,10 @@ sandbox: bin/catpaw sandbox/main.php
 	bin/catpaw \
 	--environment=env.ini \
 	--libraries=sandbox/lib \
-	--main=sandbox/main.php
+	--main=sandbox/main.php \
+	--resources=src \
+	--watch \
+	--spawner="php -dxdebug.mode=debug -dxdebug.start_with_request=yes"
 
 dev: bin/catpaw src/main.php
 	php \
