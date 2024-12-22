@@ -7,7 +7,7 @@ readonly class Application implements CommandRunnerInterface {
     }
 
     public function build(CommandBuilder $builder):void {
-        $builder->required('m', 'main');
+        $builder->optional('m', 'main');
         $builder->optional('p', 'php');
         $builder->optional('e', 'environment');
         $builder->optional('n', 'name');
@@ -44,11 +44,6 @@ readonly class Application implements CommandRunnerInterface {
         
         if ($environment) {
             $environment = realpath($environment);
-        }
-
-
-        if (!$main) {
-            return error('No main file specified. Use `--main=src/main.php` to specify a main file.');
         }
 
         if ($watch) {

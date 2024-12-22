@@ -78,7 +78,8 @@
     }
   },
   "bin": [
-    "bin/catpaw"
+    "bin/catpaw",
+    "bin/catpaw-cli"
   ],
   "require": {
     "php": "^8.3",

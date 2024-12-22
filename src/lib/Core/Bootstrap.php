@@ -27,14 +27,13 @@ class Bootstrap {
      * @return Result<mixed>
      */
     public static function initialize(string $fileName):Result {
-        if (!File::exists($fileName)) {
-            return error("Could not find main file $fileName.");
+        if (File::exists($fileName)) {
+            require_once($fileName);
         }
 
-        require_once($fileName);
 
         if (!function_exists('main')) {
-            return error("could not find a global main function.");
+            return error("Could not find a global main function.");
         }
 
         $main = new ReflectionFunction('main');
@@ -74,12 +73,7 @@ class Bootstrap {
                 self::kill((string)$initializeError);
             }
 
-            $mainLocal = (string)asFileName($main);
-            if ('' === $mainLocal) {
-                self::kill("Please point to a valid main file, received `$main`.");
-            }
-
-            $main = $mainLocal;
+            $main = (string)asFileName($main);
 
             $logger = Container::get(LoggerInterface::class)->unwrap($loggerError);
             if ($loggerError) {
@@ -334,7 +328,10 @@ class Bootstrap {
                 clearstatcache();
                 $countLastPass = count($changes);
 
-                $fileNames = [$main => false];
+                $fileNames = match ($main) {
+                    ''      => [],
+                    default => [$main => false]
+                };
                 /** @var array<string> $files */
                 $files = [...$libraries, ...$resources];
 
