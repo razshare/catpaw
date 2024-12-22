@@ -57,7 +57,7 @@ function main(LoggerInterface $logger){
 }
 ```
 
-You can run your program in one of the three modes.
+You can run your program in one of three modes.
 
 # Development Mode
 
