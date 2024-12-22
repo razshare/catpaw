@@ -32,10 +32,10 @@ jobs:
           ${{ runner.os }}-php-
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --ignore-platform-req=ext-sdl
+      run: make load
 
     - name: Run tests
-      run: composer prod:test
+      run: make test
 
     # Docs: https://getcomposer.org/doc/articles/scripts.md
 

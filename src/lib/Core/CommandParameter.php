@@ -5,7 +5,7 @@ readonly class CommandParameter {
     /**
      * @param  string $longName
      * @param  string $shortName
-     * @param  bool $required
+     * @param  bool   $required
      * @param  string $value
      * @return void
      */

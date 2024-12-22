@@ -55,7 +55,7 @@ class SimpleCommand implements InterfacesCommandInterface {
 
             $value = preg_replace('/(?<!\\\\)"/', '', $value);
             $value = stripcslashes($value);
-            if('' === $value){
+            if ('' === $value) {
                 $value = '1';
             }
 

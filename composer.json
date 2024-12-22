@@ -78,7 +78,7 @@
     }
   },
   "bin": [
-    "bin/catpaw",
+    "bin/catpaw-app",
     "bin/catpaw-cli"
   ],
   "require": {

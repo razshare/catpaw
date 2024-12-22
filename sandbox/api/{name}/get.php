@@ -1,4 +1,5 @@
 <?php
+use App\LayoutComponent;
 use CatPaw\Web\Interfaces\RenderInterface;
 return static function(
     RenderInterface $render,

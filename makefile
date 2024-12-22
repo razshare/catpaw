@@ -3,22 +3,39 @@ load:
 	composer dump-autoload -o
 
 test: vendor/bin/phpunit
-	php vendor/bin/phpunit tests
+	php \
+	-dxdebug.mode=off \
+	-dxdebug.start_with_request=no \
+	vendor/bin/phpunit tests
 
-preview: bin/catpaw preview/main.php
-	php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/catpaw \
+fix: vendor/bin/php-cs-fixer
+	php \
+	-dxdebug.mode=off \
+	vendor/bin/php-cs-fixer fix .
+
+sandbox: bin/catpaw sandbox/main.php
+	php \
+	-dxdebug.mode=debug \
+	-dxdebug.start_with_request=yes \
+	bin/catpaw \
 	--environment=env.ini \
-	--libraries=preview/lib \
-	--main=preview/main.php
+	--libraries=sandbox/lib \
+	--main=sandbox/main.php
 
 dev: bin/catpaw src/main.php
-	php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/catpaw \
+	php \
+	-dxdebug.mode=debug \
+	-dxdebug.start_with_request=yes \
+	bin/catpaw \
 	--environment=env.ini \
 	--libraries=src/lib \
 	--main=src/main.php
 
 watch: bin/catpaw src/main.php
-	php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/catpaw \
+	php \
+	-dxdebug.mode=off \
+	-dxdebug.start_with_request=no \
+	bin/catpaw \
 	--environment=env.ini \
 	--libraries=src/lib \
 	--main=src/main.php \
@@ -27,7 +44,10 @@ watch: bin/catpaw src/main.php
 	--spawner="php -dxdebug.mode=debug -dxdebug.start_with_request=yes"
 
 start: bin/catpaw src/main.php
-	php -dopcache.enable_cli=1 -dopcache.jit_buffer_size=100M vendor/bin/catpaw \
+	php \
+	-dxdebug.mode=off \
+	-dxdebug.start_with_request=no \
+	bin/catpaw \
 	--environment=env.ini \
 	--libraries=src/lib \
 	--main=src/main.php
@@ -45,6 +65,10 @@ clean:
 	rm vendor -fr
 
 build: test bin/catpaw-cli
-	php -dphar.readonly=0 bin/catpaw-cli \
+	php \
+	-dxdebug.mode=off \
+	-dxdebug.start_with_request=no \
+	-dphar.readonly=0 \
+	bin/catpaw-cli \
 	--build \
 	--optimize
