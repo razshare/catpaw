@@ -22,7 +22,6 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 | 🚥 [Queues](./docs/Queues.md)                                     | Create in memory queues and tag them. |
 | 🚥 [Signals](./docs/Signals.md)                                   | Create signals and react to them. |
 | 🕐 [Schedule](./docs/Schedule.md)                                 | Schedule code execution using a human readable format. |
-| 🏗️ [Build](./docs/Build.md)                                       | Build your project into one single portable file. |
 | 💡 [RaspberryPi](./docs/RaspberryPi.md)                           | Control your RaspberryPi's GPIOs. |
 
 
@@ -32,24 +31,23 @@ It leverages [php attributes](https://www.php.net/manual/en/language.attributes.
 
 # Get started
 
-You will need at least [php 8.3](https://www.php.net/downloads.php) and the `php8.3-mbstring` and `php8.3-dom` extensions (required for PHPUnit).
-
-> [!NOTE]
-> I recommend you also install `php8.3-curl` for faster project initialization through composer.
+You will need at least [php 8.3](https://www.php.net/downloads.php).
 
 Create a new project using one of the starter templates.
 
-- you can start from scratch
-  ```bash
-  composer create-project catpaw/starter
-  ```
-- you can start with a web server
-  ```bash
-  composer create-project catpaw/web-starter
-  ```
----
+You can start from scratch
+```bash
+composer create-project catpaw/starter
+```
 
-Every application must declare a `main` function in the global scope, that will be your entry point:
+or you can start with a web server
+```bash
+composer create-project catpaw/web-starter
+```
+
+# Program Structure
+
+Every program must declare a `main` function in the global scope, that will be your entry point.
 
 ```php
 // src/main.php
@@ -59,75 +57,86 @@ function main(LoggerInterface $logger){
 }
 ```
 
-<br/>
+You can run your program in one of the three modes.
 
-After you've created your new project, you can run it using
+# Development Mode
 
-```bash
-composer dev:watch
-```
-to watch file changes (useful in development)
-or
+Enter Development Mode with
 
 ```bash
-composer prod:start
+make dev
 ```
-for production mode.
+
+This mode will run your program with [XDebug](https://xdebug.org) enabled.
+
+> [!NOTE]
+> See [section Debugging with VSCode](#debugging-with-vscode)
 
 
-# Build & Run
+# Watch Mode
 
-It is possible, but not required, to build your application into a single `.phar` file using
+Enter Watch Mode with
 
 ```bash
-composer prod:build
+make watch
 ```
+
+This mode will run your program with [XDebug](https://xdebug.org) enabled and 
+it will restart your program every time you make a change to your source code.
+
+> [!NOTE]
+> See [section Debugging with VSCode](#debugging-with-vscode)
+
+> [!NOTE]
+> By default "source code" means the "src" directory.\
+> You can change this configuration in your [makefile](./makefile), see section `watch`, parameter `resources`.
+
+# Production Mode
+
+Enter Production Mode with
+
+```bash
+make start
+```
+
+It's just as it sounds, run your program directly.\
+No debuggers, not extra overhead.
+
+# Build
+
+It is possible, but no required, to bundle your program into a single `.phar` file with
+
+```bash
+make build
+```
+
 The building process can be configured inside the `build.ini` file.
 
 After building your application, you can simply run it using
 ```
-php app.phar
+php out/app.phar
 ```
-The resulting `.phar`, by default (check `build.ini`), includes the following directories:
+The resulting `.phar` will include the following directories
 
-- `./src`
-- `./vendor`
-- `./bin`
-- `./.build-cache` (created at build time)
+- `src`
+- `vendor`
+- `.build-cache` (created at build time)
 
-which means it's a portable binary, you just need to make
+It's a portable bundle, you just need to make
 sure php is installed on whatever machine you're trying to run it on.
 
 # Debugging with VSCode
 
-- Install xdebug
+Install xdebug
   ```php
   apt install php8.3-xdebug
   ```
 
-- Put this configuration in your `./.vscode/launch.json` file
+Configure your `./.vscode/launch.json`
   ```json
   {
       "version": "0.2.0",
       "configurations": [
-          {
-              "name": "Launch",
-              "type": "php",
-              "request": "launch",
-              "program": "${workspaceRoot}/bin/start",
-              "args": [
-                  "--libraries='./src/lib'",
-                  "--entry='./src/main.php'"
-              ],
-              "cwd": "${workspaceRoot}",
-              "runtimeArgs": [
-                  "-dxdebug.start_with_request=yes"
-              ],
-              "env": {
-                  "XDEBUG_MODE": "debug,develop",
-                  "XDEBUG_CONFIG": "client_port=${port}"
-              }
-          },
           {
               "name": "Listen",
               "type": "php",
@@ -137,4 +146,5 @@ sure php is installed on whatever machine you're trying to run it on.
       ]
   }
   ```
-- Start debugging
+
+Start debugging.
