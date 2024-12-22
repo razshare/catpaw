@@ -31,7 +31,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-php-
 
-    - name: Install dependencies
+    - name: Load dependencies
       run: make load
 
     - name: Run tests
