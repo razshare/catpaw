@@ -132,7 +132,7 @@ Install xdebug
   apt install php8.3-xdebug
   ```
 
-Configure your `./.vscode/launch.json`
+Configure your `.vscode/launch.json`
   ```json
   {
       "version": "0.2.0",
