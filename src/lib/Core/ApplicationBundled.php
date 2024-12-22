@@ -6,18 +6,18 @@ use CatPaw\Core\Interfaces\CommandRunnerInterface;
 readonly class ApplicationBundled implements CommandRunnerInterface {
     /**
      * 
-     * @param  string        $main
-     * @param  string        $name
-     * @param  array<string> $libraries
-     * @param  array<string> $resources
-     * @param  string        $environment
+     * @param  string $main
+     * @param  string $name
+     * @param  string $libraries
+     * @param  string $resources
+     * @param  string $environment
      * @return void
      */
     public function __construct(
         public string $main,
         public string $name,
-        public array $libraries,
-        public array $resources,
+        public string $libraries,
+        public string $resources,
         public string $environment,
     ) {
     }
@@ -29,8 +29,8 @@ readonly class ApplicationBundled implements CommandRunnerInterface {
     public function run(CommandContext $context):Result {
         $environment = $context->get('environment')?:$this->environment;
 
-        $libraries = explode(',', $context->get('libraries')?:'');
-        $resources = explode(',', $context->get('resources')?:'');
+        $libraries = explode(',', $this->libraries);
+        $resources = explode(',', $this->resources);
 
 
         foreach ($libraries as $key => &$library) {
