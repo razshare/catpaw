@@ -26,22 +26,29 @@ readonly class Application implements CommandRunnerInterface {
         $spawner     = $context->get('spawner')?:$context->get('php')?:'/usr/bin/php';
         $name        = $context->get('name')?:'App';
         $main        = $context->get('main')?:'';
-        $libraries   = $context->get('libraries')?:'';
+        $libraries   = explode(',', $context->get('libraries')?:'');
         $resources   = explode(',', $context->get('resources')?:'');
         $environment = $context->get('environment')?:'';
 
         if ($main) {
             $main = realpath($main);
         }
-        
-        if ($libraries) {
-            $libraries = realpath($libraries);
+
+        foreach ($libraries as $key => &$library) {
+            if ('' === $library) {
+                unset($libraries[$key]);
+                continue;
+            }
+            $library = realpath($library);
         }
         
-        foreach ($resources as &$resource) {
+        foreach ($resources as $key => &$resource) {
+            if ('' === $resource) {
+                unset($resources[$key]);
+                continue;
+            }
             $resource = realpath($resource);
         }
-        $resources = join(',', $resources);
         
         if ($environment) {
             $environment = realpath($environment);

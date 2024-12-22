@@ -149,24 +149,26 @@ class SimpleEnvironment implements EnvironmentInterface {
      * $service->$get("server.www");
      * ```
      * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
-     * @return mixed  value of the variable.
+     * @return string value of the variable.
      */
-    public function get(string $query):mixed {
+    public function get(string $query):string {
         if (isset($this->variables[$query])) {
             return $this->variables[$query];
         }
         $reference = &$this->variables;
         foreach (explode('.', $query) as $key) {
             if (!isset($reference[$key])) {
-                return null;
+                $this->logger->warning("Environment variable `$key` not found.");
+                return '';
             }
             $reference = &$reference[$key];
         }
 
         if ($reference === $this->variables) {
-            // When reference has not changed it
+            // When reference has not changed, it
             // means `$name` is invalid or was not found.
-            return null;
+            $this->logger->warning("Environment variable `$key` not found or is not valid.");
+            return '';
         }
 
         return $reference;

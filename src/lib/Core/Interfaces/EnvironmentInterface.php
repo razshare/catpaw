@@ -62,7 +62,7 @@ interface EnvironmentInterface {
      *                       ```php
      *                       $environment->set('database.username','admin');
      *                       ```
-     * @return mixed  The value of the property.
+     * @return string The value of the property.
      */
-    public function get(string $query):mixed;
+    public function get(string $query):string;
 }

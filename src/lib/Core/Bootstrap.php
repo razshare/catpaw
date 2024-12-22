@@ -44,24 +44,24 @@ class Bootstrap {
 
     /**
      * Bootstrap an application from a file.
-     * @param  string $main        the main file of the application (it usually defines a global "main" function)
-     * @param  string $name        application name (this will be used by the default logger)
-     * @param  string $libraries   libraries to load
-     * @param  string $resources   resources to load
-     * @param  string $environment
-     * @param  bool   $dieOnChange die when a change to the main file, libraries or resources is detected
+     * @param  string        $main        the main file of the application (it usually defines a global "main" function)
+     * @param  string        $name        application name (this will be used by the default logger)
+     * @param  array<string> $libraries   libraries to load
+     * @param  array<string> $resources   resources to load
+     * @param  string        $environment
+     * @param  bool          $dieOnChange die when a change to the main file, libraries or resources is detected
      * @return void
      */
     public static function start(
         string $main,
         string $name,
-        string $libraries,
-        string $resources,
+        array $libraries,
+        array $resources,
         string $environment,
         bool $dieOnChange = false,
     ):void {
         try {
-            foreach (explode(',', $libraries) as $library) {
+            foreach ($libraries as $library) {
                 Container::requireLibraries($library)->unwrap($requireError);
                 if ($requireError) {
                     self::kill((string)$requireError);
@@ -80,18 +80,12 @@ class Bootstrap {
                 self::kill((string)$loggerError);
             }
 
-            /** @var array<string> $librariesList */
-            $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
-
-            /** @var array<string> $resourcesList */
-            $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
-
             $env = new SimpleEnvironment($logger);
             Container::provide(EnvironmentInterface::class, $env);
 
             $env->set('MAIN', $main);
-            $env->set('LIBRARIES', $librariesList);
-            $env->set('RESOURCES', $resourcesList);
+            $env->set('LIBRARIES', $libraries);
+            $env->set('RESOURCES', $resources);
             $env->set('DIE_ON_CHANGE', $dieOnChange);
 
             if ($environment) {
@@ -102,7 +96,7 @@ class Bootstrap {
                 }
             }
 
-            foreach ($librariesList as &$library) {
+            foreach ($libraries as &$library) {
                 $libraryLocal = (string)asFileName($library);
                 if ('' === $libraryLocal) {
                     self::kill("Trying to load php library `$library`, but the directory doesn't seem to exist.");
@@ -110,7 +104,7 @@ class Bootstrap {
                 $library = $libraryLocal;
             }
 
-            foreach ($resourcesList as $resource) {
+            foreach ($resources as $resource) {
                 $resourceLocal = (string)asFileName($resource);
                 if ('' === $resourceLocal) {
                     self::kill("Trying to track resource `$resource`, but it doesn't seem to exist.");
@@ -124,8 +118,8 @@ class Bootstrap {
                 }
                 self::onFileChange(
                     main: $main,
-                    libraries: $librariesList,
-                    resources: $resourcesList,
+                    libraries: $libraries,
+                    resources: $resource,
                     function: static function() {
                         self::kill("Killing application...", 0);
                     },
@@ -186,8 +180,8 @@ class Bootstrap {
      * @param  string        $fileName
      * @param  array<string> $arguments
      * @param  string        $main
-     * @param  string        $libraries
-     * @param  string        $resources
+     * @param  array<string> $libraries
+     * @param  array<string> $resources
      * @return void
      */
     public static function spawn(
@@ -195,8 +189,8 @@ class Bootstrap {
         string $fileName,
         array $arguments,
         string $main,
-        string $libraries,
-        string $resources,
+        array $libraries,
+        array $resources,
     ):void {
         try {
             EventLoop::onSignal(SIGHUP, static fn () => self::kill("Killing application..."));
@@ -204,7 +198,7 @@ class Bootstrap {
             EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
             EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
             
-            foreach (explode(',', $libraries) as $library) {
+            foreach ($libraries as $library) {
                 Container::requireLibraries($library)->unwrap($requireError);
                 if ($requireError) {
                     self::kill((string)$requireError);
@@ -254,12 +248,6 @@ class Bootstrap {
 
                 echo "Spawning $instruction".PHP_EOL;
 
-                /** @var array<string> $librariesList */
-                $librariesList = !$libraries ? [] : preg_split('/[,;]/', $libraries);
-
-                /** @var array<string> $resourcesList */
-                $resourcesList = !$resources ? [] : preg_split('/[,;]/', $resources);
-
                 if (DIRECTORY_SEPARATOR === '/') {
                     EventLoop::onSignal(SIGINT, static function() {
                         self::kill();
@@ -271,8 +259,8 @@ class Bootstrap {
 
                 self::onFileChange(
                     main: $main,
-                    libraries: $librariesList,
-                    resources: $resourcesList,
+                    libraries: $libraries,
+                    resources: $resources,
                     function: static function() use (&$ready) {
                         if (!$ready) {
                             return;
