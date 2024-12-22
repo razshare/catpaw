@@ -20,7 +20,6 @@ class SimpleEnvironment implements EnvironmentInterface {
     private array $variables = [];
 
     public function __construct(
-        // @phpstan-ignore-next-line
         private readonly LoggerInterface $logger,
     ) {
     }

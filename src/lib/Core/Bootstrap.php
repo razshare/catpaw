@@ -119,7 +119,7 @@ class Bootstrap {
                 self::onFileChange(
                     main: $main,
                     libraries: $libraries,
-                    resources: $resource,
+                    resources: $resources,
                     function: static function() {
                         self::kill("Killing application...", 0);
                     },

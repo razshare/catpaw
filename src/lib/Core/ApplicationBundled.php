@@ -4,11 +4,20 @@ namespace CatPaw\Core;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
 
 readonly class ApplicationBundled implements CommandRunnerInterface {
+    /**
+     * 
+     * @param  string        $main
+     * @param  string        $name
+     * @param  array<string> $libraries
+     * @param  array<string> $resources
+     * @param  string        $environment
+     * @return void
+     */
     public function __construct(
         public string $main,
         public string $name,
-        public string $libraries,
-        public string $resources,
+        public array $libraries,
+        public array $resources,
         public string $environment,
     ) {
     }
@@ -20,11 +29,31 @@ readonly class ApplicationBundled implements CommandRunnerInterface {
     public function run(CommandContext $context):Result {
         $environment = $context->get('environment')?:$this->environment;
 
+        $libraries = explode(',', $context->get('libraries')?:'');
+        $resources = explode(',', $context->get('resources')?:'');
+
+
+        foreach ($libraries as $key => &$library) {
+            if ('' === $library) {
+                unset($libraries[$key]);
+                continue;
+            }
+            $library = realpath($library);
+        }
+        
+        foreach ($resources as $key => &$resource) {
+            if ('' === $resource) {
+                unset($resources[$key]);
+                continue;
+            }
+            $resource = realpath($resource);
+        }
+
         Bootstrap::start(
             main: $this->main,
             name: $this->name,
-            libraries: $this->libraries,
-            resources: $this->resources,
+            libraries: $libraries,
+            resources: $resources,
             environment: $environment,
             dieOnChange: false
         );
