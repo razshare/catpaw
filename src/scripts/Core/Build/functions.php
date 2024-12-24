@@ -26,11 +26,11 @@ function build(bool $optimize = false):Result {
         return error('Cannot build using readonly phar, please disable the phar.readonly flag by running the builder with "php -dphar.readonly=0"'.PHP_EOL);
     }
 
-    $name        = env('name')        ?? 'app.phar';
-    $main        = env('main')        ?? '';
-    $libraries   = env('libraries')   ?? '';
-    $match       = env('match')       ?? '';
-    $environment = env('environment') ?? '';
+    $name        = env('name') ?: 'app.phar';
+    $main        = env('main');
+    $libraries   = env('libraries');
+    $match       = env('match');
+    $environment = env('environment');
 
     if (!$main) {
         return error(join("\n", [

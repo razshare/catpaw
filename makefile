@@ -8,6 +8,12 @@ test: vendor/bin/phpunit
 	-dxdebug.start_with_request=no \
 	vendor/bin/phpunit tests
 
+test-debug: vendor/bin/phpunit
+	php \
+	-dxdebug.mode=debug \
+	-dxdebug.start_with_request=yes \
+	vendor/bin/phpunit tests
+
 fix: vendor/bin/php-cs-fixer
 	php \
 	-dxdebug.mode=off \

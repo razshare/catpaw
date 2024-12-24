@@ -22,7 +22,6 @@ use CatPaw\Web\Interfaces\HttpInvokerInterface;
 use CatPaw\Web\Interfaces\ResponseModifierInterface;
 use CatPaw\Web\Interfaces\SessionInterface;
 use CatPaw\Web\Page;
-use CatPaw\Web\QueryItem;
 use CatPaw\Web\RequestContext;
 
 use function CatPaw\Web\success;
@@ -131,15 +130,8 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 Request::class     => static fn () => $context->request,
                 RequestBody::class => static fn () => $context->request->getBody(),
                 Body::class        => static fn () => new Body($context->request),
-                QueryItem::class   => static function(DependencySearchResultItem $item) use ($context) {
-                    $value = $context->requestQueries[$item->name] ?? false;
-                    if ('' === $value) {
-                        return ok(new QueryItem(false));
-                    }
-                    return ok(new QueryItem($value));
-                },
-                Accepts::class => static fn () => Accepts::createFromRequest($context->request),
-                Page::class    => static function() use ($context) {
+                Accepts::class     => static fn () => Accepts::createFromRequest($context->request),
+                Page::class        => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
                     $size  = $context->requestQueries['size']  ?? 10;
                     return ok(
@@ -177,26 +169,39 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             fallbacks: [
                 'bool' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
-                        return ok(null);
+                        if (!isset($context->requestQueries[$item->name])) {
+                            return ok(null);
+                        }
+                        return ok((bool)$context->requestQueries[$item->name]);
                     }
                     return ok((bool)$context->requestPathParameters[$item->name]);
                 },
                 'float' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
-                        return ok(null);
+                        if (!isset($context->requestQueries[$item->name])) {
+                            return ok(null);
+                        }
+                        return ok((float)$context->requestQueries[$item->name]);
                     }
                     return ok((float)$context->requestPathParameters[$item->name]);
                 },
                 'int' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
-                        return ok(null);
+                        if (!isset($context->requestQueries[$item->name])) {
+                            return ok(null);
+                        }
+                        return ok((int)$context->requestQueries[$item->name]);
                     }
                     return ok((int)$context->requestPathParameters[$item->name]);
                 },
                 'string' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
-                        return ok(null);
+                        if (!isset($context->requestQueries[$item->name])) {
+                            return ok(null);
+                        }
+                        return ok((string)$context->requestQueries[$item->name]);
                     }
+
                     $value = (string)$context->requestPathParameters[$item->name];
                     return ok(match ($value) {
                         ''      => $item->defaultValue ?? '',

@@ -29,7 +29,6 @@ use CatPaw\Web\Interfaces\OpenApiStateInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Page;
 use CatPaw\Web\PathResolver;
-use CatPaw\Web\QueryItem;
 use CatPaw\Web\Route;
 use CatPaw\Web\RouterContext;
 use CatPaw\Web\SuccessResponseModifier;
@@ -194,6 +193,36 @@ class SimpleRouter implements RouterInterface {
                 return error($error);
             }
 
+
+            $reflectionParameters = $reflectionFunction->getParameters();
+            $configurations       = PathResolver::findMatchingPathConfigurations($symbolicPath, $reflectionParameters)->unwrap($error);
+
+            $names = [];
+            foreach ($configurations as $configuration) {
+                $names[] = $configuration->name;
+            }
+
+            foreach ($reflectionParameters as $paramReflection) {
+                $type = ReflectionTypeManager::unwrap($paramReflection)->getName();
+                if ($error) {
+                    return error($error);
+                }
+                
+                if ('string' !== $type && 'int' !== $type && 'bool' !== $type && 'float' !== $type) {
+                    continue;
+                }
+    
+                if (in_array($paramReflection->getName(), $names)) {
+                    continue;
+                }
+
+                $wrapper = ReflectionTypeManager::wrap($paramReflection);
+
+                if (!$wrapper->allowsNullValue() && !$wrapper->allowsDefaultValue()) {
+                    return error("All query parameters must define a default value or at least be nullable, received query parameter `{$paramReflection->getName()}` in `$symbolicMethod $symbolicPath` which doesn't have a default value nor is nullable.");
+                }
+            }
+
             $route = Route::create(
                 reflectionFunction: $reflectionFunction,
                 workDirectory     : $workDirectory,
@@ -241,14 +270,30 @@ class SimpleRouter implements RouterInterface {
      * @return Result<array<mixed>>
      */
     private function findRouteOpenApiQueries(
-        ReflectionFunction $reflection,
+        ReflectionFunction $reflectionFunction,
+        string $symbolicPath
     ):Result {
         /** @var array<mixed> */
-        $result = [];
-        foreach ($reflection->getParameters() as $paramReflection) {
-            $type = \CatPaw\Core\ReflectionTypeManager::unwrap($paramReflection)->getName();
+        $result               = [];
+        $reflectionParameters = $reflectionFunction->getParameters();
+        $configurations       = PathResolver::findMatchingPathConfigurations($symbolicPath, $reflectionParameters)->unwrap($error);
 
-            if (QueryItem::class !== $type) {
+        $names = [];
+        foreach ($configurations as $configuration) {
+            $names[] = $configuration->name;
+        }
+
+        foreach ($reflectionParameters as $paramReflection) {
+            $type = ReflectionTypeManager::unwrap($paramReflection)->getName();
+            if ($error) {
+                return error($error);
+            }
+            
+            if ('string' !== $type && 'int' !== $type && 'bool' !== $type && 'float' !== $type) {
+                continue;
+            }
+
+            if (in_array($paramReflection->getName(), $names)) {
                 continue;
             }
 
@@ -390,15 +435,15 @@ class SimpleRouter implements RouterInterface {
     /**
      *
      * @param  ReflectionFunction   $reflectionFunction
-     * @param  string               $path
+     * @param  string               $symbolicPath
      * @return Result<array<mixed>>
      */
     private function findRouteOpenApiPathParameters(
         ReflectionFunction $reflectionFunction,
-        string $path
+        string $symbolicPath
     ):Result {
         $parametersReflections = $reflectionFunction->getParameters();
-        $configurations        = PathResolver::findMatchingPathConfigurations($path, $parametersReflections)->unwrap($error);
+        $configurations        = PathResolver::findMatchingPathConfigurations($symbolicPath, $parametersReflections)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -411,7 +456,6 @@ class SimpleRouter implements RouterInterface {
             $paramReflection = false;
 
             $name = $configuration->name;
-
 
             foreach ($parametersReflections as $parameterReflectionLocal) {
                 $nameLocal = $parameterReflectionLocal->getName();
@@ -597,13 +641,12 @@ class SimpleRouter implements RouterInterface {
             }
         }
 
-
         $headers = $this->findRouteOpenApiHeaders($reflectionFunction)->unwrap($error);
         if ($error) {
             return error($error);
         }
 
-        $queries = $this->findRouteOpenApiQueries($reflectionFunction)->unwrap($error);
+        $queries = $this->findRouteOpenApiQueries($reflectionFunction, $symbolicPath)->unwrap($error);
         if ($error) {
             return error($error);
         }

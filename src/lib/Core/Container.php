@@ -4,7 +4,6 @@ namespace CatPaw\Core;
 
 use function Amp\File\isDirectory;
 use function Amp\File\isFile;
-
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\HttpClientBuilder;
 use Attribute;
@@ -40,7 +39,6 @@ use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
-
 use ReflectionParameter;
 use Throwable;
 

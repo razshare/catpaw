@@ -37,6 +37,7 @@ class WebTest extends TestCase {
 
         $readySignal->listen(function() use ($server) {
             anyError(function() {
+                yield Container::run($this->makeSureParamsAndQueriesWork(...));
                 yield Container::run($this->makeSureSessionWorks(...));
                 yield Container::run($this->makeSureXmlConversionWorks(...));
                 yield Container::run($this->makeSureJsonConversionWorks(...));
@@ -58,6 +59,13 @@ class WebTest extends TestCase {
 
         $server->start($readySignal)->unwrap($error);
         $this->assertNull($error);
+    }
+
+    public function makeSureParamsAndQueriesWork(HttpClient $http):void {
+        $request  = new Request("http://127.0.0.1:5858/Api/ParamsAndQueries/asd?lastName=fgh", "GET");
+        $response = $http->request($request);
+        $actual   = $response->getBody()->buffer();
+        $this->assertEquals('your name is asd fgh', $actual);
     }
 
     public function makeSureSessionWorks(HttpClient $http):void {
