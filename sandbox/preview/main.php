@@ -1,9 +1,9 @@
 <?php
-use function CatPaw\Core\asFileName;
+use CatPaw\Core\FileName;
 use CatPaw\Web\Interfaces\ServerInterface;
 
 function main(ServerInterface $server) {
     return $server
-        ->withApiLocation(asFileName(__DIR__, 'api'))
+        ->withApiLocation(FileName::create(__DIR__, 'api'))
         ->start();
 }

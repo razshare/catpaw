@@ -18,7 +18,7 @@ final class BuildCommand implements CommandRunnerInterface {
     }
 
     public function run(CommandContext $context):Result {
-        $environment = asFileName($context->get('environment')?:'build.ini')->absolute();
+        $environment = FileName::create($context->get('environment')?:'build.ini')->absolute();
 
         if (!File::exists($environment)) {
             return error("File `$environment` doesn't seem to exist.");

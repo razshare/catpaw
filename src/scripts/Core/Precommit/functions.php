@@ -2,12 +2,13 @@
 namespace CatPaw\Core\Precommit;
 
 use function CatPaw\Core\error;
-use function CatPaw\Core\execute;
 
 use CatPaw\Core\File;
 
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
+
+use CatPaw\Core\Process;
 
 use CatPaw\Core\Result;
 
@@ -40,7 +41,7 @@ function installPreCommit(string $command):Result {
         return error($error);
     }
     
-    $code = execute("chmod +x $fileName")->unwrap($error);
+    $code = Process::execute("chmod +x $fileName")->unwrap($error);
     if ($error) {
         return error($error);
     }

@@ -2,14 +2,12 @@
 namespace Tests;
 
 use function CatPaw\Core\anyError;
-use function CatPaw\Core\asFileName;
-
 use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
 use CatPaw\Core\Container;
 use function CatPaw\Core\env;
-
 use CatPaw\Core\File;
+use CatPaw\Core\FileName;
 use CatPaw\Core\Implementations\Command\SimpleCommand;
 use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\CommandRunnerInterface;
@@ -23,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 class CoreTest extends TestCase {
     public function testAll():void {
         Container::provide(CommandInterface::class, new SimpleCommand);
-        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::requireLibraries(FileName::create(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
@@ -39,7 +37,7 @@ class CoreTest extends TestCase {
 
 
     private function makeSureEnvWorks(EnvironmentInterface $environment):void {
-        $environment->withFileName(asFileName(__DIR__, 'env.ini'));
+        $environment->withFileName(FileName::create(__DIR__, 'env.ini'));
         $environment->load()->unwrap($error);
         $this->assertNull($error);
         $sayHello = env("say.hello");
@@ -50,7 +48,7 @@ class CoreTest extends TestCase {
     }
 
     public function makeSureUnsafeWorks():void {
-        $file = File::open(asFileName(__DIR__, 'file.txt'))->unwrap($error);
+        $file = File::open(FileName::create(__DIR__, 'file.txt'))->unwrap($error);
         $this->assertNull($error);
         $contents = $file->readAll()->unwrap($error);
         $this->assertNull($error);
@@ -60,7 +58,7 @@ class CoreTest extends TestCase {
     }
 
     public function makeSureUnsafeWorksWithAnyError():void {
-        $file = File::open(asFileName(__DIR__, 'file.txt'))->unwrap($error);
+        $file = File::open(FileName::create(__DIR__, 'file.txt'))->unwrap($error);
         $this->assertNull($error);
         $contents = $file->readAll()->unwrap($error);
         $this->assertNull($error);

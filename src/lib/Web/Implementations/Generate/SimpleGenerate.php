@@ -3,12 +3,11 @@ namespace CatPaw\Web\Implementations\Generate;
 
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
-use function CatPaw\Core\asFileName;
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
-
+use CatPaw\Core\FileName;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Core\Signal;
@@ -39,7 +38,7 @@ class SimpleGenerate implements GenerateInterface {
                     $request  = new Request("$baseUrl$route->symbolicPath", $route->symbolicMethod);
                     $response = $client->request($request);
                     $contents = $response->getBody()->buffer();
-                    $fileName = asFileName($outputDirectory)->withoutPhar();
+                    $fileName = FileName::create($outputDirectory)->withoutPhar();
                     Directory::create($fileName)->unwrap($error);
                     if ($error) {
                         $this->logger->error($error);

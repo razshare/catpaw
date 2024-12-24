@@ -73,7 +73,7 @@ class Bootstrap {
                 self::kill((string)$initializeError);
             }
 
-            $main = (string)asFileName($main);
+            $main = (string)FileName::create($main);
 
             $logger = Container::get(LoggerInterface::class)->unwrap($loggerError);
             if ($loggerError) {
@@ -97,7 +97,7 @@ class Bootstrap {
             }
 
             foreach ($libraries as &$library) {
-                $libraryLocal = (string)asFileName($library);
+                $libraryLocal = (string)FileName::create($library);
                 if ('' === $libraryLocal) {
                     self::kill("Trying to load php library `$library`, but the directory doesn't seem to exist.");
                 }
@@ -105,7 +105,7 @@ class Bootstrap {
             }
 
             foreach ($resources as $resource) {
-                $resourceLocal = (string)asFileName($resource);
+                $resourceLocal = (string)FileName::create($resource);
                 if ('' === $resourceLocal) {
                     self::kill("Trying to track resource `$resource`, but it doesn't seem to exist.");
                 }
@@ -274,7 +274,7 @@ class Bootstrap {
                     if ($ready) {
                         $ready->getFuture()->await();
                     }
-                    $code = execute($instruction, out())->unwrap($error);
+                    $code = Process::execute($instruction, out())->unwrap($error);
                     if ($error || $code > 0) {
                         echo $error.PHP_EOL;
                         $ready = new DeferredFuture;

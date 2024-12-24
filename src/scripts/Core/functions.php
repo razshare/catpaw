@@ -2,23 +2,18 @@
 
 namespace CatPaw\Core;
 
-use function Amp\ByteStream\buffer;
 use function Amp\ByteStream\getStdin;
 use function Amp\ByteStream\getStdout;
-use function Amp\ByteStream\pipe;
 use Amp\ByteStream\ReadableIterableStream;
 use Amp\ByteStream\ReadableResourceStream;
 use Amp\ByteStream\WritableIterableStream;
 use Amp\ByteStream\WritableResourceStream;
-use Amp\ByteStream\WritableStream;
 use Amp\DeferredFuture;
 use Amp\Future;
-use Amp\Process\Process;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 use Error;
 use Generator;
 use Phar;
-use Psr\Log\LoggerInterface;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use Throwable;
@@ -44,7 +39,6 @@ function isAssoc(array $arr):bool {
     }
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
-
 
 /**
  * Generate a universally unique identifier
@@ -106,6 +100,7 @@ function readLineSilent(string $prompt):Result {
 
 
 /**
+ * Flatten an array.
  * @template T
  * @param  array<T> $array
  * @param  bool     $completely if true, flatten the array completely
@@ -156,67 +151,6 @@ function error(string|Error $message):Result {
     }
     /** @var Result<mixed> */
     return new Result(null, $message);
-}
-
-
-/**
- * Execute a command.
- * @param  string               $command       Command to run.
- * @param  false|WritableStream $output        Send the output of the process to this stream.
- * @param  false|string         $workDirectory Work directory of the command.
- * @param  false|Signal         $kill          When this signal is triggered the process is killed.
- * @return Result<int>
- */
-function execute(
-    string $command,
-    false|WritableStream $output = false,
-    false|string $workDirectory = false,
-    false|Signal $kill = false,
-):Result {
-    try {
-        $logger = Container::get(LoggerInterface::class)->unwrap($error);
-        if ($error) {
-            return error($error);
-        }
-        $process = Process::start($command, $workDirectory?:null);
-        if ($output) {
-            pipe($process->getStdout(), $output);
-            pipe($process->getStderr(), $output);
-        }
-        $code = $process->join();
-    } catch(Throwable $error) {
-        return error($error);
-    }
-
-    if ($kill) {
-        $kill->listen(static function() use ($process, $logger) {
-            if (!$process->isRunning()) {
-                return;
-            }
-
-            try {
-                $process->signal(9);
-            } catch(Throwable $error) {
-                $logger->error($error);
-            }
-        });
-    }
-
-    return ok($code);
-}
-
-/**
- * Execute a command and return its output.
- * @param  string         $command command to run
- * @return Result<string>
- */
-function get(string $command):Result {
-    [$reader, $writer] = duplex();
-    execute($command, $writer)->unwrap($error);
-    if ($error) {
-        return error($error);
-    }
-    return ok(buffer($reader));
 }
 
 /**
@@ -355,9 +289,10 @@ function stop(string|Error $error) {
  * automatically detect if `$path`
  * is included in the current `.phar` bundle and it 
  * will return the correct string according to `.phar` semantics.
- * @param  string   ...$path
+ * @param string ...$path
+ * @deprecated Use FileName::create instead.
  * @return FileName
  */
 function asFileName(string ...$path):FileName {
-    return new FileName($path);
+    return FileName::create(...$path);
 }

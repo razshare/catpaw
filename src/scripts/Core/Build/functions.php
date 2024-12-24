@@ -6,12 +6,12 @@ use function Amp\File\isDirectory;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\env;
 use function CatPaw\Core\error;
-use function CatPaw\Core\execute;
 use CatPaw\Core\File;
 use CatPaw\Core\None;
-
 use function CatPaw\Core\ok;
+
 use function CatPaw\Core\out;
+use CatPaw\Core\Process;
 use CatPaw\Core\Result;
 use Exception;
 use Phar;
@@ -119,7 +119,7 @@ function build(bool $optimize = false):Result {
         }
 
         if ($optimize) {
-            execute("composer update --no-dev", out())->unwrap($error);
+            Process::execute("composer update --no-dev", out())->unwrap($error);
             if ($error) {
                 return error($error);
             }
@@ -155,7 +155,7 @@ function build(bool $optimize = false):Result {
         }
 
         if ($optimize) {
-            execute("composer update", out())->unwrap($error);
+            Process::execute("composer update", out())->unwrap($error);
             if ($error) {
                 return error($error);
             }

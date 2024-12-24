@@ -2,8 +2,8 @@
 namespace Tests;
 
 use function CatPaw\Core\anyError;
-use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
+use CatPaw\Core\FileName;
 use CatPaw\Core\Signal;
 use CatPaw\Schedule\Interfaces\ScheduleInterface;
 use PHPUnit\Framework\TestCase;
@@ -12,7 +12,7 @@ use Revolt\EventLoop;
 
 class ScheduleTest extends TestCase {
     public function testAll():void {
-        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::requireLibraries(FileName::create(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);

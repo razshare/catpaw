@@ -8,12 +8,12 @@ use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\SocketHttpServer;
-use function CatPaw\Core\asFileName;
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Bootstrap;
 use CatPaw\Core\Container;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
+use CatPaw\Core\FileName;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
@@ -258,7 +258,7 @@ class SimpleServer implements ServerInterface {
 
         if (!str_starts_with($location, '/')) {
             $dir      = getcwd();
-            $location = (string)asFileName($dir, $location);
+            $location = (string)FileName::create($dir, $location);
         }
 
         $flatList = Directory::flat($location)->unwrap($error);

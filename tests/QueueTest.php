@@ -3,15 +3,15 @@ namespace Tests;
 
 use function Amp\delay;
 use function CatPaw\Core\anyError;
-use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
+use CatPaw\Core\FileName;
 use CatPaw\Queue\Interfaces\QueueInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class QueueTest extends TestCase {
     public function testAll():void {
-        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::requireLibraries(FileName::create(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);

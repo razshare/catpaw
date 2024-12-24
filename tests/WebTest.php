@@ -4,8 +4,8 @@ namespace Tests;
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\Request;
 use function CatPaw\Core\anyError;
-use function CatPaw\Core\asFileName;
 use CatPaw\Core\Container;
+use CatPaw\Core\FileName;
 use CatPaw\Core\Signal;
 use const CatPaw\Web\APPLICATION_JSON;
 use const CatPaw\Web\APPLICATION_XML;
@@ -21,7 +21,7 @@ use Tests\Types\SchemaConsumeSomething;
 
 class WebTest extends TestCase {
     public function testAll():void {
-        Container::requireLibraries(asFileName(__DIR__, '../src/lib'))->unwrap($error);
+        Container::requireLibraries(FileName::create(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
@@ -29,8 +29,8 @@ class WebTest extends TestCase {
         $this->assertNull($error);
         $server
             ->withInterface('127.0.0.1:5858')
-            ->withApiLocation(asFileName(__DIR__, './Api'))
-            ->withStaticsLocation(asFileName(__DIR__, './www'))
+            ->withApiLocation(FileName::create(__DIR__, './Api'))
+            ->withStaticsLocation(FileName::create(__DIR__, './www'))
             ->withApiPrefix('Api');
 
         $readySignal = Signal::create();
