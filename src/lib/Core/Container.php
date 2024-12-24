@@ -495,7 +495,11 @@ class Container {
      */
     public static function get(string $className, ...$arguments):Result {
         if (Provider::isset($className)) {
-            return ok(Provider::get($className)(...$arguments));
+            $value = Provider::get($className)(...$arguments);
+            if ($value instanceof Result) {
+                return $value;
+            }
+            return ok($value);
         }
 
         if (interface_exists($className)) {
@@ -551,7 +555,7 @@ class Container {
         }
 
         if (!$instance) {
-            return error("Instance of $className is null.");
+            return error("Instance of `$className` is null.");
         }
 
         self::entry($instance, $reflection->getMethods())->unwrap($error);
