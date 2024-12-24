@@ -19,7 +19,6 @@ use CatPaw\Web\Body;
 use function CatPaw\Web\failure;
 use CatPaw\Web\HttpStatus;
 use CatPaw\Web\Interfaces\HttpInvokerInterface;
-use CatPaw\Web\Interfaces\RenderInterface;
 use CatPaw\Web\Interfaces\ResponseModifierInterface;
 use CatPaw\Web\Interfaces\SessionInterface;
 use CatPaw\Web\Page;
@@ -68,14 +67,6 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         }
 
         $modifier = $function(...$dependencies);
-
-        if (null === $modifier) {
-            foreach ($dependencies as $dependency) {
-                if ($dependency instanceof RenderInterface) {
-                    $modifier = $dependency->response();
-                }
-            }
-        }
 
         foreach ($onResponses as $onResponse) {
             $onResponse->onResponse($context->request, $modifier)->unwrap($error);

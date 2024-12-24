@@ -28,7 +28,6 @@ use CatPaw\Web\Implementations\Generate\SimpleGenerate;
 use CatPaw\Web\Implementations\HttpInvoker\SimpleHttpInvoker;
 use CatPaw\Web\Implementations\OpenApi\SimpleOpenApi;
 use CatPaw\Web\Implementations\OpenApiState\SimpleOpenApiState;
-use CatPaw\Web\Implementations\Render\SimpleRender;
 use CatPaw\Web\Implementations\RequestHandler\SimpleRequestHandler;
 use CatPaw\Web\Implementations\Router\SimpleRouter;
 use CatPaw\Web\Implementations\RouteResolver\SimpleRouteResolver;
@@ -119,7 +118,6 @@ class Container {
             SimpleWebsocket::class,
             SimpleGenerate::class,
             SimpleDatabase::class,
-            SimpleRender::class,
         ];
 
         foreach ($classNames as $className) {
