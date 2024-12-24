@@ -294,18 +294,19 @@ class SimpleServer implements ServerInterface {
                 return error($error);
             }
 
-            $cwd     = dirname($location.$fileName)?:'';
-            $before  = get_defined_vars();
+            $before = get_defined_vars();
+            unset($error);
             $handler = require_once($fileName);
             $after   = get_defined_vars();
+            $cwd     = dirname($location.$fileName)?:'';
             /** @var array<string,mixed> */
             $variables = [];
 
             foreach ($after as $key => $value) {
-                if (isset($before[$key])) {
+                if (isset($before[$key]) || 'before' === $key || 'handler' === $key) {
                     continue;
                 }
-                $variables[mb_strtoupper($key)] = $value;
+                $variables[$key] = $value;
             }
 
             if (!is_callable($handler)) {
@@ -313,18 +314,32 @@ class SimpleServer implements ServerInterface {
                     return error("File `$fileName` is a php file that lives under a filesystem router directory, hence it must return a callable function, but it doesn't. If this file is not needed, please consider deleting it or moving it to a different directory.");
                 }
                 
-                foreach ($variables as $method => $handler) {
+                foreach ($variables as $symbolicMethod => $handler) {
                     if (!is_callable($handler)) {
                         continue;
                     }
+                    
+                    unset($$symbolicMethod);
 
-                    $routeExists = $this->router->routeExists($method, $symbolics->path);
+                    $symbolicMethod = mb_strtoupper($symbolicMethod);
+
+                    if (!in_array($symbolicMethod, [
+                        'GET',
+                        'POST',
+                        'PUT',
+                        'DELETE',
+                        'PATH',
+                    ])) {
+                        continue;
+                    }
+                    
+                    $routeExists = $this->router->routeExists($symbolicMethod, $symbolics->path);
                     if ($routeExists) {
-                        return error("Route `$method $symbolics->path` already exists. Will not overwrite.");
+                        return error("Route `$symbolicMethod $symbolics->path` already exists. Will not overwrite.");
                     }
 
                     $this->router
-                        ->initialize($method, $symbolics->path, $handler, $cwd)
+                        ->initialize($symbolicMethod, $symbolics->path, $handler, $cwd)
                         ->unwrap($error);
 
                     if ($error) {
