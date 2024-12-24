@@ -244,12 +244,12 @@ function deferred():DeferredFuture {
 
 /**
  * Find an environment variable by name.
- *
+ * 
  * ## Example
  * ```php
- * $service->findByName("server")['www'];
+ * env("server")['www'];
  * // or better even
- * $service->$findByName("server.www");
+ * env("server.www");
  * ```
  * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
  * @return string value of the variable.
