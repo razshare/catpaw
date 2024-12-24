@@ -252,9 +252,9 @@ function deferred():DeferredFuture {
  * $service->$findByName("server.www");
  * ```
  * @param  string $query name of the variable or a query in the form of `"key.subkey"`.
- * @return mixed  value of the variable.
+ * @return string value of the variable.
  */
-function env(string $query):mixed {
+function env(string $query):string {
     /** @var false|EnvironmentInterface */
     static $env = false;
 
