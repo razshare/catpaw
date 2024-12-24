@@ -276,10 +276,12 @@ class Bootstrap {
                     if ($ready) {
                         $ready->getFuture()->await();
                     }
-                    
-                    Process::execute($initializer, out())->unwrap($error);
-                    if ($error) {
-                        self::kill($error);
+
+                    if ('' !== $initializer) {
+                        Process::execute($initializer, out())->unwrap($error);
+                        if ($error) {
+                            self::kill($error);
+                        }
                     }
 
                     $code = Process::execute($instruction, out())->unwrap($error);
