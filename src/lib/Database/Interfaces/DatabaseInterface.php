@@ -7,8 +7,8 @@ interface DatabaseInterface {
     /**
      * Send a query to the database.
      * @param  string                             $query
-     * @param  mixed                              $parameters
+     * @param  array<string,mixed>|object         $parameters
      * @return Result<array<array<string,mixed>>>
      */
-    public function send(string $query, mixed $parameters):Result;
+    public function send(string $query, array|object $parameters = []):Result;
 }

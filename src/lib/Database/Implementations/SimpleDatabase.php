@@ -42,9 +42,12 @@ class SimpleDatabase implements DatabaseInterface {
         }
     }
     
+    /**
+     * @inheritdoc
+     */
     public function send(
         string $query,
-        mixed $parameters,
+        array|object $parameters = [],
     ):Result {
         try {
             $pool = $this->mysqlPoolResult->unwrap($error);
@@ -52,7 +55,7 @@ class SimpleDatabase implements DatabaseInterface {
                 return error($error);
             }
     
-            if ($parameters instanceof \stdClass) {
+            if (!is_array($parameters)) {
                 $parameters = (array)$parameters;
             }
 
