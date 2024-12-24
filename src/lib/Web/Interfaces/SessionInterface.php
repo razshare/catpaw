@@ -2,6 +2,7 @@
 namespace CatPaw\Web\Interfaces;
 
 use Amp\Http\Server\Request;
+use CatPaw\Core\None;
 use CatPaw\Core\Result;
 
 interface SessionInterface {
@@ -55,7 +56,7 @@ interface SessionInterface {
     public function id():string;
     /**
      * Destroy the session.
-     * @return void
+     * @return Result<None>
      */
-    public function destroy():void;
+    public function destroy():Result;
 }

@@ -124,8 +124,9 @@ class MemorySession implements SessionInterface {
     /**
      * @inheritdoc
      */
-    public function destroy():void {
+    public function destroy():Result {
         $this->stopped = time();
         unset(self::$cache[$this->id]);
+        return ok();
     }
 }
