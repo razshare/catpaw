@@ -170,7 +170,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 'bool' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
                         if (!isset($context->requestQueries[$item->name])) {
-                            return ok(null);
+                            return ok($item->defaultValue);
                         }
                         return ok((bool)$context->requestQueries[$item->name]);
                     }
@@ -179,7 +179,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 'float' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
                         if (!isset($context->requestQueries[$item->name])) {
-                            return ok(null);
+                            return ok($item->defaultValue);
                         }
                         return ok((float)$context->requestQueries[$item->name]);
                     }
@@ -188,7 +188,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 'int' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
                         if (!isset($context->requestQueries[$item->name])) {
-                            return ok(null);
+                            return ok($item->defaultValue);
                         }
                         return ok((int)$context->requestQueries[$item->name]);
                     }
@@ -197,7 +197,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 'string' => static function(DependencySearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
                         if (!isset($context->requestQueries[$item->name])) {
-                            return ok(null);
+                            return ok($item->defaultValue);
                         }
                         return ok((string)$context->requestQueries[$item->name]);
                     }
