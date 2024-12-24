@@ -3,6 +3,8 @@ namespace CatPaw\Web;
 
 use Amp\Http\Cookie\ResponseCookie;
 use Amp\Http\Server\Request;
+
+use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use function CatPaw\Core\uuid;
@@ -34,8 +36,12 @@ class MemorySession implements SessionInterface {
         if ($sessionIdCookie) {
             $id = $sessionIdCookie->getValue();
             if (isset(self::$cache[$id])) {
-                $session = self::$cache[$id];
-                if ($session->validate()) {
+                $session   = self::$cache[$id];
+                $validated = $session->validate()->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+                if ($validated) {
                     // @phpstan-ignore return.type
                     return ok($session);
                 }
@@ -79,22 +85,22 @@ class MemorySession implements SessionInterface {
     }
 
     /**
-     * @param  ResponseModifierInterface $modifier
-     * @return void
+     * @inheritdoc
      */
-    public function apply(ResponseModifierInterface $modifier):void {
+    public function flush(ResponseModifierInterface $modifier):Result {
         $modifier->withCookies(new ResponseCookie('session-id', $this->id));
+        return ok();
     }
 
     /**
      * @inheritdoc
      */
-    public function validate():bool {
+    public function validate():Result {
         if (false !== $this->stopped) {
-            return false;
+            return ok(false);
         }
         $now = time();
-        return $now < $this->expiration ;
+        return ok($now < $this->expiration);
     }
 
     /**

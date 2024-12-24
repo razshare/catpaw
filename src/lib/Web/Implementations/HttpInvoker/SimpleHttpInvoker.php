@@ -102,7 +102,10 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
 
         foreach ($dependencies as $dependency) {
             if ($dependency instanceof SessionInterface) {
-                $dependency->apply($modifier);
+                $dependency->flush($modifier)->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
             }
         }
 

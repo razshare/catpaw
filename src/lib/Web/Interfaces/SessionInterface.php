@@ -13,18 +13,18 @@ interface SessionInterface {
      */
     public static function create(Request $request):Result;
     /**
-     * Apply required modifications to the response modifier, for example a `session-id` cookie.
+     * Save all changes and apply required modifications to the response modifier, for example setting a `session-id` cookie.
      * > **Note**\
      * > You don't need to invoke this method yourself, the router will handle this automatically.
      * @param  ResponseModifierInterface $modifier
-     * @return void
+     * @return Result<None>
      */
-    public function apply(ResponseModifierInterface $modifier):void;
+    public function flush(ResponseModifierInterface $modifier):Result;
     /**
      * Validate the session.
-     * @return bool _True_ if the session exists, is not expired and has not been stopped, otherwise _false_.
+     * @return Result<bool> _True_ if the session exists, is not expired and has not been stopped, otherwise _false_.
      */
-    public function validate():bool;
+    public function validate():Result;
     /**
      * Check if key exists in session.
      * @param  string $key
