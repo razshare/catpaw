@@ -33,11 +33,24 @@ interface SessionInterface {
      * Create and return a reference to an item the session.\
      * If the `$key` already exists, return its relative item instead of creating a new one.
      * @template T
-     * @param  string $key
-     * @param  T      $default Default value to return if key is not found.
-     * @return T      Reference to the item.
+     * @param  string          $key
+     * @param  T               $default Default value to return if key is not found.
+     * @param  class-string<T> $type    Type of value.
+     * @return T               Reference to the item.
+     * @phpstan-ignore parameter.defaultValue
      */
-    public function &ref(string $key, mixed $default = null):mixed;
+    public function &ref(string $key, mixed $default = null, string $type = 'mixed'):mixed;
+    /**
+     * Create, set and return a reference to an item the session.\
+     * If the `$key` already exists, return its relative item instead of creating a new one.
+     * @template T
+     * @param  string          $key
+     * @param  T               $value Value to set.
+     * @param  class-string<T> $type  Type of value.
+     * @return T               Reference to the item.
+     * @phpstan-ignore parameter.defaultValue
+     */
+    public function &set(string $key, mixed $value, string $type = 'mixed'):mixed;
     /**
      * Get the session id.
      * @return string

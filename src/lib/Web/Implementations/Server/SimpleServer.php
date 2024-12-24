@@ -22,8 +22,8 @@ use CatPaw\Web\Interfaces\RouteResolverInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\SessionInterface;
+use CatPaw\Web\MemorySession;
 use CatPaw\Web\ServerErrorHandler;
-use CatPaw\Web\SessionWithMemory;
 use CatPaw\Web\Symbolics;
 use Psr\Log\LoggerInterface;
 use Revolt\EventLoop;
@@ -146,7 +146,7 @@ class SimpleServer implements ServerInterface {
         }
 
         if (!Container::isProvided(SessionInterface::class)) {
-            Container::provide(SessionInterface::class, SessionWithMemory::create(...));
+            Container::provide(SessionInterface::class, MemorySession::create(...));
         }
 
         $this->initializeRoutes()->unwrap($error);

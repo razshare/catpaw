@@ -15,9 +15,19 @@ use CatPaw\Web\Interfaces\SessionInterface;
  * In memory session.
  * @package CatPaw\Web
  */
-class SessionWithMemory implements SessionInterface {
-    /** @var array<SessionWithMemory> */
+class MemorySession implements SessionInterface {
+    /** @var array<MemorySession> */
     private static array $cache = [];
+
+    /**
+     * @inheritdoc
+     * @phpstan-ignore parameter.defaultValue
+     */
+    public function &set(string $key, mixed $value, string $type = 'mixed'): mixed {
+        $content = &$this->ref($key, $value);
+        $content = $value;
+        return $content;
+    }
 
     /**
      * @inheritdoc
@@ -37,7 +47,7 @@ class SessionWithMemory implements SessionInterface {
         do {
             $id = uuid();
         } while (isset(self::$cache[$id]));
-        $session = new SessionWithMemory(
+        $session = new MemorySession(
             id: $id,
             ttl: 60 * 60 * 24,
             data: [],
@@ -97,8 +107,9 @@ class SessionWithMemory implements SessionInterface {
 
     /**
      * @inheritdoc
+     * @phpstan-ignore parameter.defaultValue
      */
-    public function &ref(string $key, mixed $default = null):mixed {
+    public function &ref(string $key, mixed $default = null, string $type = 'mixed'):mixed {
         if (!$this->has($key)) {
             $this->data[$key] = $default;
         }
