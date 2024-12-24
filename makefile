@@ -14,17 +14,14 @@ fix: vendor/bin/php-cs-fixer
 	-dxdebug.start_with_request=no \
 	vendor/bin/php-cs-fixer fix .
 
-sandbox: bin/catpaw sandbox/main.php
+preview: bin/catpaw sandbox/preview/main.php
 	php \
 	-dxdebug.mode=debug \
 	-dxdebug.start_with_request=yes \
 	bin/catpaw \
 	--environment=env.ini \
-	--libraries=sandbox/lib \
-	--main=sandbox/main.php \
-	--resources=src \
-	--watch \
-	--spawner="php -dxdebug.mode=debug -dxdebug.start_with_request=yes"
+	--libraries=sandbox/preview/lib \
+	--main=sandbox/preview/main.php
 
 dev: bin/catpaw src/main.php
 	php \
