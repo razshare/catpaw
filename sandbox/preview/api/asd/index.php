@@ -1,0 +1,2 @@
+<?php
+$get = fn () => "hello";
