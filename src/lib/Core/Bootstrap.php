@@ -176,7 +176,8 @@ class Bootstrap {
     }
 
     /**
-     * @param  string        $command
+     * @param  string        $initializer
+     * @param  string        $spawner
      * @param  string        $fileName
      * @param  array<string> $arguments
      * @param  string        $main
@@ -185,7 +186,8 @@ class Bootstrap {
      * @return void
      */
     public static function spawn(
-        string $command,
+        string $initializer,
+        string $spawner,
         string $fileName,
         array $arguments,
         string $main,
@@ -205,13 +207,14 @@ class Bootstrap {
                 }
             }
 
-            Container::loadDefaultProviders("Watcher")->unwrap($initializeError);
-            if ($initializeError) {
-                self::kill((string)$initializeError);
+            Container::loadDefaultProviders("Watcher")->unwrap($loadDefaultProvidersError);
+            if ($loadDefaultProvidersError) {
+                self::kill((string)$loadDefaultProvidersError);
             }
 
             async(static function() use (
-                $command,
+                $initializer,
+                $spawner,
                 $fileName,
                 $arguments,
                 $main,
@@ -244,7 +247,7 @@ class Bootstrap {
                 }
 
                 $argumentsStringified = join(' ', $arguments);
-                $instruction          = "$command $fileName $argumentsStringified";
+                $instruction          = "$spawner $fileName $argumentsStringified";
 
                 echo "Spawning $instruction".PHP_EOL;
 
@@ -269,11 +272,16 @@ class Bootstrap {
                     },
                 );
 
-                // @phpstan-ignore-next-line
                 while (true) {
                     if ($ready) {
                         $ready->getFuture()->await();
                     }
+                    
+                    Process::execute($initializer, out())->unwrap($error);
+                    if ($error) {
+                        self::kill($error);
+                    }
+
                     $code = Process::execute($instruction, out())->unwrap($error);
                     if ($error || $code > 0) {
                         echo $error.PHP_EOL;
