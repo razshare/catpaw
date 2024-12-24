@@ -6,6 +6,8 @@ use Amp\DeferredFuture;
 use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
+
+use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\SocketHttpServer;
 use CatPaw\Core\Attributes\Provider;
@@ -146,7 +148,14 @@ class SimpleServer implements ServerInterface {
         }
 
         if (!Container::isProvided(SessionInterface::class)) {
-            Container::provide(SessionInterface::class, MemorySession::create(...));
+            Container::provide(SessionInterface::class, function(Request $request) {
+                $session = MemorySession::create($request)->unwrap($error);
+                if ($error) {
+                    $this->logger->error($error->getMessage());
+                    return null;
+                }
+                return $session;
+            });
         }
 
         $this->initializeRoutes()->unwrap($error);

@@ -2,14 +2,15 @@
 namespace CatPaw\Web\Interfaces;
 
 use Amp\Http\Server\Request;
+use CatPaw\Core\Result;
 
 interface SessionInterface {
     /**
      * Create a session from an http request.
-     * @param  Request $request
-     * @return self
+     * @param  Request      $request
+     * @return Result<self>
      */
-    public static function create(Request $request):self;
+    public static function create(Request $request):Result;
     /**
      * Apply required modifications to the response modifier, for example a `session-id` cookie.
      * > **Note**\
@@ -33,24 +34,20 @@ interface SessionInterface {
      * Create and return a reference to an item the session.\
      * If the `$key` already exists, return its relative item instead of creating a new one.
      * @template T
-     * @param  string          $key
-     * @param  T               $default Default value to return if key is not found.
-     * @param  class-string<T> $type    Type of value.
-     * @return T               Reference to the item.
-     * @phpstan-ignore parameter.defaultValue
+     * @param  string $key
+     * @param  T      $default Default value to return if key is not found.
+     * @return T      Reference to the item.
      */
-    public function &ref(string $key, mixed $default = null, string $type = 'mixed'):mixed;
+    public function &ref(string $key, mixed $default = null):mixed;
     /**
      * Create, set and return a reference to an item the session.\
      * If the `$key` already exists, return its relative item instead of creating a new one.
      * @template T
-     * @param  string          $key
-     * @param  T               $value Value to set.
-     * @param  class-string<T> $type  Type of value.
-     * @return T               Reference to the item.
-     * @phpstan-ignore parameter.defaultValue
+     * @param  string $key
+     * @param  T      $value Value to set.
+     * @return T      Reference to the item.
      */
-    public function &set(string $key, mixed $value, string $type = 'mixed'):mixed;
+    public function &set(string $key, mixed $value):mixed;
     /**
      * Get the session id.
      * @return string

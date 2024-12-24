@@ -3,12 +3,10 @@ namespace CatPaw\Web;
 
 use Amp\Http\Cookie\ResponseCookie;
 use Amp\Http\Server\Request;
-
-
+use function CatPaw\Core\ok;
+use CatPaw\Core\Result;
 use function CatPaw\Core\uuid;
 use CatPaw\Web\Interfaces\ResponseModifierInterface;
-
-
 use CatPaw\Web\Interfaces\SessionInterface;
 
 /**
@@ -21,9 +19,8 @@ class MemorySession implements SessionInterface {
 
     /**
      * @inheritdoc
-     * @phpstan-ignore parameter.defaultValue
      */
-    public function &set(string $key, mixed $value, string $type = 'mixed'): mixed {
+    public function &set(string $key, mixed $value): mixed {
         $content = &$this->ref($key, $value);
         $content = $value;
         return $content;
@@ -32,14 +29,15 @@ class MemorySession implements SessionInterface {
     /**
      * @inheritdoc
      */
-    public static function create(Request $request):self {
+    public static function create(Request $request):Result {
         $sessionIdCookie = $request->getCookie('session-id') ?? false;
         if ($sessionIdCookie) {
             $id = $sessionIdCookie->getValue();
             if (isset(self::$cache[$id])) {
                 $session = self::$cache[$id];
                 if ($session->validate()) {
-                    return $session;
+                    // @phpstan-ignore return.type
+                    return ok($session);
                 }
             }
         }
@@ -53,7 +51,8 @@ class MemorySession implements SessionInterface {
             data: [],
         );
 
-        return self::$cache[$id] = $session;
+        // @phpstan-ignore return.type
+        return ok(self::$cache[$id] = $session);
     }
 
 
@@ -107,9 +106,8 @@ class MemorySession implements SessionInterface {
 
     /**
      * @inheritdoc
-     * @phpstan-ignore parameter.defaultValue
      */
-    public function &ref(string $key, mixed $default = null, string $type = 'mixed'):mixed {
+    public function &ref(string $key, mixed $default = null):mixed {
         if (!$this->has($key)) {
             $this->data[$key] = $default;
         }
