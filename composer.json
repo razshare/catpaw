@@ -78,6 +78,7 @@
     }
   },
   "bin": [
+    "bin/kwm",
     "bin/catpaw",
     "bin/catpaw-cli"
   ],
