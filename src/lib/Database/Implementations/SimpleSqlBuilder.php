@@ -4,8 +4,12 @@ namespace CatPaw\Database\Implementations;
 use CatPaw\Core\Attributes\Provider;
 use function CatPaw\Core\error;
 use CatPaw\Core\LinkedList;
+use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
+
+use function CatPaw\Core\uuid;
 use CatPaw\Database\Interfaces\DatabaseInterface;
 use CatPaw\Database\Interfaces\SqlBuilderInterface;
 use CatPaw\Web\Page;
@@ -123,6 +127,23 @@ class SimpleSqlBuilder implements SqlBuilderInterface {
         }
     }
 
+
+    /**
+     * @return Result<None>
+     */
+    public function none():Result {
+        $instruction = $this->build()->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+
+        $this->database->send($instruction, $this->parameters)->unwrap($error);
+        if ($error) {
+            return error($error);
+        }
+        return ok();
+    }
+
     public function select(string ...$domain):self {
         if (0 === count($domain)) {
             $domain = '*';
@@ -164,13 +185,32 @@ class SimpleSqlBuilder implements SqlBuilderInterface {
         return $this;
     }
 
-    public function update():self {
-        $this->content .= 'update ';
+    public function update(string $table):self {
+        $this->content .= "update $table ";
         return $this;
     }
 
-    public function set():self {
+    public function set(array|object $items):self {
+        $id = uuid();
+        if (!is_array($items)) {
+            $items = (array)$items;
+        }
+
         $this->content .= 'set ';
+        
+        $index = 0;
+        foreach ($items as $key => $value) {
+            $pkey = "{$key}_{$id}";
+            if (0 !== $index) {
+                $this->content .= ", ";
+            }
+            $this->parameters[$pkey] = $value;
+            $this->content .= "$key = :$pkey";
+            $index++;
+        }
+
+        $this->content .= ' ';
+
         return $this;
     }
 

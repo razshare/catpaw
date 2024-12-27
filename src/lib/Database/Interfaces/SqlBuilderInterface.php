@@ -1,6 +1,7 @@
 <?php
 namespace CatPaw\Database\Interfaces;
 
+use CatPaw\Core\None;
 use CatPaw\Core\Result;
 use CatPaw\Web\Page;
 
@@ -17,7 +18,12 @@ interface SqlBuilderInterface {
      * @param  class-string<T>  $className
      * @return Result<array<T>>
      */
-    public function many(string $className, ):Result;
+    public function many(string $className):Result;
+
+    /**
+     * @return Result<None>
+     */
+    public function none():Result;
 
     public function select(string ...$domain):self;
 
@@ -35,9 +41,14 @@ interface SqlBuilderInterface {
 
     public function values():self;
 
-    public function update():self;
+    public function update(string $table):self;
 
-    public function set():self;
+    /**
+     * 
+     * @param  array<string,mixed>|object $items
+     * @return SqlBuilderInterface
+     */
+    public function set(array|object $items):self;
 
     public function not(bool $literal = true):self;
 

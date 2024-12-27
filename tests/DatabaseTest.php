@@ -25,13 +25,14 @@ class DatabaseTest extends TestCase {
         Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
         anyError(function() {
-            yield Container::run($this->makeSureSqlBuilderWorks(...));
+            yield Container::run($this->makeSureSelectWorks(...));
+            yield Container::run($this->makeSureUpdateWorks(...));
         })->unwrap($error);
         $this->assertNull($error);
     }
 
 
-    private function makeSureSqlBuilderWorks(SqlBuilderInterface $sql):void {
+    private function makeSureSelectWorks(SqlBuilderInterface $sql):void {
         $account = $sql
             ->select()
             ->from('accounts')
@@ -54,6 +55,20 @@ class DatabaseTest extends TestCase {
         $parameters = $this->db->parameters();
         $this->assertArrayHasKey('email', $parameters);
         $this->assertEquals('weird@barking.cat', $parameters['email']);
+    }
+
+
+    private function makeSureUpdateWorks(SqlBuilderInterface $sql):void {
+        $account        = new Account;
+        $account->email = 'test@test.test';
+        $account->name  = 'test';
+
+        $sql->update('accounts')->set($account)->where()->name('email')->equals()->parameter('email', 'weird@barking.cat')->none()->unwrap($error);
+        $this->assertNull($error);
+
+        $query = $this->db->query();
+        $this->assertStringStartsWith("update accounts set email = :email_", trim($query));
+        $this->assertStringEndsWith(" where email = :email", trim($query));
     }
 }
 
