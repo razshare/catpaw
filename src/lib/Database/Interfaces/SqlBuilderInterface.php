@@ -2,6 +2,7 @@
 namespace CatPaw\Database\Interfaces;
 
 use CatPaw\Core\Result;
+use CatPaw\Web\Page;
 
 interface SqlBuilderInterface {
     /**
@@ -25,6 +26,10 @@ interface SqlBuilderInterface {
     public function insert():self;
 
     public function into(string $into, string ...$domain):self;
+
+    public function limit(int $offset, int $count = 10):self;
+    
+    public function page(Page $page):self;
 
     public function value():self;
 

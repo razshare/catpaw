@@ -8,6 +8,7 @@ use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Database\Interfaces\DatabaseInterface;
 use CatPaw\Database\Interfaces\SqlBuilderInterface;
+use CatPaw\Web\Page;
 use Error;
 use Throwable;
 
@@ -21,6 +22,16 @@ class SimpleSqlBuilder implements SqlBuilderInterface {
 
     public function __construct(private DatabaseInterface $database) {
         $this->errors = new LinkedList;
+    }
+
+    public function limit(int $offset, int $count = 10): SqlBuilderInterface {
+        $this->content .= "limit $offset, $count ";
+        return $this;
+    }
+
+    public function page(Page $page): SqlBuilderInterface {
+        $this->content .= "limit {$page->start}, {$page->size} ";
+        return $this;
     }
 
     /**
