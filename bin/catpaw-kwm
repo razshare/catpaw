@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-# "Kill When Modified" kills $1 whenever directory $2 is modified.
-$1 & pid=$!
-inotifywait -r -e modify $2
-kill $pid
-printf "Process $pid killed.\n"
