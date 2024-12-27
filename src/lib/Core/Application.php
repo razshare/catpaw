@@ -42,7 +42,7 @@ readonly class Application implements CommandRunnerInterface {
                 continue;
             }
             
-            $libraryReal = realpath($library);
+            $libraryReal = (string)FileName::create($library)->absolute();
 
             if (!$libraryReal) {
                 return error("Trying to find php library `$library`, but the directory doesn't seem to exist.");
