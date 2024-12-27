@@ -38,7 +38,14 @@ readonly class ApplicationBundled implements CommandRunnerInterface {
                 unset($libraries[$key]);
                 continue;
             }
-            $library = realpath($library);
+
+            $libraryReal = realpath($library);
+
+            if (!$libraryReal) {
+                return error("Trying to find php library `$library`, but the directory doesn't seem to exist.");
+            }
+
+            $library = $libraryReal;
         }
         
         foreach ($resources as $key => &$resource) {
