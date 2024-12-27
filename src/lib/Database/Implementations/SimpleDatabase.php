@@ -13,6 +13,7 @@ use CatPaw\Core\Result;
 use CatPaw\Database\Interfaces\DatabaseInterface;
 use Throwable;
 
+
 #[Provider]
 class SimpleDatabase implements DatabaseInterface {
     /** @var Result<MysqlConnectionPool> */
@@ -41,7 +42,7 @@ class SimpleDatabase implements DatabaseInterface {
             return error($error);
         }
     }
-    
+
     /**
      * @inheritdoc
      */

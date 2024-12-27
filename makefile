@@ -1,3 +1,17 @@
+configure:
+	@printf "\
+	name = out/catpaw\n\
+	main = src/main.php\n\
+	libraries = src/lib\n\
+	environment = env.ini\n\
+	match = \"/(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(^\.\/(\.env|env\.ini|env\.yml))/\"\n\
+	" > build.ini && printf "Build configuration file restored.\n"
+
+
+clean:
+	rm app.phar -f
+	rm vendor -fr
+
 load:
 	composer update
 	composer dump-autoload -o
@@ -8,11 +22,11 @@ test: vendor/bin/phpunit
 	-dxdebug.start_with_request=no \
 	vendor/bin/phpunit tests
 
-test-debug: vendor/bin/phpunit
+testone: vendor/bin/phpunit
 	php \
 	-dxdebug.mode=debug \
 	-dxdebug.start_with_request=yes \
-	vendor/bin/phpunit tests
+	vendor/bin/phpunit tests/DatabaseTest.php
 
 fix: vendor/bin/php-cs-fixer
 	php \
@@ -58,19 +72,6 @@ start: bin/catpaw src/main.php
 	--environment=env.ini \
 	--libraries=src/lib \
 	--main=src/main.php
-
-configure:
-	@printf "\
-	name = out/catpaw\n\
-	main = src/main.php\n\
-	libraries = src/lib\n\
-	environment = env.ini\n\
-	match = \"/(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(^\.\/(\.env|env\.ini|env\.yml))/\"\n\
-	" > build.ini && printf "Build configuration file restored.\n"
-
-clean:
-	rm app.phar -f
-	rm vendor -fr
 
 build: bin/catpaw-cli
 	test -f build.ini || make configure
