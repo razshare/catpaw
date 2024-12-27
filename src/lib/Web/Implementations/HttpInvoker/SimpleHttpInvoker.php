@@ -11,6 +11,7 @@ use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use CatPaw\Core\DependencySearchResultItem;
 use function CatPaw\Core\error;
+
 use function CatPaw\Core\ok;
 
 use CatPaw\Core\Result;
@@ -79,7 +80,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
             if ($error) {
                 return error($error);
             }
-
+            
             if ($value instanceof ResponseModifierInterface) {
                 $modifier = $value;
             } else {
@@ -88,9 +89,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         } else if ($modifier instanceof Websocket) {
             $websocket = $modifier;
             $modifier  = success($websocket->handleRequest($context->request));
-        }
-
-        if (!$modifier instanceof ResponseModifierInterface) {
+        } else if (!$modifier instanceof ResponseModifierInterface) {
             try {
                 $modifier = success($modifier);
             } catch(Throwable $error) {
