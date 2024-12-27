@@ -5,11 +5,8 @@ use CatPaw\Core\Attributes\Provider;
 use function CatPaw\Core\error;
 use CatPaw\Core\LinkedList;
 use CatPaw\Core\None;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
-
-use function CatPaw\Core\uuid;
 use CatPaw\Database\Interfaces\DatabaseInterface;
 use CatPaw\Database\Interfaces\SqlBuilderInterface;
 use CatPaw\Web\Page;
@@ -23,9 +20,14 @@ class SimpleSqlBuilder implements SqlBuilderInterface {
     private LinkedList $errors;
     /** @var array<string,mixed> */
     private array $parameters = [];
+    private int $counter      = 0;
 
     public function __construct(private DatabaseInterface $database) {
         $this->errors = new LinkedList;
+    }
+
+    private function id():int {
+        return ++$this->counter;
     }
 
     public function limit(int $offset, int $count = 10): SqlBuilderInterface {
@@ -191,7 +193,7 @@ class SimpleSqlBuilder implements SqlBuilderInterface {
     }
 
     public function set(array|object $items):self {
-        $id = uuid();
+        $id = $this->id();
         if (!is_array($items)) {
             $items = (array)$items;
         }
@@ -263,7 +265,7 @@ class SimpleSqlBuilder implements SqlBuilderInterface {
     }
 
     public function parameter(mixed $value):self {
-        $name                    = 'p_'.uuid();
+        $name                    = 'p_'.$this->id();
         $this->parameters[$name] = $value;
         $this->content .= ":$name ";
         return $this;
