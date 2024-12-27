@@ -14,6 +14,7 @@ use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Interfaces\OnParameterMountInterface;
 use CatPaw\Core\Interfaces\StorageInterface;
 use CatPaw\Database\Implementations\SimpleDatabase;
+use CatPaw\Database\Implementations\SimpleSqlBuilder;
 use CatPaw\Queue\Implementations\Queue\SimpleQueue;
 use CatPaw\RaspberryPi\Implementations\Gpio\SimpleGpio;
 use CatPaw\Schedule\Implementations\Schedule\SimpleSchedule;
@@ -116,6 +117,7 @@ class Container {
             SimpleWebsocket::class,
             SimpleGenerate::class,
             SimpleDatabase::class,
+            SimpleSqlBuilder::class,
         ];
 
         foreach ($classNames as $className) {
