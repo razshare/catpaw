@@ -6,7 +6,6 @@ use Amp\DeferredFuture;
 use Amp\Http\Server\HttpServer;
 use Amp\Http\Server\Middleware;
 use function Amp\Http\Server\Middleware\stackMiddleware;
-
 use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\SocketHttpServer;
@@ -265,7 +264,7 @@ class SimpleServer implements ServerInterface {
             return ok();
         }
 
-        if (!str_starts_with($location, '/')) {
+        if (!str_starts_with($location, '/') && !str_starts_with($location, 'phar://')) {
             $dir      = getcwd();
             $location = (string)FileName::create($dir, $location);
         }

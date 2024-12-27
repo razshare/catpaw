@@ -121,7 +121,7 @@ class FileName implements Stringable {
                     $fileNameRootless = substr($fileNameRootless, 1);
                 }
                 $fileNameWithPhar = "$phar/$fileNameRootless";
-                if (file_exists($fileNameWithPhar)) {
+                if (File::exists($fileNameWithPhar)) {
                     return $this->cache = $fileNameWithPhar;
                 }
             }
@@ -136,7 +136,8 @@ class FileName implements Stringable {
                 }
                 return $this->cache = $real;
             }
-            return $this->cache = self::normalize(self::glue($this->path));
+            $this->cache = self::normalize(self::glue($this->path));
+            return $this->cache;
         }
     }
 }
