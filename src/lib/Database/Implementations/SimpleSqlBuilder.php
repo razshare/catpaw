@@ -262,7 +262,8 @@ class SimpleSqlBuilder implements SqlBuilderInterface {
         return $this;
     }
 
-    public function parameter(string $name, mixed $value):self {
+    public function parameter(mixed $value):self {
+        $name                    = 'p_'.uuid();
         $this->parameters[$name] = $value;
         $this->content .= ":$name ";
         return $this;

@@ -39,7 +39,7 @@ class DatabaseTest extends TestCase {
             ->where()
             ->name('email')
             ->equals()
-            ->parameter('email', 'weird@barking.cat')
+            ->parameter('weird@barking.cat')
             ->one(Account::class)
             ->unwrap($error);
 
@@ -49,12 +49,16 @@ class DatabaseTest extends TestCase {
         $this->assertEquals('weird@barking.cat', $account->email);
         $this->assertEquals('cat', $account->name);
 
-        $query = $this->db->query();
-        $this->assertEquals("select * from accounts where email = :email", trim($query));
-
         $parameters = $this->db->parameters();
-        $this->assertArrayHasKey('email', $parameters);
-        $this->assertEquals('weird@barking.cat', $parameters['email']);
+        $this->assertNotEmpty($parameters);
+
+        $pkey = '';
+        foreach ($parameters as $key => $_) {
+            $pkey = $key;
+        }
+
+        $query = $this->db->query();
+        $this->assertEquals("select * from accounts where email = :$pkey", trim($query));
     }
 
 
@@ -63,12 +67,26 @@ class DatabaseTest extends TestCase {
         $account->email = 'test@test.test';
         $account->name  = 'test';
 
-        $sql->update('accounts')->set($account)->where()->name('email')->equals()->parameter('email', 'weird@barking.cat')->none()->unwrap($error);
+        $sql->update('accounts')->set($account)->where()->name('email')->equals()->parameter('weird@barking.cat')->none()->unwrap($error);
         $this->assertNull($error);
 
+        $parameters = $this->db->parameters();
+
+        $this->assertEquals(count($parameters), 3);
+
+        /** @var array<string> */
+        $keys = [];
+
+        foreach ($parameters as $key => $_) {
+            $keys[] = $key;
+        }
+
+        $pkey1 = $keys[0];
+        $pkey2 = $keys[1];
+        $pkey3 = $keys[2];
+
         $query = $this->db->query();
-        $this->assertStringStartsWith("update accounts set email = :email_", trim($query));
-        $this->assertStringEndsWith(" where email = :email", trim($query));
+        $this->assertEquals("update accounts set email = :$pkey1, name = :$pkey2 where email = :$pkey3", trim($query));
     }
 }
 

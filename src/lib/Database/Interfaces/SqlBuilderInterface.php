@@ -68,7 +68,7 @@ interface SqlBuilderInterface {
 
     public function name(string $name):self;
 
-    public function parameter(string $name, mixed $value):self;
+    public function parameter(mixed $value):self;
 
     public function where():self;
 
