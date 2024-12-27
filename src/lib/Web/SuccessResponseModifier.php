@@ -6,6 +6,7 @@ use Amp\Http\Server\Response;
 use function CatPaw\Core\error;
 
 use CatPaw\Core\None;
+
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Core\XMLSerializer;
@@ -159,8 +160,11 @@ class SuccessResponseModifier implements ResponseModifierInterface {
         if (!$this->message) {
             $this->message = HttpStatus::reason($this->status);
         }
-
-        $this->body = $this->data;
+        
+        $this->body = match ($this->data instanceof None) {
+            true  => '',
+            false => $this->data(),
+        };
     }
 
     /**
@@ -223,15 +227,10 @@ class SuccessResponseModifier implements ResponseModifierInterface {
      */
     public function response():Result {
         if ($this->bodyIsResponse) {
-            return ok(match ($this->body instanceof None) {
-                true  => '',
-                false => $this->body,
-            });
+            return ok($this->body);
         }
 
-        if ($this->body instanceof None) {
-            $body = '';
-        } if (APPLICATION_JSON === $this->contentType) {
+        if (APPLICATION_JSON === $this->contentType) {
             $body = json_encode($this->body);
             if (false === $body) {
                 return error('Could not encode body to json.');
