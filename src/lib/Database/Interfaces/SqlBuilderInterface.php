@@ -4,6 +4,7 @@ namespace CatPaw\Database\Interfaces;
 use CatPaw\Core\None;
 use CatPaw\Core\Result;
 use CatPaw\Web\Page;
+use stdClass;
 
 interface SqlBuilderInterface {
     /**
@@ -11,14 +12,14 @@ interface SqlBuilderInterface {
      * @param  class-string<T> $className
      * @return Result<false|T>
      */
-    public function one(string $className):Result;
+    public function one(string $className = stdClass::class):Result;
 
     /**
      * @template T
      * @param  class-string<T>  $className
      * @return Result<array<T>>
      */
-    public function many(string $className):Result;
+    public function many(string $className = stdClass::class):Result;
 
     /**
      * @return Result<None>

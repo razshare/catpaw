@@ -37,7 +37,7 @@ For SwaggerUi to work as intended, you will need to export all this metadata you
 // src/api/openapi/get.php
 use function CatPaw\Web\success;
 use CatPaw\Web\Interfaces\OpenApiInterface;
-return fn (OpenApiInterface $oa) => success($oa->data())->as('application/json');
+return static fn (OpenApiInterface $oa) => success($oa->data())->as('application/json');
 ```
 
 Then feed the data to your SwaggerUi (or any other user interface compliant with Open Api).

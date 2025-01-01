@@ -8,9 +8,8 @@ These methods can request services directly.
  ```php
 namespace App;
 
+use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Attributes\Entry;
-use CatPaw\Core\Attributes\Service;
-use CatPaw\Core\Attributes\Singleton;
 use CatPaw\Core\Result;
 use function CatPaw\Core\ok;
 use function CatPaw\Core\error;

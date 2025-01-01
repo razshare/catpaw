@@ -34,18 +34,6 @@ use function CatPaw\Core\error;
 $result = error("My error message");
 ```
 
-# Convert exceptions to results
-
-You can convert exceptions into results with `anyError()`
-
-```php
-use function CatPaw\Core\anyError;
-$result = anyError(fn() => throw new Exception("Some exception message"));
-```
-
-> [!NOTE]
-> The `anyError()` function will detect exceptions that are thrown, returned or yielded and convert them into results.
-
 # Unwrap
 
 You can check if a result contains an error by `unwrap`ping it
@@ -85,7 +73,7 @@ $value = $result->unwrap($error) or match($error::class){
 };
 ```
 
-Note that php's match expressions is exhaustive, meaning it forces you to provide a default value.
+Note that php's match expression is exhaustive, meaning it forces you to provide a default value, which is good because it leaves no margin for ambiguous values.
 
 
 

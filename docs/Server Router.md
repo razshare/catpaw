@@ -90,7 +90,7 @@ There are some rules you will need to follow.
    ```php
    // src/api/get.php
    use function CatPaw\Core\success;
-   return function(){
+   return static function(){
        return success("hello world");
    };
    ```

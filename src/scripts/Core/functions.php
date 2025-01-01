@@ -152,63 +152,6 @@ function error(string|Error $message):Result {
 }
 
 /**
- * Invoke a generator function and immediately return any `Error`
- * or `Result` that contains an error.\
- * In both cases the result is always an `Result<T>` object.
- *
- * - If you generate an `Result<T>` the error within the object is transferred to a new `Result<T>` for the sake of consistency.
- * - If you generate an `Error` instead, then the `Error` is wrapped in `Result<T>`.
- *
- * The generator is consumed and if no error is detected then the function produces the returned value of the generator.
- *
- * ## Example
- * ```php
- * $content = anyError(function(){
- *  $file = File::open('file.txt')->unwrap();
- *  $content = $file->readAll()->unwrap();
- *  return $content;
- * });
- * ```
- * @template T
- * @param  callable():(Generator<string>|Result<T>|T) $function
- * @return Result<T>
- */
-function anyError(callable $function):Result {
-    try {
-        $result = $function();
-
-        if (!($result instanceof Generator)) {
-            if ($result instanceof Result) {
-                return $result;
-            }
-            /** @var Result<T> */
-            return ok($result);
-        }
-
-        for ($result->rewind(); $result->valid(); $result->next()) {
-            $value = $result->current();
-            if ($value instanceof Error) {
-                return error($value);
-            } elseif ($value instanceof Result && $value->error) {
-                return error($value->error);
-            }
-        }
-
-        $return = $result->getReturn() ?? true;
-
-        if ($return instanceof Error) {
-            return error($return);
-        } else if ($return instanceof Result) {
-            return $return;
-        }
-
-        return ok($return);
-    } catch (Throwable $error) {
-        return error($error);
-    }
-}
-
-/**
  * Return two new streams, a readable stream and a writable one which will be writing to the first stream.
  *
  * The writer stream will automatically be disposed of when the readable stream is disposed of.
@@ -277,4 +220,61 @@ function stop(string|Error $error) {
         $error = new Error($error);
     }
     Bootstrap::kill((string)$error);
+}
+
+/**
+ * Invoke a generator function and immediately return any `Error`
+ * or `Result` that contains an error.\
+ * In both cases the result is always an `Result<T>` object.
+ *
+ * - If you generate an `Result<T>` the error within the object is transferred to a new `Result<T>` for the sake of consistency.
+ * - If you generate an `Error` instead, then the `Error` is wrapped in `Result<T>`.
+ *
+ * The generator is consumed and if no error is detected then the function produces the returned value of the generator.
+ *
+ * ## Example
+ * ```php
+ * $content = anyError(function(){
+ *  $file = File::open('file.txt')->unwrap();
+ *  $content = $file->readAll()->unwrap();
+ *  return $content;
+ * });
+ * ```
+ * @template T
+ * @param  callable():(Generator<string>|Result<T>|T) $function
+ * @return Result<T>
+ */
+function anyError(callable $function):Result {
+    try {
+        $result = $function();
+
+        if (!($result instanceof Generator)) {
+            if ($result instanceof Result) {
+                return $result;
+            }
+            /** @var Result<T> */
+            return ok($result);
+        }
+
+        for ($result->rewind(); $result->valid(); $result->next()) {
+            $value = $result->current();
+            if ($value instanceof Error) {
+                return error($value);
+            } elseif ($value instanceof Result && $value->error) {
+                return error($value->error);
+            }
+        }
+
+        $return = $result->getReturn() ?? true;
+
+        if ($return instanceof Error) {
+            return error($return);
+        } else if ($return instanceof Result) {
+            return $return;
+        }
+
+        return ok($return);
+    } catch (Throwable $error) {
+        return error($error);
+    }
 }

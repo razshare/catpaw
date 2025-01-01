@@ -127,7 +127,7 @@ class Container {
         }
 
         /** @var LoggerInterface $logger */
-        $logger = LoggerFactory::create(loggerName: $applicationName)->unwrap($error);
+        $logger = LoggerFactory::create(loggerName:$applicationName)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -177,8 +177,8 @@ class Container {
     }
 
     /**
-     * @param  ReflectionFunction|ReflectionMethod           $reflection
-     * @return Result<array<int,DependencySearchResultItem>>
+     * @param  ReflectionFunction|ReflectionMethod          $reflection
+     * @return Result<array<int,ContainerSearchResultItem>>
      */
     private static function findFunctionDependencies(
         ReflectionFunction|ReflectionMethod $reflection
@@ -203,7 +203,7 @@ class Container {
                 };
 
 
-                $items[] = new DependencySearchResultItem(
+                $items[] = new ContainerSearchResultItem(
                     reflectionParameter: $reflectionParameter,
                     isOptional: $isOptional,
                     defaultValue: $defaultValue,
@@ -220,26 +220,19 @@ class Container {
     }
 
     /**
-     * @param  ReflectionFunction|ReflectionMethod $reflection
-     * @param  false|DependenciesOptions           $options
+     * @param  ReflectionFunction|ReflectionMethod $reflectionFunction
+     * @param  false|ContainerContext              $containerDependencies
      * @return Result<array<int,mixed>>
      */
     public static function dependencies(
-        ReflectionFunction|ReflectionMethod $reflection,
-        false|DependenciesOptions $options = false,
+        ReflectionFunction|ReflectionMethod $reflectionFunction,
+        false|ContainerContext $containerDependencies = false,
     ):Result {
-        if (!$options) {
-            $options = new DependenciesOptions(
-                key: '',
-                overwrites: [],
-                provides: [],
-                fallbacks: [],
-                defaultArguments: [],
-                context: false,
-            );
+        if (!$containerDependencies) {
+            $containerDependencies = new ContainerContext;
         }
         $parameters = [];
-        $results    = self::findFunctionDependencies($reflection)->unwrap($error);
+        $results    = self::findFunctionDependencies($reflectionFunction)->unwrap($error);
         if ($error) {
             return error($error);
         }
@@ -247,25 +240,8 @@ class Container {
         foreach ($results as $key => $result) {
             $reflectionParameter = $result->reflectionParameter;
             $type                = $result->type;
-            // $name                = $result->name;
-            // $defaultValue        = $result->defaultValue;
-            $provide            = $options->provides[$type]   ?? false;
-            $overwrite          = $options->overwrites[$type] ?? false;
-            $fallback           = $options->fallbacks[$type]  ?? false;
-            $attributes         = $result->attributes;
-            $numberOfAttributes = count($result->attributes);
-
-            if ($overwrite) {
-                $value = $overwrite($result);
-                if ($value instanceof Result) {
-                    $value = $value->unwrap($error);
-                    if ($error) {
-                        return error($error);
-                    }
-                }
-                $parameters[$key] = $value;
-                continue;
-            }
+            $provide             = $containerDependencies->provided[$type] ?? false;
+            $attributes          = $result->attributes;
 
             if ($provide) {
                 $value = $provide($result);
@@ -277,6 +253,7 @@ class Container {
                 }
 
                 $parameters[$key] = $value;
+                continue;
             }
 
             if (
@@ -289,8 +266,8 @@ class Container {
                 && Writable::class !== $type
                 && Readable::class !== $type
             ) {
-                // @phpstan-ignore-next-line
-                $instance = Container::get($type)->unwrap($error);
+                // @phpstan-ignore argument.templateType
+                $instance = Container::get($type, $containerDependencies)->unwrap($error);
                 if ($error) {
                     if (!$result->isOptional) {
                         return error($error);
@@ -304,21 +281,7 @@ class Container {
                 }
                 $parameters[$key] = $instance;
             }
-
-            if (0 === $numberOfAttributes) {
-                if ($fallback) {
-                    $value = $fallback($result);
-                    if ($value instanceof Result) {
-                        $value = $value->unwrap($error);
-                        if ($error) {
-                            return error($error);
-                        }
-                    }
-
-                    $parameters[$key] = $value;
-                }
-                continue;
-            }
+            
             try {
                 foreach ($attributes as $attribute) {
                     $attributeReflectionClass = new ReflectionClass($attribute->getName());
@@ -333,15 +296,8 @@ class Container {
                         return error($error);
                     }
 
-                    if (!$attributeInstance) {
-                        if ($fallback) {
-                            $parameters[$key] = $fallback($result);
-                        }
-                        continue;
-                    }
-
                     if ($attributeInstance instanceof OnParameterMountInterface) {
-                        $attributeInstance->onParameterMount($reflectionParameter, $parameters[$key], $options)->unwrap($error);
+                        $attributeInstance->onParameterMount($reflectionParameter, $parameters[$key], $containerDependencies)->unwrap($error);
                         if ($error) {
                             return error($error);
                         }
@@ -467,12 +423,12 @@ class Container {
 
     /**
      * Set a provider.
-     * @param  string          $name  The name to provide.
-     * @param  callable|object $value If it's an object the container will provide the object as a singleton, 
-     *                                otherwise if it's a callable the container will invoke it to provide the dependency.
+     * @param  string                                  $name  The name to provide.
+     * @param  object|callable(ContainerContext):mixed $value If it's an object the container will provide the object as a singleton, 
+     *                                                        otherwise if it's a callable the container will invoke it to provide the dependency.
      * @return void
      */
-    public static function provide(string $name, callable|object $value):void {
+    public static function provide(string $name, object|callable $value):void {
         if (is_callable($value)) {
             Provider::set($name, $value);
             return;
@@ -491,13 +447,13 @@ class Container {
     /**
      * Given an interface or class name, get an instance.
      * @template T
-     * @param  class-string<T> $className Name of the interface or class.
-     * @param  mixed           $arguments Optional arguments to pass to the constructor (if it's a class).
+     * @param  class-string<T>        $className Name of the interface or class.
+     * @param  false|ContainerContext $options
      * @return Result<T>
      */
-    public static function get(string $className, ...$arguments):Result {
+    public static function get(string $className, false|ContainerContext $options = false):Result {
         if (Provider::isset($className)) {
-            $value = Provider::get($className)(...$arguments);
+            $value = Provider::get($className)($options);
             if ($value instanceof Result) {
                 return $value;
             }
@@ -516,7 +472,7 @@ class Container {
             Provider::withAlias($providerClassName, $className);
 
             // @phpstan-ignore-next-line
-            return self::get($providerClassName, ...$arguments);
+            return self::get($providerClassName, $options);
         }
 
         if ('callable' === $className) {
@@ -536,7 +492,7 @@ class Container {
         $constructor = $reflection->getConstructor() ?? false;
 
         if ($constructor) {
-            $dependencies = self::dependencies($constructor)->unwrap($dependenciesError);
+            $dependencies = self::dependencies($constructor, $options)->unwrap($dependenciesError);
             if ($dependenciesError) {
                 return error($dependenciesError);
             }

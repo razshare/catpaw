@@ -2,7 +2,7 @@
 namespace CatPaw\Web\Attributes;
 
 use Attribute;
-use CatPaw\Core\DependenciesOptions;
+use CatPaw\Core\ContainerContext;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Interfaces\OnParameterMountInterface;
@@ -43,9 +43,9 @@ class Param implements AttributeInterface, OnParameterMountInterface {
     /** @var array<string,mixed>  */
     private static array $cache = [];
 
-    public function onParameterMount(ReflectionParameter $reflectionParameter, mixed &$value, DependenciesOptions $options):Result {
+    public function onParameterMount(ReflectionParameter $reflectionParameter, mixed &$value, ContainerContext $options):Result {
         /** @var false|RequestContext $context */
-        $context = $options->context;
+        $context = $options->data;
         $name    = $reflectionParameter->getName();
 
         if (!isset(self::$cache[$context->key])) {

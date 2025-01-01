@@ -6,7 +6,7 @@ Sessions start automatically when injected.
 // src/api/get.php
 use CatPaw\Web\Interfaces\ServerInterface;
 
-return function(SessionInterface $session){
+return static function(SessionInterface $session){
     // Session has now started.
     return $session->id();
 }
@@ -20,7 +20,7 @@ Session contents are mutable and can be modified by reference.
 // src/api/get.php
 use CatPaw\Web\Interfaces\ServerInterface;
 
-return function(SessionInterface $session){
+return static function(SessionInterface $session){
     $username = &$session->ref('username');
     $username = "John";
 }
@@ -32,7 +32,7 @@ return function(SessionInterface $session){
 // src/api/get.php
 use CatPaw\Web\Interfaces\ServerInterface;
 
-return function(SessionInterface $session){
+return static function(SessionInterface $session){
     $session->destroy();
     // Any changes to the session below this point will be lost.
 }

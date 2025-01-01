@@ -20,7 +20,7 @@ You can set the value on creation or some time after by using the `set()` method
 use function CatPaw\Store\Writable;
 
 function main() {
-    $store = Writable::create("A");       // set on creation
+    $store = new Writable("A");       // set on creation
     echo $store->get().PHP_EOL;           // will print "A"
     $store->set("B");                     // changing the value
     echo $store->get().PHP_EOL;           // will print "B"
@@ -35,8 +35,8 @@ Use `subscribe()` to watch over the value of the store.
 use function CatPaw\Store\Writable;
 
 function main() {
-    $store       = Writable::create("A");
-    $unsubscribe = $store->subscribe(function($value) {
+    $store       = new Writable("A");
+    $unsubscribe = $store->subscribe(static function($value) {
         echo $value.PHP_EOL;
     });
     $store->set("B");
@@ -67,12 +67,12 @@ You can only read values from a readable store.
 use function CatPaw\Store\Readable;
 
 function main() {
-    $store = Readable::create("default value", function($set) {
+    $store = new Readable("default value", static function($set) {
         $set("hello world");
     });
 
     
-    $unsubscribe = $store->subscribe(function($value){
+    $unsubscribe = $store->subscribe(static function($value){
         echo $value.PHP_EOL;
     })
 

@@ -3,7 +3,7 @@ namespace CatPaw\Web\Implementations\Router;
 
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Container;
-use CatPaw\Core\DependenciesOptions;
+use CatPaw\Core\ContainerContext;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\None;
@@ -699,18 +699,11 @@ class SimpleRouter implements RouterInterface {
                 tags              : $tags,
             );
 
-            $options = new DependenciesOptions(
-                key: $key,
-                overwrites:[],
-                provides: [],
-                fallbacks: [],
-                defaultArguments: [],
-                context: $route,
-            );
+            $containerDependencies = new ContainerContext;
 
             $this->context->addRoute($symbolicMethod, $symbolicPath, $route);
 
-            $route->withOptions($options);
+            $route->withContainerDependencies($containerDependencies);
 
             if (!$ignoreOpenApi) {
                 $this->openApiRegisterRoute($route)->unwrap($error);

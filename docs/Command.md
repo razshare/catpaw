@@ -5,7 +5,6 @@ You can register console commands using `$command->register()`
 ```php
 use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
-use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\CommandRegisterInterface;
 use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\None;

@@ -11,6 +11,7 @@ use const CatPaw\Web\APPLICATION_JSON;
 use const CatPaw\Web\APPLICATION_XML;
 use CatPaw\Web\Attributes\Param;
 use CatPaw\Web\Interfaces\RouterInterface;
+
 use CatPaw\Web\Interfaces\ServerInterface;
 use function CatPaw\Web\success;
 use const CatPaw\Web\TEXT_HTML;
@@ -89,11 +90,11 @@ class WebTest extends TestCase {
     private function makeSureXmlConversionWorks(HttpClient $http):void {
         $request = new Request("http://127.0.0.1:5858/Api/Object/user1", "GET");
         $request->setHeader("Accept", APPLICATION_XML);
-        $response          = $http->request($request);
-        $actualContentType = $response->getHeader("Content-Type");
-        $this->assertEquals(APPLICATION_XML, $actualContentType);
+        $response   = $http->request($request);
         $actualBody = $response->getBody()->buffer();
         $this->assertStringStartsWith("<?xml version=\"1.0\"", $actualBody);
+        $actualContentType = $response->getHeader("Content-Type");
+        $this->assertEquals(APPLICATION_XML, $actualContentType);
     }
 
     private function makeSureJsonConversionWorks(HttpClient $http):void {

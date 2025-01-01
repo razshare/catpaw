@@ -1,7 +1,7 @@
 <?php
 namespace CatPaw\Web;
 
-use CatPaw\Core\DependenciesOptions;
+use CatPaw\Core\ContainerContext;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Web\Attributes\Consumes;
 use CatPaw\Web\Attributes\IgnoreDescribe;
@@ -14,7 +14,7 @@ use ReflectionFunction;
 
 readonly class Route {
     // @phpstan-ignore-next-line
-    public DependenciesOptions $options;
+    public ContainerContext $containerDependencies;
 
     /**
      *
@@ -48,8 +48,8 @@ readonly class Route {
         public false|IgnoreDescribe $ignoreDescribe,
     ) {
     }
-    public function withOptions(DependenciesOptions $options):void {
+    public function withContainerDependencies(ContainerContext $containerDependencies):void {
         // @phpstan-ignore-next-line
-        $this->options = $options;
+        $this->containerDependencies = $containerDependencies;
     }
 }

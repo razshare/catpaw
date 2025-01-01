@@ -3,7 +3,7 @@
 namespace CatPaw\Web\Attributes;
 
 use Attribute;
-use CatPaw\Core\DependenciesOptions;
+use CatPaw\Core\ContainerContext;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
 use CatPaw\Core\Interfaces\OnParameterMountInterface;
@@ -40,9 +40,9 @@ class Header implements AttributeInterface, OnParameterMountInterface {
         return $this->key;
     }
 
-    public function onParameterMount(ReflectionParameter $reflectionParameter, mixed &$value, DependenciesOptions $options):Result {
+    public function onParameterMount(ReflectionParameter $reflectionParameter, mixed &$value, ContainerContext $options):Result {
         /** @var false|RequestContext $context */
-        $context = $options->context;
+        $context = $options->data;
 
         if (!$context) {
             return error("No context found for header $this->key.");

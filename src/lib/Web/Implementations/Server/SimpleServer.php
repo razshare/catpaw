@@ -12,6 +12,7 @@ use Amp\Http\Server\SocketHttpServer;
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Bootstrap;
 use CatPaw\Core\Container;
+use CatPaw\Core\ContainerContext;
 use CatPaw\Core\Directory;
 use function CatPaw\Core\error;
 use CatPaw\Core\FileName;
@@ -147,7 +148,9 @@ class SimpleServer implements ServerInterface {
         }
 
         if (!Container::isProvided(SessionInterface::class)) {
-            Container::provide(SessionInterface::class, function(Request $request) {
+            Container::provide(SessionInterface::class, function(ContainerContext $context) {
+                /** @var Request */
+                $request = $context->data->request;
                 $session = MemorySession::create($request)->unwrap($error);
                 if ($error) {
                     $this->logger->error($error->getMessage());

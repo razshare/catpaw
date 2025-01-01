@@ -8,8 +8,8 @@ use Amp\Http\Server\Response;
 use Amp\Websocket\Server\Websocket;
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Core\Container;
-use CatPaw\Core\DependenciesOptions;
-use CatPaw\Core\DependencySearchResultItem;
+use CatPaw\Core\ContainerContext;
+use CatPaw\Core\ContainerSearchResultItem;
 use function CatPaw\Core\error;
 
 use function CatPaw\Core\ok;
@@ -111,16 +111,15 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
         return $modifier->response();
     }
 
-    private function createDependenciesOptions(RequestContext $context):DependenciesOptions {
-        $key = $context->key;
-        return new DependenciesOptions(
-            key: $key,
-            overwrites: [
+    private function createDependenciesOptions(RequestContext $context):ContainerContext {
+        return new ContainerContext(
+            provided: [
                 SessionInterface::class => function() use ($context) {
-                    $result = Container::get(SessionInterface::class, $context->request)->unwrap($error);
+                    $result = Container::get(SessionInterface::class, new ContainerContext(data:$context))->unwrap($error);
                     if ($error) {
                         return error($error);
                     }
+
                     if ($result instanceof Result) {
                         $result = $result->unwrap($error);
                         if ($error) {
@@ -141,35 +140,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                             ->withUri($context->request->getUri())
                     );
                 },
-            ],
-            provides: [
-                'bool' => static function(DependencySearchResultItem $item) use ($context) {
-                    if (!isset($context->requestPathParameters[$item->name])) {
-                        return ok(null);
-                    }
-                    return ok((bool)$context->requestPathParameters[$item->name]);
-                },
-                'float' => static function(DependencySearchResultItem $item) use ($context) {
-                    if (!isset($context->requestPathParameters[$item->name])) {
-                        return ok(null);
-                    }
-                    return ok((float)$context->requestPathParameters[$item->name]);
-                },
-                'int' => static function(DependencySearchResultItem $item) use ($context) {
-                    if (!isset($context->requestPathParameters[$item->name])) {
-                        return ok(null);
-                    }
-                    return ok((int)$context->requestPathParameters[$item->name]);
-                },
-                'string' => static function(DependencySearchResultItem $item) use ($context) {
-                    if (!isset($context->requestPathParameters[$item->name])) {
-                        return ok(null);
-                    }
-                    return ok((string)$context->requestPathParameters[$item->name]);
-                },
-            ],
-            fallbacks: [
-                'bool' => static function(DependencySearchResultItem $item) use ($context) {
+                'bool' => static function(ContainerSearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
                         if (!isset($context->requestQueries[$item->name])) {
                             return ok($item->defaultValue);
@@ -178,7 +149,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                     }
                     return ok((bool)$context->requestPathParameters[$item->name]);
                 },
-                'float' => static function(DependencySearchResultItem $item) use ($context) {
+                'float' => static function(ContainerSearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
                         if (!isset($context->requestQueries[$item->name])) {
                             return ok($item->defaultValue);
@@ -187,7 +158,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                     }
                     return ok((float)$context->requestPathParameters[$item->name]);
                 },
-                'int' => static function(DependencySearchResultItem $item) use ($context) {
+                'int' => static function(ContainerSearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
                         if (!isset($context->requestQueries[$item->name])) {
                             return ok($item->defaultValue);
@@ -196,14 +167,13 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                     }
                     return ok((int)$context->requestPathParameters[$item->name]);
                 },
-                'string' => static function(DependencySearchResultItem $item) use ($context) {
+                'string' => static function(ContainerSearchResultItem $item) use ($context) {
                     if (!isset($context->requestPathParameters[$item->name])) {
                         if (!isset($context->requestQueries[$item->name])) {
                             return ok($item->defaultValue);
                         }
                         return ok((string)$context->requestQueries[$item->name]);
                     }
-
                     $value = (string)$context->requestPathParameters[$item->name];
                     return ok(match ($value) {
                         ''      => $item->defaultValue ?? '',
@@ -211,8 +181,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                     });
                 },
             ],
-            defaultArguments: [],
-            context: $context,
+            data: $context,
         );
     }
 }

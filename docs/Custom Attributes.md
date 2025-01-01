@@ -10,7 +10,6 @@ use CatPaw\Core\Traits\CoreAttributeDefinition;
 use CatPaw\Core\Interfaces\OnParameterMount;
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
-use function CatPaw\Core\anyError;
 use function CatPaw\Core\ok;
 
 #[Attribute]

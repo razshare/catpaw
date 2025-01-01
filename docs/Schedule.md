@@ -1,20 +1,20 @@
 # Schedule
 
-You can schedule operations using `ScheduleService`.
+You can schedule operations using `ScheduleInterface`.
 
 # After
 
 You can schedule functions to execute after a certain amount of time.
 
 ```php
-use CatPaw\Schedule\Services\ScheduleService;
+use CatPaw\Schedule\Interfaces\ScheduleInterface;
 use CatPaw\Core\Result;
 
 function sayHi():void {
     echo 'Hi.';
 }
 
-function main(ScheduleService $schedule):Result {
+function main(ScheduleInterface $schedule):Result {
     return $schedule->after(due:'2 minutes', function:sayHi(...));
 }
 ```
@@ -41,7 +41,7 @@ The `due` parameter must be a string in one of the following formats
 Just like `after()`, `every()` allows you to countdown before executing the function, with the added effect that the schedule restarts whenever it ends and the callback function accepts a callable which when invoked will cancel the schedule immediately.
 
 ```php
-use CatPaw\Schedule\Services\ScheduleService;
+use CatPaw\Schedule\Interfaces\ScheduleInterface;
 use CatPaw\Core\Result;
 
 function sayHi(callable $cancel):void {
@@ -49,7 +49,7 @@ function sayHi(callable $cancel):void {
     $cancel();  // this will cancel the schedule
 }
 
-function main(ScheduleService $schedule):Result {
+function main(ScheduleInterface $schedule):Result {
     return $schedule->every(due:'2 minutes', function: sayHi(...));
 }
 ```
@@ -76,7 +76,7 @@ The `due` parameter must be a string in one of the following formats
 Schedule a function to execute daily.
 
 ```php
-use CatPaw\Schedule\Services\ScheduleService;
+use CatPaw\Schedule\Interfaces\ScheduleInterface;
 use CatPaw\Core\Result;
 
 function sayHi(callable $cancel):void {
@@ -84,7 +84,7 @@ function sayHi(callable $cancel):void {
     $cancel();  // this will cancel the schedule
 }
 
-function main(ScheduleService $schedule):Result {
+function main(ScheduleInterface $schedule):Result {
     return $schedule->daily(due:'at 13:00', function: sayHi(...));
 }
 ```

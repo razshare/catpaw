@@ -26,7 +26,7 @@ testone: vendor/bin/phpunit
 	php \
 	-dxdebug.mode=debug \
 	-dxdebug.start_with_request=yes \
-	vendor/bin/phpunit tests/DatabaseTest.php
+	vendor/bin/phpunit tests/WebTest.php
 
 fix: vendor/bin/php-cs-fixer
 	php \

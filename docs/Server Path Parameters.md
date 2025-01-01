@@ -23,7 +23,7 @@ Path parameters are wrapped in `{}`
 
 ```php
 // src/api/{username}/articles/{articleId}/comments/{commentId}
-return function(string $username, string $articleId, string $commentId){};
+return static function(string $username, string $articleId, string $commentId){};
 ```
 
 > [!NOTE]
@@ -39,7 +39,7 @@ You can configure this behavior using a `#[Param]` attribute
 // src/api/{username}/articles/{articleId}/comments/{commentId}/get.php
 use CatPaw\Web\Attributes\Param;
 
-return function(
+return static function(
     #[Param('\w{3,}')]    string $username,  // Require $username to be at least 3 characters long.
     #[Param('[A-z0-9-]')] string $articleId, // Require $articleId to include only characters from A to z, numbers and '-'
     #[Param('[A-z0-9-]')] string $commentId, // Require $articleId to include only characters from A to z, numbers and '-'

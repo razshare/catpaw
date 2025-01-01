@@ -11,18 +11,18 @@ Queues can overlap while executing, but callables within the queues themselves w
 Two callables that are delayed by 5 and 2 seconds using different tags _tag-a_ and _tag-b_.
 
  ```php
-use CatPaw\Queue\Services\QueueService;
+use CatPaw\Queue\Interfaces\QueueInterface;
 use function Amp\delay;
 
-function main(QueueService $queue):void {
+function main(QueueInterface $queue):void {
     $start = time();
 
-    $queue->queue("tag-a", function() {
+    $queue->queue("tag-a", static function() {
         delay(5000);
         echo 'a'.PHP_EOL;
     });
 
-    $queue->queue("tag-b", function() {
+    $queue->queue("tag-b", static function() {
         delay(2000);
         echo 'b'.PHP_EOL;
     });
@@ -47,18 +47,18 @@ a
 Two callables that are delayed by 5 and 2 seconds both using the same tag _my-tag_.
 
 ```php
-use CatPaw\Queue\Services\QueueService;
+use CatPaw\Queue\Interfaces\QueueInterface;
 use function Amp\delay;
 
-function main(QueueService $queue):void {
+function main(QueueInterface $queue):void {
     $start = time();
 
-    $queue->queue("my-tag", function() {
+    $queue->queue("my-tag", static function() {
         delay(5000);
         echo 'a'.PHP_EOL;
     });
 
-    $queue->queue("my-tag", function() {
+    $queue->queue("my-tag", static function() {
         delay(2000);
         echo 'b'.PHP_EOL;
     });

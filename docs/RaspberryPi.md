@@ -21,8 +21,6 @@ Here's an example of a blinking LED on pin _12_<br/>
 
 ```php
 use function Amp\delay;
-use function CatPaw\Core\error;
-use function CatPaw\Core\anyError;
 use CatPaw\RaspberryPi\Interfaces\GpioInterface;
 
 function main(GpioInterface $gpio):void {

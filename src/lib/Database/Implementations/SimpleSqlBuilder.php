@@ -11,6 +11,7 @@ use CatPaw\Database\Interfaces\DatabaseInterface;
 use CatPaw\Database\Interfaces\SqlBuilderInterface;
 use CatPaw\Web\Page;
 use Error;
+use stdClass;
 use Throwable;
 
 #[Provider(singleton:false)]
@@ -62,7 +63,7 @@ class SimpleSqlBuilder implements SqlBuilderInterface {
      * @param  class-string<T> $className
      * @return Result<false|T>
      */
-    public function one(string $className):Result {
+    public function one(string $className = stdClass::class):Result {
         $instruction = $this->build()->unwrap($error);
         if ($error) {
             return error($error);
@@ -97,7 +98,7 @@ class SimpleSqlBuilder implements SqlBuilderInterface {
      * @param  class-string<T>  $className
      * @return Result<array<T>>
      */
-    public function many(string $className):Result {
+    public function many(string $className = stdClass::class):Result {
         $instruction = $this->build()->unwrap($error);
         if ($error) {
             return error($error);

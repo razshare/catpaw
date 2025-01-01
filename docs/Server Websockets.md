@@ -24,5 +24,5 @@ $handler = new class implements WebsocketClientHandler {
     }
 };
 
-return fn () => websocket($handler);
+return static fn () => websocket($handler);
 ```

@@ -4,7 +4,7 @@ namespace CatPaw\Core;
 use ReflectionAttribute;
 use ReflectionParameter;
 
-class DependencySearchResultItem {
+class ContainerSearchResultItem {
     /**
      * @param ReflectionParameter                $reflectionParameter
      * @param bool                               $isOptional
