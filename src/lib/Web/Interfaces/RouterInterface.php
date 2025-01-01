@@ -72,6 +72,13 @@ interface RouterInterface {
         string $aliasSymbolicPath,
     ):Result;
 
+    /**
+     * Define a controller.
+     * @param  string       $path      the path the event should listen to.
+     * @param  class-string $className name of the class to promote as a controller.
+     * @return Result<None>
+     */
+    public function controller(string $path, string $className):Result;
 
     /**
      * Define an event callback for a custom http method.

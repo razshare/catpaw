@@ -2,6 +2,7 @@
 namespace CatPaw\Web\Implementations\Router;
 
 use CatPaw\Core\Attributes\Provider;
+use CatPaw\Core\Container;
 use CatPaw\Core\DependenciesOptions;
 use function CatPaw\Core\error;
 use CatPaw\Core\Interfaces\AttributeInterface;
@@ -34,6 +35,7 @@ use CatPaw\Web\RouterContext;
 use CatPaw\Web\SuccessResponseModifier;
 use Closure;
 use function implode;
+use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -46,6 +48,50 @@ class SimpleRouter implements RouterInterface {
         public readonly OpenApiStateInterface $openApiState,
     ) {
         $this->context = RouterContext::create();
+    }
+
+    public function controller(string $path, string $className):Result {
+        $instance = Container::get($className)->unwrap($error);
+        if ($error) {
+            $reflectionClass       = new ReflectionClass($className);
+            $reflectionConstructor = $reflectionClass->getConstructor();
+            $provider              = new Provider();
+            $instance              = null;
+            $dependencies          = [];
+            if (null !== $reflectionConstructor) {
+                $dependencies = Container::dependencies($reflectionConstructor)->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
+            $provider->onClassInstantiation($reflectionClass, $instance, $dependencies)->unwrap($error);
+            if ($error) {
+                return error($error);
+            }
+        }
+
+
+        try {
+            $reflectionClass = new ReflectionClass($className);
+    
+            $reflectionMethods = $reflectionClass->getMethods();
+    
+            foreach ($reflectionMethods as $reflectionMethod) {
+                $methodName     = $reflectionMethod->getName();
+                $symbolicMethod = strtoupper($methodName);
+                $symbolicPath   = $path;
+                $method         = $reflectionMethod->getClosure($instance);
+    
+                $this->custom($symbolicMethod, $symbolicPath, $method)->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
+            }
+    
+            return ok();
+        } catch(Throwable $error) {
+            return error($error);
+        }
     }
 
     public function getContext():RouterContext {
