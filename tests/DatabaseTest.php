@@ -4,8 +4,8 @@ namespace Tests;
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Container;
 use CatPaw\Core\FileName;
-use CatPaw\Core\Implementations\Command\SimpleCommand;
-use CatPaw\Core\Interfaces\CommandInterface;
+use CatPaw\Core\Implementations\CommandRegister\SimpleCommandRegister;
+use CatPaw\Core\Interfaces\CommandRegisterInterface;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use CatPaw\Database\Implementations\SimpleSqlBuilder;
@@ -18,7 +18,7 @@ class DatabaseTest extends TestCase {
 
     public function testAll():void {
         $this->db = new MemoryDatabase;
-        Container::provide(CommandInterface::class, new SimpleCommand);
+        Container::provide(CommandRegisterInterface::class, new SimpleCommandRegister);
         Container::provide(DatabaseInterface::class, $this->db);
         Container::requireLibraries(FileName::create(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);

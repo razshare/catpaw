@@ -52,6 +52,17 @@ dev: bin/catpaw src/main.php
 	--libraries=src/lib \
 	--main=src/main.php
 
+
+install-pre-commit: bin/catpaw src/main.php
+	php \
+	-dxdebug.mode=debug \
+	-dxdebug.start_with_request=yes \
+	bin/catpaw \
+	--environment=env.ini \
+	--libraries=src/lib \
+	--main=src/main.php \
+	--install-pre-commit="make test"
+
 watch: bin/catpaw src/main.php
 	php \
 	-dxdebug.mode=off \

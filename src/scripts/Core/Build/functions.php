@@ -78,15 +78,15 @@ function build(bool $optimize = false):Result {
 
         $file->write(<<<PHP
             <?php
-            use CatPaw\Core\ApplicationBundled;
+            use CatPaw\Core\Commands\ApplicationBundledCommand;
             use CatPaw\Core\Container;
-            use CatPaw\Core\Implementations\Command\SimpleCommand;
-            use CatPaw\Core\Interfaces\CommandInterface;
+            use CatPaw\Core\Implementations\CommandRegister\SimpleCommandRegister;
+            use CatPaw\Core\Interfaces\CommandRegisterInterface;
 
             require 'vendor/autoload.php';
 
-            Container::provide(CommandInterface::class, \$command = new SimpleCommand);
-            \$command->register(new ApplicationBundled(
+            Container::provide(CommandRegisterInterface::class, \$command = new SimpleCommandRegister);
+            \$command->register(new ApplicationBundledCommand(
                 main: "$main",
                 name: "$name",
                 libraries: "$libraries",

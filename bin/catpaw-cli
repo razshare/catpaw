@@ -1,68 +1,42 @@
 #!/usr/bin/env php
 <?php
-use CatPaw\Core\Application;
+use CatPaw\Core\Commands\ApplicationCommand;
 use CatPaw\Core\Container;
-use CatPaw\Core\Implementations\Command\SimpleCommand;
-use CatPaw\Core\Interfaces\CommandInterface;
-use CatPaw\Core\BuildCommand;
+use CatPaw\Core\Interfaces\CommandRegisterInterface;
+use CatPaw\Core\Commands\BuildCommand;
 use function CatPaw\Core\error;
-use CatPaw\Core\HelpCommand;
-use CatPaw\Core\HiCommand;
-use CatPaw\Core\Implementations\Command\NoMatchError;
-use CatPaw\Core\InstallPreCommitCommand;
+use CatPaw\Core\Commands\HelpCommand;
+use CatPaw\Core\Commands\InstallPreCommitCommand;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
-use CatPaw\Core\TipsCommand;
-use CatPaw\Core\UninstallPreCommitCommand;
+use CatPaw\Core\Commands\UninstallPreCommitCommand;
+use CatPaw\Core\Errors\NoMatchError;
+use CatPaw\Core\Implementations\CommandRegister\SimpleCommandRegister;
 
 require 'vendor/autoload.php';
 
-Container::provide(CommandInterface::class, $command = new SimpleCommand);
-$command->register(new Application(__FILE__))->unwrap($error) or die($error);
+Container::provide(CommandRegisterInterface::class, $command = new SimpleCommandRegister);
+$command->register(new ApplicationCommand(__FILE__))->unwrap($error) or die($error);
 
 /**
  * 
- * @param  CommandInterface          $command
+ * @param  CommandRegisterInterface          $command
  * @param  BuildCommand              $buildCommand
- * @param  TipsCommand               $tipsCommand
- * @param  HiCommand                 $hiCommand
  * @param  InstallPreCommitCommand   $installPreCommitCommand
  * @param  UninstallPreCommitCommand $uninstallPreCommitCommand
  * @param  HelpCommand               $helpCommand
  * @return Result<None>
  */
 function main(
-    CommandInterface $command,
+    CommandRegisterInterface $command,
     BuildCommand $buildCommand,
-    TipsCommand $tipsCommand,
-    HiCommand $hiCommand,
     InstallPreCommitCommand $installPreCommitCommand,
     UninstallPreCommitCommand $uninstallPreCommitCommand,
     HelpCommand $helpCommand
 ):Result {
     // Build.
     $command->register($buildCommand)->unwrap($error);
-    if ($error) {
-        if (NoMatchError::class !== $error::class) {
-            return error($error);
-        }
-    } else {
-        return ok();
-    }
-    
-    // Tips.
-    $command->register($tipsCommand)->unwrap($error);
-    if ($error) {
-        if (NoMatchError::class !== $error::class) {
-            return error($error);
-        }
-    } else {
-        return ok();
-    }
-    
-    // Hi.
-    $command->register($hiCommand)->unwrap($error);
     if ($error) {
         if (NoMatchError::class !== $error::class) {
             return error($error);

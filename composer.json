@@ -20,32 +20,16 @@
       "homepage": "https://razshare.dev"
     }
   ],
-  "scripts": {
-    "load": "@composer dump-autoload -o",
-    "prod:start": "php -dphar.readonly=0 -dopcache.enable_cli=1 -dopcache.jit_buffer_size=100M ./bin/catpaw",
-    "prod:build": "@prod:start --libraries=src/lib --main=src/main.php --environment=build.ini --build --optimize",
-    "prod:fix": "php -dxdebug.mode=off vendor/bin/php-cs-fixer fix .",
-    "prod:test": "php vendor/bin/phpunit tests",
-    "dev:start": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes -dphar.readonly=0 ./bin/catpaw",
-    "dev:preview": "@dev:start --libraries=preview/lib --main=preview/main.php --resources=preview",
-    "dev:generate": "@dev:start --libraries=src/lib --main=src/generate.php",
-    "dev:build": "@dev:start --libraries=src/lib --main=src/main.php --environment=build.ini --build --optimize",
-    "dev:test": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit tests",
-    "dev:testone": "php -dxdebug.mode=debug -dxdebug.start_with_request=yes vendor/bin/phpunit",
-    "dev:install-pre-commit": "@prod:start --install-pre-commit='composer prod:fix && composer prod:test'"
-  },
   "autoload": {
     "psr-4": {
       "CatPaw\\Core\\": [
-        "src/lib/Core",
-        "src/commands/Core"
+        "src/lib/Core"
       ],
       "CatPaw\\Database\\": [
         "src/lib/Database"
       ],
       "CatPaw\\Web\\": [
-        "src/lib/Web",
-        "src/commands/Web"
+        "src/lib/Web"
       ],
       "CatPaw\\Queue\\": [
         "src/lib/Queue"

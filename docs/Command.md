@@ -6,12 +6,12 @@ You can register console commands using `$command->register()`
 use CatPaw\Core\CommandBuilder;
 use CatPaw\Core\CommandContext;
 use function CatPaw\Core\error;
+use CatPaw\Core\Interfaces\CommandRegisterInterface;
 use CatPaw\Core\Interfaces\CommandInterface;
-use CatPaw\Core\Interfaces\CommandRunnerInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
 
-$runner = new class implements CommandRunnerInterface {
+$runner = new class implements CommandInterface {
     /**
      * Build the command.
      * @param  CommandBuilder $builder
@@ -32,7 +32,7 @@ $runner = new class implements CommandRunnerInterface {
     }
 }
 
-function main(CommandInterface $command){
+function main(CommandRegisterInterface $command){
     return $command->register($runner);
 }
 ```

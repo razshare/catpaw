@@ -1,13 +1,20 @@
 <?php
-namespace CatPaw\Core;
+namespace CatPaw\Core\Commands;
 
 use CatPaw\Core\Attributes\Provider;
 use function CatPaw\Core\Build\build;
-use CatPaw\Core\Interfaces\CommandRunnerInterface;
+use CatPaw\Core\CommandBuilder;
+use CatPaw\Core\CommandContext;
+use function CatPaw\Core\error;
+use CatPaw\Core\File;
+use CatPaw\Core\FileName;
+use CatPaw\Core\Interfaces\CommandInterface;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Result;
 
 #[Provider]
-final class BuildCommand implements CommandRunnerInterface {
+final class BuildCommand implements CommandInterface {
     public function __construct(private EnvironmentInterface $environment) {
     }
 

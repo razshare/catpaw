@@ -8,9 +8,9 @@ use CatPaw\Core\Container;
 use function CatPaw\Core\env;
 use CatPaw\Core\File;
 use CatPaw\Core\FileName;
-use CatPaw\Core\Implementations\Command\SimpleCommand;
+use CatPaw\Core\Implementations\CommandRegister\SimpleCommandRegister;
 use CatPaw\Core\Interfaces\CommandInterface;
-use CatPaw\Core\Interfaces\CommandRunnerInterface;
+use CatPaw\Core\Interfaces\CommandRegisterInterface;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
 
 class CoreTest extends TestCase {
     public function testAll():void {
-        Container::provide(CommandInterface::class, new SimpleCommand);
+        Container::provide(CommandRegisterInterface::class, new SimpleCommandRegister);
         Container::requireLibraries(FileName::create(__DIR__, '../src/lib'))->unwrap($error);
         $this->assertNull($error);
         Container::loadDefaultProviders("Test")->unwrap($error);
@@ -81,7 +81,7 @@ class CoreTest extends TestCase {
     /**
      * @return Result<None>
      */
-    public function makeSureCommandWorks(CommandInterface $command):Result {
+    public function makeSureCommandWorks(CommandRegisterInterface $command):Result {
         return anyError(function() use ($command) {
             global $argv;
 
@@ -89,7 +89,7 @@ class CoreTest extends TestCase {
             $argv[] = '--port="\\"80"';
             $argv[] = '--certificate="some-certificate.txt"';
             
-            $command->register($runner = new class implements CommandRunnerInterface {
+            $command->register($runner = new class implements CommandInterface {
                 public CommandBuilder $builder;
                 public function build(CommandBuilder $builder):void {
                     $this->builder = $builder;

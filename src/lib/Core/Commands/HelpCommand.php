@@ -1,11 +1,15 @@
 <?php
-namespace CatPaw\Core;
+namespace CatPaw\Core\Commands;
 
 use CatPaw\Core\Attributes\Provider;
-use CatPaw\Core\Interfaces\CommandRunnerInterface;
+use CatPaw\Core\CommandBuilder;
+use CatPaw\Core\CommandContext;
+use CatPaw\Core\Interfaces\CommandInterface;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Result;
 
 #[Provider]
-final class HelpCommand implements CommandRunnerInterface {
+final class HelpCommand implements CommandInterface {
     public function build(CommandBuilder $builder):void {
     }
 
@@ -13,8 +17,6 @@ final class HelpCommand implements CommandRunnerInterface {
         echo <<<BASH
             -b,  --build [-o, --optimize]        Builds the project into a .phar.
             -w,  --web [-p, --project]           Dump web server requirements into a project directory.
-            -t,  --tips                          Some tips.
-            -h,  --hi                            Says hi. Useful for debugging.
             -i,  --install-pre-commit            Installs the pre-commit hook.
             -u,  --uninstall-pre-commit          Uninstalls the pre-commit hook.
             

@@ -1,11 +1,11 @@
 #!/usr/bin/env php
 <?php
-use CatPaw\Core\Application;
+use CatPaw\Core\Commands\ApplicationCommand;
 use CatPaw\Core\Container;
-use CatPaw\Core\Implementations\Command\SimpleCommand;
-use CatPaw\Core\Interfaces\CommandInterface;
+use CatPaw\Core\Implementations\CommandRegister\SimpleCommandRegister;
+use CatPaw\Core\Interfaces\CommandRegisterInterface;
 
 require 'vendor/autoload.php';
 
-Container::provide(CommandInterface::class, $command = new SimpleCommand);
-$command->register(new Application(__FILE__))->unwrap($error) or die($error);
+Container::provide(CommandRegisterInterface::class, $command = new SimpleCommandRegister);
+$command->register(new ApplicationCommand(__FILE__))->unwrap($error) or die($error);

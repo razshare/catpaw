@@ -1,9 +1,16 @@
 <?php
-namespace CatPaw\Core;
+namespace CatPaw\Core\Commands;
 
-use CatPaw\Core\Interfaces\CommandRunnerInterface;
+use CatPaw\Core\Bootstrap;
+use CatPaw\Core\CommandBuilder;
+use CatPaw\Core\CommandContext;
+use function CatPaw\Core\error;
+use CatPaw\Core\FileName;
+use CatPaw\Core\Interfaces\CommandInterface;
+use function CatPaw\Core\ok;
+use CatPaw\Core\Result;
 
-readonly class ApplicationBundled implements CommandRunnerInterface {
+readonly class ApplicationBundledCommand implements CommandInterface {
     /**
      * 
      * @param  string $main
