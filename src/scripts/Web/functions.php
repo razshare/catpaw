@@ -53,7 +53,7 @@ function success(
     if (false === $message) {
         $message = HttpStatus::reason($status);
     }
-    return SuccessResponseModifier::create(
+    return new SuccessResponseModifier(
         data   : $data,
         headers: $headers,
         status : $status,
@@ -129,7 +129,7 @@ function queries(UriInterface $uri):array {
  *
  * ## Example
  * ```php
- * return fn() => websocket(
+ * return static fn() => websocket(
  *  handler: new class implements WebsocketClientHandler {
  *      public function handleClient(WebsocketClient $client):void {
  *          $client->sendText("hello!");

@@ -42,7 +42,7 @@ class ScheduleTest extends TestCase {
 
 
     private function scheduleAfter1Second(ScheduleInterface $schedule, LoggerInterface $logger):void {
-        $signal  = Signal::create();
+        $signal  = new Signal();
         $checked = false;
         $start   = time();
         $signal->listen(function() use ($start, &$checked) {

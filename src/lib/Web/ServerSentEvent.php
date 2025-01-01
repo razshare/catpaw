@@ -4,41 +4,29 @@ namespace CatPaw\Web;
 use Amp\ByteStream\ReadableIterableStream;
 use Amp\ByteStream\WritableIterableStream;
 use Amp\Http\Server\Response;
-
 use function CatPaw\Core\duplex;
 use function CatPaw\Core\error;
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
-use Closure;
 use Throwable;
 
 class ServerSentEvent {
+    private readonly WritableIterableStream $writer;
+    private readonly ReadableIterableStream $reader;
     /**
      *
-     * @param  ReadableIterableStream $reader
-     * @param  WritableIterableStream $writer
-     * @param  array<string,string>   $headers
+     * @param  callable(callable(string):void):void $emitter
+     * @param  array<string,string>                 $headers
      * @return void
      */
     private function __construct(
-        private readonly ReadableIterableStream $reader,
-        private readonly WritableIterableStream $writer,
-        private array $headers = []
+        private mixed $emitter,
+        private array $headers = [],
     ) {
-    }
-
-    /**
-     * Create a new server sent event.
-     * @param  Closure(callable(string):void):void $emitter
-     * @return ServerSentEvent
-     */
-    static function create(Closure $emitter):self {
         [$reader, $writer] = duplex();
-        $emitter($writer->write(...));
-        return new self(
-            reader: $reader,
-            writer: $writer,
-        );
+        $this->reader      = $reader;
+        $this->writer      = $writer;
+        ($this->emitter)($writer->write(...));
     }
 
     /**

@@ -8,19 +8,6 @@ use SplDoublyLinkedList;
  * @package CatPaw\Store
  */
 class Readable {
-    /**
-     * @param  T                                  $value   initial value of the store
-     * @param  callable(callable):(void|callable) $onStart a function that will be executed when the
-     *                                                     first subscriber subscribes to the store.\
-     *                                                     This function may return another function, which
-     *                                                     will be executed when the last subscriber of the store unsubscribes.
-     * @return self<T>
-     * @deprecated in favor of constructor.
-     */
-    public static function create($value, $onStart):self {
-        return new self($value, $onStart);
-    }
-
     /** @var SplDoublyLinkedList<callable> */
     protected SplDoublyLinkedList $functions;
     /** @var false|(callable():void) */

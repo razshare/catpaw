@@ -9,15 +9,6 @@ use SplDoublyLinkedList;
  * @package CatPaw\Store
  */
 class Writable {
-    /**
-     * @param  T       $value The initial value of the store
-     * @return self<T>
-     * @deprecated in favor of constructor.
-     */
-    public static function create(mixed $value):self {
-        return new self($value);
-    }
-
     /** @var SplDoublyLinkedList<Closure> */
     protected SplDoublyLinkedList $functions;
 

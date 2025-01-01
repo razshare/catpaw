@@ -2,14 +2,12 @@
 namespace CatPaw\Core\Build;
 
 use function Amp\File\isDirectory;
-
 use CatPaw\Core\Directory;
 use function CatPaw\Core\env;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
-
 use function CatPaw\Core\out;
 use CatPaw\Core\Process;
 use CatPaw\Core\Result;

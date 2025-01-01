@@ -108,7 +108,7 @@ readonly class SimpleSchedule implements ScheduleInterface {
                 return error("Invalid time unit `$humanReadableUnit`.");
             }
 
-            return ok(ScheduleConfiguration::create(value: ((int)$value) * $multiplier, repeat: $repeat));
+            return ok(new ScheduleConfiguration(value: ((int)$value) * $multiplier, repeat: $repeat));
         }
 
         if (preg_match(self::PATTERN_DAILY, $format, $matches)) {
@@ -160,7 +160,7 @@ readonly class SimpleSchedule implements ScheduleInterface {
             if ($value < 0) {
                 $value = 0;
             }
-            return ok(ScheduleConfiguration::create(value: $value, repeat: $repeat));
+            return ok(new ScheduleConfiguration(value: $value, repeat: $repeat));
         }
         return error("Invalid due pattern.");
     }
@@ -197,7 +197,7 @@ readonly class SimpleSchedule implements ScheduleInterface {
             });
         }
 
-        return ok(ScheduleEntry::create(
+        return ok(new ScheduleEntry(
             callbackId: $callbackId,
             future: $semaphore->getFuture(),
             scheduleConfiguration: $scheduleConfiguration,

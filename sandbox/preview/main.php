@@ -11,7 +11,7 @@ class HelloController {
 }
 
 function main(ServerInterface $server, RouterInterface $router) {
-    $router->controller('/api/controllers/hello/{name}', HelloController::class)->unwrap($error);
+    $router->addController('/api/controllers/hello/{name}', HelloController::class)->unwrap($error);
     if ($error) {
         return error($error);
     }

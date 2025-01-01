@@ -5,21 +5,12 @@ use SplDoublyLinkedList;
 
 class Signal {
     private bool $busy = false;
-
-    /**
-     * Create a signal.
-     * @return self
-     */
-    public static function create():self {
-        return new self(list: new LinkedList);
+    /** @var LinkedList<callable(mixed...):void> */
+    private LinkedList $list;
+    
+    public function __construct() {
+        $this->list = new LinkedList;
     }
-
-    /**
-     * @param LinkedList<callable(mixed...):void> $list
-     */
-    private function __construct(private readonly LinkedList $list) {
-    }
-
 
     /**
      * Send signal and trigger listeners.

@@ -1,7 +1,9 @@
 <?php
 namespace CatPaw\Core;
 
-readonly class None {
+use Stringable;
+
+readonly class None implements Stringable {
     public function __toString() {
         return '';
     }

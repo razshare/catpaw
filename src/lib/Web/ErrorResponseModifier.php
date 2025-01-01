@@ -96,7 +96,7 @@ class ErrorResponseModifier implements ResponseModifierInterface {
     }
 
     public function item():self {
-        $this->body = ErrorItem::create(
+        $this->body = new ErrorItem(
             message: $this->message,
             status: $this->status,
         );

@@ -2,14 +2,10 @@
 namespace CatPaw\Core\Precommit;
 
 use function CatPaw\Core\error;
-
 use CatPaw\Core\File;
-
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
-
 use CatPaw\Core\Process;
-
 use CatPaw\Core\Result;
 
 /**

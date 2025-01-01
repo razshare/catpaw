@@ -18,7 +18,7 @@ class BodyParser {
     /**
      * @return Result<\stdClass>
      */
-    public static function parseAsObject(
+    public static function object(
         Request $request,
         int $sizeLimit,
         null|Cancellation $cancellation = null

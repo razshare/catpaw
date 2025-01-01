@@ -102,7 +102,7 @@ readonly class MatchingPathConfiguration {
         }
 
         if (!preg_match("/^$pattern$/", $path, $matches)) {
-            return PathParametersWrapper::create(ok:false, parameters:false, badRequestEntries:false);
+            return new PathParametersWrapper(ok:false, parameters:false, badRequestEntries:false);
         }
 
         $result            = [];
@@ -120,7 +120,7 @@ readonly class MatchingPathConfiguration {
         }
         
 
-        return PathParametersWrapper::create(ok:true, parameters:$result, badRequestEntries:$badRequestEntries);
+        return new PathParametersWrapper(ok:true, parameters:$result, badRequestEntries:$badRequestEntries);
     }
 
     /**

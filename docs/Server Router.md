@@ -1,26 +1,24 @@
 # Router
 
-A router is an object that allows you to define __routes__ for your server application.
-
-Routes are defined through __route handlers__, which are functions that trigger whenever a client requests a specific resource.
+Routes are defined through __route handlers__, which are functions that trigger whenever a client hits a specific http endpoint.
 
 # Routes
 
-You can map a __GET__ route using `$router->get()`
+You can map a route handler using `$router->addHandler()`
 
 ```php
 use CatPaw\Web\Interfaces\ServerInterface;
 use CatPaw\Web\Interfaces\RouterInterface;
 
 function handler() {
-    return 'there are no cats here';
+    return "there are no cats here";
 }
 
 function main(
     ServerInterface $server, 
     RouterInterface $router,
 ):void {
-    $router->get('/cats', handler(...))
+    $router->addHandler("GET", "/cats", handler(...))
             ->unwrap($error) or die($error);
 
     $server->start()
@@ -34,7 +32,7 @@ This creates a _GET /cats_ route which responds with _"there are no cats here"_.
 > All paths _MUST_ start with `/`.
 
 
-Similarly to the _GET_ example, `$router->post()` will map a **POST** route
+Similarly to the _GET_ example, `$router->addHandler("POST", ...)` will map a **POST** route
 
 ```php
 use CatPaw\Web\Interfaces\ServerInterface;
@@ -49,7 +47,7 @@ function main(
     ServerInterface $server, 
     RouterInterface $router,
 ):void {
-    $router->post('/cats', handler(...))
+    $router->addHandler("POST", "/cats", handler(...))
             ->unwrap($error) or die($error);
 
     $server->start()
@@ -69,8 +67,8 @@ Scan the directory using `$server->withApiLocation()`
 ```php
 function main(ServerInterface $server):void {
     $server
-        ->withApiLocation('src/api')
-        ->withApiPrefix('/api/v1')
+        ->withApiLocation("src/api")
+        ->withApiPrefix("/api/v1")
         ->start()
         ->unwrap($error) or die($error);
 }

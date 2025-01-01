@@ -13,7 +13,6 @@ class PathResolver {
     /** @var array<string,PathResolver> */
     private static array $cache = [];
 
-
     /**
      *
      * @param  string                     $symbolicMethod
@@ -53,16 +52,12 @@ class PathResolver {
         return ok($resolver);
     }
 
-
-
-
     /**
-     *
-     * @param  string                                   $path
+     * @param  string                                   $symbolicPath
      * @param  array<ReflectionParameter>               $reflectionParameters
      * @return Result<array<MatchingPathConfiguration>>
      */
-    public static function findMatchingPathConfigurations(string $path, array $reflectionParameters):Result {
+    public static function findMatchingPathConfigurations(string $symbolicPath, array $reflectionParameters):Result {
         /** @var array<MatchingPathConfiguration> $configurations */
         $configurations = [];
 
@@ -107,7 +102,7 @@ class PathResolver {
 
         $result = [];
 
-        if (preg_match_all('/{([^{}]+)}/', $path, $matches)) {
+        if (preg_match_all('/{([^{}]+)}/', $symbolicPath, $matches)) {
             foreach ($matches[1] as $key => $match) {
                 if (!$configuration = $configurations[$key] ?? false) {
                     $param         = new Param('[^\/]*');
@@ -131,8 +126,7 @@ class PathResolver {
             }
         }
 
-
-        return ok(MatchingPathConfiguration::mergeWithPath($result, $path));
+        return ok(MatchingPathConfiguration::mergeWithPath($result, $symbolicPath));
     }
 
     /**

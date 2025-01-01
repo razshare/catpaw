@@ -33,19 +33,20 @@ class SimpleRouteResolver implements RouteResolverInterface {
      * @return Result<false|Response>
      */
     public function resolve(Request $request):Result {
-        $requestMethod  = $request->getMethod();
-        $symbolicMethod = $requestMethod;
+        $symbolicMethod = $request->getMethod();
 
-        $routes = $this->router->findRoutesByMethod($requestMethod);
+        $routes = $this->router->routes()[$symbolicMethod] ?? [];
 
+        /** @var false|array<string,string> */
         $requestPathParameters = false;
         /** @var false|array<string> */
         $badRequestEntries = false;
 
         $symbolicPath = '';
         $route        = '';
+
         foreach ($routes as $symbolicPath => $route) {
-            $key         = "$requestMethod:$symbolicPath";
+            $key         = "$symbolicMethod:$symbolicPath";
             $function    = $route->function;
             $requestPath = urldecode($request->getUri()->getPath());
 
@@ -77,9 +78,9 @@ class SimpleRouteResolver implements RouteResolverInterface {
 
             /** @var PathResolver $pathResolver */
             $pathResolver = PathResolver::findResolver(
+                reflectionParameters: $reflectionParameters,
                 symbolicMethod: $symbolicMethod,
                 symbolicPath: $symbolicPath,
-                reflectionParameters: $reflectionParameters,
             )->unwrap($error);
             if ($error) {
                 return error($error);
@@ -109,7 +110,7 @@ class SimpleRouteResolver implements RouteResolverInterface {
         }
 
         $requestQueries = $this->findQueriesFromRequest($request);
-        $context        = RequestContext::create(
+        $context        = new RequestContext(
             key: "$symbolicMethod:$symbolicPath",
             route: $route,
             request: $request,

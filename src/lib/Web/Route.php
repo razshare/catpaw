@@ -17,53 +17,6 @@ readonly class Route {
     public DependenciesOptions $options;
 
     /**
-     * @param ReflectionFunction         $reflectionFunction
-     * @param string                     $workDirectory
-     * @param string                     $symbolicMethod
-     * @param string                     $symbolicPath
-     * @param callable                   $function
-     * @param array<Consumes>            $consumes
-     * @param array<Produces>            $produces
-     * @param array<OnRequestInterface>  $onRequest
-     * @param array<OnResponseInterface> $onResponse
-     * @param array<AttributeInterface>  $onMount
-     * @param array<Tag>                 $tags
-     * @param false|IgnoreOpenApi        $ignoreOpenApi
-     * @param false|IgnoreDescribe       $ignoreDescribe
-     */
-    public static function create(
-        ReflectionFunction $reflectionFunction,
-        string $workDirectory,
-        string $symbolicMethod,
-        string $symbolicPath,
-        mixed $function,
-        array $consumes,
-        array $produces,
-        array $onRequest,
-        array $onResponse,
-        array $onMount,
-        array $tags,
-        false|IgnoreOpenApi $ignoreOpenApi,
-        false|IgnoreDescribe $ignoreDescribe,
-    ):self {
-        return new self(
-            reflectionFunction: $reflectionFunction,
-            symbolicMethod: $symbolicMethod,
-            symbolicPath: $symbolicPath,
-            workDirectory: $workDirectory,
-            function: $function,
-            consumes: $consumes,
-            produces: $produces,
-            onRequest: $onRequest,
-            onResponse: $onResponse,
-            onMount: $onMount,
-            tags: $tags,
-            ignoreOpenApi: $ignoreOpenApi,
-            ignoreDescribe: $ignoreDescribe,
-        );
-    }
-
-    /**
      *
      * @param ReflectionFunction         $reflectionFunction
      * @param string                     $symbolicMethod
@@ -79,7 +32,7 @@ readonly class Route {
      * @param false|IgnoreOpenApi        $ignoreOpenApi
      * @param false|IgnoreDescribe       $ignoreDescribe
      */
-    private function __construct(
+    public function __construct(
         public ReflectionFunction $reflectionFunction,
         public string $symbolicMethod,
         public string $symbolicPath,

@@ -28,10 +28,10 @@ class SimpleGenerate implements GenerateInterface {
     public function generate(string $interface = '127.0.0.1:8080', string $outputDirectory = 'generated'):Result {
         $this->server->withInterface($interface);
         $baseUrl = "http://$interface";
-        $signal  = Signal::create();
+        $signal  = new Signal();
         $signal->listen(function() use ($baseUrl, $outputDirectory) {
-            $context = $this->router->getContext();
-            $routes  = $context->findAllRoutes();
+            $context = $this->router->context();
+            $routes  = $context->routes();
             $client  = HttpClientBuilder::buildDefault();
             foreach ($routes as $routeItems) {
                 foreach ($routeItems as $route) {

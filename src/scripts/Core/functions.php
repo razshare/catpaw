@@ -1,5 +1,4 @@
 <?php
-
 namespace CatPaw\Core;
 
 use function Amp\ByteStream\getStdin;
@@ -17,7 +16,6 @@ use Phar;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use Throwable;
-
 
 /**
  * Get current time in milliseconds.
@@ -279,20 +277,4 @@ function stop(string|Error $error) {
         $error = new Error($error);
     }
     Bootstrap::kill((string)$error);
-}
-
-/**
- * Given a `$path`, create a `FileName`.\
- * A `FileName` is an object that will stringify itself 
- * into `$path` when cast to `string`.\
- * The unique feature of `FileName` is that it will 
- * automatically detect if `$path`
- * is included in the current `.phar` bundle and it 
- * will return the correct string according to `.phar` semantics.
- * @param string ...$path
- * @deprecated Use FileName::create instead.
- * @return FileName
- */
-function asFileName(string ...$path):FileName {
-    return FileName::create(...$path);
 }

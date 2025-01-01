@@ -63,7 +63,7 @@ class Accepts implements Stringable {
         return false;
     }
 
-    public static function createFromRequest(Request $request):self {
+    public static function fromRequest(Request $request):self {
         $received = $request->getHeader('Accept') ?? '*/*';
 
         return new self(explode(',', $received));

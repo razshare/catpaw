@@ -33,7 +33,7 @@ class WebTest extends TestCase {
             ->withStaticsLocation(FileName::create(__DIR__, './www'))
             ->withApiPrefix('Api');
 
-        $readySignal = Signal::create();
+        $readySignal = new Signal();
 
         $readySignal->listen(function() use ($server) {
             anyError(function() {
@@ -107,8 +107,10 @@ class WebTest extends TestCase {
     }
 
     private function makeSureProducesHintsWork(RouterInterface $router):void {
-        $api     = $router->findRoute('GET', '/Api');
-        $apiName = $router->findRoute('GET', '/Api/{name}');
+        $routes = $router->routes();
+
+        $api     = $routes['GET']['/Api'];
+        $apiName = $routes['GET']['/Api/{name}'];
 
         $this->assertTrue((bool)$api);
         $this->assertTrue((bool)$apiName);
@@ -155,7 +157,7 @@ class WebTest extends TestCase {
     }
 
     private function makeSureParamHintsWork(RouterInterface $router, HttpClient $http):void {
-        $router->get("/GetWithParams/{name}", fn (#[Param] string $name) => success("hello $name"));
+        $router->addHandler("GET", "/GetWithParams/{name}", fn (#[Param] string $name) => success("hello $name"));
         $response = $http->request(new Request("http://127.0.0.1:5858/GetWithParams/user1"));
         $this->assertEquals("hello user1", $response->getBody()->buffer());
         $response = $http->request(new Request("http://127.0.0.1:5858/GetWithParams/user2"));

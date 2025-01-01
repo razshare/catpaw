@@ -17,28 +17,6 @@ class ConsumedRequest implements AttributeInterface {
     use CoreAttributeDefinition;
     use SchemaEncoder;
 
-    /**
-     *
-     * @param  array<string>|string $className
-     * @param  string               $type
-     * @param  string               $description
-     * @param  mixed                $example
-     * @return ConsumedRequest
-     */
-    public static function create(
-        array|string $className = '',
-        string $type = 'text/plain',
-        string $description = '',
-        mixed $example = [],
-    ):self {
-        return new self(
-            className: $className,
-            type: $type,
-            description: $description,
-            example: $example,
-        );
-    }
-
     /** @var array<mixed> */
     private array $request = [];
 
@@ -50,7 +28,7 @@ class ConsumedRequest implements AttributeInterface {
      * @param  mixed  $example     an example of the body of the response
      * @return void
      */
-    private function __construct(
+    public function __construct(
         private string $className = '',
         private string $type = 'text/plain',
         // @phpstan-ignore-next-line

@@ -18,28 +18,6 @@ use Throwable;
  * @package CatPaw\Web
  */
 class SuccessResponseModifier implements ResponseModifierInterface {
-    /**
-     *
-     * @param  T                          $data
-     * @param  array<string,string>       $headers
-     * @param  false|int                  $status
-     * @param  string                     $message
-     * @return SuccessResponseModifier<T>
-     */
-    public static function create(
-        mixed $data,
-        array $headers,
-        false|int $status,
-        string $message,
-    ):self {
-        return new self(
-            data: $data,
-            headers: $headers,
-            status: $status,
-            message: $message,
-        );
-    }
-
     private false|RequestContext $context = false;
     private false|Page $page              = false;
     private bool $bodyIsResponse          = false;
@@ -55,7 +33,7 @@ class SuccessResponseModifier implements ResponseModifierInterface {
      * @param false|int            $status
      * @param string               $message
      */
-    private function __construct(
+    public function __construct(
         private mixed $data,
         private array $headers,
         private false|int $status,
@@ -181,7 +159,7 @@ class SuccessResponseModifier implements ResponseModifierInterface {
      * @return SuccessResponseModifier<T>
      */
     public function item():self {
-        $this->body = SuccessItem::create(
+        $this->body = new SuccessItem(
             data: $this->data,
             message: $this->message,
             status: $this->status,
@@ -208,7 +186,7 @@ class SuccessResponseModifier implements ResponseModifierInterface {
         }
 
         $data       = $shouldWrap?[$this->data]:$this->data;
-        $this->body = SuccessPage::create(
+        $this->body = new SuccessPage(
             data: $data,
             message: $this->message,
             status: $this->status,

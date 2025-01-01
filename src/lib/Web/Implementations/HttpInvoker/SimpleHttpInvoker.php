@@ -132,7 +132,7 @@ class SimpleHttpInvoker implements HttpInvokerInterface {
                 Request::class     => static fn () => $context->request,
                 RequestBody::class => static fn () => $context->request->getBody(),
                 Body::class        => static fn () => new Body($context->request),
-                Accepts::class     => static fn () => Accepts::createFromRequest($context->request),
+                Accepts::class     => static fn () => Accepts::fromRequest($context->request),
                 Page::class        => static function() use ($context) {
                     $start = $context->requestQueries['start'] ?? 0;
                     $size  = $context->requestQueries['size']  ?? 10;

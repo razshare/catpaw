@@ -54,7 +54,7 @@ class Consumes implements AttributeInterface {
         string $className,
         mixed $example = '',
     ) {
-        $this->request[] = ConsumedRequest::create(
+        $this->request[] = new ConsumedRequest(
             className  : $className,
             type       : $contentType,
             example    : $example,

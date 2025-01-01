@@ -1,18 +1,21 @@
 <?php
 namespace CatPaw\Web;
 
-// MIME TYPES
-const APPLICATION_JSON = 'application/json';
-const APPLICATION_XML  = 'application/xml';
-const TEXT_PLAIN       = 'text/plain';
-const TEXT_HTML        = 'text/html';
+// MMime types.
+const APPLICATION_JSON = "application/json";
+const APPLICATION_XML  = "application/xml";
+const TEXT_PLAIN       = "text/plain";
+const TEXT_HTML        = "text/html";
 
-// HTTP STATUS CODE
+// Codes.
+
+// 100s.
 const __CONTINUE          = 100;
 const SWITCHING_PROTOCOLS = 101;
 const PROCESSING          = 102;
 const EARLY_HINTS         = 103;
 
+// 200s.
 const OK                            = 200;
 const CREATED                       = 201;
 const ACCEPTED                      = 202;
@@ -24,6 +27,7 @@ const MULTI_STATUS                  = 207;
 const ALREADY_REPORTED              = 208;
 const IM_USED                       = 226;
 
+// 300s.
 const MULTIPLE_CHOICES   = 300;
 const MOVED_PERMANENTLY  = 301;
 const FOUND              = 302;
@@ -33,6 +37,7 @@ const USE_PROXY          = 305;
 const TEMPORARY_REDIRECT = 307;
 const PERMANENT_REDIRECT = 308;
 
+// 400s.
 const BAD_REQUEST                     = 400;
 const UNAUTHORIZED                    = 401;
 const PAYMENT_REQUIRED                = 402;
@@ -61,6 +66,7 @@ const TOO_MANY_REQUESTS               = 429;
 const REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
 const UNAVAILABLE_FOR_LEGAL_REASONS   = 451;
 
+// 500s.
 const INTERNAL_SERVER_ERROR           = 500;
 const NOT_IMPLEMENTED                 = 501;
 const BAD_GATEWAY                     = 502;

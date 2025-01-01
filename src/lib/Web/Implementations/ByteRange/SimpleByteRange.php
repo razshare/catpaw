@@ -4,12 +4,10 @@ namespace CatPaw\Web\Implementations\ByteRange;
 
 use Amp\Http\Server\Response;
 use CatPaw\Core\Attributes\Provider;
-
 use function CatPaw\Core\duplex;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
 use CatPaw\Core\None;
-
 use function CatPaw\Core\ok;
 use CatPaw\Core\Result;
 use function CatPaw\Core\uuid;

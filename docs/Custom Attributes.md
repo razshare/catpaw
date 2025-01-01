@@ -27,7 +27,7 @@ function handler(#[HelloWorldAttribute] string $greeting){
 }
 
 function main(ServerInterface $server, RouterInterface $router):Result {
-  $router->get("/", handler(...))->unwrap($error) or die($error);
+  $router->addHandler("GET", "/", handler(...))->unwrap($error) or die($error);
   $server->start()->unwrap($error) or die($error);
 }
 ```

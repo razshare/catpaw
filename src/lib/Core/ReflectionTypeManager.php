@@ -30,7 +30,7 @@ class ReflectionTypeManager {
         if ($rtype instanceof ReflectionUnionType || $rtype instanceof ReflectionIntersectionType) {
             $classNames = $rtype->getTypes();
             foreach ($classNames as $t) {
-                // @phpstan-ignore-next-line
+                /** @var mixed $t */
                 $classNames[] = $t->getName();
             }
         }

@@ -41,7 +41,7 @@ class Body {
      * @return Result<None>
      */
     public function project(object &$target):Result {
-        $attempt = BodyParser::parseAsObject(
+        $attempt = BodyParser::object(
             request: $this->request,
             sizeLimit: $this->sizeLimit,
             cancellation: $this->cancellation,
@@ -66,7 +66,7 @@ class Body {
      * @return Result<\stdClass>
      */
     public function parse():Result {
-        return BodyParser::parseAsObject(
+        return BodyParser::object(
             request: $this->request,
             sizeLimit: $this->sizeLimit,
             cancellation: $this->cancellation,

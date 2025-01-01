@@ -68,7 +68,7 @@ class Produces implements AttributeInterface {
     }
 
     protected function createProducedResponse():ProducedResponse {
-        return ProducedResponse::create(
+        return new ProducedResponse(
             status: $this->status,
             type: $this->contentType,
             className: $this->className,

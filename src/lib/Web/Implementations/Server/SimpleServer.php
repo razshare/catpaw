@@ -186,7 +186,7 @@ class SimpleServer implements ServerInterface {
             $sigtermId = EventLoop::onSignal(SIGTERM, $stopper);
 
             $stackedHandler   = stackMiddleware($this->requestHandler, ...$this->middlewares);
-            $errorHandler     = ServerErrorHandler::create($logger);
+            $errorHandler     = new ServerErrorHandler($logger);
             $this->httpServer = SocketHttpServer::createForDirectAccess(
                 logger: $this->logger,
                 enableCompression: $this->compression,
@@ -274,6 +274,8 @@ class SimpleServer implements ServerInterface {
             return error($error);
         }
 
+        $routes = $this->router->routes();
+
         foreach ($flatList as $fileName) {
             if (!str_ends_with(strtolower($fileName), '.php')) {
                 continue;
@@ -300,14 +302,13 @@ class SimpleServer implements ServerInterface {
             if (!is_callable($handler)) {
                 return error("File `$fileName` is a php file that lives under a filesystem router directory, hence it must return a callable function, but it doesn't. If this file is not needed, please consider deleting it or moving it to a different directory.");
             }
-
-            $routeExists = $this->router->routeExists($symbolics->method, $symbolics->path);
-            if ($routeExists) {
+            
+            if (isset($routes[$symbolics->method][$symbolics->path])) {
                 return error("Route `$symbolics->method $symbolics->path` already exists. Will not overwrite.");
             }
 
             $this->router
-                ->initialize($symbolics->method, $symbolics->path, $handler, $cwd)
+                ->addHandler($symbolics->method, $symbolics->path, $handler, $cwd)
                 ->unwrap($error);
 
             if ($error) {

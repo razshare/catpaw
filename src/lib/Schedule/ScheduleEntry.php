@@ -11,28 +11,9 @@ readonly class ScheduleEntry {
      * @param  string                $callbackId
      * @param  Future<mixed>         $future
      * @param  ScheduleConfiguration $scheduleConfiguration
-     * @return ScheduleEntry
-     */
-    public static function create(
-        string $callbackId,
-        Future $future,
-        ScheduleConfiguration $scheduleConfiguration,
-    ):ScheduleEntry {
-        return new self(
-            callbackId: $callbackId,
-            future: $future,
-            scheduleConfiguration: $scheduleConfiguration,
-        );
-    }
-
-    /**
-     *
-     * @param  string                $callbackId
-     * @param  Future<mixed>         $future
-     * @param  ScheduleConfiguration $scheduleConfiguration
      * @return void
      */
-    private function __construct(
+    public function __construct(
         private string $callbackId,
         public Future $future,
         public ScheduleConfiguration $scheduleConfiguration,

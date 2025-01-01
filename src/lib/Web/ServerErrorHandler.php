@@ -8,11 +8,7 @@ use Amp\Http\Server\Response;
 use Psr\Log\LoggerInterface;
 
 readonly class ServerErrorHandler implements ErrorHandler {
-    public static function create(LoggerInterface $logger):self {
-        return new self($logger);
-    }
-
-    private function __construct(private LoggerInterface $logger) {
+    public function __construct(private LoggerInterface $logger) {
     }
 
     public function handleError(int $status, ?string $reason = null, ?Request $request = null):Response {

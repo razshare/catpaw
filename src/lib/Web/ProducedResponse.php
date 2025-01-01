@@ -15,28 +15,6 @@ class ProducedResponse implements AttributeInterface {
     use CoreAttributeDefinition;
     use SchemaEncoder;
 
-    public static function create(
-        string $type,
-        int $status,
-        string $className,
-        string $description,
-        mixed $example,
-        bool $isPage,
-        bool $isItem,
-        bool $isErrorItem,
-    ):self {
-        return new self(
-            type: $type,
-            status: $status,
-            className: $className,
-            description: $description,
-            example: $example,
-            isPage: $isPage,
-            isItem: $isItem,
-            isErrorItem: $isErrorItem,
-        );
-    }
-
     /** @var array<mixed> */
     private array $response = [];
 
@@ -51,7 +29,7 @@ class ProducedResponse implements AttributeInterface {
      * @param bool   $isItem      if set to true, the produced response will be wrapped in an item structure with type `item`.
      * @param bool   $isErrorItem if set to true, the produced response will be wrapped in an item structure with type `error` instead of `item`.
      */
-    private function __construct(
+    public function __construct(
         private readonly string $type,
         private readonly int $status,
         private readonly string $className,
