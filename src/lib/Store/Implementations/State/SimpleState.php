@@ -1,10 +1,9 @@
 <?php
-namespace CatPaw\Store\Implementations\Store;
+namespace CatPaw\Store\Implementations\State;
 
 use CatPaw\Core\Attributes\Provider;
 use CatPaw\Store\Interfaces\StateInterface;
 use CatPaw\Store\Writable;
-use function CatPaw\Store\writable;
 
 #[Provider]
 class SimpleState implements StateInterface {
@@ -13,7 +12,7 @@ class SimpleState implements StateInterface {
 
     public function of(string $name, mixed $defaultValue = false):Writable {
         if (!isset($this->map[$name])) {
-            $this->map[$name] = writable($defaultValue);
+            $this->map[$name] = new Writable($defaultValue);
         }
         return $this->map[$name];
     }

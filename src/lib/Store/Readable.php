@@ -9,13 +9,13 @@ use SplDoublyLinkedList;
  */
 class Readable {
     /**
-     * @param T                                  $value   initial value of the store
-     * @param callable(callable):(void|callable) $onStart a function that will be executed when the
-     *                                                    first subscriber subscribes to the store.
-     *
-     *                                              The function should (but it's not required to) return another function, which
-     *                                              will be executed when the last subscriber of the store unsubscribes.
+     * @param  T                                  $value   initial value of the store
+     * @param  callable(callable):(void|callable) $onStart a function that will be executed when the
+     *                                                     first subscriber subscribes to the store.\
+     *                                                     This function may return another function, which
+     *                                                     will be executed when the last subscriber of the store unsubscribes.
      * @return self<T>
+     * @deprecated in favor of constructor.
      */
     public static function create($value, $onStart):self {
         return new self($value, $onStart);
@@ -26,15 +26,16 @@ class Readable {
     /** @var false|(callable():void) */
     private mixed $stop           = false;
     private bool $firstSubscriber = true;
+
     /**
      * @param  T                                  $value
-     * @param  callable(callable):(void|callable) $onStart
+     * @param  callable(callable):(void|callable) $onStart a function that will be executed when the
+     *                                                     first subscriber subscribes to the store.\
+     *                                                     This function may return another function, which
+     *                                                     will be executed when the last subscriber of the store unsubscribes.
      * @return void
      */
-    private function __construct(
-        protected $value,
-        private $onStart,
-    ) {
+    public function __construct(protected $value, private $onStart) {
         $this->functions = new SplDoublyLinkedList();
         $this->functions->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
     }

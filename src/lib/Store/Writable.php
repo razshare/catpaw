@@ -12,6 +12,7 @@ class Writable {
     /**
      * @param  T       $value The initial value of the store
      * @return self<T>
+     * @deprecated in favor of constructor.
      */
     public static function create(mixed $value):self {
         return new self($value);
@@ -24,7 +25,7 @@ class Writable {
      * @param  T    $value
      * @return void
      */
-    private function __construct(protected mixed $value) {
+    public function __construct(protected mixed $value) {
         $this->functions = new SplDoublyLinkedList();
         $this->functions->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
     }

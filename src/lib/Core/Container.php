@@ -18,7 +18,7 @@ use CatPaw\Database\Implementations\SimpleSqlBuilder;
 use CatPaw\Queue\Implementations\Queue\SimpleQueue;
 use CatPaw\RaspberryPi\Implementations\Gpio\SimpleGpio;
 use CatPaw\Schedule\Implementations\Schedule\SimpleSchedule;
-use CatPaw\Store\Implementations\Store\SimpleState;
+use CatPaw\Store\Implementations\State\SimpleState;
 use CatPaw\Store\Readable;
 use CatPaw\Store\Writable;
 use CatPaw\Web\Implementations\ByteRange\SimpleByteRange;

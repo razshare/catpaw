@@ -6,8 +6,10 @@ use function Amp\delay;
 use function CatPaw\Core\anyError;
 use CatPaw\Core\Container;
 use CatPaw\Core\FileName;
-use function CatPaw\Store\readable;
-use function CatPaw\Store\writable;
+use CatPaw\Store\Readable;
+
+
+use CatPaw\Store\Writable;
 use PHPUnit\Framework\TestCase;
 use Revolt\EventLoop;
 
@@ -31,7 +33,7 @@ class StoreTest extends TestCase {
     }
 
     private function basic():void {
-        $store = readable("hello", function($set) {
+        $store = new Readable("hello", function($set) {
             delay(.5);
             $set("hello world");
             return function() { };
@@ -57,7 +59,7 @@ class StoreTest extends TestCase {
         $value2 = '';
         $value3 = '';
 
-        $counter = writable(0);
+        $counter = new Writable(0);
 
         $unsubscribeAll = function() use (&$unsubscribers) {
             // @phpstan-ignore-next-line
@@ -66,7 +68,7 @@ class StoreTest extends TestCase {
             }
         };
 
-        $store = readable("default", function($set) use (
+        $store = new Readable("default", function($set) use (
             &$value1,
             &$value2,
             &$value3,
@@ -109,7 +111,7 @@ class StoreTest extends TestCase {
 
     private function makingSureCleanUpFunctionIsInvoked():void {
         $cleanedUp = false;
-        $store     = readable("default", function($set) use (&$cleanedUp) {
+        $store     = new Readable("default", function($set) use (&$cleanedUp) {
             $set("hello world");
             return function() use (&$cleanedUp) {
                 echo "All subscribers have unsubscribed\n";
@@ -127,7 +129,7 @@ class StoreTest extends TestCase {
 
     private function withDelay():void {
         $cleanedUp = false;
-        $store     = readable("default", function($set) use (&$cleanedUp) {
+        $store     = new Readable("default", function($set) use (&$cleanedUp) {
             $set("hello world");
             return function() use (&$cleanedUp) {
                 echo "All subscribers have unsubscribed\n";
@@ -183,7 +185,7 @@ class StoreTest extends TestCase {
     }
 
     private function set():void {
-        $store = writable("hello");
+        $store = new Writable("hello");
         $this->assertEquals("hello", $store->get());
         $store->set("hello world");
         $this->assertEquals("hello world", $store->get());
@@ -192,13 +194,13 @@ class StoreTest extends TestCase {
     private function subscribe():void {
         $startTime = time();
         delay(1);
-        $store = writable(time());
+        $store = new Writable(time());
         $store->subscribe(fn ($now) => $this->assertGreaterThan($startTime, $now));
         $store->set(time());
     }
 
     private function update():void {
-        $store       = writable(0);
+        $store       = new Writable(0);
         $unsubscribe = $store->subscribe(function($value) {
             $this->assertEquals(0, $value);
         });
