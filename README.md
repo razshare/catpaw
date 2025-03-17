@@ -1,7 +1,7 @@
 # What is this?
 
 Catpaw is an opinionated dependency injection library that comes with batteries included for developing asynchronous and declarative general purpose programs.\
-It leverages [php attributes](https://www.php.net/manual/en/language.attributes.overview.php) to provide declarative apis, and the [amphp](https://github.com/amphp/amp) platform to make your program asynchronous.
+It leverages the [amphp](https://github.com/amphp/amp) platform to make your program asynchronous.
 
 
 | Table of Contents                                                 | Description |
