@@ -6,15 +6,13 @@ configure:
 	environment = env.ini\n\
 	match = \"/(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(^\.\/(\.env|env\.ini|env\.yml))/\"\n\
 	" > build.ini && printf "Build configuration file restored.\n"
+	composer update
+	composer dump-autoload -o
 
 
 clean:
 	rm app.phar -f
 	rm vendor -fr
-
-load:
-	composer update
-	composer dump-autoload -o
 
 test: vendor/bin/phpunit
 	php \
