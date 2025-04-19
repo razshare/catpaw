@@ -22,8 +22,8 @@ jobs:
     - name: Validate composer.json and composer.lock
       run: composer validate
 
-    - name: Load dependencies
-      run: make load
+    - name: Configure project
+      run: make configure
 
     - name: Run tests
       run: make test
