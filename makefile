@@ -14,6 +14,9 @@ clean:
 	rm app.phar -f
 	rm vendor -fr
 
+update:
+	composer update
+
 test: vendor/bin/phpunit
 	php \
 	-dxdebug.mode=off \
@@ -41,7 +44,7 @@ preview: bin/catpaw sandbox/preview/main.php
 	--libraries=sandbox/preview/lib \
 	--main=sandbox/preview/main.php
 
-dev: bin/catpaw src/main.php
+inspect: bin/catpaw src/main.php
 	php \
 	-dxdebug.mode=debug \
 	-dxdebug.start_with_request=yes \
@@ -61,7 +64,7 @@ install-pre-commit: bin/catpaw src/main.php
 	--main=src/main.php \
 	--install-pre-commit="make test"
 
-watch: bin/catpaw src/main.php
+dev: bin/catpaw src/main.php
 	php \
 	-dxdebug.mode=off \
 	-dxdebug.start_with_request=no \
