@@ -299,7 +299,7 @@ class SimpleServer implements ServerInterface {
             }
 
             unset($error);
-            $handler = require_once($fileName);
+            $handler = require($fileName);
             $cwd     = dirname($location.$fileName)?:'';
 
             if (!is_callable($handler)) {
