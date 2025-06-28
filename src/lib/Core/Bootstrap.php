@@ -82,6 +82,10 @@ class Bootstrap {
 
             $env = new SimpleEnvironment($logger);
             Container::provide(EnvironmentInterface::class, $env);
+            $env->load()->unwrap($envLoadError);
+            if ($envLoadError) {
+                self::kill((string)$envLoadError);
+            }
 
             $env->set('MAIN', $main);
             $env->set('LIBRARIES', $libraries);

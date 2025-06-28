@@ -45,6 +45,11 @@ or you can start with a web server
 composer create-project catpaw/web-starter
 ```
 
+# Install Dependencies
+```bash
+make install
+```
+
 # Program Structure
 
 Every program must declare a `main` function in the global scope, that will be your entry point.
