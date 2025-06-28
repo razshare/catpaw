@@ -4,6 +4,7 @@ namespace CatPaw\Core\Implementations\Environment;
 use CatPaw\Core\Attributes\Provider;
 use function CatPaw\Core\error;
 use CatPaw\Core\File;
+use CatPaw\Core\FileName;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 use CatPaw\Core\None;
 use function CatPaw\Core\ok;
@@ -25,7 +26,7 @@ class SimpleEnvironment implements EnvironmentInterface {
     }
 
     /** @var string */
-    private string $fileName = 'env.ini';
+    private string $fileName = '';
 
 
     /**
@@ -71,6 +72,9 @@ class SimpleEnvironment implements EnvironmentInterface {
      */
     public function load():Result {
         $fileName = $this->fileName;
+        if ('' === $fileName) {
+            $fileName = (string)FileName::create('env.ini');
+        }
 
         $file = File::open($fileName)->unwrap($error);
         if ($error) {
@@ -154,6 +158,7 @@ class SimpleEnvironment implements EnvironmentInterface {
         if (isset($this->variables[$query])) {
             return $this->variables[$query];
         }
+        $value     = '';
         $reference = &$this->variables;
         foreach (explode('.', $query) as $key) {
             if (!isset($reference[$key])) {
@@ -161,6 +166,7 @@ class SimpleEnvironment implements EnvironmentInterface {
                 return '';
             }
             $reference = &$reference[$key];
+            $value     = &$reference[$key];
         }
 
         if ($reference === $this->variables) {
@@ -170,6 +176,6 @@ class SimpleEnvironment implements EnvironmentInterface {
             return '';
         }
 
-        return $reference;
+        return $value;
     }
 }
