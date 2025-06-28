@@ -51,7 +51,7 @@ interface ServerInterface {
     public function withApiPrefix(string $apiPrefix):self;
 
     /**
-     * Directory containing your api file.\
+     * Directory containing your api files.\
      * This path should contain your `get.php`, `post.php` (etc) files.
      * @param string $apiLocation
      */
