@@ -1,48 +1,11 @@
-configure:
-	@printf "\
-	name = out/catpaw\n\
-	main = src/main.php\n\
-	libraries = src/lib\n\
-	environment = env.ini\n\
-	match = \"/(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(^\.\/(\.env|env\.ini|env\.yml))/\"\n\
-	" > build.ini && printf "Build configuration file restored.\n"
-	composer update
+
+install:
+	composer install
 	composer dump-autoload -o
-
-
-clean:
-	rm app.phar -f
-	rm vendor -fr
 
 update:
 	composer update
-
-test: vendor/bin/phpunit
-	php \
-	-dxdebug.mode=off \
-	-dxdebug.start_with_request=no \
-	vendor/bin/phpunit tests
-
-testone: vendor/bin/phpunit
-	php \
-	-dxdebug.mode=debug \
-	-dxdebug.start_with_request=yes \
-	vendor/bin/phpunit tests/WebTest.php
-
-fix: vendor/bin/php-cs-fixer
-	php \
-	-dxdebug.mode=off \
-	-dxdebug.start_with_request=no \
-	vendor/bin/php-cs-fixer fix .
-
-preview: bin/catpaw sandbox/preview/main.php
-	php \
-	-dxdebug.mode=debug \
-	-dxdebug.start_with_request=yes \
-	bin/catpaw \
-	--environment=env.ini \
-	--libraries=sandbox/preview/lib \
-	--main=sandbox/preview/main.php
+	composer dump-autoload -o
 
 dev: bin/catpaw src/main.php
 	php \
@@ -53,16 +16,14 @@ dev: bin/catpaw src/main.php
 	--libraries=src/lib \
 	--main=src/main.php
 
-
-hooks: bin/catpaw src/main.php
+preview: bin/catpaw sandbox/preview/main.php
 	php \
 	-dxdebug.mode=debug \
 	-dxdebug.start_with_request=yes \
 	bin/catpaw \
 	--environment=env.ini \
-	--libraries=src/lib \
-	--main=src/main.php \
-	--install-pre-commit="make test"
+	--libraries=sandbox/preview/lib \
+	--main=sandbox/preview/main.php
 
 watch: bin/catpaw src/main.php
 	php \
@@ -95,3 +56,45 @@ build: bin/catpaw-cli
 	bin/catpaw-cli \
 	--build \
 	--optimize
+
+test: vendor/bin/phpunit
+	php \
+	-dxdebug.mode=off \
+	-dxdebug.start_with_request=no \
+	vendor/bin/phpunit tests
+	
+testone: vendor/bin/phpunit
+	php \
+	-dxdebug.mode=debug \
+	-dxdebug.start_with_request=yes \
+	vendor/bin/phpunit tests/WebTest.php
+
+clean:
+	rm app.phar -f
+	rm vendor -fr
+
+configure:
+	@printf "\
+	name = out/catpaw\n\
+	main = src/main.php\n\
+	libraries = src/lib\n\
+	environment = env.ini\n\
+	match = \"/(^\.\/(\.build-cache|src|vendor|bin)\/.*)|(^\.\/(\.env|env\.ini|env\.yml))/\"\n\
+	" > build.ini && printf "Build configuration file restored.\n"
+	make install
+
+fix: vendor/bin/php-cs-fixer
+	php \
+	-dxdebug.mode=off \
+	-dxdebug.start_with_request=no \
+	vendor/bin/php-cs-fixer fix .
+
+hooks: bin/catpaw src/main.php
+	php \
+	-dxdebug.mode=debug \
+	-dxdebug.start_with_request=yes \
+	bin/catpaw \
+	--environment=env.ini \
+	--libraries=src/lib \
+	--main=src/main.php \
+	--install-pre-commit="make test"
