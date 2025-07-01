@@ -165,8 +165,8 @@ class SimpleEnvironment implements EnvironmentInterface {
                 $this->logger->warning("Environment variable `$key` not found.");
                 return '';
             }
-            $reference = &$reference[$key];
             $value     = &$reference[$key];
+            $reference = &$reference[$key];
         }
 
         if ($reference === $this->variables) {

@@ -25,13 +25,15 @@ class CoreTest extends TestCase {
         $this->assertNull($error);
         Container::loadDefaultProviders("Test")->unwrap($error);
         $this->assertNull($error);
-        anyError(function() {
-            yield Container::run($this->makeSureEnvWorks(...));
-            yield Container::run($this->makeSureUnsafeWorks(...));
-            yield Container::run($this->makeSureUnsafeWorksWithAnyError(...));
-            yield Container::run($this->makeSureSignalsWork(...));
-            yield Container::run($this->makeSureCommandWorks(...));
-        })->unwrap($error);
+        Container::run($this->makeSureEnvWorks(...))->unwrap($error);
+        $this->assertNull($error);
+        Container::run($this->makeSureUnsafeWorks(...))->unwrap($error);
+        $this->assertNull($error);
+        Container::run($this->makeSureUnsafeWorksWithAnyError(...))->unwrap($error);
+        $this->assertNull($error);
+        Container::run($this->makeSureSignalsWork(...))->unwrap($error);
+        $this->assertNull($error);
+        Container::run($this->makeSureCommandWorks(...))->unwrap($error);
         $this->assertNull($error);
     }
 
