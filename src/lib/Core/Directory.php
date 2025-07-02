@@ -74,23 +74,23 @@ class Directory {
      */
     public static function flat(string $directoryName):Result {
         try {
-            $result = [];
-            $list   = Directory::list($directoryName)->unwrap($error);
+            $items = [];
+            $list  = Directory::list($directoryName)->unwrap($error);
             if ($error) {
                 return error($error);
             }
             foreach ($list as $fileName) {
                 if (isFile($fileName)) {
-                    $result[] = $fileName;
+                    $items[] = $fileName;
                 } else {
-                    $flatList = Directory::flat($fileName)->unwrap($error);
+                    $flatList = Directory::flat($fileName)->unwrap($error) ?? [];
                     if ($error) {
                         return error($error);
                     }
-                    $result = [...$result, ...$flatList];
+                    $items = [...$items, ...$flatList];
                 }
             }
-            return ok($result);
+            return ok($items);
         } catch(Throwable $e) {
             return error($e);
         }

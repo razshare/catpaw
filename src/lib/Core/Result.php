@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
  */
 readonly class Result {
     /**
-     * @param T          $value
+     * @param null|T     $value
      * @param null|Error $error
      */
     public function __construct(
@@ -65,13 +65,12 @@ readonly class Result {
 
     /**
      *
-     * @param  Error $error
-     * @return T
+     * @param  Error  $error
+     * @return null|T
      */
     public function unwrap(&$error = null) {
         if ($this->error) {
             $error = $this->error;
-            /** @var T */
             return null;
         }
         $error = null;

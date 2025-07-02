@@ -214,7 +214,7 @@ readonly class File {
         if ($error) {
             return error($error);
         }
-        $contents = $file->readAll()->unwrap($error);
+        $contents = $file->readAll()->unwrap($error) ?? "";
         if ($error) {
             return error($error);
         }

@@ -18,17 +18,11 @@ function main(
     ServerInterface $server, 
     RouterInterface $router,
 ):void {
-    $router->addHandler("GET", "/cats", handler(...))->unwrap($error);
+    $router->addHandler("GET", "/cats", handler(...))
+        ->unwrap($error) ?? die($error);
 
-    if ($error) {
-        die($error)
-    }
-
-    $server->start()->unwrap($error);
-
-    if ($error) {
-        die($error)
-    }
+    $server->start()
+        ->unwrap($error) ?? die($error);
 }
 ```
 
@@ -53,17 +47,11 @@ function main(
     ServerInterface $server, 
     RouterInterface $router,
 ):void {
-    $router->addHandler("POST", "/cats", handler(...))->unwrap($error);
+    $router->addHandler("POST", "/cats", handler(...))
+        ->unwrap($error) ?? die($error);
 
-    if ($error) {
-        die($error)
-    }
-
-    $server->start()->unwrap($error);
-
-    if ($error) {
-        die($error)
-    }
+    $server->start()
+        ->unwrap($error) ?? die($error);
 }
 ```
 
@@ -82,11 +70,7 @@ function main(ServerInterface $server):void {
         ->withApiLocation("src/api")
         ->withApiPrefix("/api/v1")
         ->start()
-        ->unwrap($error);
-    
-    if ($error) {
-        die($error)
-    }
+        ->unwrap($error) ?? die($error);
 }
 ```
 

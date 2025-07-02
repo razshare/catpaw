@@ -234,7 +234,7 @@ readonly class SimpleByteRange implements ByteRangeInterface {
                 }
 
                 public function contentLength():Result {
-                    $size = File::size($this->fileName)->unwrap($error);
+                    $size = File::size($this->fileName)->unwrap($error) ?? 0;
                     if ($error) {
                         return error($error);
                     }
