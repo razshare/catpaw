@@ -27,7 +27,12 @@ function main(GpioInterface $gpio):void {
     $writer = $gpio->createWriter('12');
     $active = true;
     while (true) {
-        $writer->write($active?'1':'0')->unwrap($error) or die($error);
+        $writer->write($active?'1':'0')->unwrap($error);
+        
+        if ($error) {
+            die($error)
+        }
+
         $active = !$active;
         delay(1);
     }
