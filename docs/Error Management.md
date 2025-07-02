@@ -61,4 +61,4 @@ While it is true you can check for native thrown exceptions using development to
 Using results, the php type system itself will force you to `unwrap()` the value.
 
 > [!NOTE]
-> Of course, you can choose to ignore the error after you `unwrap()` the result, but that would be a conscious decision on your part rather than mistake.
+> Of course, you can choose to ignore the error after you `unwrap()` the result, but that would be a conscious decision on your part rather than a mistake.
