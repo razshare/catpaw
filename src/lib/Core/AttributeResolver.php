@@ -19,7 +19,6 @@ class AttributeResolver {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
@@ -36,7 +35,6 @@ class AttributeResolver {
         $attributes = $reflectionClass->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $className;
             }
@@ -54,7 +52,6 @@ class AttributeResolver {
         $attributes = $reflection_function->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 $arguments[] = $attribute->getArguments();
             }
@@ -71,7 +68,6 @@ class AttributeResolver {
         $attributes = $reflection_function->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
@@ -89,7 +85,6 @@ class AttributeResolver {
         $result     = [];
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 $result[] = $className;
             }
@@ -111,7 +106,6 @@ class AttributeResolver {
         $attributes = $reflectionFunction->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $className;
             }
@@ -128,7 +122,6 @@ class AttributeResolver {
         $attributes = $reflectionMethod->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
@@ -145,7 +138,6 @@ class AttributeResolver {
         $attributes = $reflectionMethod->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $className;
             }
@@ -162,7 +154,6 @@ class AttributeResolver {
         $attributes = $reflectionProperty->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
@@ -179,7 +170,6 @@ class AttributeResolver {
         $attributes = $reflectionProperty->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $className;
             }
@@ -196,7 +186,6 @@ class AttributeResolver {
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $attribute->getArguments();
             }
@@ -214,7 +203,6 @@ class AttributeResolver {
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 $arguments[] = $attribute->getArguments();
             }
@@ -232,7 +220,6 @@ class AttributeResolver {
         $result     = [];
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 $result[] = $className;
             }
@@ -254,7 +241,6 @@ class AttributeResolver {
         $attributes = $reflectionParameter->getAttributes();
         foreach ($attributes as $attribute) {
             $className = $attribute->getName();
-            // @phpstan-ignore-next-line
             if ($className === $attributeName || is_subclass_of($className, $attributeName)) {
                 return $className;
             }

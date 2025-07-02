@@ -7,8 +7,8 @@ readonly class None {}
 const NONE = new None;
 
 readonly class Result {
-  public mixed $value;
-  public Error $error;
+  private mixed $value;
+  private Error $error;
 }
 
 function ok(mixed $value = NONE):Result;
@@ -55,27 +55,6 @@ if($error){
 # Some advantages
 
 The first advantage over throwing exceptions is that your control flow is linear and easier to understand because you are not required to use `try/catch` syntax.
-
-Another advantage of representing errors as values is that you can use expressions and pattern matching to manage logic
-
-```php
-use function CatPaw\Core\error;
-
-class Error1 {}
-class Error2 {}
-
-$result = error(new Error1)
-
-$value = $result->unwrap($error) or match($error::class){
-  Error1::class => "fallback value 1",
-  Error2::class => "fallback value 2",
-  default       => "default value"
-};
-```
-
-Note that php's match expression is exhaustive, meaning it forces you to provide a default value, which is good because it leaves no margin for ambiguous values.
-
-
 
 But the most important advantage is probably type safety.\
 While it is true you can check for native thrown exceptions using development tools like phpstan, psalm and so on, these tools don't guarantee your code is safely checked for errors, they are mere linting solutions.\

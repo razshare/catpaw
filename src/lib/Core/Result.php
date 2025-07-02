@@ -19,8 +19,8 @@ readonly class Result {
      * @param null|Error $error
      */
     public function __construct(
-        public mixed $value,
-        public null|Error $error
+        private mixed $value,
+        private null|Error $error
     ) {
     }
 

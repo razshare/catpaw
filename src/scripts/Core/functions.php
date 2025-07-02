@@ -260,8 +260,11 @@ function anyError(callable $function):Result {
             $value = $result->current();
             if ($value instanceof Error) {
                 return error($value);
-            } elseif ($value instanceof Result && $value->error) {
-                return error($value->error);
+            } elseif ($value instanceof Result) {
+                $value->unwrap($error);
+                if ($error) {
+                    return error($error);
+                }
             }
         }
 
