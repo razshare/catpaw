@@ -22,6 +22,7 @@ readonly class ApplicationCommand implements CommandInterface {
         $builder->optional('n', 'name');
         $builder->optional('l', 'libraries');
         $builder->optional('r', 'resources');
+        $builder->optional('w', 'wait');
     }
 
     public function run(CommandContext $context):Result {
@@ -33,6 +34,7 @@ readonly class ApplicationCommand implements CommandInterface {
         $libraries   = explode(',', $context->get('libraries')?:'');
         $resources   = explode(',', $context->get('resources')?:'');
         $environment = $context->get('environment')?:'';
+        $wait        = $context->get('environment')?:'';
 
         if ($main) {
             $main = realpath($main);
@@ -89,6 +91,7 @@ readonly class ApplicationCommand implements CommandInterface {
                 libraries: $libraries,
                 resources: $resources,
                 environment: $environment,
+                wait: $wait,
             );
         }
         return ok();

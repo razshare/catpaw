@@ -21,15 +21,19 @@ preview: bin/catpaw sandbox/preview/main.php
 	bin/catpaw \
 	--environment=env.ini \
 	--libraries=sandbox/preview/lib \
-	--main=sandbox/preview/main.php \
-	--die-on-stdin
+	--main=sandbox/preview/main.php
 
-watch: bin/catpaw src/main.php
-	while true; do \
-	(inotifywait \
+watch: bin/catpaw sandbox/preview/main.php
+	inotifywait \
 	-e modify,create,delete_self,delete,move_self,moved_from,moved_to \
-	-r -P --format '%e' sandbox/preview | make preview); \
-	done
+	-r -m -P --format '%e' sandbox/preview | \
+	php -dxdebug.mode=off -dxdebug.start_with_request=no \
+	bin/catpaw \
+	--environment=env.ini \
+	--libraries=sandbox/preview/lib \
+	--main=sandbox/preview/main.php \
+	--spawner="php -dxdebug.mode=debug -dxdebug.start_with_request=yes" \
+	--wait
 
 start: bin/catpaw src/main.php
 	php -dxdebug.mode=off -dxdebug.start_with_request=no \
