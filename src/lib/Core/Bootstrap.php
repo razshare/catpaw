@@ -1,12 +1,19 @@
 <?php
+
 namespace CatPaw\Core;
 
 use function Amp\async;
 use function Amp\ByteStream\getStdin;
+
+use Amp\DeferredFuture;
+use function Amp\delay;
+use function Amp\File\isDirectory;
 use CatPaw\Core\Implementations\Environment\SimpleEnvironment;
 use CatPaw\Core\Interfaces\EnvironmentInterface;
 use Error;
+use function preg_split;
 use Psr\Log\LoggerInterface;
+use function realpath;
 use ReflectionFunction;
 use Revolt\EventLoop;
 use Throwable;
@@ -14,6 +21,7 @@ use Throwable;
 class Bootstrap {
     private function __construct() {
     }
+    
 
     /**
      * Initialize an application from a source file (that usually defines a global "main" function).
@@ -84,7 +92,7 @@ class Bootstrap {
             $env->set('MAIN', $main);
             $env->set('LIBRARIES', $libraries);
             $env->set('RESOURCES', $resources);
-            $env->set('DIE_ON_CHANGE', $dieOnStdin);
+            $env->set('DIE_ON_STDIN', $dieOnStdin);
 
             if ($environment) {
                 $env->withFileName($environment);
@@ -111,6 +119,9 @@ class Bootstrap {
             }
 
             if ($dieOnStdin) {
+                if (isPhar()) {
+                    self::kill("Watch mode is intended for development only, compiled phar applications cannot watch files for changes.");
+                }
                 async(function() {
                     getStdin()->read();
                     self::kill("Killing application...", 0);
@@ -164,5 +175,191 @@ class Bootstrap {
         } else {
             die($code);
         }
+    }
+
+    /**
+     * @param  string        $spawner
+     * @param  string        $fileName
+     * @param  array<string> $arguments
+     * @return void
+     */
+    public static function spawn(
+        string $spawner,
+        string $fileName,
+        array $arguments,
+    ):void {
+        try {
+            EventLoop::onSignal(SIGHUP, static fn () => self::kill("Killing application..."));
+            EventLoop::onSignal(SIGINT, static fn () => self::kill("Killing application..."));
+            EventLoop::onSignal(SIGQUIT, static fn () => self::kill("Killing application..."));
+            EventLoop::onSignal(SIGTERM, static fn () => self::kill("Killing application..."));
+
+            async(static function() use (
+                $spawner,
+                $fileName,
+                $arguments,
+            ) {
+                if (!Container::isProvided(LoggerInterface::class)) {
+                    $logger = LoggerFactory::create()->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                    Container::provide(LoggerInterface::class, $logger);
+                } else {
+                    $logger = Container::get(LoggerInterface::class)->unwrap($error);
+                    if ($error) {
+                        return error($error);
+                    }
+                }
+
+                foreach ($arguments as &$argument) {
+                    $parts = preg_split('/=|\s/', $argument, 2);
+                    if (count($parts) < 2) {
+                        continue;
+                    }
+
+                    $left     = $parts[0];
+                    $right    = $parts[1];
+                    $slashed  = addslashes($right);
+                    $argument = "$left=\"$slashed\"";
+                }
+
+                $argumentsStringified = join(' ', $arguments);
+                $instruction          = "$spawner $fileName $argumentsStringified";
+
+                echo "Spawning $instruction".PHP_EOL;
+
+                if (DIRECTORY_SEPARATOR === '/') {
+                    EventLoop::onSignal(SIGINT, static function() {
+                        self::kill();
+                    });
+                }
+
+                $ready = new DeferredFuture;
+                $kill  = new Signal;
+
+                async(function() use (&$ready, &$kill) {
+                    $stdin = getStdin();
+                    $ready->complete();
+                    while (true) {
+                        $content = $stdin->read();
+                        if (!$content) {
+                            delay(1);
+                            continue;
+                        }
+                        $kill->send();
+                        if (!$ready->isComplete()) {
+                            $ready->complete();
+                        }
+                    }
+                });
+
+                while (true) {
+                    $ready->getFuture()->await();
+                    $code = Process::execute($instruction, out(), kill: $kill)->unwrap($error);
+                    if ($error || $code > 0 && 137 !== $code) {
+                        echo $error.PHP_EOL;
+                        $ready = new DeferredFuture;
+                    }
+                }
+            });
+
+            EventLoop::run();
+        } catch (Throwable $error) {
+            self::kill($error);
+        }
+    }
+
+    /**
+     * Start a watcher which will detect file changes.
+     * Useful for development mode.
+     * @param  string        $main
+     * @param  array<string> $libraries
+     * @param  array<string> $resources
+     * @param  callable      $function
+     * @return void
+     */
+    private static function onFileChange(
+        string $main,
+        array $libraries,
+        array $resources,
+        callable $function,
+    ):void {
+        async(function() use (
+            $main,
+            $libraries,
+            $resources,
+            $function,
+        ) {
+            $changes   = [];
+            $firstPass = true;
+
+            while (true) {
+                clearstatcache();
+                $countLastPass = count($changes);
+
+                $fileNames = match ($main) {
+                    ''      => [],
+                    default => [$main => false]
+                };
+                /** @var array<string> $files */
+                $files = [...$libraries, ...$resources];
+
+                foreach ($files as $file) {
+                    if (!File::exists($file)) {
+                        continue;
+                    }
+
+                    if (!isDirectory($file)) {
+                        $fileNames[$file] = false;
+                        continue;
+                    }
+
+                    $directory = $file;
+
+                    $flatList = Directory::flat(realpath($directory))->unwrap($error);
+
+                    if ($error) {
+                        return error($error);
+                    }
+
+                    foreach ($flatList as $fileName) {
+                        $fileNames[$fileName] = false;
+                    }
+                }
+
+
+                $countThisPass = count($fileNames);
+                if (!$firstPass && $countLastPass !== $countThisPass) {
+                    $function();
+                }
+
+                foreach (array_keys($fileNames) as $fileName) {
+                    if (!File::exists($fileName)) {
+                        unset($changes[$fileName]);
+                        continue;
+                    }
+
+                    $mtime = filemtime($fileName);
+
+                    if (false === $mtime) {
+                        return error("Could not read file $fileName modification time.");
+                    }
+
+                    if (!isset($changes[$fileName])) {
+                        $changes[$fileName] = $mtime;
+                        continue;
+                    }
+
+                    if ($changes[$fileName] !== $mtime) {
+                        $changes[$fileName] = $mtime;
+                        $function();
+                    }
+                }
+
+                $firstPass = false;
+                delay(2);
+            }
+        });
     }
 }

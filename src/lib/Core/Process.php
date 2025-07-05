@@ -29,6 +29,21 @@ class Process {
                 return error($error);
             }
             $process = AmpProcess::start($command, $workDirectory?:null);
+
+            if ($kill) {
+                $kill->listen(static function() use ($process, $logger) {
+                    if (!$process->isRunning()) {
+                        return;
+                    }
+
+                    try {
+                        $process->signal(9);
+                    } catch(Throwable $error) {
+                        $logger->error($error);
+                    }
+                });
+            }
+
             if ($output) {
                 pipe($process->getStdout(), $output);
                 pipe($process->getStderr(), $output);
@@ -36,20 +51,6 @@ class Process {
             $code = $process->join();
         } catch(Throwable $error) {
             return error($error);
-        }
-
-        if ($kill) {
-            $kill->listen(static function() use ($process, $logger) {
-                if (!$process->isRunning()) {
-                    return;
-                }
-
-                try {
-                    $process->signal(9);
-                } catch(Throwable $error) {
-                    $logger->error($error);
-                }
-            });
         }
 
         return ok($code);
