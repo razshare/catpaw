@@ -69,7 +69,7 @@ readonly class ApplicationBundledCommand implements CommandInterface {
             libraries: $libraries,
             resources: $resources,
             environment: $environment,
-            dieOnChange: false
+            dieOnStdin: false
         );
 
         return ok();

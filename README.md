@@ -29,9 +29,15 @@ It leverages the [amphp](https://github.com/amphp/amp) platform to make your pro
 > This project is aimed at linux distributions, some features may or not may work on Windows and/or MacOS.\
 > Feel free to contribute fixing issues for specific platforms.
 
-# Get started
+# Prerequisites
 
-You will need at least [php 8.3](https://www.php.net/downloads.php).
+You will need at least [php 8.3](https://www.php.net/downloads.php) and `inotify-tools` for [watch mode](#watch-mode).
+
+```sh
+sudo apt install inotify-tools
+```
+
+# Get started
 
 Create a new project using one of the starter templates.
 
