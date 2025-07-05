@@ -256,11 +256,11 @@ class Bootstrap {
 
                 while (true) {
                     $ready->getFuture()->await();
-                    $code = Process::execute($instruction, out(), kill: $kill)->unwrap($error);
-                    if ($error || $code > 0 && 137 !== $code) {
+                    Process::execute($instruction, out(), kill: $kill)->unwrap($error);
+                    if ($error) {
                         echo $error.PHP_EOL;
-                        $ready = new DeferredFuture;
                     }
+                    $ready = new DeferredFuture;
                 }
             });
 
