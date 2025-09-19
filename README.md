@@ -139,23 +139,23 @@ sure php is installed on whatever machine you're trying to run it on.
 # Debugging with VSCode
 
 Install xdebug
-  ```php
-  apt install php8.3-xdebug
-  ```
+```php
+sudo apt install php8.3-xdebug
+```
 
 Configure your `.vscode/launch.json`
-  ```json
-  {
-      "version": "0.2.0",
-      "configurations": [
-          {
-              "name": "Listen",
-              "type": "php",
-              "request": "launch",
-              "port": 9003
-          }
-      ]
-  }
-  ```
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Listen",
+            "type": "php",
+            "request": "launch",
+            "port": 9003
+        }
+    ]
+}
+```
 
 Start debugging.
