@@ -34,7 +34,7 @@ readonly class ApplicationCommand implements CommandInterface {
         $libraries   = explode(',', $context->get('libraries')?:'');
         $resources   = explode(',', $context->get('resources')?:'');
         $environment = $context->get('environment')?:'';
-        $wait        = $context->get('environment')?:'';
+        $wait        = $context->get('wait')?:'';
 
         if ($main) {
             $main = realpath($main);
@@ -80,7 +80,7 @@ readonly class ApplicationCommand implements CommandInterface {
                 return true;
             });
             Bootstrap::spawn(
-                spawner: $spawner?:'/usr/bin/php',
+                spawner: '/usr/bin/php',
                 fileName: $this->startFileName,
                 arguments: $arguments,
             );
@@ -91,7 +91,7 @@ readonly class ApplicationCommand implements CommandInterface {
                 libraries: $libraries,
                 resources: $resources,
                 environment: $environment,
-                wait: $wait,
+                wait: (bool)$wait,
             );
         }
         return ok();
