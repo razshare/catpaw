@@ -49,7 +49,7 @@ class Bootstrap {
      * @param  array<string> $libraries   libraries to load
      * @param  array<string> $resources   resources to load
      * @param  string        $environment environment to load
-     * @param  string        $wait        if true, the application will hang when it terminates
+     * @param  bool          $wait        if true, the application will hang when it terminates
      * @return void
      */
     public static function start(
@@ -58,7 +58,7 @@ class Bootstrap {
         array $libraries,
         array $resources,
         string $environment,
-        string $wait,
+        bool $wait,
     ):void {
         try {
             foreach ($libraries as $library) {
