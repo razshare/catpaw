@@ -31,10 +31,14 @@ It leverages the [amphp](https://github.com/amphp/amp) platform to make your pro
 
 # Prerequisites
 
-You will need at least [php 8.3](https://www.php.net/downloads.php) and `inotify-tools` for [watch mode](#watch-mode).
+You will need at least [php 8.3](https://www.php.net/downloads.php), `ext-mbstring`, `ext-dom` and `inotify-tools` for [watch mode](#watch-mode).\
+Although optional, I also recommend you install `ext-curl` to speed http requests in php.
 
 ```sh
-sudo apt install inotify-tools
+sudo apt install php-mbstring  # this contains ext-mbstring
+sudo apt install php-xml       # this contains ext-dom
+sudo apt install php-curl      # this will speed up project creation and http requests in general
+sudo apt install inotify-tools # this allows you to use watch mode (read below)
 ```
 
 # Get started
