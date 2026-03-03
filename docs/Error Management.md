@@ -27,11 +27,13 @@ use function CatPaw\Core\ok;
 $result = ok("my-value");
 ```
 
-or by invoking `error()` with an error message
+or by invoking `error()` with an error message or an `\Error` type.
 
 ```php
 use function CatPaw\Core\error;
 $result = error("My error message");
+// or
+$result = error(new Error("My error message"))
 ```
 
 # Unwrap
@@ -54,7 +56,7 @@ if($error){
 
 # Some advantages
 
-The first advantage over throwing exceptions is that your control flow is linear and easier to understand because you are not required to use `try/catch` syntax.
+The first advantage over throwing exceptions is that your control flow is uninterrupted and easier to understand because you are not required to use `try/catch` syntax.
 
 Another advantage of representing errors as values is that you can use expressions and pattern matching to manage logic
 
