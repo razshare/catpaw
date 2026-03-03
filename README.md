@@ -31,7 +31,7 @@ It leverages the [amphp](https://github.com/amphp/amp) platform to make your pro
 
 # Prerequisites
 
-You will need at least [php 8.3](https://www.php.net/downloads.php), `ext-mbstring`, `ext-dom` and `inotify-tools` for [watch mode](#watch-mode).\
+You will need at least [php 8.3](https://www.php.net/downloads.php), `ext-mbstring`, `ext-dom` and `inotify-tools` for [watdevh mode](#development-mode).\
 Although optional, I also recommend you install `ext-curl` to speed http requests in php.
 
 ```sh
