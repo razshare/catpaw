@@ -82,20 +82,6 @@ Enter Development Mode with
 make dev
 ```
 
-This mode will run your program with [XDebug](https://xdebug.org) enabled.
-
-> [!NOTE]
-> See [section Debugging with VSCode](#debugging-with-vscode)
-
-
-# Watch Mode
-
-Enter Watch Mode with
-
-```bash
-make watch
-```
-
 This mode will run your program with [XDebug](https://xdebug.org) enabled and 
 it will restart your program every time you make a change to your source code.
 
@@ -103,8 +89,21 @@ it will restart your program every time you make a change to your source code.
 > See [section Debugging with VSCode](#debugging-with-vscode)
 
 > [!NOTE]
-> By default "source code" means the "src" directory.\
-> You can change this configuration in your [makefile](./makefile), see section `watch`, parameter `resources`.
+> By default "source code" means the "src/lib" directory.\
+> You can change this configuration in your [makefile](./makefile), see section `dev`, flag `--libraries`.
+
+# Preview Mode
+
+Enter Preview Mode with
+
+```bash
+make dev
+```
+
+This mode will run your program with [XDebug](https://xdebug.org) enabled.
+
+> [!NOTE]
+> See [section Debugging with VSCode](#debugging-with-vscode)
 
 # Production Mode
 

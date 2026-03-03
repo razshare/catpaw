@@ -7,33 +7,31 @@ update:
 	composer update
 	composer dump-autoload -o
 
+sandbox: bin/catpaw projects/sandbox/main.php
+	php -dxdebug.mode=debug -dxdebug.start_with_request=yes \
+	bin/catpaw \
+	--environment=env.ini \
+	--libraries=projects/sandbox/lib \
+	--main=projects/sandbox/main.php
+
 dev: bin/catpaw src/main.php
-	php \
-	-dxdebug.mode=debug \
-	-dxdebug.start_with_request=yes \
+	inotifywait \
+	-e modify,create,delete_self,delete,move_self,moved_from,moved_to \
+	-r -m -P --format '%e' src | \
+	php -dxdebug.mode=off -dxdebug.start_with_request=no \
+	bin/catpaw \
+	--environment=env.ini \
+	--libraries=src/lib,src/scripts \
+	--main=src/main.php \
+	--spawner="php -dxdebug.mode=debug -dxdebug.start_with_request=yes" \
+	--wait
+
+preview: bin/catpaw src/main.php
+	php -dxdebug.mode=debug -dxdebug.start_with_request=yes \
 	bin/catpaw \
 	--environment=env.ini \
 	--libraries=src/lib \
 	--main=src/main.php
-
-preview: bin/catpaw sandbox/preview/main.php
-	php -dxdebug.mode=debug -dxdebug.start_with_request=yes \
-	bin/catpaw \
-	--environment=env.ini \
-	--libraries=sandbox/preview/lib \
-	--main=sandbox/preview/main.php
-
-watch: bin/catpaw sandbox/preview/main.php
-	inotifywait \
-	-e modify,create,delete_self,delete,move_self,moved_from,moved_to \
-	-r -m -P --format '%e' sandbox/preview | \
-	php -dxdebug.mode=off -dxdebug.start_with_request=no \
-	bin/catpaw \
-	--environment=env.ini \
-	--libraries=sandbox/preview/lib \
-	--main=sandbox/preview/main.php \
-	--spawner="php -dxdebug.mode=debug -dxdebug.start_with_request=yes" \
-	--wait
 
 start: bin/catpaw src/main.php
 	php -dxdebug.mode=off -dxdebug.start_with_request=no \
