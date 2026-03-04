@@ -61,10 +61,11 @@ The first advantage over throwing exceptions is that your control flow is uninte
 Another advantage of representing errors as values is that you can use expressions and pattern matching to manage logic
 
 ```php
+use Error;
 use function CatPaw\Core\error;
 
-class Error1 {}
-class Error2 {}
+class Error1 extends Error { /* ... */ }
+class Error2 extends Error { /* ... */}
 
 $result = error(new Error1)
 
