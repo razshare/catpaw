@@ -65,7 +65,7 @@ use Error;
 use function CatPaw\Core\error;
 
 class Error1 extends Error { /* ... */ }
-class Error2 extends Error { /* ... */}
+class Error2 extends Error { /* ... */ }
 
 $result = error(new Error1)
 
