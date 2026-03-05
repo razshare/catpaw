@@ -20,7 +20,7 @@ You can set the value on creation or some time after by using the `set()` method
 use function CatPaw\Store\Writable;
 
 function main() {
-    $store = Writable::create("A");       // set on creation
+    $store = Writable::create("A");       // set value on creation
     echo $store->get().PHP_EOL;           // will print "A"
     $store->set("B");                     // changing the value
     echo $store->get().PHP_EOL;           // will print "B"
