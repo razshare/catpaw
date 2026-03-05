@@ -1,17 +1,18 @@
 <?php
 use function CatPaw\Core\error;
 use CatPaw\Core\FileName;
+use CatPaw\Store\Writable;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
 
-class HelloController {
-    public function get(string $name = 'world') {
-        return "hello $name";
+class DefaultController {
+    public function get(): string {
+        return "hello from default controller";
     }
 }
 
 function main(ServerInterface $server, RouterInterface $router) {
-    $router->addController('/api/controllers/hello/{name}', HelloController::class)->unwrap($error);
+    $router->addController('/', DefaultController::class)->unwrap($error);
     if ($error) {
         return error($error);
     }

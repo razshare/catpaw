@@ -20,14 +20,25 @@ class Readable {
      *                                                     first subscriber subscribes to the store.\
      *                                                     This function may return another function, which
      *                                                     will be executed when the last subscriber of the store unsubscribes.
+     * @deprecated use `Readable::create()` instead.
      * @return void
      */
-    public function __construct(protected $value, private $onStart) {
+    public function __construct(protected mixed $value, private $onStart) {
         $this->functions = new SplDoublyLinkedList();
         $this->functions->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
     }
 
-
+    /**
+     * @param T $value 
+     * @param  callable(callable):(void|callable) $onStart a function that will be executed when the
+     *                                                     first subscriber subscribes to the store.\
+     *                                                     This function may return another function, which
+     *                                                     will be executed when the last subscriber of the store unsubscribes.
+     * @return Readable<T>
+     */
+    public static function create(mixed $value, callable $onStart): self {
+        return new Readable($value, $onStart);
+    }
 
     /**
      * Get the value of the store.
