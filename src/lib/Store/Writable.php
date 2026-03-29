@@ -4,8 +4,6 @@ namespace CatPaw\Store;
 use Closure;
 use SplDoublyLinkedList;
 
-use function Amp\File\write;
-
 /**
  * @template T
  * @package CatPaw\Store
@@ -17,7 +15,7 @@ class Writable {
     /**
      * @param  T    $value
      * @return void
-     * @deprecated use `Writable::create()` instead.
+     * @deprecated in favor of `Writable::create()`.
      */
     public function __construct(protected mixed $value) {
         $this->functions = new SplDoublyLinkedList();
@@ -25,7 +23,7 @@ class Writable {
     }
 
     /**
-     * @param T $value 
+     * @param  T           $value
      * @return Writable<T>
      */
     public static function create(mixed $value): self {

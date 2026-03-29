@@ -229,10 +229,12 @@ class Bootstrap {
                     });
                 }
 
-                $kill  = new Signal;
-                $stdin = getStdin();
+                $running = false;
+                $kill    = Signal::create();
+                $start   = Signal::create();
+                $stdin   = getStdin();
 
-                async(function() use ($stdin, $kill) {
+                async(function() use ($stdin, $kill, $start) {
                     // @phpstan-ignore while.alwaysTrue
                     while (true) {
                         $content = $stdin->read();
@@ -243,24 +245,26 @@ class Bootstrap {
                         
                         $kill->send();
                         $kill->clear();
+                        async($start->send(...));
                     }
                 });
 
-                // @phpstan-ignore while.alwaysTrue
-                while (true) {
+                $start->listen(static function() use ($instruction, $kill, $start): void {
                     $code = Process::execute($instruction, out(), kill: $kill)->unwrap($error);
-
-                    
                     if ($error) {
                         echo $error.PHP_EOL;
-                        continue;
+                        return;
                     }
                     
                     if (0 !== $code && 137 !== $code) {
-                        echo "main function terminated with exit code $code".PHP_EOL;
-                        continue;
+                        echo "program terminated with exit code $code".PHP_EOL;
+                        return;
                     }
-                }
+
+                    async($start->send(...));
+                });
+
+                $start->send();
             });
 
             EventLoop::run();

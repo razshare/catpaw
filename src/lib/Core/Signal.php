@@ -3,13 +3,21 @@ namespace CatPaw\Core;
 
 use SplDoublyLinkedList;
 
-class Signal {
+final class Signal {
     private bool $busy = false;
     /** @var LinkedList<callable(mixed...):void> */
     private LinkedList $list;
     
+    /**
+     * @deprecated in favor of `Signal::create()`.
+     * @return void
+     */
     public function __construct() {
         $this->list = new LinkedList;
+    }
+
+    public static function create(): self {
+        return new self();
     }
 
     /**
@@ -21,6 +29,7 @@ class Signal {
         }
         $this->busy = true;
         for ($this->list->rewind();$this->list->valid();$this->list->next()) {
+            /** @var callable() */
             $function = $this->list->current();
             $function();
         }

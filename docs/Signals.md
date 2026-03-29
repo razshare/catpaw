@@ -7,7 +7,7 @@ use CatPaw\Core\Signal;
 use function Amp\delay;
 
 function main(){
-    $printGreeting = new Signal();
+    $printGreeting = Signal::create();
 
     // Listen for the signal.
     $printGreeting->listen(fn () => print("hello foo!\n"));
@@ -34,7 +34,7 @@ use CatPaw\Core\Signal;
 use function Amp\delay;
 
 function main(){
-    $printGreeting = new Signal();
+    $printGreeting = Signal::create();
 
     $printGreeting->listen(fn () => print("hello foo!\n"));
     $printGreeting->listen(fn () => print("hello bar!\n"));

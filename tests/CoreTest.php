@@ -71,7 +71,7 @@ class CoreTest extends TestCase {
     }
 
     public function makeSureSignalsWork():void {
-        $signal  = new Signal();
+        $signal  = Signal::create();
         $counter = 0;
         $signal->listen(function() use (&$counter) {
             $counter++;

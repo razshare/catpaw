@@ -1,7 +1,6 @@
 <?php
 use function CatPaw\Core\error;
 use CatPaw\Core\FileName;
-use CatPaw\Store\Writable;
 use CatPaw\Web\Interfaces\RouterInterface;
 use CatPaw\Web\Interfaces\ServerInterface;
 

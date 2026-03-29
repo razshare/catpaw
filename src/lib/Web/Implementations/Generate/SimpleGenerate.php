@@ -28,7 +28,7 @@ class SimpleGenerate implements GenerateInterface {
     public function generate(string $interface = '127.0.0.1:8080', string $outputDirectory = 'generated'):Result {
         $this->server->withInterface($interface);
         $baseUrl = "http://$interface";
-        $signal  = new Signal();
+        $signal  = Signal::create();
         $signal->listen(function() use ($baseUrl, $outputDirectory) {
             $context = $this->router->context();
             $routes  = $context->routes();

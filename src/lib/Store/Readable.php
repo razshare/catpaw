@@ -15,12 +15,12 @@ class Readable {
     private bool $firstSubscriber = true;
 
     /**
-     * @param  T                                  $value
-     * @param  callable(callable):(void|callable) $onStart a function that will be executed when the
-     *                                                     first subscriber subscribes to the store.\
-     *                                                     This function may return another function, which
-     *                                                     will be executed when the last subscriber of the store unsubscribes.
-     * @deprecated use `Readable::create()` instead.
+     * @param T                                  $value
+     * @param callable(callable):(void|callable) $onStart a function that will be executed when the
+     *                                                    first subscriber subscribes to the store.\
+     *                                                    This function may return another function, which
+     *                                                    will be executed when the last subscriber of the store unsubscribes.
+     * @deprecated in favor of `Readable::create()`.
      * @return void
      */
     public function __construct(protected mixed $value, private $onStart) {
@@ -29,7 +29,7 @@ class Readable {
     }
 
     /**
-     * @param T $value 
+     * @param  T                                  $value
      * @param  callable(callable):(void|callable) $onStart a function that will be executed when the
      *                                                     first subscriber subscribes to the store.\
      *                                                     This function may return another function, which

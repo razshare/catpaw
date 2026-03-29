@@ -34,7 +34,7 @@ class WebTest extends TestCase {
             ->withStaticsLocation(FileName::create(__DIR__, './www'))
             ->withApiPrefix('Api');
 
-        $readySignal = new Signal();
+        $readySignal = Signal::create();
 
         $readySignal->listen(function() use ($server) {
             anyError(function() {
