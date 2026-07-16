@@ -97,7 +97,7 @@ it will restart your program every time you make a change to your source code.
 Enter Preview Mode with
 
 ```bash
-make dev
+make preview
 ```
 
 This mode will run your program with [XDebug](https://xdebug.org) enabled.
